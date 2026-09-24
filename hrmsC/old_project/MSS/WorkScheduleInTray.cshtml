@@ -1,0 +1,336 @@
+﻿@model List<TNB_ESS_MVC.Controllers.WorkScheduleController.WorkScheduleTypeList>
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewBag.Title = "Work Schedule In Tray";
+    DateTime d1 = DateTime.Now.AddYears(-20);
+    DateTime d2 = DateTime.Now.AddYears(20);
+    string dtStrStart = d1.ToString("dd MMM yyyy");
+    string dtStrEnd = d2.ToString("dd MMM yyyy");
+}
+<input id="hfEmployeeID" type="hidden" value="@ViewBag.EmployeeID" />
+
+<div class="row">
+    <div class="col-md-12">
+        <br />
+        <h1 class="page-title">
+            Work Schedule In Tray<span style="padding-left:20px;"><small></small></span>
+        </h1>
+    </div>
+</div>
+<br />
+<div class="form-body">
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-4 control-label">Submission Date (From)</label>
+                    <div class="col-md-8 form-control-static">
+                        <div class="input-group date date-picker" data-date-format="dd MM yyyy">
+                            <input type="text" class="form-control" id="SubDateFrom" name="SubDateFrom" />
+                            <span class="input-group-btn">
+                                <button type="button" class="btn default"><i class="fa fa-calendar"></i></button>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-4 control-label">Submission Date (To)</label>
+                    <div class="col-md-8 form-control-static">
+                        <div class="input-group date date-picker" data-date-format="dd MM yyyy">
+                            <input type="text" class="form-control" id="SubDateTo" name="SubDateTo" />
+                            <span class="input-group-btn">
+                                <button type="button" class="btn default"><i class="fa fa-calendar"></i></button>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-4 control-label">Work Schedule Type</label>
+                    <div class="col-md-8 form-control-static">
+                        @Html.DropDownList("WorkScheduleType", new SelectList(Model, "WorkScheduleType", "WorkScheduleType"), "- All -", new { @class = "bs-select form-control" })
+                        @*<select class="form-control" id="WorkScheduleType" onchange="WorkScheduleChange()">
+                            <option value="">- All -</option>
+                            <option value="Normal Working Hours">Normal Working Hours</option>
+                            <option value="Staggered Working Hours">Staggered Working Hours</option>
+                            <option value="Staggered Ramadhan">Staggered Ramadhan</option>
+                        </select>*@
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-4 control-label">Status</label>
+                    <div class="col-md-8 form-control-static">
+                        <select class="form-control" id="Status">
+                            <option value="">- All -</option>
+                            <option value="Pending">Pending</option>
+                            <option value="Agreed">Agreed</option>
+                            <option value="Declined">Declined</option>
+                            <option value="Approved">Approved</option>
+                            <option value="Withdrawn">Withdrawn</option>
+                            <option value="Failed">Failed</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-4 control-label">Employee</label>
+                    <div class="col-md-8 form-control-static">
+                        @Html.Partial("_PeoplePicker")
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">&nbsp;</div>
+    <div class="row">
+        <div class="col-md-12">
+            <div class="text-right">
+                <input type="button" id="btn-Search" class="btn green btn-Search" value="Search" onclick="SearchListing();">
+            </div>
+        </div>
+    </div>
+    <div class="row">&nbsp;</div>
+    <div class="row">
+        <div class="col-md-12">
+            <div id="SearchResult">
+
+            </div>
+        </div>
+    </div>
+
+    
+
+
+
+    <!-- Confirmation Message -->
+    <div class="modal fade" id="ConfirmUpdate" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                    <h4 class="modal-title">Confirmation</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="well">
+                        Are you sure you want to Approve this Work Schedule Application?
+                        Press Confirm to proceed, or Close to stay on the current page.
+                    </div>
+                    <label class="control-label" >
+                        Comments
+                    </label>
+                    <textarea class="form-control" id="Comment" style="max-width:558px;"></textarea>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn default blue" id="btnSubmitForm" value="Submit" onclick="javascript: SaveForm('Approved');">
+                        <i class="fa fa-check"></i>
+                        Confirm
+                    </button>
+                    <button type="button" class="btn default" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Success Message -->
+    <div class="modal fade" id="SuccessSubmit" tabindex="-1" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header Success-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true" style="display: none;"></button>
+                    <h4 class="Success-title">Action Successfully Completed</h4>
+                </div>
+                <div class="modal-body Success-body">
+                    <div class="well">
+                        Your Work Schedule Application has been successfully approved.
+                    </div>
+                </div>
+                <div class="modal-footer Success-footer">
+                    <button type="button" class="btn default blue" id="btnOK">
+                        <i class="fa fa-check"></i>
+                        OK
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Gif -->
+    <div id="divLoading" style="margin: 0px; padding: 0px; position: fixed; right: 0px; top: 0px; width: 100%; height: 100%; background-color: gainsboro; z-index: 30001; opacity: .8; filter: alpha(opacity=70); display: none; ">
+        <p style="position: absolute; top: 30%; left: 30%; color: black;">
+            Performing action, please wait...<img src="/_layouts/15/TNBESS/Assets/img/ajax-loading.gif">
+        </p>
+    </div>
+</div>
+<script type="text/javascript">
+    var SubmitStatus = "";
+
+    function SearchListing() {
+        var _DateFrom = $('#SubDateFrom').val();
+        var _DateTo = $('#SubDateTo').val();
+        var _WorkScheduleType = $('#WorkScheduleType option:selected').text();
+        if (_WorkScheduleType == '- All -')
+            _WorkScheduleType = '';
+        var _Status = $('#Status').val();
+        var _EmpID = $('#hfEmpID').val();
+
+        $("#SearchResult").html("LOADING...");
+
+        $.ajax({
+            type: "GET",
+            url: '@Url.Content("~/MSS/_WorkScheduleInTrayResult")',
+            cache: false,
+            dataType: "html",
+            data: { DateFrom: _DateFrom, DateTo: _DateTo, WorkScheduleType: _WorkScheduleType, Status: _Status, EmpID: _EmpID },
+            success: function (content) {
+                $("#SearchResult").html(content);
+            },
+            error: function (e) {
+                console.log(e);
+            }
+        });
+    }
+
+    function ConvertDate(_date) {
+        var mnth = ("0" + (_date.getMonth() + 1)).slice(-2),
+            day = ("0" + _date.getDate()).slice(-2);
+
+        return [day, mnth, _date.getFullYear()].join("/");
+    }
+
+    jQuery(document).ready(function () {
+        $('.date-picker').datepicker({
+            format: 'dd/mm/yyyy',
+            autoclose: true,
+            setStartDate: '@dtStrStart',
+            setEndDate: '@dtStrEnd'
+        });
+
+        //2017-01-24: remove default start/enddate
+        //var _Today = new Date();
+        //_Today.setDate(_Today.getDate() - 60);
+        //var _Start = ConvertDate(_Today);
+
+        //$('#SubDateFrom').val(_Start);
+        //$('#SubDateTo').val(ConvertDate(new Date()));
+
+        SearchListing();
+    });
+
+
+
+
+    function ConfirmAction(_Action) {
+        var ValidationMsg = "You need to select at least one Work Schedule.";
+        var Info = "";
+
+        $("input[id=chkSelect]:checked").each(function () {
+            var WorkScheduleID = $(this).val();
+            Info += WorkScheduleID + ";";
+        });
+
+        if (Info == "") {
+            alert(ValidationMsg);
+        }
+        else {
+            if (_Action == 'Approved') {
+                $('#btnSubmitForm').css("display", "initial");
+                $("#btnSubmitForm").attr("onclick", "SaveForm('" + _Action + "')");
+
+                $('.modal-body .well').html('Are you sure you want to Approve this Work Schedule Application?\n\rPress Confirm to proceed, or Close to stay on the current page.');
+                $('#btnOK').click(function () { RedirectTo('Approve'); });
+                $('#ConfirmUpdate').modal('show');
+            }
+            else if (_Action == 'Declined') {
+                $('#btnSubmitForm').css("display", "initial");
+                $("#btnSubmitForm").attr("onclick", "SaveForm('" + _Action + "')");
+
+                $('.modal-body .well').html('Are you sure you want to Decline this Work Schedule Application?\n\rPress Confirm to proceed, or Close to stay on the current page.');
+                $('#btnOK').click(function () { RedirectTo('Approve'); });
+                $('#ConfirmUpdate').modal('show');
+            }
+       
+        
+        }
+    }
+
+    function SubmitFormAction() {
+        if (SubmitStatus == 'Approved') {
+            $(".Success-body .well").html('Your Work Schedule Application has been successfully approved.');
+        }
+        else if (SubmitStatus == 'Declined') {
+            $(".Success-body .well").html('Your Work Schedule Application has been successfully Declined.');
+        }
+
+        jQuery.support.cors = true;
+
+        var Info = "";
+        var _EvaluationID = $("#hfEvaluationID").val();
+        $("input[id=chkSelect]:checked").each(function () {
+            var WorkScheduleID = $(this).val();
+
+            Info += WorkScheduleID + ";";
+        });
+        Info = Info.slice(0, -1);
+        $.ajax({
+            url: '@Url.Content("~/WorkSchedule/PostApproverActionMultiple")',
+            type: 'POST',
+            cache: false,
+            async: false,
+            dataType: "json",
+            data: { 'info': Info, 'CurrentUserID': $("#hfEmployeeID").val(), 'ApproverAction': SubmitStatus, 'Comments': $("#Comment").val() },
+            success: function (result) {
+                console.log(result);
+                if (result.Success) {
+                    //alert('success');
+                    $("#ConfirmUpdate").modal('toggle');
+                    $("#divLoading").css("display", "none");
+                    $(".Success-body .well").html('Your Work Schedule Application has been successfully ' + SubmitStatus + '.' + result.ReturnMessage);
+                    $("#SuccessSubmit").modal();
+                } else {
+                    //alert('error');
+                    $("#ConfirmUpdate").modal('toggle');
+                    $("#divLoading").css("display", "none");
+                    if (result.ReturnMessage != "") {
+                        alert(result.ErrorMsg + "<div> Below are success approved Work Schedule Application. </div>" + result.ReturnMessage);
+                    } else {
+                        alert(result.ErrorMsg);
+                    }
+                }
+
+            },
+            error: function (x, y, z) {
+                $("#ConfirmUpdate").modal('toggle');
+                $("#divLoading").css("display", "none");
+                console.log(x + '\n' + y + '\n' + z);
+            }
+        });
+    }
+
+    function SaveForm(_Status) {
+        $("#divLoading").css("display", "block");
+        SubmitStatus = _Status;
+        var myVar = setTimeout(SubmitFormAction, 3000);
+    }
+
+    function RedirectTo(_Action) {
+        window.location.href = '/_layouts/15/essv2/MSS/WorkScheduleInTray';    
+    }
+</script>

@@ -1,0 +1,311 @@
+﻿@using Asset.Models
+@model LiabilityFormViewModel
+@{
+    String Title = "Kemaskini Tanggungan/Ansuran Bulanan Atas Hutang/Pinjaman Lain";
+    Liability EmployeeLiability = Model.EmployeeLiability;
+    Liability CoupleLiability = Model.CoupleLiability;
+
+    bool Readonly = ViewBag.Readonly;
+}
+
+<style>
+    .MonthlyLiabilityForm_TableHeaderRow1 {
+        background-color: lawngreen;
+    }
+
+    .MonthlyLiabilityForm_TableHeaderRow2 {
+        background-color: green;
+        color: white;
+    }
+</style>
+
+<form id="MonthlyLiabilityForm">
+    <div class="modal fade" id="MonthlyLiability_Modal" tabindex="-1" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                    <h4 id="MonthlyLiabilityForm_Title" class="modal-title">@Title</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="form-body">
+                        <div class="form-horizontal">
+                            <div class="table-toolbar">
+                                <table id="tblMonthlyEmployeeLiability1" class="table table-striped table-bordered table-hover table-full-width">
+                                    <thead>
+                                        <tr>
+                                            <th colspan="5" class="MonthlyLiabilityForm_TableHeaderRow1">Pekerja</th>
+                                        </tr>
+                                        <tr>
+                                            <th class="MonthlyLiabilityForm_TableHeaderRow2">
+                                            </th>
+                                            <th class="MonthlyLiabilityForm_TableHeaderRow2">
+                                                Pinjaman Koperasi
+                                            </th>
+                                            <th class="MonthlyLiabilityForm_TableHeaderRow2">
+                                                Lain-Lain
+                                            </th>
+                                            <th class="MonthlyLiabilityForm_TableHeaderRow2">
+                                                Jumlah
+                                            </th>
+                                            <th class="MonthlyLiabilityForm_TableHeaderRow2"></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>
+                                                Jumlah (RM):
+                                            </td>
+                                            <td>
+                                                <input type="hidden" name="EmployeeLiability.EmployeeID" value="@ViewBag.EmployeeID" />
+                                                <input type="hidden" name="EmployeeLiability.RelationshipTypeCode" value="EM" />
+                                                <input type="text" class="form-control currency select-all-focus Koop" placeholder="0.00"
+                                                       name="EmployeeLiability.KoopLoanAmount"
+                                                       value="@(Model.EmployeeLiability == null ? "0.00" : Model.EmployeeLiability.KoopLoanAmount)" />
+                                            </td>
+                                            <td>
+                                                <input type="text" class="form-control currency select-all-focus Others" placeholder="0.00"
+                                                       name="EmployeeLiability.OthersAmount"
+                                                       value="@(Model.EmployeeLiability == null ? "0.00" : Model.EmployeeLiability.OthersAmount)" />
+                                            </td>
+                                            <td>
+                                                <input type="text" class="form-control Total" placeholder="0.00" readonly="readonly"
+                                                       name="EmployeeLiability.TotalAmount"
+                                                       value="@(Model.EmployeeLiability == null ? "0.00" : Model.EmployeeLiability.TotalAmount)" />
+                                            </td>
+                                            <td>
+                                                <button type="button" class="btn btn-default blue MonthlyLiabilityForm_ButtonCalculateRow">Kira</button>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                Baki (RM):
+                                            </td>
+                                            <td>
+                                                <input type="text" class="form-control currency select-all-focus Koop" placeholder="0.00"
+                                                       name="EmployeeLiability.KoopLoanBalance"
+                                                       value="@(Model.EmployeeLiability == null ? "0.00" : Model.EmployeeLiability.KoopLoanBalance)" />
+                                            </td>
+                                            <td>
+                                                <input type="text" class="form-control currency select-all-focus Others" placeholder="0.00"
+                                                       name="EmployeeLiability.OthersBalance"
+                                                       value="@(Model.EmployeeLiability == null ? "0.00" : Model.EmployeeLiability.OthersBalance)" />
+                                            </td>
+                                            <td>
+                                                <input type="text" class="form-control Total" placeholder="0.00" readonly="readonly"
+                                                       name="EmployeeLiability.TotalBalance"
+                                                       value="@(Model.EmployeeLiability == null ? "0.00" : Model.EmployeeLiability.TotalBalance)" />
+                                            </td>
+                                            <td>
+                                                <button type="button" class="btn btn-default blue MonthlyLiabilityForm_ButtonCalculateRow">Kira</button>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                Ansuran Bulanan (RM):
+                                            </td>
+                                            <td>
+                                                <input type="text" class="form-control currency select-all-focus Koop" placeholder="0.00"
+                                                       name="EmployeeLiability.KoopLoanMonthly"
+                                                       value="@(Model.EmployeeLiability == null ? "0.00" : Model.EmployeeLiability.KoopLoanMonthly)" />
+                                            </td>
+                                            <td>
+                                                <input type="text" class="form-control currency select-all-focus Others" placeholder="0.00"
+                                                       name="EmployeeLiability.OthersMonthly"
+                                                       value="@(Model.EmployeeLiability == null ? "0.00" : Model.EmployeeLiability.OthersMonthly)" />
+                                            </td>
+                                            <td>
+                                                <input type="text" class="form-control Total" placeholder="0.00" readonly="readonly"
+                                                       name="EmployeeLiability.TotalMonthly"
+                                                       value="@(Model.EmployeeLiability == null ? "0.00" : Model.EmployeeLiability.TotalMonthly)" />
+                                            </td>
+                                            <td>
+                                                <button type="button" class="btn btn-default blue MonthlyLiabilityForm_ButtonCalculateRow">Kira</button>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <div class="form-horizontal">
+                            <div class="table-toolbar">
+                                <table id="tblMonthlyEmployeeLiability2" class="table table-striped table-bordered table-hover table-full-width">
+                                    <thead>
+                                        <tr>
+                                            <th colspan="5" class="MonthlyLiabilityForm_TableHeaderRow1">Suami / Isteri</th>
+                                        </tr>
+                                        <tr>
+                                            <th class="MonthlyLiabilityForm_TableHeaderRow2">
+                                            </th>
+                                            <th class="MonthlyLiabilityForm_TableHeaderRow2">
+                                                Pinjaman Koperasi
+                                            </th>
+                                            <th class="MonthlyLiabilityForm_TableHeaderRow2">
+                                                Lain-Lain
+                                            </th>
+                                            <th class="MonthlyLiabilityForm_TableHeaderRow2">
+                                                Jumlah
+                                            </th>
+                                            <th class="MonthlyLiabilityForm_TableHeaderRow2"></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>
+                                                Jumlah (RM):
+                                            </td>
+                                            <td>
+                                                <input type="hidden" name="CoupleLiability.EmployeeID" value="@ViewBag.EmployeeID" />
+                                                <input type="hidden" name="CoupleLiability.RelationshipTypeCode" value="S1" />
+                                                <input type="text" class="form-control currency select-all-focus Koop" placeholder="0.00"
+                                                       name="CoupleLiability.KoopLoanAmount"
+                                                       value="@(Model.CoupleLiability == null ? "0.00" : Model.CoupleLiability.KoopLoanAmount)" />
+                                            </td>
+                                            <td>
+                                                <input type="text" class="form-control currency select-all-focus Others" placeholder="0.00"
+                                                       name="CoupleLiability.OthersAmount"
+                                                       value="@(Model.CoupleLiability == null ? "0.00" : Model.CoupleLiability.OthersAmount)" />
+                                            </td>
+                                            <td>
+                                                <input type="text" class="form-control Total" placeholder="0.00" readonly="readonly"
+                                                       name="CoupleLiability.TotalAmount"
+                                                       value="@(Model.CoupleLiability == null ? "0.00" : Model.CoupleLiability.TotalAmount)" />
+                                            </td>
+                                            <td>
+                                                <button type="button" class="btn btn-default blue MonthlyLiabilityForm_ButtonCalculateRow">Kira</button>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                Baki (RM):
+                                            </td>
+                                            <td>
+                                                <input type="text" class="form-control currency select-all-focus Koop" placeholder="0.00"
+                                                       name="CoupleLiability.KoopLoanBalance"
+                                                       value="@(Model.CoupleLiability == null ? "0.00" : Model.CoupleLiability.KoopLoanBalance)" />
+                                            </td>
+                                            <td>
+                                                <input type="text" class="form-control currency select-all-focus Others" placeholder="0.00"
+                                                       name="CoupleLiability.OthersBalance"
+                                                       value="@(Model.CoupleLiability == null ? "0.00" : Model.CoupleLiability.OthersBalance)" />
+                                            </td>
+                                            <td>
+                                                <input type="text" class="form-control Total" placeholder="0.00" readonly="readonly"
+                                                       name="CoupleLiability.TotalBalance"
+                                                       value="@(Model.CoupleLiability == null ? "0.00" : Model.CoupleLiability.TotalBalance)" />
+                                            </td>
+                                            <td>
+                                                <button type="button" class="btn btn-default blue MonthlyLiabilityForm_ButtonCalculateRow">Kira</button>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                Ansuran Bulanan (RM):
+                                            </td>
+                                            <td>
+                                                <input type="text" class="form-control currency select-all-focus Koop" placeholder="0.00"
+                                                       name="CoupleLiability.KoopLoanMonthly"
+                                                       value="@(Model.CoupleLiability == null ? "0.00" : Model.CoupleLiability.KoopLoanMonthly)" />
+                                            </td>
+                                            <td>
+                                                <input type="text" class="form-control currency select-all-focus Others" placeholder="0.00"
+                                                       name="CoupleLiability.OthersMonthly"
+                                                       value="@(Model.CoupleLiability == null ? "0.00" : Model.CoupleLiability.OthersMonthly)" />
+                                            </td>
+                                            <td>
+                                                <input type="text" class="form-control Total" placeholder="0.00" readonly="readonly"
+                                                       name="CoupleLiability.TotalMonthly"
+                                                       value="@(Model.CoupleLiability == null ? "0.00" : Model.CoupleLiability.TotalMonthly)" />
+                                            </td>
+                                            <td>
+                                                <button type="button" class="btn btn-default blue MonthlyLiabilityForm_ButtonCalculateRow">Kira</button>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    @if (!Readonly)
+                    {
+                        <button type="button" id="MonthlyLiabilityForm_btnSave" class="btn default blue">
+                            Simpan
+                        </button>
+                    }
+
+                    <button type="button" id="MonthlyLiabilityForm_btnClose" class="btn default" data-dismiss="modal">
+                        Tutup
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+<script>
+    var isMonthlyLiabilityFormUpdated = false;
+
+    $(function () {
+        isMonthlyLiabilityFormUpdated = false;
+        $('#MonthlyLiability_Modal').on('hidden.bs.modal', function () {
+            MonthlyLiability_RefreshForm(false);
+        });
+        $('#MonthlyLiabilityForm_btnSave').on('click', MonthlyLiabilityForm_Save);
+        $('.MonthlyLiabilityForm_ButtonCalculateRow').on('click', function () {
+            MonthlyLiabilityForm_CalculateRow(this);
+        });
+
+        InitializeCommonControls();
+    });
+
+    function MonthlyLiabilityForm_CalculateRow(btn) {
+        var row = $(btn).closest('tr');
+        var Koop = row.find('.Koop').val();
+        var Others = row.find('.Others').val();
+
+        var TotalInput = row.find('.Total');
+        var Total = parseFloat(Koop.replace(/,/g, "")) + parseFloat(Others.replace(/,/g, ""));
+        TotalInput.val(Total.toLocaleString(undefined, { minimumFractionDigits: 2 }));
+    }
+
+    function MonthlyLiabilityForm_Save() {
+        $('.MonthlyLiabilityForm_ButtonCalculateRow').each(function (index, value) {
+            MonthlyLiabilityForm_CalculateRow(this);
+        });
+
+        ShowConfirmationDialog({
+            message: 'Kemaskini maklumat Tanggungan/Ansuran Bulanan Atas Hutang/Pinjaman?',
+            positiveCallback: function () {
+                var data = $('#MonthlyLiabilityForm').serializeArray();
+                $.each(data, function (i, val) { val.value = val.value.replace(/,/g, ""); });
+
+                HideConfirmationDialog();
+                ShowLoadingScreen();
+
+                $.post('@Url.Action("_MonthlyLiabilityForm_Save", "Asset")', data, function (result) {
+                    HideLoadingScreen();
+                    if (result.IsSuccess) {
+                        isMonthlyLiabilityFormUpdated = true;
+                        ShowDialog({
+                            message: "Maklumat Tanggungan/Ansuran Bulanan Atas Hutang/Pinjaman telah berjaya dikemaskini.",
+                            okCallback: function () {
+                                $('#MonthlyLiability_Modal').modal('hide');
+                            }
+                        });
+                    }
+                    else {
+                        ShowDialog({
+                            title: "Gagal",
+                            message: "Kemaskini maklumat Tanggungan/Ansuran Bulanan Atas Hutang/Pinjaman telah gagal. <br />" + result.ErrorMessage,
+                            okCallback: function () {
+                                HideDialog();
+                            }
+                        });
+                    }
+                });
+            }
+        });
+    }
+</script>

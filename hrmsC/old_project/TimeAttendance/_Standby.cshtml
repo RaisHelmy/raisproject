@@ -1,0 +1,1065 @@
+﻿@using System.Globalization
+
+@model TimeAttendance.Models.StandByVM
+
+@{
+	string Mode = ViewBag.Mode;
+	if (Mode == "Print")
+	{
+		Layout = "~/Views/Shared/_Layout.cshtml";
+	}
+	else
+	{
+		Layout = null;
+	}
+
+	ViewBag.Title = "";
+	DateTime Today = DateTime.Now;
+	Decimal Year = Convert.ToDecimal(Today.ToString("yyyy")) - 1;
+
+	string CanEdit = "0";
+	if (RoleMaintenance.RoleService.IsInRole("Time Attendance", "StandByStaff"))
+	{
+		CanEdit = "1";
+	}
+}
+
+@using (Html.BeginForm("StandbyList", "TimeAttendance", FormMethod.Post))
+{
+	<div id="StandByContent">
+
+		@if (Mode == "Insert")
+		{
+
+			<div class="modal-header">
+				<div class="row">
+					<div class="col-md-12">
+						<h1 class="page-title">
+							Add New Standby Planning <span style="padding-left:20px;"><small></small></span>
+						</h1>
+					</div>
+				</div>
+			</div>
+			<div class="modal-body">
+				<div class="row">
+					<div class="col-md-12">
+						<div class="portlet box blue">
+							<div class="mini-triangle"><img src="/_layouts/15/TNBESS/Assets/img/menu-red-triangle.png" /></div>
+							<div class="portlet-title">
+								<div class="caption">
+									<i class="fa fa-reorder"></i>Standby Planning Details
+								</div>
+							</div>
+							<div class="portlet-body form">
+
+								<div class="form-body">
+
+									<div class="row">
+										<div class="col-md-12">
+											<div class="form-horizontal">
+												<div class="form-group">
+													<label class="col-md-2 control-label">Year *</label>
+													<div class="col-md-10 form-control-static">
+														<select class="form-control" id="Year" name="StandByYear" onchange="setYearDateRange()">
+															<option value="@Year">@Year @{Year = Year + 1;}</option>
+															<option value="@Year">@Year @{Year = Year + 1;}</option>
+															<option value="@Year">@Year @{Year = Year + 1;}</option>
+															<option value="@Year">@Year @{Year = Year + 1;}</option>
+															<option value="@Year">@Year</option>
+														</select>
+													</div>
+												</div>
+											</div>
+										</div>
+									</div>
+									<div class="row">
+										<div class="col-md-12">
+											<div class="form-horizontal">
+												<div class="form-group">
+													<label class="col-md-2 control-label">Employee *</label>
+													<div class="col-md-10 form-control-static">
+														@Html.Partial("StandByPeoplePicker", new Tuple<int?, TimeAttendance.Models.StandByVM, string, string>(null, null, "Employee", ""))
+														@Html.Action("TSPeoplePickerIndex", "TimeAttendance", new { CurrEmpID = ViewBag.EmployeeID, SearchType = "" })
+													</div>
+												</div>
+											</div>
+										</div>
+									</div>
+									<div class="row">
+										<div class="col-md-12">
+											<div class="form-horizontal">
+												<div class="form-group">
+													<label class="col-md-2 control-label">Description</label>
+													<div class="col-md-10 form-control-static">
+
+														@Html.TextAreaFor(m => m.Description, new { @class = "form-control Description", @name = "Description", rows = "5", @maxlength = "1000" })
+														@*<textarea class="form-control" style="width:100%;" name="Description"></textarea>*@
+													</div>
+												</div>
+											</div>
+										</div>
+									</div>
+									<div class="row">
+										<div class="col-md-12">
+											<div class="form-horizontal">
+												<div class="form-group">
+													<label class="col-md-2 control-label">Charge Code *</label>
+													<div class="col-md-10 form-control-static">
+														@Html.Partial("TSChargeCodePicker", new Tuple<int?, TimeAttendance.Models.TimesheetAttendanceVM, string>(null, null, ""))
+														@Html.Action("TSChargeCodeIndex", "TimeAttendance", new { CurrEmpID = ViewBag.EmployeeID, SearchType = "" })
+													</div>
+												</div>
+											</div>
+										</div>
+									</div>
+									<div class="row">
+										<div class="col-md-6">
+											<div class="form-horizontal">
+												<div class="form-group">
+													<label class="col-md-4 control-label">Date *</label>
+													<div class="col-md-8 form-control-static">
+														<div class="datepicker" id="MultiDatePicker" onclick="setSeletedDates();"></div>
+													</div>
+												</div>
+											</div>
+										</div>
+									</div>
+									<div class="row">
+										<div class="col-md-6">
+											<div class="form-horizontal">
+												<div class="form-group">
+													<label class="control-label col-md-4">Date Ranges</label>
+													<div class="input-group input-daterange">
+														<input type="text" class="form-control" name="dateFrom">
+														<div class="input-group-addon">to</div>
+														<input type="text" class="form-control" name="dateTo">
+													</div>
+													@*<div class="col-md-8 input-group">
+															<div class="" data-date-format="mm/dd/yyyy">
+																<input type="text" class="form-control date-picker" name="from">
+															</div>
+															<span class="input-group-addon">
+																to
+															</span>
+															<div class="" data-date-format="mm/dd/yyyy">
+																<input type="text" class="form-control date-picker" name="to">
+															</div>
+														</div>*@
+												</div>
+											</div>
+										</div>
+									</div>
+									@*<div class="row">
+											<div class="col-md-6">
+												<div class="form-horizontal">
+													<div class="form-group">
+														<label class="col-md-4 control-label">Start Date</label>
+														<div class="col-md-8 form-control-static">
+															<div class="date date-picker input-group eDate" data-date-format="dd MM yyyy">
+																<input type="text" class="form-control Date" name="StartDate" />
+																<span class="input-group-btn">
+																	<button type="button" class="btn default"><i class="fa fa-calendar"></i></button>
+																</span>
+															</div>
+														</div>
+													</div>
+												</div>
+											</div>
+										</div>
+										<div class="row">
+											<div class="col-md-6">
+												<div class="form-horizontal">
+													<div class="form-group">
+														<label class="col-md-4 control-label">End Date</label>
+														<div class="col-md-8 form-control-static">
+															<div class="date date-picker input-group eDate" data-date-format="dd MM yyyy">
+																<input type="text" class="form-control Date" name="EndDate" />
+																<span class="input-group-btn">
+																	<button type="button" class="btn default"><i class="fa fa-calendar"></i></button>
+																</span>
+															</div>
+														</div>
+													</div>
+												</div>
+											</div>
+										</div>*@
+
+									<div class="row">&nbsp;</div>
+
+									<input type="hidden" name="StandByDate" />
+									<div class="row">
+										<div class="col-md-6">
+											<div class="form-horizontal">
+												<div class="form-group">
+													<label class="col-md-4 control-label">Selected Date(s):</label>
+												</div>
+											</div>
+										</div>
+									</div>
+
+									<div class="row">
+										<div class="col-md-12">
+											<div class="table-toolbar">
+												<table class="table table-striped table-bordered table-hover table-full-width" id="tblStandbySelectedDate">
+													<thead>
+														<tr>
+															<th scope="col" width="5%">No.</th>
+															<th scope="col">Date</th>
+															<th scope="col"></th>
+														</tr>
+													</thead>
+													<tbody>
+														<tr>
+															<td colspan="3">
+																<div>
+																	No Record Available.
+																</div>
+															</td>
+														</tr>
+													</tbody>
+												</table>
+											</div>
+										</div>
+									</div>
+
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+
+			</div>
+			<div class="modal-footer">
+
+				<div class="row">
+
+					<div class="col-md-12">
+						<div class="text-left">
+							<button type="button" class="btn default green" onclick="InsertStandBy();">Save</button>
+							<button type="button" class="btn default" data-dismiss="modal">Close</button>
+						</div>
+					</div>
+				</div>
+
+			</div>
+
+		}
+		else if (Mode == "Edit")
+		{
+			<div class="modal-header">
+				<div class="row">
+					<div class="col-md-12">
+						<h1 class="page-title">
+							Edit Standby Planning <span style="padding-left:20px;"><small></small></span>
+						</h1>
+					</div>
+				</div>
+			</div>
+			<div class="modal-body">
+				<div class="row">
+					<div class="col-md-12">
+						<div class="portlet box blue">
+							<div class="mini-triangle"><img src="/_layouts/15/TNBESS/Assets/img/menu-red-triangle.png" /></div>
+							<div class="portlet-title">
+								<div class="caption">
+									<i class="fa fa-reorder"></i>Standby Planning Details
+								</div>
+							</div>
+							<div class="portlet-body form">
+
+								<div class="form-body">
+
+									<div class="row">
+										<div class="col-md-12">
+											<div class="form-horizontal">
+												<div class="form-group">
+													<label class="col-md-2 control-label">Year *</label>
+													<div class="col-md-10 form-control-static">
+														<select class="form-control" id="Year" name="StandByYear" value="@Model.StandByYear" disabled>
+															<option value="@Year" @(Year.ToString() == Model.StandByYear.ToString() ? "selected='selected'" : "")>@Year @{Year = Year + 1;}</option>
+															<option value="@Year" @(Year.ToString() == Model.StandByYear.ToString() ? "selected='selected'" : "")>@Year @{Year = Year + 1;}</option>
+															<option value="@Year" @(Year.ToString() == Model.StandByYear.ToString() ? "selected='selected'" : "")>@Year @{Year = Year + 1;}</option>
+															<option value="@Year" @(Year.ToString() == Model.StandByYear.ToString() ? "selected='selected'" : "")>@Year @{Year = Year + 1;}</option>
+															<option value="@Year" @(Year.ToString() == Model.StandByYear.ToString() ? "selected='selected'" : "")>@Year</option>
+														</select>
+													</div>
+												</div>
+											</div>
+										</div>
+									</div>
+									<div class="row">
+										<div class="col-md-12">
+											<div class="form-horizontal">
+												<div class="form-group">
+													<label class="col-md-2 control-label">Employee *</label>
+													<div class="col-md-10 form-control-static">
+														@Html.Partial("StandByPeoplePicker", new Tuple<int?, TimeAttendance.Models.StandByVM, string, string>(null, Model, "Employee", ""))
+														@Html.Action("TSPeoplePickerIndex", "TimeAttendance", new { CurrEmpID = ViewBag.EmployeeID, SearchType = "" })
+													</div>
+												</div>
+											</div>
+										</div>
+									</div>
+									<div class="row">
+										<div class="col-md-12">
+											<div class="form-horizontal">
+												<div class="form-group">
+													<label class="col-md-2 control-label">Description</label>
+													<div class="col-md-10 form-control-static">
+
+														@Html.TextAreaFor(m => m.Description, new { @class = "form-control Description", @name = "Description", rows = "5", @maxlength = "1000" })
+														@*<textarea class="form-control" style="width:100%;" name="Description" value="@Model.Description"></textarea>*@
+													</div>
+												</div>
+											</div>
+										</div>
+									</div>
+									<div class="row">
+										<div class="col-md-12">
+											<div class="form-horizontal">
+												<div class="form-group">
+													<label class="col-md-2 control-label">Charge Code *</label>
+													<div class="col-md-10 form-control-static">
+														@Html.Partial("TSChargeCodePicker", new Tuple<int?, TimeAttendance.Models.TimesheetAttendanceVM, string>(null, new TimeAttendance.Models.TimesheetAttendanceVM() { ChargeType = Model.ChargeType, ChargeCode = Model.ChargeCode, ChargeCodeDesc = Model.ChargeCodeDesc }, ""))
+														@Html.Action("TSChargeCodeIndex", "TimeAttendance", new { CurrEmpID = ViewBag.EmployeeID, SearchType = "" })
+													</div>
+												</div>
+											</div>
+										</div>
+									</div>
+									<div class="row">
+										<div class="col-md-6">
+											<div class="form-horizontal">
+												<div class="form-group">
+													<label class="col-md-4 control-label">Date *</label>
+													<div class="col-md-8 form-control-static">
+														<div class="datepicker" id="MultiDatePicker" onclick="setSeletedDates();"></div>
+													</div>
+												</div>
+											</div>
+										</div>
+									</div>
+									<div class="row">
+										<div class="col-md-6">
+											<div class="form-horizontal">
+												<div class="form-group">
+													<label class="control-label col-md-4">Date Ranges</label>
+													<div class="input-group input-daterange">
+														<input type="text" class="form-control" name="dateFrom">
+														<div class="input-group-addon">to</div>
+														<input type="text" class="form-control" name="dateTo">
+													</div>
+													@*<div class="col-md-8 input-group">
+							<div class="" data-date-format="mm/dd/yyyy">
+								<input type="text" class="form-control date-picker" name="from">
+							</div>
+							<span class="input-group-addon">
+								to
+							</span>
+							<div class="" data-date-format="mm/dd/yyyy">
+								<input type="text" class="form-control date-picker" name="to">
+							</div>
+						</div>*@
+												</div>
+											</div>
+										</div>
+									</div>
+									@*<div class="row">
+			<div class="col-md-6">
+				<div class="form-horizontal">
+					<div class="form-group">
+						<label class="col-md-4 control-label">Start Date</label>
+						<div class="col-md-8 form-control-static">
+							<div class="date date-picker input-group eDate" data-date-format="dd MM yyyy">
+								<input type="text" class="form-control Date" name="StartDate" />
+								<span class="input-group-btn">
+									<button type="button" class="btn default"><i class="fa fa-calendar"></i></button>
+								</span>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="row">
+			<div class="col-md-6">
+				<div class="form-horizontal">
+					<div class="form-group">
+						<label class="col-md-4 control-label">End Date</label>
+						<div class="col-md-8 form-control-static">
+							<div class="date date-picker input-group eDate" data-date-format="dd MM yyyy">
+								<input type="text" class="form-control Date" name="EndDate" />
+								<span class="input-group-btn">
+									<button type="button" class="btn default"><i class="fa fa-calendar"></i></button>
+								</span>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>*@
+
+									<div class="row">&nbsp;</div>
+
+									<input type="hidden" name="StandByDate" />
+									<input type="hidden" name="StandByID" value="@Model.StandByID" />
+									<div class="row">
+										<div class="col-md-6">
+											<div class="form-horizontal">
+												<div class="form-group">
+													<label class="col-md-4 control-label">Selected Date(s):</label>
+												</div>
+											</div>
+										</div>
+									</div>
+
+									<div class="row">
+										<div class="col-md-12">
+											<div class="table-toolbar">
+												<table class="table table-striped table-bordered table-hover table-full-width" id="tblStandbySelectedDate">
+													<thead>
+														<tr>
+															<th scope="col" width="5%">No.</th>
+															<th scope="col">Date</th>
+															<th scope="col"></th>
+														</tr>
+													</thead>
+													<tbody>
+														<tr>
+															<td colspan="3">
+																<div>
+																	No Record Available.
+																</div>
+															</td>
+														</tr>
+													</tbody>
+												</table>
+											</div>
+										</div>
+									</div>
+
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+
+			</div>
+			<div class="modal-footer">
+
+				<div class="row">
+
+					<div class="col-md-12">
+						<div class="text-left">
+							<button type="button" class="btn default green" onclick="UpdateStandBy();">Update</button>
+							<button type="button" class="btn default green" onclick="setToInactive();">Set To Inactive</button>
+							<button type="button" class="btn default" data-dismiss="modal">Close</button>
+						</div>
+					</div>
+				</div>
+
+			</div>
+		}
+		else
+		{
+
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+				<div class="row">
+					<div class="col-md-12">
+						<h1 class="page-title">
+							View Standby Planning <span style="padding-left:20px;"><small></small></span>
+						</h1>
+					</div>
+				</div>
+			</div>
+			<div class="modal-body">
+				<div class="row">
+					<div class="col-md-12">
+						<div class="portlet box blue">
+							<div class="mini-triangle"><img src="/_layouts/15/TNBESS/Assets/img/menu-red-triangle.png" /></div>
+							<div class="portlet-title">
+								<div class="caption">
+									<i class="fa fa-reorder"></i>Standby Planning Details
+								</div>
+							</div>
+							<div class="portlet-body form">
+
+								<div class="form-body">
+
+									<div class="row">
+										<div class="col-md-12">
+											<div class="form-horizontal">
+												<div class="form-group">
+													<label class="col-md-2 control-label">Year</label>
+													<div class="col-md-10 form-control-static">
+														@Model.StandByYear
+													</div>
+												</div>
+											</div>
+										</div>
+									</div>
+									<div class="row">
+										<div class="col-md-12">
+											<div class="form-horizontal">
+												<div class="form-group">
+													<label class="col-md-2 control-label">Employee</label>
+													<div class="col-md-8 form-control-static">
+														@Model.EmployeeCode - @Model.EmployeeName
+													</div>
+												</div>
+											</div>
+										</div>
+									</div>
+									<div class="row">
+										<div class="col-md-12">
+											<div class="form-horizontal">
+												<div class="form-group">
+													<label class="col-md-2 control-label">Description</label>
+													<div class="col-md-10 form-control-static">
+
+														@Html.TextAreaFor(m => m.Description, new { @class = "form-control Description", @name = "Description", rows = "5", @maxlength = "1000", @readonly = "readonly" })
+														@*<textarea class="form-control" style="width:100%;" name="Description" value="@Model.Description" readonly></textarea>*@
+													</div>
+												</div>
+											</div>
+										</div>
+									</div>
+									<div class="row">
+										<div class="col-md-12">
+											<div class="form-horizontal">
+												<div class="form-group">
+													<label class="col-md-2 control-label">Charge Code</label>
+													<div class="col-md-8 form-control-static">
+														@Model.ChargeCode - @Model.ChargeCodeDesc
+													</div>
+												</div>
+											</div>
+										</div>
+									</div>
+
+									<div class="row">
+										<div class="col-md-6">
+											<div class="form-horizontal">
+												<div class="form-group">
+													<label class="col-md-4 control-label">Selected Date(s):</label>
+												</div>
+											</div>
+										</div>
+									</div>
+
+									<div class="row">
+										<div class="col-md-12">
+											<div class="table-toolbar">
+												<table class="table table-striped table-bordered table-hover" id="tblStandbySelectedDate">
+													<thead>
+														<tr>
+															<th scope="col">No.</th>
+															<th scope="col">Date</th>
+														</tr>
+													</thead>
+													<tbody>
+														@{
+															if (@Model.StandByDate != "")
+															{
+																int count = 1;
+																string[] arrDate = Model.StandByDate.Split(',');
+																List<DateTime> ListDate = new List<DateTime>();
+																foreach (string Date in arrDate)
+																{
+																	if (!string.IsNullOrEmpty(Date))
+																	{
+																		DateTime dt = new DateTime();
+																		if (DateTime.TryParseExact(Date.Trim(), "dd/MM/yyyy", CultureInfo.InvariantCulture, DateTimeStyles.None, out dt))
+																		{
+																			ListDate.Add(dt);
+																		}
+																	}
+																}
+																ListDate.Sort((x, y) => x.CompareTo(y));
+																foreach (DateTime DT in ListDate)
+																{
+																	<tr>
+																		<td width="5%">
+																			@count.
+																		</td>
+																		<td>
+																			@DT.ToString("dd/MM/yyyy")
+																		</td>
+																	</tr>
+																	count = count + 1;
+																}
+																@*foreach (string Date in arrDate)
+											{
+									<tr>
+										<td width="5%">
+											@count.
+										</td>
+										<td>
+											@Date
+										</td>
+									</tr>
+													count = count + 1;
+											}*@
+
+															}
+														}
+
+													</tbody>
+												</table>
+											</div>
+										</div>
+									</div>
+
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+
+			</div>
+			<div class="modal-footer">
+				@if (Mode != "Print")
+				{
+					<div class="row">
+						<div class="col-md-12">
+							<div class="text-left">
+								@if (Mode != "ReadOnly")
+								{
+									if (Model.Status == "1" && @CanEdit == "1")
+									{
+										<button type="button" class="btn default green" onclick="editStandBy('@Model.StandByID');">Edit</button>
+									}
+									<button type="button" class="btn default green" onclick="PrintPage();">Print</button>
+								}
+
+								<button type="button" class="btn default" data-dismiss="modal">Close</button>
+							</div>
+						</div>
+					</div>
+				}
+				<br />
+				<div class="row">
+					<div class="col-md-12">
+						<div class="text-left">
+							Created at @Model.CreatedDate by @Model.CreatedByName
+						</div>
+					</div>
+				</div>
+				<div class="row">
+					<div class="col-md-12">
+						<div class="text-left">
+							Last modified at @Model.ModifiedDate by @Model.ModifiedByName
+						</div>
+					</div>
+				</div>
+			</div>
+
+		}
+
+	</div>
+}
+
+<!-- Success Message -->
+<div class="modal fade" id="SuccessSubmit" tabindex="-1" role="basic" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header Success-header">
+				@*<button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>*@
+				<h4 class="Success-title">Action Successfully Completed</h4>
+			</div>
+			<div class="modal-body Success-body">
+				<div class="well" id="SuccessMessage">
+					Standby has been successfully submitted.
+				</div>
+			</div>
+			<div class="modal-footer Success-footer">
+				<a class="btn default blue" id="btnOK">
+					<i class="fa fa-check"></i>
+					OK
+				</a>
+			</div>
+		</div>
+	</div>
+</div>
+
+
+
+<script>
+
+    function updateDates(ArrDates)
+    {
+        var datesArr = [new Date(2017, 11, 02), new Date(2017, 11, 03)];
+        $('#MultiDatePicker').datepicker('setDates', ArrDates);
+        setSeletedDates();
+    }
+
+    function setDates(ArrDates)
+    {
+        var datesArr = [new Date(2017, 11, 02), new Date(2017, 11, 03)];
+        $('#MultiDatePicker').datepicker('setDates', ArrDates);
+        setHiddenInputSelectedDate();
+    }
+
+    function clearDates()
+    {
+        $('#MultiDatePicker').datepicker('clearDates');
+    }
+
+    function setSeletedDates()
+    {
+        $("#tblStandbySelectedDate").find("tr:gt(0)").remove();
+
+        var selectedDates = $('#MultiDatePicker').datepicker('getDates');
+
+        if (selectedDates.length != 0)
+        {
+            if (selectedDates.length > 1)
+            {
+                selectedDates.sort(function (a, b) {
+                    return a - b;
+                });
+                //var arrDates = selectedDates.split(',');
+                var count = 0;
+                selectedDates.forEach(function (current_value) {
+                    var date = moment(current_value).format('DD/MM/YYYY');
+                    var markup = "<tr> <td>" + (count + 1) + ".</td><td>" + date + "</td><td><a onclick='RemoveDate(event);'>Remove</a></td></tr>";
+                    $("#tblStandbySelectedDate tbody").append(markup);
+                    count = count + 1;
+                });
+            } else {
+                var date = moment(selectedDates[0]).format('DD/MM/YYYY');
+                var markup = "<tr> <td>" + 1. + ".</td><td>" + date + "</td><td><a onclick='RemoveDate(event);'>Remove</a></td></tr>";
+                $("#tblStandbySelectedDate tbody").append(markup);
+            }
+        }
+        setHiddenInputSelectedDate();
+    }
+
+    function RemoveDate(event)
+    {
+        var Dates = [];
+        var row = $(event.target).closest("tr");
+        row.remove();
+        $("#tblStandbySelectedDate tr").each(function (i, value) {
+            var $row = $(this).closest("tr");
+            var strDate = $row.children('td:eq(1)').text().split('/');
+            var date = new Date(parseInt(strDate[2]), parseInt(strDate[1]) - 1, parseInt(strDate[0]));
+            Dates.push(date);
+        });
+        updateDates(Dates);
+    }
+
+    function setDateRange()
+    {
+        var DateFrom = $('input[name="dateFrom"]').datepicker("getDate");
+        var DateTo = $('input[name="dateTo"]').datepicker("getDate");
+        var between = [];
+        var DateToUpdate = [];
+        if (DateFrom != '' && DateFrom != null && DateTo != '' && DateTo != null)
+        {
+            var currentDate = new Date(DateFrom.getTime());
+            while (currentDate <= DateTo) {
+                between.push(new Date(currentDate));
+                currentDate.setDate(currentDate.getDate() + 1);
+            }
+
+            $("#tblStandbySelectedDate tr").each(function (i, value) {
+                var $row = $(this).closest("tr");
+                var strDate = $row.children('td:eq(1)').text().split('/');
+                var date = new Date(parseInt(strDate[2]), parseInt(strDate[1]) - 1, parseInt(strDate[0]));
+                if (date != 'Invalid Date') {
+                    if (!isInSelectedDateRange(between, date)) {
+                        between.push(date);
+                    }
+                }
+            });
+            clearDates();
+            updateDates(between);
+        }
+
+    }
+
+    function setHiddenInputSelectedDate()
+    {
+        var selectedDates = "";
+        $("#tblStandbySelectedDate tr").each(function (i, value) {
+            var $row = $(this).closest("tr");
+            var strDate = $row.children('td:eq(1)').text();
+            if (strDate != '')
+            {
+                arrDate = strDate.split('/');
+                var strMomentDate = arrDate[2] + arrDate[1] + arrDate[0];
+                var date = moment(strMomentDate, "YYYYMMDD").format("YYYY/MM/DD");
+                selectedDates += date + ',';
+            }
+        });
+
+        $('input[name="StandByDate"]').val(selectedDates);
+    }
+
+    function isInSelectedDateRange(array, value) {
+        var returnValue = false;
+        $.each(array, function (i, val) {
+            if (value.getTime() == val.getTime())
+            {
+                returnValue = true;
+            }
+        });
+        return returnValue;
+    }
+
+    function formInsertValidation()
+    {
+        var errorMessage = "";
+        var Employee = $('input[name="EmployeeID"]').val();
+        var standbyDate = $('input[name="StandByDate"]').val()
+        var Year = $('select[name="StandByYear"]').val();
+		var Description = $('input[name="Description"]').val();
+		var ChargeCode = $('input[name="ChargeCode"]').val();
+		
+        if(Employee == '')
+        {
+            errorMessage = "Please select Employee to proceed.";
+		}
+		else if (ChargeCode == '')
+		{
+			errorMessage = "Please select Charge Code to proceed.";
+		}
+        else if(standbyDate == '')
+        {
+            errorMessage = "Please select Date to proceed.";
+        }
+        else if (Year == '') {
+            errorMessage = "Please select Year to proceed.";
+        }
+
+        return errorMessage;
+    }
+
+    function InsertStandBy()
+    {
+        var validation = formInsertValidation();
+        if (validation == "")
+        {
+            var data = $('form').serializeArray();
+            $.ajax({
+                url: '../TimeAttendance/InsertStandBy',
+                type: 'POST',
+                data: data,
+                success: function (result) {
+
+                    $('#divLoading').hide();
+                    if (result.result == true) {
+
+
+                        window.alert("Standby has been successfully Submitted");
+                        window.location.href = "../TimeAttendance/StandByList";
+                        //$('#SuccessSubmit').modal();
+                        //$('#SuccessMessage').html("Standby has been successfully submitted");
+                        //$('#btnOK').attr('href', '../TimeAttendance/StandByList');
+                    }
+                    else if (!result.result) {
+                        alert(result.ErrorMessage);
+
+                    }
+                    // ... Process the result ...
+                }
+            });
+        }
+        else
+        {
+            alert(validation);
+        }
+
+    }
+
+    function UpdateStandBy()
+    {
+        var validation = formInsertValidation();
+        if (validation == "") {
+            var disabled = $('form').find(':input:disabled').removeAttr('disabled');
+            var data = $('form').serializeArray();
+            disabled.attr('disabled', 'disabled')
+            $.ajax({
+                url: '../TimeAttendance/UpdateStandBy',
+                type: 'POST',
+                data: data,
+                success: function (result) {
+
+                    $('#divLoading').hide();
+                    if (result.result == true) {
+
+                        window.alert("Standby has been successfully Updated");
+                        window.location.href = "../TimeAttendance/StandByList";
+                        //$('#SuccessSubmit').modal();
+                        //$('#SuccessMessage').html("Standby has been successfully Updated");
+                        //$('#btnOK').attr('href', '../TimeAttendance/StandByList');
+                    }
+                    else if (!result.result) {
+                        alert(result.ErrorMessage);
+                    }
+                    // ... Process the result ...
+                }
+            });
+        }
+        else {
+            alert(validation);
+        }
+    }
+
+    function editStandBy(ID)
+    {
+        $.ajax({
+            url: '../TimeAttendance/_Standby',
+            type: 'GET',
+            data: {
+                ID: ID,
+                Mode: "Edit"
+            },
+            success: function (result) {
+                $("#StandByResult").html(result);
+                $('#StandByModal').modal({
+                    backdrop: 'static',
+                    keyboard: true
+                }, 'show');
+            },
+            error: function (e) {
+                console.log(e);
+            }
+        });
+    }
+
+    function setToInactive()
+    {
+        var standbyID = $('input[name="StandByID"]').val();
+        if (standbyID != '' && standbyID != 'undefined')
+        {
+            $.ajax({
+                url: '../TimeAttendance/SetInactive',
+                type: 'POST',
+                data: {
+                    StandbyID: standbyID
+                },
+                success: function (result) {
+
+                    $('#divLoading').hide();
+                    if (result.result == true) {
+
+                        $('#SuccessSubmit').modal();
+                        $('#SuccessMessage').html("Standby has been successfully Deactivated");
+                        $('#btnOK').attr('href', '../TimeAttendance/StandByList');
+                    }
+                    else if (!result.result) {
+                        alert(result.ErrorMessage);
+                    }
+                    // ... Process the result ...
+                },
+                error: function (e) {
+                    console.log(e);
+                }
+            });
+        }
+        else
+        {
+            alert('StandBy not found.');
+        }
+    }
+
+    function PrintPage()
+    {
+        PrintStandBy();
+        //window.print();
+    }
+
+    function dateToNumber(d)
+    {
+        d = d.split("/"); return Number(d[2] + d[1] + d[0]);
+    }
+
+
+    function PrintStandBy()
+    {
+        window.open("@Url.Action("_Standby", "TimeAttendance", new {ID = Model.StandByID, Mode = "Print" })");
+    }
+
+    function setYearDateRange()
+    {
+        var year = $('select[name="StandByYear"]').val();
+        var startdate = '01 01 ' + year;
+        var enddate = '12 31 ' + year;
+        $('#MultiDatePicker').datepicker('setStartDate', startdate);
+        $('#MultiDatePicker').datepicker('setEndDate', enddate);
+
+        startdate = '01 01 ' + year;
+        enddate = '31 12 ' + year;
+        $('input[name="dateFrom"]').datepicker('setStartDate', startdate);
+        $('input[name="dateFrom"]').datepicker('setEndDate', enddate);
+        $('input[name="dateTo"]').datepicker('setStartDate', startdate);
+        $('input[name="dateTo"]').datepicker('setEndDate', enddate);
+
+        $('input[name="dateFrom"]').val('');
+        $('input[name="dateTo"]').val('');
+        setDates([]);
+    }
+
+    $(function () {
+
+        $('#MultiDatePicker').datepicker({
+            multidate: true
+        });
+        $('#MultiDatePicker').on('changeDate', setSeletedDates);
+        $('.input-daterange input').each(function () {
+            $(this).datepicker({
+                autoclose: true,
+                format: 'dd/mm/yyyy'
+            });
+        });
+        $('input[name="dateFrom"]').on('changeDate', setDateRange);
+        $('input[name="dateTo"]').on('changeDate', setDateRange);
+
+        setYearDateRange();
+        if(('@ViewBag.Mode') == 'Edit')
+        {
+            var dates = '@Model.StandByDate';
+            if(dates.indexOf(',') != -1){
+                var splitDates = dates.split(',');
+                var arrDate = [];
+                $.each(splitDates, function (i, val) {
+                    if (val != '' && val != null)
+                    {
+                        var strDate = val.split('/');
+                        var date = new Date(parseInt(strDate[2]), parseInt(strDate[1]) - 1, parseInt(strDate[0]));
+                        if (date != 'Invalid Date') {
+                            arrDate.push(date);
+                        }
+                    }
+                });
+                setDates(arrDate);
+            }
+            else{
+                var dates = '@Model.StandByDate';
+                var arrDate = [];
+                if (dates.indexOf('/') != -1) {
+                    var strDate = dates.split('/');
+                    var date = new Date(parseInt(strDate[2]), parseInt(strDate[1]) - 1, parseInt(strDate[0]));
+                    if (date != 'Invalid Date') {
+                        arrDate.push(date);
+                    }
+                }
+                setDates(arrDate);
+            }
+
+        }
+
+        if(('@ViewBag.Mode') == 'Print')
+        {
+            window.print();
+        }
+        //$('.date-picker').datepicker({
+        //    format: 'dd/mm/yyyy',
+        //    autoclose: true
+        //});
+    })
+
+</script>

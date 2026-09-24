@@ -1,0 +1,104 @@
+﻿@model List<ESS.Claim.ViewModels.FBAttachment>
+@{
+    Layout = null;
+    string Mode = ViewBag.Mode;
+}
+
+
+<div class="table-toolbar">
+    <table id="tblFBAttachment" class="table table-striped table-bordered table-hover table-full-width">
+        <thead>
+            <tr>
+                <th></th>
+                <th>Components</th>
+                <th>Date</th>
+                <th>Attachment</th>
+                <th>Attachment Description </th>
+
+                @if (string.IsNullOrEmpty(Mode))
+                {
+                    <th></th>
+                }
+                <th class="hidden"></th>
+
+            </tr>
+        </thead>
+        <tbody>
+            @{
+                int AttachIndex = 0;
+            }
+            @foreach (var item in @Model)
+            {
+                <tr>
+                    @if (item.AttachRemarks == "new")
+                    {
+                        <td>
+                            <a class="btn blue btn-sm" onclick="DownloadFBDocument('@item.ID')"><i class="fa fa-download"></i></a>
+                        </td>
+                    }
+                    else
+                    {
+                        <td>
+                            <a class="btn blue btn-sm" onclick="DownloadFBDocumentFromDB('@item.ID')"><i class="fa fa-download"></i></a>
+                        </td>
+                    }
+
+                    <td>@item.Component</td>
+                    <td>@item.CustomTextValue1</td>
+                    <td>@item.FileName</td>
+                    <td>@item.Description</td>
+
+                    @if (item.AttachRemarks == "new")
+                    {
+                        <td>
+                            <a class="btn red btn-sm" onclick="javascript: DeleteDocument('@item.ID')">Remove</a>
+                        </td>
+                    }
+                    else
+                    {
+                        if (string.IsNullOrEmpty(Mode))
+                        {
+                            <td>
+                                <a class="btn red btn-sm" onclick="javascript: DeleteFBDocumentFromDB('@item.ID')">Remove</a>
+                            </td>
+                        }
+
+                    }
+                    <td class="hidden">
+                        <input type="text" name="FBAttachment[@AttachIndex].ID" value="@item.ID" />
+                        <input type="text" name="FBAttachment[@AttachIndex].SourceID" value="@item.SourceID" />
+                        <input type="text" name="FBAttachment[@AttachIndex].Component" value="@item.Component" />
+                        <input type="text" name="FBAttachment[@AttachIndex].FileName" value="@item.FileName" />
+                        <input type="text" name="FBAttachment[@AttachIndex].FileContent" value="@item.FileContent" />
+                        <input type="text" name="FBAttachment[@AttachIndex].FileSize" value="@item.FileSize" />
+                        <input type="text" name="FBAttachment[@AttachIndex].EmployeeID" value="@item.EmployeeID" />
+                        <input type="text" name="FBAttachment[@AttachIndex].EmployeeName" value="@item.EmployeeName" />
+                        <input type="text" name="FBAttachment[@AttachIndex].Description" value="@item.Description" />
+                        <input type="text" name="FBAttachment[@AttachIndex].SourceType" value="@item.SourceType" />
+                        <input type="text" name="FBAttachment[@AttachIndex].ContentType" value="@item.ContentType" />
+                        <input type="text" name="FBAttachment[@AttachIndex].CustomTextValue1" value="@item.CustomTextValue1" />
+                        <input type="text" name="FBAttachment[@AttachIndex].CustomTextLabel1" value="@item.CustomTextLabel1" />
+                        <input type="text" name="FBAttachment[@AttachIndex].CreatedDate" value="@item.CreatedDate" />
+                        <input type="text" name="FBAttachment[@AttachIndex].AttachRemarks" value="@item.AttachRemarks" />
+                    </td>
+                </tr>
+                    AttachIndex++;
+            }
+
+        </tbody>
+    </table>
+</div>
+
+<script type="text/javascript">
+    $('#tblFBAttachment').dataTable(
+    {
+        "bLengthChange": false,
+        "bFilter": false,
+        "bPaginate": false,
+        "bInfo": false,
+        "bSortable": false,
+
+    });
+</script>
+
+

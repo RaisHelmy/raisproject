@@ -1,0 +1,154 @@
+﻿@model List<ESS.Core.DropDownObject> 
+@{
+    ViewBag.Title = "Evaluation Form History";
+    Layout = null;
+}
+<input type="hidden" id="hfEmployeeID" value="@ViewBag.EmployeeID"/>
+<div class="form-body">
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-5 control-label">Start Date</label>
+                    <div class="col-md-7 form-control-static">
+                        <div class="input-group date date-picker" data-date-format="dd MM yyyy">
+                            <input type="text" class="form-control" id="SubDateFrom" name="SubDateFrom" />
+                            <span class="input-group-btn">
+                                <button type="button" class="btn default"><i class="fa fa-calendar"></i></button>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-5 control-label">End Date</label>
+                    <div class="col-md-7 form-control-static">
+                        <div class="input-group date date-picker" data-date-format="dd MM yyyy">
+                            <input type="text" class="form-control" id="SubDateTo" name="SubDateTo" />
+                            <span class="input-group-btn">
+                                <button type="button" class="btn default"><i class="fa fa-calendar"></i></button>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-5 control-label">Course Title</label>
+                    <div class="col-md-7 form-control-static">
+                        <input class="form-control" id="CourseTitle" />
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-5 control-label">Form Ref. No</label>
+                    <div class="col-md-7 form-control-static">
+                        <input class="form-control" id="ReferenceNo" />
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-5 control-label">Evaluation Category</label>
+                    <div class="col-md-7 form-control-static">
+                        @Html.DropDownList("EvaluationCategory", new SelectList(Model, "Value", "Text"), "- All -", new { @class = "bs-select form-control" })
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-5 control-label">Evaluation Form Name</label>
+                    <div class="col-md-7 form-control-static">
+                        <input class="form-control" id="EvaluationFormName" />
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-5 control-label">BE Number</label>
+                    <div class="col-md-7 form-control-static">
+                        <input class="form-control" id="BENumber" />
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">&nbsp;</div>
+    <div class="row">
+        <div class="col-md-12">
+            <div class="text-right">
+                <input type="button" id="btn-Search" class="btn green btn-Search" value="Search" onclick="Search();">
+            </div>
+        </div>
+    </div>
+    <div class="row">&nbsp;</div>
+    <div class="row">
+        <div class="col-md-12">
+            <div id="SearchFormResult">
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    jQuery(document).ready(function () {
+        $('.date-picker').datepicker({
+            format: 'dd/mm/yyyy',
+            autoclose: true
+        });
+
+        Search();
+    });
+
+    function Search() {
+        var _DateFrom = $('#SubDateFrom').val();
+        var _DateTo = $('#SubDateTo').val();
+        var _EvaluationCategory = $('#EvaluationCategory option:selected').val();
+        var _CourseTitle = $('#CourseTitle').val();
+        var _ReferenceNo = $("#ReferenceNo").val();
+        var _EvaluationFormName = $("#EvaluationFormName").val();
+        var _EmployeeID = $("#hfEmployeeID").val();
+        var _BENumber = $("#BENumber").val();
+
+        $("#SearchFormResult").html("LOADING...");
+
+        $.ajax({
+            type: "GET",
+            url: '@Url.Content("~/TrainingEvaluation/_FormPickerResult")',
+            cache: false,
+            dataType: "html",
+            data: {
+                DateFrom: _DateFrom, DateTo: _DateTo, EvalCategory: _EvaluationCategory,
+                CourseTitle: _CourseTitle, EvaluationFormName: _EvaluationFormName, FormRefNo: _ReferenceNo,
+                EmployeeID: _EmployeeID, BENumber: _BENumber
+            },
+            success: function (content) {
+                $("#SearchFormResult").html(content);
+            },
+            error: function (e) {
+                console.log(e);
+            }
+        });
+    }
+</script>

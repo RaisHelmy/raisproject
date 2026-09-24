@@ -1,0 +1,125 @@
+﻿@using ETKEMS.Models
+@model Tuple<ETKEMSViewModel, IEnumerable<PaymentProcessing>, bool, int>
+@{
+    Layout = null;
+    ETKEMSViewModel vm = Model.Item1;
+    IEnumerable<PaymentProcessing> payments = Model.Item2;
+    bool isReadOnly = Model.Item3;
+    int tableIndex = Model.Item4;
+
+    string MinDate = vm.FromDate;
+    string MaxDate = vm.ToDate;
+
+    if (!string.IsNullOrEmpty(vm.ExtensionEndDate))
+    {
+        MaxDate = vm.ExtensionEndDate;
+    }
+}
+
+<table id="tblPaymentProcessing@(tableIndex)" class="table table-striped table-bordered table-hover table-full-width">
+    <thead>
+        <tr>
+            <th>Employee</th>
+            <th>Actual Work Start Date</th>
+            <th>Actual Work End Date</th>
+            @if (isReadOnly == false)
+            {
+                <th>Eligibility</th>
+            }
+        </tr>
+    </thead>
+    <tbody>
+        @if (isReadOnly)
+        {
+            int count = 0;
+            foreach (var pp in payments)
+            {
+                <tr>
+                    <td class="PPEmployee">
+                        <input type="hidden" name="PaymentProcessings[@count].ID" value="@pp.ID" />
+                        <input type="hidden" name="PaymentProcessings[@count].PaymentApproved" value="@pp.PaymentApproved" />
+                        <input type="hidden" name="PaymentProcessings[@count].EmployeeID" value="@pp.EmployeeID" />
+                        <input type="text" class="form-control" name="PaymentProcessings[@count].Employee"
+                               value="@pp.Employee" readonly="readonly" />
+                    </td>
+                    <td class="PPStartDate">
+                        <input type="text" class="form-control PaymentProcessingStartDate" readonly="readonly"
+                               name="PaymentProcessings[@count].StartDate" value="@pp.StartDate" />
+                    </td>
+                    <td class="PPEndDate">
+                        <input type="text" class="form-control PaymentProcessingStartDate" readonly="readonly"
+                               name="PaymentProcessings[@count].StartDate" value="@pp.EndDate" />
+                    </td>
+                </tr>
+
+                count++;
+            }
+        }
+        else
+        {
+            int count = 0;
+            foreach (var pp in payments)
+            {
+                <tr>
+                    <td class="PPEmployee">
+                        <input type="hidden" name="PaymentProcessings[@count].ID" value="@pp.ID" />
+                        <input type="hidden" name="PaymentProcessings[@count].PaymentApproved" value="@pp.PaymentApproved" />
+                        <input type="hidden" name="PaymentProcessings[@count].EmployeeID" value="@pp.EmployeeID" />
+                        <input type="text" class="form-control Employee" name="PaymentProcessings[@count].Employee"
+                               value="@pp.Employee" readonly="readonly" />
+                    </td>
+                    <td class="PPStartDate">
+                        <div class="input-group date date-picker PaymentProcessingStartDatePicker" data-date-format="dd/mm/yyyy">
+                            <input type="text" class="form-control PaymentProcessingStartDate" 
+                                   name="PaymentProcessings[@count].StartDate" value="@pp.StartDate" />
+                            <span class="input-group-btn">
+                                <button type="button" class="btn default">
+                                    <i class="fa fa-calendar">
+                                    </i>
+                                </button>
+                            </span>
+                        </div>
+                    </td>
+                    <td class="PPEndDate">
+                        <div class="input-group date date-picker PaymentProcessingEndDatePicker" data-date-format="dd/mm/yyyy">
+                            <input type="text" class="form-control PaymentProcessingEndDate" 
+                                   name="PaymentProcessings[@count].EndDate" value="@pp.EndDate" />
+                            <span class="input-group-btn">
+                                <button type="button" class="btn default">
+                                    <i class="fa fa-calendar">
+                                    </i>
+                                </button>
+                            </span>
+                        </div>
+                    </td>
+                    <td class="PPEligibility">
+                        <input type="text" class="form-control Eligibility" name="PaymentProcessings[@count].Eligibility"
+                               readonly="readonly" />
+                    </td>
+                </tr>
+
+                count++;
+            }
+        }
+    </tbody>
+</table>
+<script>
+    var tblPaymentProcessings@(tableIndex) = $('#tblPaymentProcessing@(tableIndex)').DataTable({
+        "bLengthChange": false,
+        "bFilter": false,
+        "bPaginate": false,
+        "bInfo": false,
+        "bSortable": false,
+    });
+
+    $(function (){
+        $('.PaymentProcessingStartDatePicker, .PaymentProcessingEndDatePicker')
+            .datepicker({
+                format: 'dd/mm/yyyy',
+                autoclose: true,
+            });
+
+        $('.PaymentProcessingStartDatePicker, .PaymentProcessingEndDatePicker').datepicker('setStartDate', '@MinDate');
+        $('.PaymentProcessingStartDatePicker, .PaymentProcessingEndDatePicker').datepicker('setEndDate', '@MaxDate');
+    });
+</script>

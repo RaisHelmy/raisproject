@@ -1,0 +1,534 @@
+﻿@model ESS.AdvanceClaim.Models.AdvanceClaim
+@{
+    ViewBag.Title = "Advance Claims Application";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+}
+<script type="text/javascript" src="/Assets/plugins/jquery-inputmask/jquery.inputmask.bundle.min.js"></script>
+
+@using (Html.BeginForm("AdvanceClaimsApplication", "Claims", FormMethod.Post))
+{
+
+    <div class="form-section">
+        <div class="row">
+            <div class="col-md-12">
+                <h1 class="page-title">
+                    Advance Claims Application
+                    <span style="padding-left:20px;">
+                        <small>@Model.RequestType</small>
+                    </span>
+                </h1>
+            </div>
+        </div>
+    </div>
+
+    <!-- Employee Details -->
+    @Html.Partial("_EmployeeInfoClaim", Model.Submiter)
+
+    <input type="hidden" name="EquivalentPayScaleGroup" value="@Model.EquivalentPayScaleGroup" />
+
+    @Html.Partial("_AdvanceClaimStatus", Model)
+    <!-- Claims Particular -->
+    @Html.Partial("_AdvanceClaimsParticular", Model)
+
+
+    @Html.Partial("_AdvanceClaimDetail", Model)
+
+
+    <!-- Attachment -->
+    if (Model.Status == 0)
+    {
+        @Html.Action("AttachmentControl", "Attachment", new { EmployeeID = @Model.Submiter.ID, Mode = "Add", SourceType = "AdvanceClaims", RequestID = @Model.RequestID, ShowOptionField = "true", Mandatory = "true" })
+    }
+    else
+    {
+        @Html.Action("AttachmentControl", "Attachment", new { EmployeeID = @Model.Submiter.ID, Mode = "View", SourceType = "AdvanceClaims", RequestID = @Model.RequestID, ShowOptionField = "true", Mandatory = "true" })
+    }
+
+    @Html.Partial("_AdvanceClaimSummary", Model)
+
+    <!-- Audit Log -->
+    @Html.Partial("_AuditLog")
+
+    @Html.Partial("_AdvanceClaimActionButton", Model)
+
+
+    <!-- Success Message -->
+    <div class="modal fade" id="SuccessSubmit" tabindex="-1" role="basic" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header Success-header">
+                    @*<button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>*@
+                    <h4 class="Success-title">Action Successfully Completed</h4>
+                </div>
+                <div class="modal-body Success-body">
+                    <div class="well">
+                        Claims has been successfully submitted.
+                    </div>
+                </div>
+                <div class="modal-footer Success-footer">
+                    <a class="btn default blue" id="btnOK">
+                        <i class="fa fa-check"></i>
+                        OK
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="SuccessAction" tabindex="-1" role="basic" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header Success-header">
+                    @*<button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>*@
+                    <h4 class="Success-title">Action Successfully Completed</h4>
+                </div>
+                <div class="modal-body Success-body">
+                    <div class="well" id="actionText">
+                        Claims has been successfully submitted.
+                    </div>
+                </div>
+                <div class="modal-footer Success-footer">
+                    <a class="btn default blue" id="btnUpdate">
+                        <i class="fa fa-check"></i>
+                        OK
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @*<div class="modal fade" id="SuccessWithdraw" tabindex="-1" role="basic" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header Success-header">-->
+                        <!--<button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>-->
+                        <!--<h4 class="Success-title">Action Successfully Completed</h4>
+                    </div>
+                    <div class="modal-body Success-body">
+                        <div class="well">
+                            Claims has been successfully withdraw.
+                        </div>
+                    </div>
+                    <div class="modal-footer Success-footer">
+                        <a class="btn default blue" id="btnOK">
+                            <i class="fa fa-check"></i>
+                            OK
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>*@
+    <!-- Confirmation Message -->
+    <div class="modal fade" id="ConfirmDraft" tabindex="-1" role="basic" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                    <h4 class="modal-title">Confirmation</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="well">
+                        Are you sure you want to Save this Advance Claim Application?<br />
+                        Press Confirm to proceed, or Close to stay on the current page.
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn default blue" id="btnSubmitForm" onclick="SubmitForm('Draft'); return false;">
+                        <i class="fa fa-check"></i>
+                        Confirm
+                    </button>
+                    <button type="button" class="btn default" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="ConfirmSubmit" tabindex="-1" role="basic" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                    <h4 class="modal-title">Confirmation</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="well">
+                        Are you sure you want to Submit this Advance Claims Application?<br />
+                        Press Confirm to proceed, or Close to stay on the current page.
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn default blue" id="btnSubmitForm" onclick="SubmitForm('Submit'); return false;">
+                        <i class="fa fa-check"></i>
+                        Confirm
+                    </button>
+                    <button type="button" class="btn default" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="ConfirmApprove" tabindex="-1" role="basic" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                    <h4 class="modal-title">Confirmation</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="well">
+                        Are you sure you want to Approve this Advance Claims Application?<br />
+                        Press Confirm to proceed, or Close to stay on the current page.
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn default blue" id="btnSubmitForm" onclick="ApproveRejectAdvClaim('Approve'); return false;">
+                        <i class="fa fa-check"></i>
+                        Confirm
+                    </button>
+                    <button type="button" class="btn default" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="ConfirmAgree" tabindex="-1" role="basic" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                    <h4 class="modal-title">Confirmation</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="well">
+                        Are you sure you want to Agree this Advance Claims Application?<br />
+                        Press Confirm to proceed, or Close to stay on the current page.
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn default blue" id="btnSubmitForm" onclick="ApproveRejectAdvClaim('Agree'); return false;">
+                        <i class="fa fa-check"></i>
+                        Confirm
+                    </button>
+                    <button type="button" class="btn default" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="ConfirmReject" tabindex="-1" role="basic" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                    <h4 class="modal-title">Confirmation</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="well">
+                        Are you sure you want to Reject this Advance Claims Application?<br />
+                        Press Confirm to proceed, or Close to stay on the current page.
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn default blue" id="btnSubmitForm" onclick="ApproveRejectAdvClaim('Reject'); return false;">
+                        <i class="fa fa-check"></i>
+                        Confirm
+                    </button>
+                    <button type="button" class="btn default" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="ConfirmReturn" tabindex="-1" role="basic" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                    <h4 class="modal-title">Confirmation</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="well">
+                        Are you sure you want to Return this Advance Claims Application?<br />
+                        Press Confirm to proceed, or Close to stay on the current page.
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn default blue" id="btnSubmitForm" onclick="ApproveRejectAdvClaim('Return'); return false;">
+                        <i class="fa fa-check"></i>
+                        Confirm
+                    </button>
+                    <button type="button" class="btn default" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    @*<div class="modal fade" id="ConfirmWithdraw" tabindex="-1" role="basic" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                        <h4 class="modal-title">Confirmation</h4>
+                    </div>
+                    <div class="modal-body">
+                        <div class="well">
+                            Are you sure you want to Withdraw this Advance Claims Application?<br />
+                            Press Confirm to proceed, or Close to stay on the current page.
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn default blue" onclick="Withdraw(); return false;">
+                            <i class="fa fa-check"></i>
+                            Confirm
+                        </button>
+                        <button type="button" class="btn default" data-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>*@
+    <!-- Loading Gif -->
+    <div id="divLoading" style="margin: 0px; padding: 0px; position: fixed; right: 0px;
+        top: 0px; width: 100%; height: 100%; background-color:gainsboro; z-index: 30001;
+        opacity: .8; filter: alpha(opacity=70);display:none">
+        <p style="position: absolute; top: 30%; left: 30%; color: black;">
+            Loading, please wait...<img src="../Assets/img/ajax-loading.gif" />
+
+        </p>
+    </div>
+}
+<script type="text/javascript">
+    //var Path = 'http://localhost:49773';
+	var Path = '/_layouts/15/TNBESS'
+
+    function submitclaim(Type) {
+        if (Type == 'Draft') {
+            $('#ConfirmDraft').modal();
+
+        }
+        else {
+            if ($('#chkDisclaimer').parent().hasClass('checked')) {
+
+                $('#ConfirmSubmit').modal();
+
+            }
+            else {
+                alert('- Please read and check the Disclaimer section before proceeding to submit.\n');
+            }
+        }
+    }
+
+    function ApproveReject(Type) {
+
+
+        if (Type == 'Approve')
+        {
+            $('#ConfirmApprove').modal();
+
+        }
+        else if (Type == 'Agree')
+        {
+            $('#ConfirmAgree').modal();
+        }
+        else if (Type == 'Return')
+        {
+            $('#ConfirmReturn').modal();
+        }
+        else {
+            $('#ConfirmReject').modal();
+        }
+
+
+    }
+
+    function SubmitForm(Type) {
+        if (Type == 'Draft') {
+            $('#ConfirmDraft').modal('hide');
+            $("#actionText").html('Your Advance Claim Application has been successfully saved.');
+        }
+        else {
+            $('#ConfirmSubmit').modal('hide');
+            $("#actionText").html('Your Advance Claim Application has been successfully submitted.');
+        }
+
+        $('#divLoading').modal();
+        var data = $('form').serializeArray();
+
+        //Add in additional data to the original form data:
+        data.push(
+          { name: 'SubmitType', value: Type }
+        );
+
+        $.ajax({
+            url: '../Claims/UpdateAdvanceClaim',
+            type: 'POST',
+            data: data,
+            success: function (result) {
+
+                $('#divLoading').modal('hide');
+
+                if (result.result == true) {
+                    $('#SuccessAction').modal();
+                    $('#btnUpdate').attr('href', '../Claims/AdvanceClaimsHistory');
+                }
+                else {
+                    alert(result.ErrorMessage);
+
+                }
+                // ... Process the result ...
+            }
+        });
+
+    }
+
+    function ApproveRejectAdvClaim(Type) {
+        if (Type == 'Approve')
+        {
+            $('#ConfirmApprove').modal('hide');
+
+        }
+        else if (Type == 'Agree')
+        {
+            $('#ConfirmAgree').modal('hide');
+        }
+        else if (Type == 'Return')
+        {
+            $('#ConfirmReturn').modal('hide');
+        }
+        else
+        {
+            $('#ConfirmReject').modal('hide');
+        }
+        $('#divLoading').modal();
+
+        $.ajax({
+            url: '../Claims/ApproveRejectAdvanceClaim',
+            type: 'POST',
+            data:
+            {
+                SubsisEntitlement: $('#SubsistenceEntitlement').val(),
+                SubsisTotal: $('#SubsistenceTotal').val(),
+                HotelEntitlement: $('#HotelEntitlement').val(),
+                HotelTotal: $('#HotelAmount').val(),
+                RequestedAmount: $('#RequestedAmount').val(),
+                ActionType: Type,
+                RequestID:getUrlParameter('ID'),
+                TaskID:'@Model.ProcessID',
+                ApproverComment: $('#txtAppComment').val()
+            },
+            success: function (result) {
+
+                $('#divLoading').modal('hide');
+
+                if (result.Success == true) {
+                    $('#actionText').html('Claims has been successfully ' + result.Status);
+                    $('#SuccessAction').modal();
+                    $('#btnUpdate').attr('href', '../MSS/AdvanceClaimsInTray');
+                }
+                else {
+                    alert(result.ErrorMessage);
+
+                }
+                // ... Process the result ...
+            }
+        });
+
+    }
+
+
+    @*function Withdraw() {
+
+        $('#ConfirmWithdraw').modal('hide');
+        $('#divLoading').modal();
+
+        $.ajax({
+            url: '../Claims/WithdrawAdvanceClaim',
+            type: 'POST',
+            data:
+            {
+                RequestID: getUrlParameter('ID'),
+                ApproverComment: $('#txtAppComment').val()
+            },
+            success: function (result) {
+
+                $('#divLoading').modal('hide');
+
+                if (result.Success == true) {
+                    $('#actionText').html('Claims has been successfully ' + result.Status);
+                    $('#SuccessSubmit').modal();
+                    $('#btnOK').attr('href', '../Claims/AdvanceClaimsHistory');
+                }
+                else {
+                    alert(result.ErrorMessage);
+
+                }
+                // ... Process the result ...
+            }
+        });
+
+    }*@
+
+
+    var getUrlParameter = function getUrlParameter(sParam) {
+        var sPageURL = decodeURIComponent(window.location.search.substring(1)),
+            sURLVariables = sPageURL.split('&'),
+            sParameterName,
+            i;
+
+        for (i = 0; i < sURLVariables.length; i++) {
+            sParameterName = sURLVariables[i].split('=');
+
+            if (sParameterName[0] === sParam) {
+                return sParameterName[1] === undefined ? true : sParameterName[1];
+            }
+        }
+    };
+
+    $(document).ready(function () {
+        // FormConfiguration();
+
+        // Form plugin function
+        $('.date-picker').datepicker({
+            format: 'dd/mm/yyyy',
+            autoclose: true,
+            defaultDate: new Date()
+
+        });
+
+        $('.timeinput').inputmask("mask", {
+            "mask": "99:99"
+        });
+
+        GetAuditLog('@Model.RequestID');
+    });
+
+    function GetAuditLog(_RequestID) {
+        jQuery.support.cors = true;
+
+        $.ajax({
+            url: Path + '/api/FlexiBenefitsWebApi/GetAuditLog?id=' + _RequestID,
+            type: 'GET',
+            contentType: "application/json;charset=utf-8",
+            success: function (result) {
+                if (result != null) {
+
+                    SetAuditLog(result);
+                }
+                else
+                    console.log('failed!');
+            },
+            error: function (x, y, z) {
+                alert(x + '\n' + y + '\n' + z);
+            }
+        });
+    }
+
+    function SetAuditLog(result) {
+        var _AuditTrailBody = '';
+
+        for (var i = 0; i < result.length; i++) {
+            var _AuditTrail = "<tr><td>" + result[i].EmployeeName + "</td><td>" +
+                result[i].FormattedDate + "</td><td>" + result[i].ActivityName + "</td><td>" +
+                result[i].ActivityAction + "</td><td style=\"white-space: pre;\">" + result[i].Comment + "</td></tr>";
+            _AuditTrailBody += _AuditTrail;
+        }
+
+        $('#tblAuditLog').find('tbody').html(_AuditTrailBody);
+    }
+</script>
+
+

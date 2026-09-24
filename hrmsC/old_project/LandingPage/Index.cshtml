@@ -1,0 +1,185 @@
+﻿@model TNB_ESS_MVC.Controllers.LandingPageController.LandingPageModel
+@using ESS.Core;
+
+@{
+    /**/
+
+    /**/
+    RoleMaintenance.RoleService.IsInRole("", "");
+    ViewBag.Title = Model.ModuleName + " Landing Page";
+}
+
+
+<div class="row">
+    <div class="col-md-12">
+        <h1 class="page-title">
+            @Model.ModuleName
+            <span style="padding-left:20px;">
+                <small></small>
+            </span>
+        </h1>
+    </div>
+</div>
+
+<hr style="margin:0;" />
+<br />
+<div class="">
+    @{int i = 1; int j = 0; }
+    @foreach (var item in Model.ModuleItem)
+    {
+        bool display = false;
+        string[] url = { "" };
+        string[] iconurl = { "/Icons/default.png" };
+        if (!string.IsNullOrEmpty(item.URL))
+        {
+            url = item.URL.Split(',');
+        }
+
+        if (!string.IsNullOrEmpty(item.IconURL))
+        {
+            iconurl = item.IconURL.Split(',');
+        }
+
+
+        if (String.IsNullOrEmpty(item.SPPermissionGroup))
+        {
+
+
+            if (!String.IsNullOrEmpty(item.Role))
+            {
+                string[] rolepermission = { "" };
+
+                rolepermission = item.Role.Split(',');
+
+                foreach (string role in rolepermission)
+                {
+                    string[] roleitem = role.Split('\\');
+                    if (RoleMaintenance.RoleService.IsInRole(roleitem[0], roleitem[1]))
+                    {
+                        display = true;
+
+                    }
+
+                    if (display)
+                    {
+                        break;
+                    }
+                }
+
+            }
+            else
+            {
+                display = true;
+            }
+        }
+        else
+        {
+
+            string[] sppermission = { "" };
+            if (!string.IsNullOrEmpty(item.SPPermissionGroup))
+            {
+                sppermission = item.SPPermissionGroup.Split(',');
+            }
+
+            foreach (string permission in sppermission)
+            {
+                try
+                {
+                    if (SP.IsInGroup(permission.Trim()))
+                    {
+                        if (!String.IsNullOrEmpty(item.Role))
+                        {
+                            string[] rolepermission = { "" };
+
+                            rolepermission = item.Role.Split(',');
+
+                            foreach (string role in rolepermission)
+                            {
+                                string[] roleitem = role.Split('\\');
+                                if (RoleMaintenance.RoleService.IsInRole(roleitem[0], roleitem[1]))
+                                {
+                                    display = true;
+
+                                }
+
+                                if (display)
+                                {
+                                    break;
+                                }
+                            }
+
+                        }
+                        else
+                        {
+                            display = true;
+                        }
+
+
+                    }
+                }
+                catch (Exception ex)
+                {
+                    throw new Exception("\"" + permission + "\" " + ex.Message);
+                }
+
+                if (display)
+                {
+                    break;
+                }
+            }
+
+        }
+
+        if (display)
+        {
+            j = i % 3;
+            if (j == 1)
+            {
+
+                @Html.Raw("<div class='row'>")
+            }
+            <div class="col-md-4" style="margin-bottom:10px;">
+                <div class="row" style="padding: 10px 0;margin: 0;border: 1px solid #c7c7c7;box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.2), 0 2px 4px 0 rgba(0, 0, 0, 0.19);border-radius: 10px !important;">
+                    <div class="col-md-2 col-xs-2">
+                        <img src="@iconurl[0]" style="width:40px;">
+                    </div>
+
+                    <div class="col-md-10 col-xs-10">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <a href="@url[0]">
+                                    @item.Title
+                                </a>
+                            </div>
+                            <div class="col-md-12">@item.Description</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {
+                i++;
+                if (j == 0)
+                {
+                    @Html.Raw("</div>")
+                }
+            }
+
+        }
+    }
+
+    @if (j != 0)
+    {
+        @Html.Raw("</div>")
+    }
+
+</div>
+
+<div class="row" style="margin-top:30px">
+    <div class="col-md-12">
+        @if (!String.IsNullOrEmpty(Model.ModuleContent))
+        {
+            @Html.Raw(Model.ModuleContent)
+        }
+    </div>
+
+</div>

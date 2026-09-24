@@ -1,0 +1,73 @@
+﻿@model Tuple<int?, TimeAttendance.Models.OTPlanningEntryVM, string, string>
+
+@*Model.Item1 = EntriesCount*@
+@*Model.Item2 = TimesheetAttendanceVM*@
+@*Model.Item3 = Type/role -> Employee OR Approver (for name)*@
+@*Model.Item4 = readonly*@
+
+@{
+    Layout = null;
+    string entries = "";
+    string Mode = "";
+    if (Model.Item1 != null)
+    {
+        if (Model.Item1 >= 0)
+        {
+            entries = "Entries[" + Model.Item1.Value + "].";
+        }
+    }
+    string type = "";
+    if (Model.Item3 != null)
+    {
+        type = Model.Item3;
+    }
+
+    string PeoplePicker = type + "PeoplePicker";
+    string EmployeeName = entries + type + "Name";
+    string EmployeeCode = entries + type + "Code";
+    string EmployeeID = entries + type + "ID";
+    string DisplayTextName = type + "DisplayText";
+
+    string EmployeeNameValue = "";
+    string EmployeeCodeValue = "";
+    string EmployeeIDValue = "";
+    string EmployeeDisplayText = "";
+    if (Model.Item2 != null)
+    {
+        if (Model.Item3 == "Approver")
+        {
+            EmployeeNameValue = Model.Item2.ApproverName;
+            EmployeeCodeValue = Model.Item2.ApproverCode;
+            EmployeeIDValue = (Model.Item2.ApproverID).ToString();
+            if (!string.IsNullOrEmpty(EmployeeCodeValue) &&
+            !string.IsNullOrEmpty(EmployeeNameValue))
+            {
+                EmployeeDisplayText = EmployeeCodeValue + " - " + EmployeeNameValue;
+            }
+        }
+        else
+        {
+            EmployeeNameValue = Model.Item2.EmployeeName;
+            EmployeeCodeValue = Model.Item2.EmployeeCode;
+            EmployeeIDValue = (Model.Item2.EmployeeID).ToString();
+            if (!string.IsNullOrEmpty(EmployeeCodeValue) &&
+            !string.IsNullOrEmpty(EmployeeNameValue))
+            {
+                EmployeeDisplayText = EmployeeCodeValue + " - " + EmployeeNameValue;
+            }
+        }
+    }
+
+
+}
+<div>
+    <div class="input-group">
+        <input type="text" class="form-control TSPeoplePickerDisplay @PeoplePicker" name="@DisplayTextName" value="@EmployeeDisplayText" readonly />
+        <span class="input-group-btn" style="">
+            <a data-toggle="modal" href="#MultiPeoplePicker" class="btn default TimesheetMultiPeoplePicker"><i class="fa fa-user"></i></a>
+        </span>
+        <input class="TSPeoplePickerID" type="hidden"  name="@EmployeeID" value="@EmployeeIDValue"/>
+        <input class="TSPeoplePickerCode" type="hidden" name="@EmployeeCode" value="@EmployeeCodeValue"/>
+        <input class="TSPeoplePickerName" type="hidden" name="@EmployeeName" value="@EmployeeNameValue"/>
+    </div>
+</div>

@@ -1,0 +1,383 @@
+﻿@model LeaveQuota.Models.LeaveQuotaModel
+@{
+    ViewBag.Title = "Leave Quota - Request";
+    string[] editTableStatus = new string[] { "Draft", "Withdrawn" };
+
+    bool canWithdraw = Model.IsOwner && ViewBag.IsCurrentApprover != null && !ViewBag.IsCurrentApprover;
+    bool canDelete = Model.IsOwner && Model.RequestStatus == "Draft";
+    string[] nonWithdrawableStatus = { "Draft", "Approved", "Withdrawn", "Declined" };
+
+    //All Status in editableStatus will allow the user to edit the form and resubmit
+    string Status = editTableStatus.Contains(Model.RequestStatus) ? "Draft" : Model.RequestStatus;
+    List<DateTime> Holidays = ViewBag.EmployeeHolidays;
+
+    bool HasApprover = !String.IsNullOrEmpty(Model.CurrentEmployee.ManagerID);
+
+    if (Model != null)
+    {
+        string ssrsReportUrl = System.Configuration.ConfigurationManager.AppSettings["SSRSReportServerUrl"];
+        string ssrsReportFolder = System.Configuration.ConfigurationManager.AppSettings["SSRSReportFolder"];
+
+        ViewBag.PrintLeaveDetails = String.Format(@"{0}?/{1}/{2}&rs:Command=Render&rs:Format=PDF&RequestID={3}",
+                                                     ssrsReportUrl, ssrsReportFolder, "LeaveQuotaApplication", Model.RequestID);
+    }
+}
+<div class="form-section">
+    <div class="row">
+        <div class="col-md-12">
+            <h1 class="page-title">
+                @Model.Leave.GetDisplayName() Application
+            </h1>
+        </div>
+        <div class="col-md-12 ">
+            <div class="pull-right">
+                <a href="@ViewBag.PrintLeaveDetails">Print</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+@if (Model.IsOwner && editTableStatus.Contains(Model.RequestStatus) && !HasApprover)
+{
+    <div class="row">
+        <div class="col-md-12">
+            <div class="note note-danger">
+                <h4 class="block">
+                    @Html.Raw(ViewBag.NoApproverMessage)
+                </h4>
+                @*<p>
+
+                    </p>*@
+            </div>
+        </div>
+    </div>
+}
+
+@Html.Action("_RequestorDetails", "LeaveQuota", new { ID = Model.RequestID })
+
+<!--LOAD THE LEAVE TYPE-->
+@Html.Partial(Model.Leave.GetPartialViewName(),
+    Model.Leave,
+    new ViewDataDictionary() {
+            {"CurrentEmployeeID", Model.CurrentEmployee.ID },
+            { "Status", Model.RequestStatus },
+            { "Description", Model.ApplicantDescription },
+            { "ReferenceNo", Model.RequestNo } })
+
+<!--For the approval process-->
+<input type="hidden" id="RequestID" value="@Model.RequestID" />
+
+
+<!-- Display this only when the status is not draft-->
+@if (Model.RequestStatus != "Draft")
+{
+
+    @Html.Action("_ApproverSection", new { ID = Model.RequestID })
+
+}
+
+<div class="row" style="padding-top:20px;">
+    <div class="col-md-12">
+        @if (editTableStatus.Contains(Model.RequestStatus) && HasApprover && Model.IsOwner)
+        {
+            if (Model.RequestStatus != "Withdrawn")
+            {
+                <a class="btn green" onclick="javascript: Submit('Draft')">Save as Draft</a>
+            }
+
+            <a class="btn green" onclick="javascript: Submit('Pending')">Submit</a>
+
+            if (canDelete)
+            {
+                <a class="btn red" onclick="javascript:Delete()">Delete</a>
+            }
+        }
+
+        @if (!nonWithdrawableStatus.Contains(Model.RequestStatus) && canWithdraw)
+        {
+            <a class="btn red" onclick="javascript: Withdraw()">Withdraw</a>
+        }
+
+        @if (ViewBag.BackUrl != null)
+        {
+            <a class="btn green" href="@ViewBag.BackUrl">Back</a>
+        }
+    </div>
+</div>
+
+
+
+
+<!-- Loading Gif -->
+<div id="divLoading" style="margin: 0px; padding: 0px; position: fixed; right: 0px; top: 0px; width: 100%; height: 100%; background-color: gainsboro; z-index: 30001; opacity: .8; filter: alpha(opacity=70); display: none; ">
+    <p style="position: absolute; top: 30%; left: 30%; color: black;">
+        Performing action, please wait...<img src="/_layouts/15/TNBESS/Assets/img/ajax-loading.gif">
+    </p>
+</div>
+
+<div class="modal fade" id="LeaveModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                <h4 class="modal-title">Confirmation</h4>
+            </div>
+            <div class="modal-body">
+                <div class="well">
+                    Are you sure you want to <p id="modalAction" style="display:inline">submit</p> this Leave Quota Application? <br />Press Confirm to proceed, or Close to stay on the current page.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn default blue" id="btnConfirm" value="Submit">
+                    <i class="fa fa-check"></i>
+                    Confirm
+                </button>
+                <button type="button" id="btnClose" class="btn default" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Success Message -->
+<div class="modal fade" id="resultModal" tabindex="-1" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header Success-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true" style="display: none;"></button>
+                <h4 class="Success-title">Action Successfully Completed</h4>
+            </div>
+            <div class="modal-body Success-body">
+                <div class="well">
+                    <p id="resultModalBody"></p>
+                </div>
+            </div>
+            <div class="modal-footer Success-footer">
+                <button type="button" class="btn default blue" id="btnOK">
+                    <i class="fa fa-check"></i>
+                    OK
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@Html.Partial("__EmployeeHolidays", Holidays)
+
+<script>
+    var EMPLOYEE_HOLIDAYS = [];
+    $(document).ready(function () {
+        EMPLOYEE_HOLIDAYS = $('input[name=hfEmployeeHoliday]').map(function (index, item) { return item.value; }).get();
+    });
+
+    @*function applyReadOnlyOnStatus() {
+
+        var status = '@Model.RequestStatus';
+        var editable = ["Draft"];
+        if ($.inArray(status, editable) == -1) {
+
+            //disable date inputs
+            $(".date-picker").each(function (i, val) {
+                $(this).datepicker('remove');
+            });
+
+            //disable time picker
+            $(".time-picker").each(function (i, val) {
+                $(this).attr('disabled', true);
+            });
+
+            //disable form inputs
+            $("#divMainForm input:text").each(function () {
+                $(this).attr('readonly', true);
+            });
+
+            $("#divMainForm #LengthOfStay").attr('readonly', true);
+
+            //disabled dropdowns
+            $("#divMainForm select").each(function () {
+                $(this).attr('disabled', true);
+            });
+
+            $("#ApplicantDescription").attr('readonly', true);
+        }
+    }*@
+
+    function displayModal() {
+        var deferred = $.Deferred();
+
+        if (validate == "undefined") {
+            deferred.reject();
+            alert("Validate function for form not found");
+            return deferred;
+        }
+
+        if (!validate()) {
+            deferred.reject();
+            return deferred;
+        }
+
+        $('#LeaveModal').modal();
+
+        $('#btnConfirm').click(function () {
+            deferred.resolve();
+        });
+        $('#btnClose').click(function () {
+            deferred.reject();
+        });
+        return deferred;
+    }
+
+    function Submit(Status) {
+        if (Status == 'Draft')
+            $("#modalAction").text('save');
+        else
+            $("#modalAction").text('submit');
+        displayModal().done(function () {
+
+            $('#LeaveModal').modal('hide');
+            $('#divLoading').show();
+
+            var subtypeDetails = GetData();
+            //var model = new Object();
+
+            var model = {
+                RequestID: '@Model.RequestID',
+                RequestNo: '@Model.RequestNo',
+                ModelType: '@Model.Leave.GetType()',
+                CurrentStatus: '@Model.RequestStatus',
+                RequestStatus: Status,
+                ModifiedBy: '@Model.CurrentEmployee.ID',
+                QuotaTypeName: '@Model.QuotaTypeName',
+                LeaveSubtypeCode: '@Model.LeaveSubtypeCode',
+                QuotaNo: '@Model.QuotaNo',
+                ApplicantDescription: $("#ApplicantDescription").val(),
+                Leave: subtypeDetails
+            };
+
+            $.ajax({
+                type: "POST",
+                url: '@Url.Action("UpdateLeave", "LeaveQuota")',
+                data: model,
+                content: "application/json",
+                success: function (response) {
+                    $('#divLoading').hide();
+
+
+                    if (response.Success) {
+                        $("#resultModal").modal();
+                        $("#resultModalBody").html(response.Message);
+                        $("#btnOK").click(function () {
+                            //redirect to the request history page
+                            location.href = '@Url.Action("RequestHistory", "LeaveQuota")';
+                        });
+                    }
+                    else {
+                        alert(response.TechnicalError);
+                        for (var i = 0; i < response.Positions.length; i++) {
+                            var pos = response.Positions[i];
+                            console.log(pos);
+                            $("#tblOIL>tbody>tr:eq(" + pos + ")").css('background-color', '#EB7D70');
+                        }
+                        $("#btnOK").click(function () {
+                            //redirect to the request history page
+                            $("#resultModal").modal('hide');
+                            console.log("Technical error: " + response.TechnicalError);
+                        });
+                    }
+                },
+                error: function (err) {
+                    console.log(err.responseText);
+                    $('#divLoading').hide();
+                }
+            });
+
+        }).fail(function () { });
+    }
+
+    function Withdraw() {
+
+        $("#modalAction").text("withdraw");
+        displayModal().done(function () {
+
+            $('#LeaveModal').modal('hide');
+            $('#divLoading').show();
+
+            $.ajax({
+                type: "POST",
+                url: '@Url.Action("Withdraw", "LeaveQuota")',
+                data: { SourceID: '@Model.RequestID' },
+                content: "application/json",
+                success: function (response) {
+                    $('#divLoading').hide();
+                    $("#resultModal").modal();
+                    $("#resultModalBody").html(response.Message);
+
+                    if (response.Success) {
+                        $("#btnOK").click(function () {
+                            location.href = '@Url.Action("RequestHistory", "LeaveQuota")';
+                        });
+                    }
+                    else {
+                        $("#btnOK").click(function () {
+                            $("#resultModal").modal('hide');
+                            console.log("Technical error: " + response.TechnicalError);
+                        });
+                    }
+                },
+                error: function (err) {
+                    console.log(err.responseText);
+                    $('#divLoading').hide();
+                }
+            });
+
+        }).fail(function () { });
+    }
+
+    function Delete() {
+        $("#modalAction").text("delete");
+        displayModal().done(function () {
+
+            $('#LeaveModal').modal('hide');
+            $('#divLoading').show();
+
+            $.ajax({
+                type: "POST",
+                url: '@Url.Action("Delete", "LeaveQuota")',
+                data: { SourceID: '@Model.RequestID' },
+                content: "application/json",
+                success: function (response) {
+                    $('#divLoading').hide();
+                    $("#resultModal").modal();
+                    $("#resultModalBody").html(response.Message);
+
+                    if (response.Success) {
+                        $("#btnOK").click(function () {
+                            location.href = '@Url.Action("RequestHistory", "LeaveQuota")';
+                        });
+                    }
+                    else {
+                        $("#btnOK").click(function () {
+                            $("#resultModal").modal('hide');
+                            console.log("Technical error: " + response.TechnicalError);
+                        });
+                    }
+                },
+                error: function (err) {
+                    console.log(err.responseText);
+                    $('#divLoading').hide();
+                }
+            });
+
+        }).fail(function () { });
+    }
+
+    //convert date from dd/mm/yyyy to mm/dd/yyyy to store it
+    //function FormatDate(date) {
+    //    var dateArray = date.split('/');
+    //    var day = dateArray[0];
+    //    var month = dateArray[1];
+    //    var year = dateArray[2];
+
+    //    var formattedDate = month + '/' + day + '/' + year;
+    //    return formattedDate;
+    //}
+</script>

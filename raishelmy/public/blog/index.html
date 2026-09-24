@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blog - Rais Helmy</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: #f5f2ed;
+            color: #111;
+            overflow-x: hidden;
+            line-height: 1.4;
+        }
+        img { max-width: 100%; display: block; }
+        a { text-decoration: none; color: inherit; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 0 40px; position: relative; }
+
+        /* ─── NAVBAR ─── */
+        header {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 22px 0; z-index: 100; position: sticky; top: 0;
+            background-color: transparent; transition: background-color 0.3s ease;
+        }
+        header.scrolled {
+            background-color: #e4dfd5;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            padding: 16px 0;
+        }
+        .logo { font-size: 24px; font-weight: 900; letter-spacing: -1px; }
+
+        /* HAMBURGER */
+        .hamburger {
+            display: none;
+            flex-direction: column;
+            gap: 6px;
+            cursor: pointer;
+            z-index: 1001;
+            padding: 5px;
+        }
+        .hamburger span {
+            display: block;
+            width: 25px;
+            height: 2px;
+            background-color: #111;
+            transition: 0.3s;
+        }
+
+        nav ul { display: flex; list-style: none; gap: 18px; }
+        nav ul li a { font-size: 11px; font-weight: 600; color: #333; text-transform: uppercase; letter-spacing: 0.5px; }
+        .btn-contact {
+            border: 1.5px solid #222; padding: 10px 24px; border-radius: 50px;
+            font-weight: 700; font-size: 12px; cursor: pointer; text-transform: uppercase;
+            background: transparent; color: #222; transition: 0.3s;
+        }
+
+        /* ─── NAV DROPDOWN ─── */
+        .nav-dropdown {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+        .nav-dropdown > a {
+            display: inline-flex; align-items: center; gap: 3px;
+        }
+        .nav-dropdown > a::after {
+            content: '';
+            display: inline-block;
+            width: 5px; height: 5px;
+            border-right: 1.5px solid #333;
+            border-bottom: 1.5px solid #333;
+            transform: rotate(45deg) translateY(-1px);
+            transition: transform 0.2s ease;
+            flex-shrink: 0;
+        }
+        .nav-dropdown:hover > a::after,
+        .nav-dropdown.open > a::after {
+            transform: rotate(-135deg) translateY(-1px);
+        }
+        .dropdown-menu {
+            display: none;
+            position: absolute;
+            top: calc(100% + 14px);
+            left: 50%;
+            transform: translateX(-50%);
+            min-width: 220px;
+            background: #fff;
+            border-radius: 14px;
+            box-shadow: 0 16px 48px rgba(0,0,0,0.10);
+            padding: 10px 0;
+            z-index: 500;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.18s ease, transform 0.18s ease;
+            transform: translateX(-50%) translateY(6px);
+        }
+        .dropdown-menu::before {
+            content: '';
+            position: absolute;
+            top: -7px; left: 50%;
+            transform: translateX(-50%);
+            border-left: 8px solid transparent;
+            border-right: 8px solid transparent;
+            border-bottom: 8px solid #fff;
+        }
+        .nav-dropdown:hover .dropdown-menu,
+        .nav-dropdown.open .dropdown-menu {
+            display: block;
+            opacity: 1;
+            pointer-events: auto;
+            transform: translateX(-50%) translateY(0);
+        }
+        .dropdown-menu a {
+            display: flex; align-items: center; gap: 12px;
+            padding: 12px 20px;
+            font-size: 11px; font-weight: 600; color: #333 !important;
+            text-transform: uppercase; letter-spacing: 0.5px;
+            transition: background 0.15s, color 0.15s;
+            white-space: nowrap;
+        }
+        .dropdown-menu a:hover {
+            background: #f5f2ed; color: #111 !important;
+        }
+        .dd-icon {
+            width: 28px; height: 28px; border-radius: 8px;
+            background: #111; color: #fff;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 12px; flex-shrink: 0;
+        }
+
+        /* ─── BLOG HERO ─── */
+        .blog-hero {
+            padding: 100px 0 60px;
+            text-align: center;
+        }
+        .blog-hero h1 {
+            font-size: 56px;
+            font-weight: 900;
+            margin-bottom: 20px;
+            letter-spacing: -1px;
+        }
+        .blog-hero p {
+            font-size: 18px;
+            color: #666;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        /* ─── BLOG GRID ─── */
+        .blog-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 40px;
+            padding: 80px 0;
+        }
+
+        .blog-card {
+            background: #fff;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.06);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            cursor: pointer;
+        }
+        .blog-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.12);
+        }
+
+        .blog-card-img {
+            width: 100%;
+            height: 250px;
+            object-fit: cover;
+            display: block;
+        }
+
+        .blog-card-content {
+            padding: 32px;
+        }
+
+        .blog-card-date {
+            font-size: 12px;
+            color: #999;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 12px;
+        }
+
+        .blog-card h3 {
+            font-size: 22px;
+            font-weight: 800;
+            margin-bottom: 16px;
+            line-height: 1.3;
+        }
+
+        .blog-card p {
+            font-size: 15px;
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+
+        .read-more {
+            font-size: 14px;
+            font-weight: 700;
+            color: #111;
+            border-bottom: 2px solid #111;
+            padding-bottom: 2px;
+            display: inline-block;
+        }
+
+        /* ─── LOADING & EMPTY STATE ─── */
+        .loading {
+            text-align: center;
+            padding: 60px 20px;
+            font-size: 18px;
+            color: #999;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 80px 20px;
+        }
+        .empty-state h2 {
+            font-size: 32px;
+            font-weight: 800;
+            margin-bottom: 16px;
+        }
+        .empty-state p {
+            font-size: 16px;
+            color: #666;
+        }
+
+        /* ─── RESPONSIVE ─── */
+        @media (max-width: 750px) {
+            .container { padding: 0 20px; }
+            
+            .desktop-only { display: none; }
+            .hamburger { display: flex; }
+
+            nav {
+                position: fixed;
+                top: 0;
+                right: -100%;
+                width: 70%;
+                height: 100vh;
+                background-color: #f5f2ed;
+                padding: 100px 40px;
+                transition: 0.4s ease-in-out;
+                z-index: 1000;
+                box-shadow: -10px 0 30px rgba(0,0,0,0.05);
+            }
+            nav.active {
+                right: 0;
+            }
+            nav ul {
+                flex-direction: column;
+                gap: 40px;
+            }
+            nav ul li a {
+                font-size: 24px;
+                font-weight: 700;
+            }
+
+            .hamburger.active span:nth-child(1) { transform: rotate(45deg) translate(6px, 6px); }
+            .hamburger.active span:nth-child(2) { opacity: 0; }
+            .hamburger.active span:nth-child(3) { transform: rotate(-45deg) translate(5px, -5px); }
+
+            .nav-dropdown > a::after { display: none; }
+            .nav-dropdown.open .dropdown-menu { display: block; }
+
+            .blog-hero h1 {
+                font-size: 36px;
+                margin-bottom: 16px;
+            }
+            .blog-hero p {
+                font-size: 16px;
+            }
+
+            .blog-grid {
+                grid-template-columns: 1fr;
+                gap: 30px;
+                padding: 60px 0;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <div class="container" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+        <a href="/" class="logo">RAIS HELMY</a>
+        <nav>
+            <ul>
+                <li><a href="/">Home</a></li>
+                <li><a href="/blog">Blog</a></li>
+                <li><a href="/proposal-khairul-aming">Proposal Khairul Aming</a></li>
+                <li><a href="/ma63">MA63 Dashboard</a></li>
+            </ul>
+        </nav>
+        <div class="hamburger">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+        <button class="btn-contact desktop-only" onclick="document.location='/#contact'">Contact Me</button>
+    </div>
+</header>
+
+<script>
+    const hamburger = document.querySelector('.hamburger');
+    const nav = document.querySelector('nav');
+    const navLinks = document.querySelectorAll('nav ul li a');
+
+    window.addEventListener('scroll', function() {
+        const header = document.querySelector('header');
+        if (window.scrollY > 0) {
+            header.classList.add('scrolled');
+        } else {
+            header.classList.remove('scrolled');
+        }
+    });
+
+    hamburger.addEventListener('click', () => {
+        hamburger.classList.toggle('active');
+        nav.classList.toggle('active');
+    });
+
+    navLinks.forEach(link => {
+        link.addEventListener('click', () => {
+            hamburger.classList.remove('active');
+            nav.classList.remove('active');
+        });
+    });
+
+    // Nav dropdown toggle
+    document.querySelectorAll('.nav-dropdown > a').forEach(function(link) {
+        link.addEventListener('click', function(e) {
+            if (window.innerWidth <= 750) {
+                e.preventDefault();
+                this.closest('.nav-dropdown').classList.toggle('open');
+            }
+        });
+    });
+</script>
+
+<section class="blog-hero">
+    <div class="container">
+        <h1>Blog & Insights</h1>
+        <p>Thoughts on building systems, scaling teams, and technical leadership.</p>
+    </div>
+</section>
+
+<section class="container">
+    <div id="blog-posts" class="blog-grid">
+        <div class="loading">Loading posts...</div>
+    </div>
+</section>
+
+<script>
+    async function loadBlogPosts() {
+        try {
+            const response = await fetch('/api/blog/posts');
+            const data = await response.json();
+
+            const container = document.getElementById('blog-posts');
+            
+            if (!data.posts || data.posts.length === 0) {
+                container.innerHTML = `
+                    <div style="grid-column: 1/-1;">
+                        <div class="empty-state">
+                            <h2>No posts yet</h2>
+                            <p>Check back soon for new insights and articles.</p>
+                        </div>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = data.posts.map(post => `
+                <a href="/blog/${post.slug}" class="blog-card">
+                    <img src="${post.featured_image}" alt="${post.title}" class="blog-card-img">
+                    <div class="blog-card-content">
+                        <div class="blog-card-date">${new Date(post.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</div>
+                        <h3>${post.title}</h3>
+                        <p>${post.excerpt}</p>
+                        <span class="read-more">Read Article →</span>
+                    </div>
+                </a>
+            `).join('');
+        } catch (error) {
+            console.error('Error loading posts:', error);
+            document.getElementById('blog-posts').innerHTML = '<div class="loading" style="grid-column: 1/-1;">Error loading posts. Please try again.</div>';
+        }
+    }
+
+    // Load posts on page load
+    loadBlogPosts();
+</script>
+
+</body>
+</html>

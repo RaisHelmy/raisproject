@@ -1,0 +1,89 @@
+﻿@model List<ESS.Payroll.Models.PayrollReport>
+@{
+    Layout = null;
+}
+
+<div class="portlet box blue">
+    <div class="mini-triangle"><img src="../Assets/img/menu-red-triangle.png" /></div>
+    <div class="portlet-title">
+        <div class="caption">
+            <i class="fa fa-reorder"></i>Payroll Deduction Report
+        </div>
+        <input type="button" id="btn-Export" class="btn btn-xs green pull-right" value="Export To Excel" />
+    </div>
+    <div class="portlet-body form">
+        <div class="form-body">
+            <div class="form-horizontal">
+                <div class="table-toolbar">
+                    <table id="tblResult" class="table table-striped table-bordered table-hover table-full-width">
+                        <thead>
+                            <tr>
+                                <th></th>
+                                <th>Reference No.</th>
+                                <th>Deduction Name</th>
+                                <th>Applicant Name</th>
+                                <th>DeductionAmount (RM)</th>
+                                <th>Status</th>
+                                <th>Created Date</th>
+                                <th>PayscaleGroup</th>
+                                <th>Deduction Type</th>
+                                <th>Phone Number</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            @foreach (var item in @Model)
+                            {
+                            <tr>
+
+                                <td>
+                                    @if (item.RequestType == "Payroll Deduction Request")
+                                    {
+                                        <a class="btn blue btn-sm" href="@Url.Content("~/Payroll/PayrollViewForm")?RequestID=@item.EntryID&Source=Report">
+                                            <i class="fa fa-search"></i>
+                                        </a>
+                                    }
+                                    else
+                                    {
+                                        <a class="btn blue btn-sm" href="@Url.Content("~/Payroll/TaxExemptionViewForm")?EntryID=@item.EntryID&Source=Report">
+                                            <i class="fa fa-search"></i>
+                                        </a>
+                                    }
+                                </td>
+
+                                <td>@item.ReferenceNo</td>
+                                <td>@item.RequestType</td>
+                                <td>@item.ApplicantName</td>
+                                <td>@item.DeductionAmount</td>
+                                @if (@item.StatusName == "Declined" || @item.StatusName == "Withdrawn")
+                                {
+                                    <td style="color:red;"><b>@item.StatusName</b></td>
+                                }
+                                else
+                                {
+                                    <td style="color:green;"><b>@item.StatusName</b></td>
+                                }
+
+                                @if (@item.CreatedDate.HasValue)
+                                {
+                                    <td>@item.CreatedDate.Value.ToString("dd-MM-yyyy")</td>
+                                }
+                                else
+                                {
+                                    <td>-</td>
+                                }
+                                <td>@item.PayScaleGroup</td>
+                                <td>@item.DeductionName</td>
+                                <td>@item.PhoneNumber</td>
+                            </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+    transformTable("#tblResult");
+</script>

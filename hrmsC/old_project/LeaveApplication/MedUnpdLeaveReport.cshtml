@@ -1,0 +1,267 @@
+﻿@model List<LeaveApplication.Models.LeaveStatus>
+
+@{
+    //Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewBag.Title = "SLA Report (Medical & Unpaid Leave)";
+
+    List<string> leaveTypeList = new List<string> { "LV04", "LV06" };
+    List<string> leaveSubTypeList = new List<string> { "MC01", "MC05", "UP01", "UP02", "UP03", "UP04", "UP05", "UP06", "UP07" };
+
+    var lastMonth = DateTime.Today.AddMonths(-1);
+    var defaultStartDate = DateTime.Now.AddDays(-7).ToString("dd/MM/yyyy");
+    var defaultEndDate = DateTime.Now.ToString("dd/MM/yyyy");
+}
+
+<div class="row">
+    <div class="col-md-12">
+        <br />
+        <h1 class="page-title">
+            @ViewBag.Title<span style="padding-left:20px;"><small></small></span>
+        </h1>
+    </div>
+</div>
+<br />
+<div class="form-body">
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-4 control-label">Employee Name/Code</label>
+                    <div class="col-md-8 form-control-static">
+                        <input type="text" id="EmpName" class="form-control" name="EmpName" />
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-4 control-label">Start Date</label>
+                    <div class="col-md-8 form-control-static">
+                        <div id="startdatepicker" class="input-group date date-picker" data-date-format="dd MM yyyy">
+                            <input type="text" class="form-control" id="StartDate" name="StartDate" />
+                            <span class="input-group-btn">
+                                <button type="button" class="btn default"><i class="fa fa-calendar"></i></button>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-4 control-label">End Date</label>
+                    <div class="col-md-8 form-control-static">
+                        <div id="enddatepicker" class="input-group date date-picker" data-date-format="dd MM yyyy">
+                            <input type="text" class="form-control" id="EndDate" name="EndDate" />
+                            <span class="input-group-btn">
+                                <button type="button" class="btn default"><i class="fa fa-calendar"></i></button>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-4 control-label">Leave Type</label>
+                    <div class="col-md-8 form-control-static">
+                        <select class="form-control" id="ddlLeaveType" onchange="PopulateLeaveSubtype();"></select>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-4 control-label">Leave Subtype</label>
+                    <div class="col-md-8 form-control-static">
+                        <select class="form-control" id="ddlLeaveSubtype"></select>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-4 control-label">Status</label>
+                    <div class="col-md-8 form-control-static">
+                        <select class="form-control" id="Status">
+                            <option value="">- All -</option>
+                            @foreach (var status in Model)
+                            {
+                                <option value="@status.StatusCode">@status.StatusDesc</option>
+                            }
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">&nbsp;</div>
+    <div class="row">
+        <div class="col-md-12">
+            <div class="text-right">
+                <input type="button" id="btn-Search" class="btn green btn-Search" value="Search" onclick="SearchListing();">
+                <input id="btn-Clear" type="button" class="btn default " value="Clear" onclick="ClearFilter();">
+            </div>
+        </div>
+    </div>
+    <div class="row">&nbsp;</div>
+    <div class="row">
+        <div class="col-md-12">
+            <div id="SearchResult">
+
+            </div>
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+    function SearchListing() {
+        var _EmpName = $('#EmpName').val().replace("'", "''");
+        var _DateFrom = $('#StartDate').val();
+        var _DateTo = $('#EndDate').val();
+        var _LeaveTypeCode = $('#ddlLeaveType').val();
+        var _LeaveSubtype = $('#ddlLeaveSubtype').val();
+        var _Status = $('#Status').val();
+
+        $("#SearchResult").html("LOADING...");
+
+        $.ajax({
+            type: "GET",
+            url: '@Url.Action("_MedUnpdLeaveReportResult", "LeaveApplication")',
+            cache: false,
+            data: {
+                empName : _EmpName,
+                dateFrom: _DateFrom,
+                dateTo: _DateTo,
+                leaveTypeCode: _LeaveTypeCode,
+                leaveSubtypeCode: _LeaveSubtype,
+                leaveStatus: _Status,
+                _: new Date()
+            },
+            success: function (content) {
+                $("#SearchResult").html(content);
+            },
+            error: function (e) {
+                console.log(e);
+            }
+        });
+    }
+
+    jQuery.extend(jQuery.fn.dataTableExt.oSort, {
+        "date-dmy-pre": function (a) {
+            if (a == null || a == "") {
+                return 0;
+            }
+            var date = a.split('-');
+            return (date[2] + date[1] + date[0]) * 1;
+        },
+
+        "date-dmy-asc": function (a, b) {
+            return ((a < b) ? -1 : ((a > b) ? 1 : 0));
+        },
+
+        "date-dmy-desc": function (a, b) {
+            return ((a < b) ? 1 : ((a > b) ? -1 : 0));
+        }
+    });
+
+    $(function () {
+        $('.date-picker').datepicker({
+            format: 'dd/mm/yyyy',
+            autoclose: true,
+        });
+
+        $('#startdatepicker').datepicker("setDate", '@defaultStartDate');
+        $('#enddatepicker').datepicker("setDate", '@defaultEndDate');
+
+        RetrieveLeaveTypeOptions();
+    });
+
+
+    function ClearFilter() {
+        $('#EmpName').val('');
+        $('#ReferenceNo').val('');
+        //$('#StartDate').val('');
+        //$('#EndDate').val('');
+        $('#startdatepicker').datepicker("setDate", '@defaultStartDate');
+        $('#enddatepicker').datepicker("setDate", '@defaultEndDate');
+        $('#ddlLeaveType').val('');
+        $('#ddlLeaveSubtype').val('');
+        $('#Status').val('');
+
+        SearchListing();
+    }
+
+    var LeaveTypes = null;
+    var LeaveSubtypes = null;
+    function RetrieveLeaveTypeOptions() {
+        $.get('@Url.Action("GetLeaveTypeOptions", "LeaveApplication")', function (result) {
+            LeaveTypes = result;
+            PopulateLeaveType();
+        });
+    }
+
+    function PopulateLeaveType() {
+        var ddlLeaveType = $('#ddlLeaveType');
+        var onlyLoadLeave = [
+        @foreach(var item in leaveTypeList) {
+        @:"@item",
+        }
+        ];
+
+        var i = 0;
+        ddlLeaveType.empty();
+        ddlLeaveType.append('<option value=""> - Please Select - </option>');
+        for (i = 0; i < LeaveTypes.length; i++) {
+            if (onlyLoadLeave.indexOf(LeaveTypes[i].LeaveTypeCode) > -1) {
+                ddlLeaveType.append('<option value="' + LeaveTypes[i].LeaveTypeCode + '">' + LeaveTypes[i].LeaveTypeName + '</option>');
+            }
+        }
+
+        ddlLeaveType.prop("selectedIndex", 0);
+        ddlLeaveType.change();
+    }
+
+    function PopulateLeaveSubtype() {
+        var ddlLeaveSubtype = $('#ddlLeaveSubtype');
+        //var selectedLeaveTypeIndex = $('#ddlLeaveType').prop("selectedIndex") - 1;
+        //var leaveType = LeaveTypes[selectedLeaveTypeIndex];
+        var selectLeaveTypeCode = $('#ddlLeaveType').val();
+        var leaveType = LeaveTypes.find(x => x.LeaveTypeCode === selectLeaveTypeCode);
+        var onlyLoadLeaveSub = [
+        @foreach(var item in leaveSubTypeList){
+        @:"@item",
+        }
+        ];
+
+        if (leaveType) {
+            LeaveSubtypes = leaveType["LeaveSubtypes"];
+        }
+
+        var i = 0;
+        ddlLeaveSubtype.empty();
+        ddlLeaveSubtype.append('<option value=""> - Please Select - </option>');
+
+        if (LeaveSubtypes) {
+            for (i = 0; i < LeaveSubtypes.length; i++) {
+                if (onlyLoadLeaveSub.indexOf(LeaveSubtypes[i].LeaveSubtypeCode) > -1) {
+                    ddlLeaveSubtype.append('<option value="' + LeaveSubtypes[i].LeaveSubtypeCode + '">' + LeaveSubtypes[i].LeaveSubtypeName + '</option>');
+                }
+            }
+        }
+
+        ddlLeaveSubtype.prop("selectedIndex", 0);
+    }
+</script>
+
+@Html.Partial("_ExcelExport")

@@ -1,0 +1,251 @@
+﻿@model ESS.Mobility.Models.DropdownLists
+@{
+    ViewBag.Title = "Mobility Report";
+}
+<div class="row">
+    <div class="col-md-12">
+        <br />
+        <h1 class="page-title">
+            Mobility Report<span style="padding-left:20px;"><small></small></span>
+        </h1>
+    </div>
+</div>
+<br />
+<input type="hidden" name="EmployeeID" id="EmployeeID" value="@ViewBag.EmployeeID"/>
+
+<div class="form-body">
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-4 control-label">Employee</label>
+                    <div class="col-md-8 form-control-static">
+                        @Html.Partial("_PeoplePicker")
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-4 control-label">Type</label>
+                    <div class="col-md-8 form-control-static">
+                        @Html.DropDownList("Type", new SelectList(Model.typeList, "Value", "Text"), "- All -", new { @class = "bs-select form-control" })
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-4 control-label">Company</label>
+                    <div class="col-md-8 form-control-static">
+                        @Html.DropDownList("Division", new SelectList(Model.divisionList, "Value", "Text"), "- All -", new { @class = "bs-select form-control", @onchange = "changeDivision(this)" })
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-4 control-label">Department</label>
+                    <div class="col-md-8 form-control-static" id="DepartmentResult">
+                        @Html.DropDownList("Department", new SelectList(Model.departmentList, "Value", "Text"), "- All -", new { @class = "bs-select form-control", @onchange = "changeDepartment(this)" })
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-4 control-label">Unit / Section</label>
+                    <div class="col-md-8 form-control-static" id="UnitSectionResult">
+                        @Html.DropDownList("UnitSection", new SelectList(Model.unitSectionList, "Value", "Text"), "- All -", new { @class = "bs-select form-control" })
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-4 control-label">Release Date (From)</label>
+                    <div class="col-md-8 form-control-static">
+                        <div class="input-group date date-picker" id="divSubmissionDateFrom" data-date-format="dd MM yyyy">
+                            <input type="text" class="form-control" id="ReleaseDateFrom" name="ReleaseDateFrom" />
+                            <span class="input-group-btn">
+                                <button type="button" class="btn default"><i class="fa fa-calendar"></i></button>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-4 control-label">Release Date (To)</label>
+                    <div class="col-md-8 form-control-static">
+                        <div class="input-group date date-picker" id="divSubmissionDateTo" data-date-format="dd MM yyyy">
+                            <input type="text" class="form-control" id="ReleaseDateTo" name="ReleaseDateTo" />
+                            <span class="input-group-btn">
+                                <button type="button" class="btn default"><i class="fa fa-calendar"></i></button>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-4 control-label">Status</label>
+                    <div class="col-md-8 form-control-static">
+                        @Html.DropDownList("Status", new SelectList(Model.statusList, "Value", "Text"), "- All -", new { @class = "bs-select form-control" })
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">&nbsp;</div>
+    <div class="row">
+        <div class="col-md-12">
+            <div class="text-right">
+                <input type="button" id="btn-Search" class="btn green btn-Search" value="Search" onclick="SearchListing();">
+            </div>
+        </div>
+    </div>
+
+    <div class="row">&nbsp;</div>
+    <div class="row">
+        <div class="col-md-12">
+            <div id="SearchResult">
+
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<script type="text/javascript">
+
+    $(document).ready(function () {
+        $('#divSubmissionDateFrom').datepicker();
+        $('#divSubmissionDateTo').datepicker();
+
+
+        $("#divSubmissionDateFrom").datepicker({
+            autoclose: true,
+        }).on('changeDate', function (selected) {
+            var minDate = new Date(selected.date.valueOf());
+
+            minDate.setDate(minDate.getDate() + 1);
+            $('#divSubmissionDateTo').datepicker('setStartDate', minDate);
+        });
+
+         $("#divSubmissionDateTo").datepicker({
+            autoclose: true,
+        }).on('changeDate', function (selected) {
+            var minDate = new Date(selected.date.valueOf());
+            minDate.setDate(minDate.getDate() - 1);
+            $('#divSubmissionDateFrom').datepicker('setEndDate', minDate);
+        });
+    });
+
+    function SearchListing() {
+        $("#SearchResult").html("LOADING...");
+
+        var _Type = $("#Type").val();
+        var _Status = $("#Status").val();
+        var _EmployeeID = $("#EmployeeID").val();
+        var _Division = $("#Division").val();
+        var _Department = $("#Department").val();
+        var _UnitSection = $("#UnitSection").val();
+        var _ReleaseDateFrom = $("#ReleaseDateFrom").val();
+        var _ReleaseDateTo = $("#ReleaseDateTo").val();
+        var _SearchEmployeeID = $("#hfEmpID").val();
+        $.ajax({
+            type: "GET",
+            url: '@Url.Content("~/Mobility/_MobilityLetterList")',
+            cache: false,
+            dataType: "html",
+            data: {
+                Status: _Status, TemplateName: _Type,
+                Division: _Division, Department: _Department, UnitSection: _UnitSection,
+                ReleaseDateFrom: _ReleaseDateFrom, ReleaseDateTo: _ReleaseDateTo, EmployeeID: _SearchEmployeeID
+            },
+            success: function (content) {
+                $("#SearchResult").html(content);
+            },
+            error: function (e) {
+                console.log(e);
+            }
+        });
+        }
+
+    function changeDivision(e) {
+        $("#DepartmentResult").html('<select class="bs-select form-control" id="Department" name="Department"><option value>- All -</option></select>');
+        $("#UnitSectionResult").html('<select class="bs-select form-control" id="UnitSection" name="UnitSection"><option value>- All -</option></select>');
+        $.ajax({
+            type: "GET",
+            url: '@Url.Content("~/Mobility/_DDLDepartment")',
+            cache: false,
+            dataType: "html",
+            data: { CompanyCode: e.value },
+            success: function (content) {
+                $("#DepartmentResult").html(content);
+            },
+            error: function (e) {
+                console.log(e);
+            }
+        });
+    }
+
+    function changeDepartment(e) {
+        $("#UnitSectionResult").html('<select class="bs-select form-control" id="UnitSection" name="UnitSection"><option value>- All -</option></select>');
+        $.ajax({
+            type: "GET",
+            url: '@Url.Content("~/Mobility/_DDLUnitSection")',
+            cache: false,
+            dataType: "html",
+            data: { DepartmentCode: e.value },
+            success: function (content) {
+                $("#UnitSectionResult").html(content);
+            },
+            error: function (e) {
+                console.log(e);
+            }
+        });
+    }
+
+    function ExportExcel() {
+        var _Type = $("#Type").val();
+        var _Status = $("#Status").val();
+        var _EmployeeID = $("#EmployeeID").val();
+        var _Division = $("#Division").val();
+        var _Department = $("#Department").val();
+        var _UnitSection = $("#UnitSection").val();
+        var _ReleaseDateFrom = $("#ReleaseDateFrom").val();
+        var _ReleaseDateTo = $("#ReleaseDateTo").val();
+        var _SearchEmployeeID = $("#hfEmpID").val();
+
+        window.open("../Mobility/_ExportToExcel?TemplateName=" + _Type +
+                                                "&Status=" + _Status +
+                                                "&Division=" + _Division +
+                                                "&Department=" + _Department +
+                                                "&UnitSection=" + _UnitSection +
+                                                "&ReleaseDateFrom=" + _ReleaseDateFrom +
+                                                "&ReleaseDateTo=" + _ReleaseDateTo +
+                                                "&SearchEmployeeID=" + _SearchEmployeeID
+                                                );
+    }
+</script>

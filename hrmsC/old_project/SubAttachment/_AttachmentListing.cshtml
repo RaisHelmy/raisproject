@@ -1,0 +1,140 @@
+﻿@model List<ESS.Core.AttachmentObject>
+@{
+    Layout = null;
+    string Mode = ViewBag.Mode;
+    string RequestID = ViewBag.RequestID;
+    string EmployeeID = ViewBag.EmployeeID;
+    string ShowOptionField = ViewBag.ShowOptionField;
+    string CustomTextLabel1 = ViewBag.CustomTextLabel1;
+}
+<input type="hidden" id="CountTotal_Attachment" value="@Model.Count" />
+<input type="hidden" value="@ViewBag.RequestID" />
+
+<div class="table-toolbar">
+    <table id="tbl_Attachment" class="table table-striped table-bordered table-hover table-full-width">
+        <thead>
+            <tr>
+                <th></th>
+                <th>Attachment</th>
+                @*<th>Attachment Description </th>*@
+                <th>Attached by</th>
+                <th>Created Date</th>
+
+                @if (ShowOptionField == "true" && (Model != null && Model.Count > 0) && !string.IsNullOrEmpty(CustomTextLabel1))
+                {
+                    <th>@CustomTextLabel1</th>
+                }
+
+                @if (Mode != "View" && (Model != null && Model.Count > 0))
+                {
+                    <th></th>
+                }
+
+
+
+                @*<th>Source Type</th>*@
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in @Model)
+            {
+                <tr>
+                    @if (Mode == "Add")
+                    {
+                        if (!string.IsNullOrEmpty(item.SourceID))
+                        {
+                            <td>
+                                <a class="btn blue btn-sm" onclick="_DownloadAttachment('@item.ID')"><i class="fa fa-download"></i></a>
+                            </td>
+                        }
+                        else
+                        {
+                            <td>
+                                <a class="btn blue btn-sm" onclick="_DownloadTempDocument('@item.ID')"><i class="fa fa-download"></i></a>
+                            </td>
+                        }
+                    }
+
+                    @if (Mode == "New")
+                    {
+                        <td>
+                            <a class="btn blue btn-sm" onclick="_DownloadTempDocument('@item.ID')"><i class="fa fa-download"></i></a>
+                        </td>
+                    }
+
+                    @if (Mode == "View")
+                    {
+                        <td>
+                            <a class="btn blue btn-sm" onclick="_DownloadAttachment('@item.ID')"><i class="fa fa-download"></i></a>
+                        </td>
+                    }
+                    <td><p style="white-space: pre-wrap">@item.FileName</p></td>
+                    @*<td><p style="white-space: pre-wrap">@item.Description</p></td>*@
+                    <td>@item.EmployeeName</td>
+                    @if (@item.CreatedDate.HasValue)
+                    {
+                        <td>@item.CreatedDate.Value.ToString("dd/MM/yyyy")</td>
+                    }
+                    else
+                    {
+                        <td>-</td>
+                    }
+
+                    @if (ShowOptionField == "true" && !string.IsNullOrEmpty(CustomTextLabel1))
+                    {
+                        <td>@item.CustomTextValue1</td>
+                    }
+
+                    @if (Mode == "Add")
+                    {
+                        if (item.EmployeeID.ToLower() == EmployeeID.ToLower())
+                        {
+                            if (!string.IsNullOrEmpty(item.SourceID))
+                            {
+                                <td>
+                                    <a class="btn red btn-sm" onclick="javascript: _DeleteDocument('@item.ID')">Remove</a>
+                                </td>
+                            }
+                            else
+                            {
+                                <td>
+                                    <a class="btn red btn-sm" onclick="javascript: _DeleteSessionDocument('@item.ID')">Remove</a>
+                                </td>
+                            }
+
+                        }
+                        else
+                        {
+                            <td></td>
+                        }
+
+                    }
+
+                    @if (Mode == "New")
+                    {
+                        <td>
+                            <a class="btn red btn-sm" onclick="javascript: _DeleteSessionDocument('@item.ID')">Remove</a>
+                        </td>
+                    }
+
+                    @*<td>@item.SourceType</td>*@
+                </tr>
+            }
+
+        </tbody>
+    </table>
+</div>
+
+<script type="text/javascript">
+    //transformTable("#AppletblAttachment");
+
+    $('#tbl_Attachment').dataTable(
+        {
+            "bLengthChange": false,
+            "bFilter": false,
+            "bPaginate": false,
+            "bInfo": false,
+            "bSortable": false,
+
+        });
+</script>

@@ -1,0 +1,350 @@
+﻿@model ESS.MedicalBoard.Models.MedicalBoardVM
+
+@using ESS.MedicalBoard.Models
+
+@{
+    Layout = null;
+}
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="portlet box blue">
+            <div class="mini-triangle"><img src="/_layouts/15/TNBESS/Assets/img/menu-red-triangle.png" /></div>
+            <div class="portlet-title">
+                <div class="caption">
+                    <i class="fa fa-reorder"></i>Medical Board Details
+                </div>
+            </div>
+            <div class="portlet-body form">
+                <div class="form-body">
+                    @if (Model.Status == "Draft")
+                    { 
+                        <input type="hidden" name="Status" value="@Model.Status" />
+                    }
+                    else
+                    {
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <label class="control-label col-md-4">Reference No.</label>
+                                        <div class="col-md-8 form-control-static">
+                                            <input type="text" class="form-control" readonly style="font-weight:bold; color:blue;"
+                                                   name="ReferenceNo" value="@Model.ReferenceNo">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <label class="control-label col-md-4">Status</label>
+                                        <div class="col-md-8 form-control-static">
+                                            <input type="hidden" name="Status" value="@Model.Status" />
+
+                                            @if (Model.Status == "Declined" || Model.Status == "Withdrawn")
+                                            {
+                                                <input type="text" class="form-control" readonly style="color: red;"
+                                                       name="StatusDescription" value="@Model.Status">
+                                            }
+                                            else
+                                            {
+                                                <input type="text" class="form-control" readonly style="color:green;"
+                                                       name="StatusDescription" value="@Model.Status">
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                <div class="row">
+                    @if (Model.Status == "Draft")
+                    {
+                        <div class="col-md-6">
+                            <div class="form-horizontal">
+                                <div class="form-group">
+                                    <label class="control-label col-md-4">
+                                        Employee Name<span style="color:red;"> *</span>
+                                    </label>
+                                    <div class="col-md-8 form-control-static">
+                                        @Html.Action("_PeoplePickerExt", "PeoplePicker", new { CurrEmpID = ViewBag.EmployeeID, SearchType = "Subordinates" })
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="col-md-6">
+                            <div class="form-horizontal">
+                                <div class="form-group">
+                                    <label class="control-label col-md-4">
+                                        Employee Name
+                                    </label>
+                                    <div class="col-md-8 form-control-static">
+                                        <input type="hidden" name="EmployeeID" value="@Model.EmployeeID" />
+                                        <input type="hidden" name="EmployeeCode" value="@Model.EmployeeCode" />
+                                        <input type="hidden" name="EmployeeName" value="@Model.EmployeeName" />
+                                        <input type="text" class="form-control" readonly
+                                               value="@(Model.EmployeeCode + " - " + Model.EmployeeName)">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+
+                    @if (Model.Status != "Draft")
+                    {
+                        <div class="col-md-6">
+                            <div class="form-horizontal">
+                                <div class="form-group">
+                                    <label class="control-label col-md-4">Current Approver</label>
+                                    <div class="col-md-8 form-control-static">
+                                        <input type="text" class="form-control" readonly
+                                               name="CurrentApprover" value="@Model.CurrentApprover">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="divCurrentApprover" class="col-md-6" style="display:none;">
+                            <div class="form-horizontal">
+                                <div class="form-group">
+                                    <label class="control-label col-md-4">Current Approver</label>
+                                    <div class="col-md-8 form-control-static">
+                                        <label id="ct01_CurrentApprover" class="LabelDisplay"></label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+                    <div class="row">
+                        @if (Model.ApprovalLevel >= 2)
+                        {
+                            if (Model.ApprovalLevel >= 2 && Model.ApprovalLevel <= 4 && Model.IsTaskOwner)
+                            {
+                                <div class="col-md-6">
+                                    <div class="form-horizontal">
+                                        <div class="form-group">
+                                            <label class="control-label col-md-4">
+                                                Appointment Date<span style="color:red;"> *</span>
+                                            </label>
+                                            <div class="col-md-8 form-control-static">
+                                                <div class="input-group date date-picker" data-date-format="dd MM yyyy">
+                                                    <input type="text" class="form-control" id="AppointmentDate" name="AppointmentDate" value="@(Model.AppointmentDate.HasValue ? Model.AppointmentDate.Value.ToString("dd/MM/yyyy") : "")" />
+                                                    <span class="input-group-btn">
+                                                        <button type="button" class="btn default"><i class="fa fa-calendar"></i></button>
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="col-md-6">
+                                    <div class="form-horizontal">
+                                        <div class="form-group">
+                                            <label class="control-label col-md-4">
+                                                Appointment Date
+                                            </label>
+                                            <div class="col-md-8 form-control-static">
+                                                <input type="text" class="form-control" value="@(Model.AppointmentDate.HasValue ? Model.AppointmentDate.Value.ToString("dd/MM/yyyy") : "")" readonly
+                                                       id="AppointmentDate" name="AppointmentDate" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        }
+
+                        @if (Model.Status == "Draft" || (Model.ApprovalLevel <= 4 && Model.IsTaskOwner))
+                        {
+                            <div class="col-md-6">
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <label class="control-label col-md-4">
+                                            Type of Disease<span style="color:red;"> *</span>
+                                        </label>
+                                        <div class="col-md-8 form-control-static">
+                                            <input type="text" class="form-control" value="@Model.TypeOfDisease"
+                                                   id="TypeOfDisease" name="TypeOfDisease">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="col-md-6">
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <label class="control-label col-md-4">
+                                            Type of Disease
+                                        </label>
+                                        <div class="col-md-8 form-control-static">
+                                            <input type="text" class="form-control" value="@Model.TypeOfDisease" readonly
+                                                   id="TypeOfDisease" name="TypeOfDisease">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                    <div class="row">
+                        @if (Model.ApprovalLevel >= 4)
+                        {
+                            if (Model.ApprovalLevel == 4 && Model.IsTaskOwner)
+                            {
+                                <div class="col-md-6">
+                                    <div class="form-horizontal">
+                                        <div class="form-group">
+                                            <label class="control-label col-md-4">
+                                                Letter Date to Hospital<span style="color:red;"> *</span>
+                                            </label>
+                                            <div class="col-md-8 form-control-static">
+                                                <div class="input-group date date-picker" data-date-format="dd MM yyyy">
+                                                    <input type="text" class="form-control" id="LetterDateToHospital" name="LetterDateToHospital" value="@(Model.LetterDateToHospital.HasValue ? Model.LetterDateToHospital.Value.ToString("dd/MM/yyyy") : "")" />
+                                                    <span class="input-group-btn">
+                                                        <button type="button" class="btn default"><i class="fa fa-calendar"></i></button>
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="col-md-6">
+                                    <div class="form-horizontal">
+                                        <div class="form-group">
+                                            <label class="control-label col-md-4">
+                                                Letter Date to Hospital
+                                            </label>
+                                            <div class="col-md-8 form-control-static">
+                                                <input type="text" class="form-control" value="@(Model.LetterDateToHospital.HasValue ? Model.LetterDateToHospital.Value.ToString("dd/MM/yyyy") : "")" readonly
+                                                       id="LetterDateToHospital" name="LetterDateToHospital" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        }
+
+                        @if (Model.Status == "Draft" || (Model.ApprovalLevel <= 4 && Model.IsTaskOwner))
+                        {
+                            <div class="col-md-6">
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <label class="control-label col-md-4">
+                                            Hospital<span style="color:red;"> *</span>
+                                        </label>
+                                        <div class="col-md-8 form-control-static">
+                                            <input type="text" class="form-control" value="@Model.Hospital"
+                                                   id="Hospital" name="Hospital">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="col-md-6">
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <label class="control-label col-md-4">
+                                            Hospital
+                                        </label>
+                                        <div class="col-md-8 form-control-static">
+                                            <input type="text" class="form-control" value="@Model.Hospital" readonly
+                                                   id="Hospital" name="Hospital">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                    <div class="row">
+                        @if (Model.ApprovalLevel >= 2)
+                        {
+                            if (Model.ApprovalLevel >= 2 && Model.ApprovalLevel <= 7 && Model.IsTaskOwner)
+                            {
+                                <div class="col-md-12">
+                                    <div class="form-horizontal">
+                                        <div class="form-group">
+                                            <label class="control-label col-md-2">
+                                                Location<span style="color:red;"> *</span>
+                                            </label>
+                                            <div class="col-md-10 form-control-static">
+                                                <textarea class="form-control" rows="3" style="width:100%;" id="Location" name="Location">@Model.Location</textarea>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="col-md-12">
+                                    <div class="form-horizontal">
+                                        <div class="form-group">
+                                            <label class="control-label col-md-2">
+                                                Location
+                                            </label>
+                                            <div class="col-md-10 form-control-static">
+                                                <textarea class="form-control" rows="3" style="width:100%;" id="Location" name="Location" readonly>@Model.Location</textarea>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        }
+                    </div>
+                    <div class="row">
+                        @if (Model.Status == "Draft" || (Model.ApprovalLevel == 0 && Model.IsTaskOwner))
+                        {
+                            <div class="col-md-12">
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <label class="control-label col-md-2">
+                                            IM Comment<span style="color:red;"> *</span> <img id="imgBalanceInfo" src="/_layouts/15/images/info16by16.gif" alt="IMCommentInfo" title="Mohon IM berikan ulasan mengapa pekerja ingin dirujuk kepada Medical Board">
+                                        </label>
+                                        <div class="col-md-10 form-control-static">
+                                            <textarea class="form-control" rows="3" style="width:100%;" id="IMComment" name="IMComment">@Model.IMComment</textarea>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="col-md-12">
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <label class="control-label col-md-2">
+                                            IM Comment <img id="imgBalanceInfo" src="/_layouts/15/images/info16by16.gif" alt="IMCommentInfo" title="Mohon IM berikan ulasan mengapa pekerja ingin dirujuk kepada Medical Board">
+                                        </label>
+                                        <div class="col-md-10 form-control-static">
+                                            <textarea class="form-control" rows="3" style="width:100%;" id="IMComment" name="IMComment" readonly>@Model.IMComment</textarea>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(function () {
+        $('.date-picker').datepicker({
+            format: 'dd/mm/yyyy',
+            autoclose: true,
+        });
+    });
+</script>

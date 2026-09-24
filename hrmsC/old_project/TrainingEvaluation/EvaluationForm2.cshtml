@@ -1,0 +1,634 @@
+﻿@model Tuple<List<ESS.Core.DropDownObject>, List<ESS.Core.EvaluationForm_2_Section>>  
+@{
+    ViewBag.Title = "Evaluation Form";
+}
+
+<div class="form-section">
+    <div class="row">
+        <div class="col-md-12">
+            <h1 class="page-title">
+                Evaluation Form
+                <span style="padding-left:20px;">
+                    <small></small>
+                </span>
+            </h1>
+        </div>
+    </div>
+</div>
+@using (Html.BeginForm("", "TrainingEvaluation", FormMethod.Post, new { @class = "form-horizontal", @id = "MainForm" }))
+{
+    <input id="hfEmployeeID" type="hidden" value="@ViewBag.EmployeeID" />
+    <input id="hfEvaluationID" type="hidden" value="@ViewBag.EvaluationID" />
+
+    //Step 1 to Step 4
+    <div class="row">
+        <div class="col-md-12">
+            <div class="col-md-2 col-sm-2 col-xs-2">
+                Training Details 
+            </div>
+            <div class="col-md-1 col-sm-1 col-xs-1">
+                <img src="/_layouts/tnbess/ui/silver_arrow.png" />
+            </div>
+            <div class="col-md-2 col-sm-2 col-xs-2">
+                <b>Select Questions</b>
+            </div>
+            <div class="col-md-1 col-sm-1 col-xs-1">
+                <img src="/_layouts/tnbess/ui/silver_arrow.png" />
+            </div>
+            <div class="col-md-2 col-sm-2 col-xs-2">
+                Select Attendees
+            </div>
+            <div class="col-md-1 col-sm-1 col-xs-1">
+                <img src="/_layouts/tnbess/ui/silver_arrow.png" />
+            </div>
+            <div class="col-md-1 col-sm-1 col-xs-1">
+                Preview
+            </div>
+        </div>
+    </div>
+    <br />
+
+    //Questionnaire Details
+    <div class="row">
+        <div class="col-md-12">
+            <div class="portlet box blue">
+                <div class="mini-triangle"><img src="../Assets/img/menu-red-triangle.png" /></div>
+                <div class="portlet-title">
+                    <div class="caption">
+                        <i class="fa fa-reorder"></i>Questionnaire Details
+                    </div>
+                </div>
+                <div class="portlet-body form">
+                    <div class="form-body" id="ct01_CustomFieldFormView">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <label class="control-label col-md-3">
+                                            Evaluation Category <span id="lvTypeMan" style="color:red;"> *</span>
+                                        </label>
+                                        <div class="col-md-5 form-control-static">
+                                            @Html.DropDownList("EvaluationCategory", new SelectList(Model.Item1, "Value", "Text"), "- Select One -", new { @class = "bs-select form-control", @onchange = "ChangeEvaluationCategory()" })
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <label class="control-label col-md-3">
+                                            Evaluation Subcategory <span id="lvTypeMan" style="color:red;"> *</span>
+                                        </label>
+                                        <div class="col-md-5 form-control-static">
+                                            @Html.Action("_DDLEvaluationSubcategory", "TrainingEvaluation", new { })
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <label class="control-label col-md-3">
+                                            For Assessment By <span id="lvTypeMan" style="color:red;"> *</span>
+                                        </label>
+                                        <div class="col-md-5 form-control-static">
+                                            <select name="AssessmentBy" id="AssessmentBy" class="form-control">
+                                                <option selected="selected" value="">- Select One -</option>
+                                                <option value="Attendee">Attendee</option>
+                                                <option value="IM">IM</option>
+                                                <option value="Attendee &amp; IM">Attendee &amp; IM</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <label class="control-label col-md-3">
+                                            Remarks (If any)
+                                        </label>
+                                        <div class="col-md-9 form-control-static">
+                                            <textarea class="form-control" id="Remarks"></textarea>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <label class="control-label col-md-12">
+                                            Select Questions <span id="lvTypeMan" style="color:red;"> *</span>
+                                        </label>
+                                        <div class="col-md-12" id="QuestionListResult">
+                                            @*@Html.Action("_EvaluationQuestionList", "TrainingEvaluation", new {  })*@
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <input type="button" class="btn green" value="Create Section" id="btnCreateSection" onclick="Validation('CreateSection')" />
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    //View Question
+    foreach (var m in Model.Item2)
+    {
+        <div class="row" id='@(m.EvaluationSectionID + "_Header")'>
+            <div class="col-md-12">
+                <div class="portlet box blue">
+                    <div class="mini-triangle"><img src="../Assets/img/menu-red-triangle.png" /></div>
+                    <div class="portlet-title">
+                        <div class="caption">
+                            <i class="fa fa-reorder"></i> @m.EvaluationSubCategoryDesc
+                        </div>
+                        <input type="text" id="txtSectionOrder" class="pull-right" style="color:black;width:20px;text-align:center;"value="@m.QuestionOrder" readonly/>
+                    </div>
+                    <div class="portlet-body form">
+                        <div class="form-body">
+                            <input type="hidden" id="hfEvaluationCategoryCode" value="@m.EvaluationCategoryCode"/>
+                            <input type="hidden" id="hfEvaluationSubcategoryCode" value="@m.EvaluationSubCategoryCode" />
+                            <div class="row hide" id="Category">
+                                <div class="col-md-12">
+                                    <div class="form-horizontal">
+                                        <div class="form-group">
+                                            <label class="control-label col-md-3 ">
+                                                Evaluation Category
+                                            </label>
+                                            <div class="col-md-5 form-control-static">
+                                                <span class="CategoryDesc_View">@m.EvaluationCategoryDesc</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row hide" id="Subcategory">
+                                <div class="col-md-12">
+                                    <div class="form-horizontal">
+                                        <div class="form-group">
+                                            <label class="control-label col-md-3 ">
+                                                Evaluation Subcategory
+                                            </label>
+                                            <div class="col-md-5 form-control-static">
+                                                <span class="SubcategoryDesc_View">@m.EvaluationSubCategoryDesc</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="form-horizontal">
+                                        <div class="form-group">
+                                            <label class="control-label col-md-3">
+                                                For Assessment By<span id="lvTypeMan" style="color:red;">*</span>:
+                                            </label>
+                                            <div class="col-md-5 form-control-static">
+                                                <span class="AssesmentBy_View">@m.AssessmentBy</span>
+                                                
+                                                <select name="AssessmentBy2" id="AssessmentBy2" class="form-control hide AssesmentBy_DDL">
+                                                    <option selected="selected" value="">- Select One -</option>
+                                                    <option value="Attendee">Attendee</option>
+                                                    <option value="IM">IM</option>
+                                                    <option value="Attendee &amp; IM">Attendee &amp; IM</option>
+                                                </select>
+                                            </div>
+                                            <div class="col-md-4 text-right" id="@(m.EvaluationSectionID + "_EditSection")">
+                                                <input type="button" class="btn green" value="Edit Section" onclick="EditSection('@m.EvaluationSectionID',this)" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="form-horizontal">
+                                        <div class="form-group">
+                                            <label class="control-label col-md-3">
+                                                Remarks (If any):
+                                            </label>
+                                            <div class="col-md-9 form-control-static">
+                                                <span class="Remarks_View">@m.Remarks</span>
+                                                <textarea class="form-control hide Remarks_TextArea" id="Remarks2">@m.Remarks</textarea>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="form-horizontal">
+                                        <div class="form-group">
+                                            <label class="control-label col-md-12">
+                                                Select Questions <span id="lvTypeMan" style="color:red;"> *</span>
+                                            </label>
+                                            <div class="col-md-12" id="SectionQuestionListResult">
+                                                @Html.Action("_EvaluationSectionQuestionList", "TrainingEvaluation", new { EvaluationID = m.EvaluationID, EvaluationSectionID = m.EvaluationSectionID })
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row hide" id="@(m.EvaluationSectionID + "_UpdateSection")">
+                                <div class="col-md-12">
+                                    <div class="form-horizontal">
+                                        <div class="form-group">
+                                            <div class="col-md-12">
+                                                <input type="button" class="btn green" value="Update Section" id="btnUpdateSection" onclick="UpdateSection('@m.EvaluationID','@m.EvaluationSectionID')" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    }
+
+    <input type="button" class="btn green" value="Back" id="btnBack" onclick="NextPreviousStep('Back')" />
+    <input type="button" class="btn green" value="Next" id="btnNext" onclick="NextPreviousStep('Next')" />
+    <input type="button" class="btn green" value="Delete" id="btnDelete" onclick="javascript: $('#ConfirmUpdate').modal('toggle');" />
+    <input type="button" class="btn green" value="Close" id="btnClose" onclick="NextPreviousStep('Close')" />
+
+    <!-- Confirmation Message -->
+    <div class="modal fade" id="ConfirmUpdate" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                    <h4 class="modal-title">Confirmation</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="well">
+                        Are you sure you want to Delete this Evaluation Form? Press Confirm to proceed, or Close to stay on the current page.
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn default blue" id="btnSubmitDraft" value="Draft" onclick="javascript: ConfirmDelete('Delete');">
+                        <i class="fa fa-check"></i>
+                        Confirm
+                    </button>
+                    <button type="button" class="btn default" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Success Message -->
+    <div class="modal fade" id="SuccessSubmit" tabindex="-1" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header Success-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true" style="display: none;"></button>
+                    <h4 class="Success-title">Action Successfully Completed</h4>
+                </div>
+                <div class="modal-body Success-body">
+                    <div class="well">
+                        Your Evaluation Form has been successfully deleted.
+                    </div>
+                </div>
+                <div class="modal-footer Success-footer">
+                    <button type="button" class="btn default blue" id="btnOK">
+                        <i class="fa fa-check"></i>
+                        OK
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Gif -->
+    <div id="divLoading" style="margin: 0px; padding: 0px; position: fixed; right: 0px; top: 0px; width: 100%; height: 100%; background-color: gainsboro; z-index: 30001; opacity: .8; filter: alpha(opacity=70); display: none; ">
+        <p style="position: absolute; top: 30%; left: 30%; color: black;">
+            Performing action, please wait...<img src="/_layouts/15/TNBESS/Assets/img/ajax-loading.gif">
+        </p>
+    </div>
+}
+
+@*Create Section*@
+<script>
+    function ChangeEvaluationCategory() {
+        $.ajax({
+            type: "GET",
+            url: '@Url.Content("~/TrainingEvaluation/_DDLEvaluationSubcategory")',
+            cache: false,
+            dataType: "html",
+            data: { CategoryCode: $("#EvaluationCategory option:selected").text() },
+            success: function (content) {
+                $("#EvaluationSubcategoryResult").html(content);
+            },
+            error: function (e) {
+                console.log(e);
+            }
+        });
+        ChangeEvaluationSubcategory();
+    }
+
+    function ChangeEvaluationSubcategory() {
+        var CategoryDesc = $("#EvaluationCategory option:selected").text();
+        var SubcategoryDesc = $("#EvaluationSubcategory option:selected").text();
+
+        $.ajax({
+            type: "GET",
+            url: '@Url.Content("~/TrainingEvaluation/_EvaluationQuestionList")',
+            cache: false,
+            dataType: "html",
+            data: { EvaluationCategory: CategoryDesc, EvaluationSubcategory: SubcategoryDesc },
+            success: function (content) {
+                $("#QuestionListResult").html(content);
+            },
+            error: function (e) {
+                console.log(e);
+            }
+        });
+    }
+
+    function NextPreviousStep(_Action) {
+        if (_Action == 'Next') {
+            $("#divLoading").css("display", "block");
+            var myVar = setTimeout(SubmitNext, 1000);
+        }
+        else if(_Action == "Back"){
+            location.href = '/_layouts/15/essv2/trainingEvaluation/EvaluationForm?EvaluationID=' + $("#hfEvaluationID").val();
+        }
+        else if (_Action == "Close") {
+            location.href = '/_layouts/15/essv2/trainingEvaluation/EvaluationFormHistory';
+        }
+    }
+
+    function SubmitNext() {
+        var form = {
+            EvaluationID: $("#hfEvaluationID").val(),
+        };
+
+        $.ajax({
+            url: '@Url.Content("~/TrainingEvaluation/ValidateSectionByEvaluationID")',
+            type: 'POST',
+            cache: false,
+            async: false,
+            dataType: "json",
+            data: form,
+            success: function (result) {
+                if (result.Success) {
+                    //$("#divLoading").css("display", "none");
+                    window.location.replace("/_layouts/15/essv2/TrainingEvaluation/EvaluationForm3?EvaluationID=" + $("#hfEvaluationID").val());
+                } else {
+                    $("#divLoading").css("display", "none");
+                    alert(result.ErrorMsg);
+                    console.log(result.ErrorMsg);
+                }
+            },
+            error: function (x, y, z) {
+                $("#divLoading").css("display", "none");
+                console.log(x + '\n' + y + '\n' + z);
+            }
+        });
+    }
+
+    function Validation() {
+        var EvaluationCategory = $("#EvaluationCategory").val();
+        var EvaluationSubcategory = $("#EvaluationSubcategory").val();
+        var AssessmentBy = $("#AssessmentBy").val();
+        var Remarks = $("#Remarks").val();
+        var ErrorMsg = "";
+
+        //validation
+        if (EvaluationCategory == "") {
+            ErrorMsg += "Evaluation Category is required\n";
+        }
+        if (EvaluationSubcategory == "") {
+            ErrorMsg += "Evaluation Subcategory is required\n";
+        }
+        if (AssessmentBy == "") {
+            ErrorMsg += "For Assessment By is required\n";
+        }
+
+        //alert if ErrorMsg is not empty
+        if (ErrorMsg != "") {
+            alert(ErrorMsg);
+            return false;
+        }
+
+        //Get Selected Question
+        var SelectedQuestion = "";
+        $("input[id=chkSelect]:checked").each(function () {
+            var QuestionID = $(this).val();
+            var QuestionOrderNumber = $("input[value=" + QuestionID + "]").closest('tr').children().children('#QuestionOrder').val();
+
+            if (QuestionOrderNumber == "" || QuestionOrderNumber == null) {
+                QuestionOrderNumber = 0;
+            }
+            SelectedQuestion += QuestionID + "," + QuestionOrderNumber + ";";
+        });
+        if (SelectedQuestion == "") {
+            alert('You need to select at least one question.');
+            return false;
+        }
+        SelectedQuestion = SelectedQuestion.slice(0, -1);
+
+        var form = {
+            EvaluationID: $("#hfEvaluationID").val(),
+            EvaluationSectionID: "",
+            EvaluationCategoryCode: $("#EvaluationCategory").val(),
+            EvaluationSubCategoryCode: $("#EvaluationSubcategory").val(),
+            AssessmentBy: $("#AssessmentBy").val(),
+            Remarks: $("#Remarks").val(),
+            SPItemID: SelectedQuestion,
+            EmployeeID: $("#hfEmployeeID").val()
+        };
+
+        $.ajax({
+            url: '@Url.Content("~/TrainingEvaluation/PerformInsertEvaluationForm2")',
+            type: 'POST',
+            cache: false,
+            async: false,
+            dataType: "json",
+            data: form,
+            success: function (result) {
+                if (result.Success) {
+                    //$("#divLoading").css("display", "none");
+                    window.location.replace("/_layouts/15/essv2/TrainingEvaluation/EvaluationForm2?EvaluationID=" + result.EvaluationID);
+                } else {
+                    $("#divLoading").css("display", "none");
+                    alert(result.ErrorMsg);
+                    console.log(result.ErrorMsg);
+                }
+            },
+            error: function (x, y, z) {
+                $("#divLoading").css("display", "none");
+                console.log(x + '\n' + y + '\n' + z);
+            }
+        });
+    }
+
+
+    function ConfirmDelete(_Action) {
+        $('#btnOK').click(function () { RedirectTo('Delete'); });
+        $("#ConfirmUpdate").modal('toggle');
+        $("#divLoading").css("display", "block");
+        var myVar = setTimeout(SubmitDelete, 1000);
+    }
+
+    function SubmitDelete() {
+        $.ajax({
+            url: '@Url.Content("~/TrainingEvaluation/PerformDeleteEvaluationForm")',
+            type: 'POST',
+            cache: false,
+            async: false,
+            dataType: "json",
+            data: { EvaluationID: $("#hfEvaluationID").val() },
+            success: function (result) {
+                if (result.Success) {
+                    $("#divLoading").css("display", "none");
+                    $("#SuccessSubmit").modal();
+                } else {
+                    $("#divLoading").css("display", "none");
+                    alert(result.ErrorMsg);
+                    console.log(result.ErrorMsg);
+                }
+            },
+            error: function (x, y, z) {
+                $("#divLoading").css("display", "none");
+                console.log(x + '\n' + y + '\n' + z);
+            }
+        });
+    }
+
+    function RedirectTo(_Action) {
+        switch (_Action) {
+            case "Delete":
+                window.location.href = '/_layouts/15/essv2/TrainingEvaluation/EvaluationForm';
+                break;
+            default:
+                window.location.href = '/Pages/default.aspx';
+        }
+    }
+</script>
+
+@*Update Section*@
+<script>
+    function EditSection(_EvaluationSectionID, e) {
+        var headerID = "#" + _EvaluationSectionID + "_Header";
+        var EditBtnID = "#" + _EvaluationSectionID + "_EditSection";
+        var UpdateBtnID = "#" + _EvaluationSectionID + "_UpdateSection";
+        var _EvaluationID = $("#hfEvaluationID").val();
+
+        $(headerID + " #txtSectionOrder").removeAttr("readonly");
+        $(headerID + " .QuestionOrderNo").removeAttr("readonly");
+
+        $(EditBtnID).addClass("hide");
+        $(headerID + " .AssesmentBy_View").addClass("hide");
+        $(headerID + " .Remarks_View").addClass("hide");
+        $(headerID + " #Category").removeClass("hide");
+        $(headerID + " #Subcategory").removeClass("hide");
+        $(headerID + " .AssesmentBy_DDL").removeClass("hide");
+        $(headerID + " .Remarks_TextArea").removeClass("hide");
+        $(UpdateBtnID).removeClass("hide");
+        $(headerID + " .AssesmentBy_DDL").val($(headerID + " .AssesmentBy_View").text());
+
+        var CategoryDesc;
+        var SubcategoryDesc;
+
+        CategoryDesc = $(headerID + " .CategoryDesc_View").text().trim();
+        SubcategoryDesc = $(headerID + " .SubcategoryDesc_View").text().trim();
+
+        $.ajax({
+            type: "GET",
+            url: '@Url.Content("~/TrainingEvaluation/_EvaluationQuestionList")',
+            cache: false,
+            dataType: "html",
+            data: { EvaluationCategory: CategoryDesc, EvaluationSubcategory: SubcategoryDesc, EvaluationSectionID: _EvaluationSectionID, EvaluationID: _EvaluationID, IsEdit: "Yes" },
+            success: function (content) {
+                //console.log(content);
+                $(headerID + " #SectionQuestionListResult").html(content);
+                //$(headerID + " #txtSectionOrder").attr("readonly");
+                //$(headerID + " .QuestionOrderNo").removeAttr("readonly");
+            },
+            error: function (e) {
+                console.log(e);
+            }
+        });
+    }
+
+    function UpdateSection(_EvaluationID, _EvaluationSectionID) {
+        var headerID = "#" + _EvaluationSectionID + "_Header";
+        var EditBtnID = "#" + _EvaluationSectionID + "_EditSection";
+        var UpdateBtnID = "#" + _EvaluationSectionID + "_UpdateSection";
+        var _CategoryCode = $(headerID + " #hfEvaluationCategoryCode").val();
+        var _SubcategoryCode = $(headerID + " #hfEvaluationSubcategoryCode").val();
+        var _QuestionOrder = $(headerID + " #txtSectionOrder").val();
+
+        if ($(headerID + " .AssesmentBy_DDL").val() == "") {
+            alert("Please select Assessment By.");
+            return false;
+        }
+
+        //Get Selected Question
+        var SelectedQuestion = "";
+        $(headerID + " input[id=chkSelect]:checked").each(function () {
+            var QuestionID = $(this).val();
+            var QuestionOrderNumber = $(headerID + " input[value=" + QuestionID + "]").closest('tr').children().children('#QuestionOrder').val();
+
+            if (QuestionOrderNumber == "" || QuestionOrderNumber == null) {
+                QuestionOrderNumber = 0;
+            }
+            SelectedQuestion += QuestionID + "," + QuestionOrderNumber + ";";
+        });
+        if (SelectedQuestion != "") {
+            SelectedQuestion = SelectedQuestion.slice(0, -1);
+        }
+        
+        //alert(SelectedQuestion);
+        var form = {
+            EvaluationID: $("#hfEvaluationID").val(),
+            EvaluationSectionID: _EvaluationSectionID,
+            EvaluationCategoryCode: _CategoryCode,
+            EvaluationSubCategoryCode: _SubcategoryCode,
+            AssessmentBy: $(headerID + " #AssessmentBy2").val(),
+            Remarks: $(headerID + " #Remarks2").val(),
+            SPItemID: SelectedQuestion,
+            EmployeeID: $("#hfEmployeeID").val(),
+            QuestionOrder: _QuestionOrder
+        };
+
+        $.ajax({
+            url: '@Url.Content("~/TrainingEvaluation/PerformInsertEvaluationForm2")',
+            type: 'POST',
+            cache: false,
+            async: false,
+            dataType: "json",
+            data: form,
+            success: function (result) {
+                if (result.Success) {
+                    $("#divLoading").css("display", "none");
+                    window.location.replace("/_layouts/15/essv2/TrainingEvaluation/EvaluationForm2?EvaluationID=" + result.EvaluationID);
+                } else {
+                    $("#divLoading").css("display", "none");
+                    alert(result.ErrorMsg);
+                    console.log(result.ErrorMsg);
+                }
+            },
+            error: function (x, y, z) {
+                $("#divLoading").css("display", "none");
+                console.log(x + '\n' + y + '\n' + z);
+            }
+        });
+    }
+
+
+</script>
+

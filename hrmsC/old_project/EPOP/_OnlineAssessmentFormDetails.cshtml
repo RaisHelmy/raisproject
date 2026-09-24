@@ -1,0 +1,129 @@
+﻿@model Tuple<ESS.EPop.Models.EPopVM, SEP.RoutingManagement.Models.RoutingRule>
+@{
+    Layout = null;
+    string TaskID = (string)ViewData["TaskID"];
+    string RequestID = (string)ViewData["RequestID"];
+    string ApprovalLevel = (string)ViewData["ApprovalLevel"];
+    string Source = (string)ViewData["Source"];
+    string EmployeeID = (string)ViewData["EmployeeID"];
+    string OnlineAssessmentDefinitionURL = (string)ViewData["OnlineAssessmentDefinitionURL"];
+
+    var data = new ViewDataDictionary
+    {
+        new KeyValuePair<string, object>("TaskID", TaskID),
+        new KeyValuePair<string, object>("RequestID", RequestID),
+        new KeyValuePair<string, object>("ApprovalLevel",ApprovalLevel),
+        new KeyValuePair<string, object>("Source",Source),
+        new KeyValuePair<string, object>("EmployeeID",EmployeeID),
+        new KeyValuePair<string, object>("OnlineAssessmentDefinitionURL",OnlineAssessmentDefinitionURL)
+    };
+
+    int applvl = String.IsNullOrEmpty(ApprovalLevel) ? 0 : Convert.ToInt32(ApprovalLevel);
+}
+
+<!-- Employee Details -->
+@Html.Partial("_EmployeeSubmitterInfo", Model.Item1.Submiter)
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="portlet box blue">
+            <div class="mini-triangle"><img src="../Assets/img/menu-red-triangle.png" /></div>
+            <div class="portlet-title">
+                <div class="caption">
+                    <i class="fa fa-reorder"></i>Request Details
+                </div>
+            </div>
+            <div class="portlet-body form">
+                <div class="form-body">
+                    <div id="trRefNo" class="row">
+                        <div class="col-md-6">
+                            <div class="form-horizontal">
+                                <div class="form-group">
+                                    <label class="control-label col-md-4">Reference No.</label>
+                                    <div class="col-md-8 form-control-static">
+                                        <input type="text" id="txtReferenceNo" name="ReferenceNo" class="form-control" value="@Model.Item1.ReferenceNo" readonly="readonly" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-horizontal">
+                                <div class="form-group">
+                                    <label class="control-label col-md-4">Status</label>
+                                    <div class="col-md-8 form-control-static">
+                                        <input type="text" id="txtStatusName" name="StatusName" class="form-control" value="@Model.Item1.StatusName" readonly="readonly" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row" style="">
+                        <div class="col-md-6">
+                            <div class="form-horizontal">
+                                <div class="form-group">
+                                    <label class="control-label col-md-4">
+                                        Category
+                                    </label>
+                                    <div class="col-md-8 form-control-static">
+                                        <input type="text" id="txtRequestType" name="Category" class="form-control" value="@Model.Item1.Category" readonly="readonly" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="divCurrentApprover" class="col-md-6">
+                            <div class="form-horizontal">
+                                <div class="form-group">
+                                    <label class="control-label col-md-4">Current Approver</label>
+                                    <div class="col-md-8 form-control-static">
+                                        <input type="text" id="txtCurrentApprover" name="CurrentApprover" class="form-control" value="@Model.Item1.CurrentApproverCode" readonly="readonly" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row" style="">
+                        <div class="col-md-6">
+                            <div class="form-horizontal">
+                                <div class="form-group">
+                                    <label class="control-label col-md-4">
+                                        Paper
+                                    </label>
+                                    <div class="col-md-8 form-control-static">
+                                        <input type="text" id="txtPaper" name="Paper" class="form-control" value="@Model.Item1.Paper" readonly="readonly" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="divCurrentApprover" class="col-md-6">
+                            <div class="form-horizontal">
+                                <div class="form-group">
+                                    
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <br />
+                    <!-- Payroll Deduction Details -->
+
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<input class="hidden" value="SameForm_Details" />
+@Html.Partial("_OnlineAssessmentFormDetailsList", Model, data)
+
+@if (Model.Item1.Category.ToLower() == "executive")
+{
+    @Html.Action("_OnlineAssessmentFormDetailsListArcContri", "EPOP", new { RequestID = Model.Item1.hdfRequestID })
+}
+
+@Html.Partial("_OnlineAssessmentFormDetailsPMSList", Model, data)
+
+@Html.Partial("_OnlineAssessmentFormDetailsMedicalList", Model, data)
+
+@if (Model.Item1.Category.ToLower() == "non-executive")
+{
+    @Html.Action("_OnlineAssessmentFormDetailsUnpaidLeaveList", "EPOP", new { EmployeeCode = Model.Item1.EmployeeCode })
+}

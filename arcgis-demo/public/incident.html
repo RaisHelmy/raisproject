@@ -1,0 +1,74 @@
+<!doctype html><html lang="ms"><head><title>SHIELD Command · Insiden</title>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 100 100%27><text y=%27.9em%27 font-size=%2790%27>🛡️</text></svg>">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+<link href="https://js.arcgis.com/4.31/esri/themes/dark/main.css" rel="stylesheet">
+<link href="style.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/highcharts@11.4.8/highcharts.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/highcharts@11.4.8/highcharts-more.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/highcharts@11.4.8/modules/solid-gauge.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://js.arcgis.com/4.31/"></script>
+</head><body data-page="incident"><div id="nav"></div>
+<div class="container-fluid px-3 py-3">
+<div class="row g-3 mb-3">
+  <div class="col-lg-7"><div class="panel panel-body h-100" id="operator"></div></div>
+  <div class="col-lg-3 col-md-7"><div class="panel panel-body h-100"><div class="text-muted small text-uppercase" data-date></div><div class="clock" data-clock></div></div></div>
+  <div class="col-lg-2 col-md-5"><div class="panel panel-body h-100 d-flex align-items-center justify-content-between"><div><div style="font-size:1.8rem;font-weight:800">31°</div><div class="small text-muted">Bukit Aman, KL<br>Hujan Ringan</div></div><i class="bi bi-cloud-drizzle-fill" style="font-size:2.4rem;color:var(--cyan)"></i></div></div>
+</div>
+<div class="row g-3">
+  <div class="col-lg-3">
+    <div class="panel">
+      <div class="panel-head"><span>Insiden</span><span id="incidentCount" style="color:#fff"></span></div>
+      <div class="p-2 border-bottom" style="border-color:var(--border)!important">
+        <input id="incSearch" class="form-control form-control-sm mb-2" placeholder="Cari no. insiden / jenis / lokasi…">
+        <div class="btn-group btn-group-sm w-100">
+          <button class="btn btn-outline-cyan active" data-filter="Semua">Semua</button>
+          <button class="btn btn-outline-cyan" data-filter="Aktif">Aktif</button>
+          <button class="btn btn-outline-cyan" data-filter="Separuh Selesai">Separuh</button>
+          <button class="btn btn-outline-cyan" data-filter="Tutup">Tutup</button>
+        </div>
+      </div>
+      <div id="incidentList" class="scroll" style="max-height:640px"></div>
+    </div>
+  </div>
+  <div class="col-lg-6">
+    <div class="panel">
+      <div class="panel-head"><span><i class="bi bi-exclamation-circle-fill me-2"></i>Maklumat Insiden</span><span style="color:#fff;font-size:1rem" id="dId"></span></div>
+      <div class="panel-body">
+        <div class="row g-3">
+          <div class="col-md-3 field"><label>Status</label><div class="val" id="dStatus"></div></div>
+          <div class="col-md-3 field"><label>Kod Insiden</label><div class="val" id="dCode"></div></div>
+          <div class="col-md-3 field"><label>Jenis Insiden</label><div class="val" id="dSub"></div></div>
+          <div class="col-md-3 field"><label>Keutamaan</label><div class="val" id="dPrio"></div></div>
+          <div class="col-md-6 field"><label>Tarikh</label><div class="val" id="dDate"></div></div>
+          <div class="col-md-6 field"><label>Masa</label><div class="val" id="dTime"></div></div>
+          <div class="col-12 field"><label>Lokasi</label><div class="val" id="dPlace"></div></div>
+          <div class="col-md-4 field"><label>Latitud</label><div class="val" id="dLat"></div></div>
+          <div class="col-md-4 field"><label>Longitud</label><div class="val" id="dLon"></div></div>
+          <div class="col-md-4 field"><label>Pemanggil</label><div class="val" id="dCaller"></div></div>
+          <div class="col-md-6 field"><label>Call Sign</label><div class="val" id="dCall"></div></div>
+          <div class="col-md-6 field"><label>Pegawai</label><div class="val" id="dOfficer"></div></div>
+          <div class="col-12 field"><label>Butiran Insiden</label><div class="val" id="dDesc" style="min-height:120px"></div></div>
+        </div>
+        <div class="timeline" id="timeline"></div>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-3">
+    <div class="panel mb-3"><div class="panel-head">Pautan Pantas</div>
+      <div class="panel-body d-flex gap-2 justify-content-around">
+        <span class="icon-btn" style="width:56px;height:56px;font-size:1.4rem"><i class="bi bi-mic-fill"></i></span>
+        <span class="icon-btn" style="width:56px;height:56px;font-size:1.4rem"><i class="bi bi-chat-dots-fill"></i></span>
+        <span class="icon-btn" style="width:56px;height:56px;font-size:1.4rem;color:var(--green)"><i class="bi bi-telephone-fill"></i></span>
+        <span class="icon-btn" style="width:56px;height:56px;font-size:1.4rem" id="btnLocate" title="Tunjuk di peta"><i class="bi bi-crosshair"></i></span>
+      </div></div>
+    <div class="panel"><div class="panel-head">Peta</div>
+      <div class="map-wrap" style="height:460px;border:0;border-radius:0 0 12px 12px"><div id="miniMap"></div></div></div>
+  </div>
+</div>
+</div>
+<div id="footer"></div>
+<script type="module" src="assets/main.js"></script>
+</body></html>

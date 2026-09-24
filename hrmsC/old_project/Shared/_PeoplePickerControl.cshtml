@@ -1,0 +1,47 @@
+﻿@{
+    Layout = null;
+    var peoplepickerid = ViewData["PPID"];
+    var TextboxValue = ViewData["TextBox"];
+    var HiddenValue = ViewData["Hidden"];
+    var peoplepickerTextBox = "txt" + peoplepickerid;
+    var peoplepickerFunction = "func" + peoplepickerid + "()";
+    var peoplepickerSelect = "func" + peoplepickerid + "Select()"; 
+
+    //for position display
+    string positionId = ViewData["PositionID"] + "";
+}
+
+<div>
+    <div class=" input-group ">
+        <input type="text" class="form-control" id="@peoplepickerTextBox" value="@TextboxValue" readonly />
+        <span class="input-group-btn" style="">
+            <a data-toggle="modal" href="#PeoplePicker" onclick="@peoplepickerSelect" class="btn default"><i class="fa fa-user"></i></a>
+        </span>
+        <input type="hidden" id="@peoplepickerid" name="@peoplepickerid" value="@HiddenValue" />
+    </div>
+</div>
+
+
+<script type="text/javascript">
+    function @peoplepickerSelect
+    {
+        $('#PPSelect').attr('onclick','@peoplepickerFunction');
+    }
+
+    function @peoplepickerFunction {
+        $("#tblPeoplePicker td input[type=radio]").each(function () {
+            var _selected = $(this).prop("checked");
+
+            if (_selected) {
+                $("#@peoplepickerTextBox").val($(this).attr("empcode") + ' - ' + $(this).attr("empName"));
+                $("#@peoplepickerid").val($(this).val());
+                $("#@peoplepickerTextBox").trigger('change');
+
+                $("#PeoplePicker").modal('toggle');
+
+                //populate position if it exists
+                $("#@positionId").val($(this).attr("emp_position"));
+            }
+        });
+    }
+</script>

@@ -1,0 +1,314 @@
+﻿
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewBag.Title = "Overtime Planning Report";
+    DateTime d1 = DateTime.Now.AddYears(-20);
+    DateTime d2 = DateTime.Now.AddYears(20);
+    string dtStrStart = d1.ToString("dd MMM yyyy");
+    string dtStrEnd = d2.ToString("dd MMM yyyy");
+
+    DateTime d3 = DateTime.Now;
+    string dtStart = "01" + "/" + d3.AddMonths(-1).ToString("MM") + "/" + d3.AddMonths(-1).ToString("yyyy");
+    string dtDefault = (DateTime.DaysInMonth(d3.Year, d3.Month)).ToString() + "/" + d3.ToString("MM") + "/" + d3.ToString("yyyy");
+}
+
+<div class="row">
+    <div class="col-md-12">
+        <br />
+        <h1 class="page-title">
+            @ViewBag.Title <span style="padding-left:20px;"><small></small></span>
+        </h1>
+    </div>
+</div>
+<br />
+<div class="form-body">
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-4 control-label">Start Date</label>
+                    <div class="col-md-8 form-control-static">
+                        <div class="input-group date date-picker" data-date-format="dd MM yyyy">
+                            <input type="text" class="form-control" id="StartDate" name="StartDate" value="@dtStart" />
+                            <span class="input-group-btn">
+                                <button type="button" class="btn default"><i class="fa fa-calendar"></i></button>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-4 control-label">End Date</label>
+                    <div class="col-md-8 form-control-static">
+                        <div class="input-group date date-picker" data-date-format="dd MM yyyy">
+                            <input type="text" class="form-control" id="EndDate" name="EndDate" value="@dtDefault" />
+                            <span class="input-group-btn">
+                                <button type="button" class="btn default"><i class="fa fa-calendar"></i></button>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-4 control-label">Charge Type</label>
+                    <div class="col-md-8 form-control-static">
+                        <select class="form-control" id="ChargeType">
+                            <option selected value="">- All -</option>
+                            <option value="CC">Cost Center</option>
+                            <option value="PM">Order Number (Plant Maintenance)</option>
+                            <option value="JO">Order Number (Job Order)</option>
+                            <option value="WB">WBS Element</option>
+                            <option value="NT">Network Number And Operation Activity Number</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-4 control-label">Status</label>
+                    <div class="col-md-8 form-control-static">
+                        <select class="form-control" id="Status">
+                            <option selected value="">- All -</option>
+                            <option value="DR">Draft</option>
+                            <option value="PE">Pending</option>
+                            <option value="VE">Verified</option>
+                            <option value="AP">Approved</option>
+                            <option value="DE">Declined</option>
+                            <option value="WD">Withdrawn</option>
+                            <option value="CA">Cancelled</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-4 control-label">Charge Code</label>
+                    <div class="col-md-8 form-control-static">
+                        <input class="form-control" type="text" id="ChargeCode" />
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-4 control-label">Employee</label>
+                    <div class="col-md-8 form-control-static">
+                        <input class="form-control" type="text" id="EmployeeSearch" />
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-4 control-label">OT Planning Code</label>
+                    <div class="col-md-8 form-control-static">
+                        <input class="form-control" type="text" id="OTPlanningCode" />
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+    <div class="row">&nbsp;</div>
+    <div class="row">
+        <div class="col-md-12">
+            <div class="text-right">
+                <input type="button" id="btn-Search" class="btn green btn-Search" value="Search" onclick="SearchListing();">
+                <input id="btn-Clear" type="button" class="btn default " value="Clear" onclick="ClearFilter();">
+            </div>
+        </div>
+    </div>
+    <div class="row">&nbsp;</div>
+    <div class="row">
+        <div class="col-md-12">
+            <div id="SearchResult">
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Loading Gif -->
+<div id="divLoading" style="margin: 0px; padding: 0px; position: fixed; right: 0px;
+        top: 0px; width: 100%; height: 100%; background-color:gainsboro; z-index: 30001;
+        opacity: .8; filter: alpha(opacity=70);display:none">
+    <p style="position: absolute; top: 30%; left: 30%; color: black;">
+        Loading, please wait...<img src="../Assets/img/ajax-loading.gif" />
+
+    </p>
+</div>
+
+@Html.Partial("_ExcelExport")
+
+<script type="text/javascript">
+
+    //function ExportToExcel() {
+    //    // EXPORT TO EXCEL
+    //    var ua = window.navigator.userAgent;
+    //    var msie = ua.indexOf("MSIE ");
+
+    //    // Internet Explorer
+    //    if (msie > 0 || !!navigator.userAgent.match(/Trident.*rv\:11\./)) {
+    //        var _btn = document.getElementById('btn-Export');
+    //        _btn.onclick = fnExcelReport;
+    //    }
+    //    else {
+    //        $("#btn-Export").click(function (e) {
+    //            //getting values of current time for generating the file name
+    //            var dt = new Date();
+    //            var day = dt.getDate();
+    //            var month = dt.getMonth() + 1;
+    //            var year = dt.getFullYear();
+    //            var hour = dt.getHours();
+    //            var mins = dt.getMinutes();
+    //            var postfix = day + "." + month + "." + year + "_" + hour + "." + mins;
+    //            //creating a temporary HTML link element (they support setting file names)
+    //            var a = document.createElement('a');
+    //            //getting data from our div that contains the HTML table
+    //            var data_type = 'data:application/vnd.ms-excel';
+    //            var table_div = document.getElementById('tbl_Index_DetailsResult');
+    //            var table_html = table_div.outerHTML.replace(/ /g, '%20');
+    //            a.href = data_type + ', ' + table_html;
+    //            //setting the file name
+    //            a.download = 'OTPlanning_Report_' + postfix + '.xls';
+    //            //triggering the function
+    //            a.click();
+    //            //just in case, prevent default behaviour
+    //            e.preventDefault();
+    //        });
+    //    }
+    //}
+
+    //function fnExcelReport() {
+    //    var dt = new Date();
+    //    var day = dt.getDate();
+    //    var month = dt.getMonth() + 1;
+    //    var year = dt.getFullYear();
+    //    var hour = dt.getHours();
+    //    var mins = dt.getMinutes();
+    //    var postfix = day + "." + month + "." + year + "_" + hour + "." + mins;
+    //    var _fileName = 'OTPlanning_Report_' + postfix + '.xls';
+
+    //    var tab_text = "<table border='2px'><tr bgcolor='#87AFC6'>";
+    //    var textRange; var j = 0;
+    //    tab = document.getElementById('tbl_Index_DetailsResult'); // id of table
+
+    //    for (j = 0 ; j < tab.rows.length ; j++) {
+    //        tab_text = tab_text + tab.rows[j].innerHTML + "</tr>";
+    //        //tab_text=tab_text+"</tr>";
+    //    }
+
+    //    tab_text = tab_text + "</table>";
+
+
+    //    //var ua = window.navigator.userAgent;
+    //    //var msie = ua.indexOf("MSIE ");
+
+    //    //if (msie > 0 || !!navigator.userAgent.match(/Trident.*rv\:11\./))      // If Internet Explorer
+    //    //{
+    //    txtArea1.document.open("txt/html", "replace");
+    //    txtArea1.document.write(tab_text);
+    //    txtArea1.document.close();
+    //    txtArea1.focus();
+    //    sa = txtArea1.document.execCommand("SaveAs", true, _fileName);
+    //    //}
+    //    //else //other browser not tested on IE 11
+    //    //    sa = window.open('data:application/vnd.ms-excel,filename=aaa.xlsx' + encodeURIComponent(tab_text));
+    //    return (sa);
+    //}
+
+    function SearchListing() {
+        var _DateFrom = $('#StartDate').val();
+        var _DateTo = $('#EndDate').val();
+        var _ChargeType = $('#ChargeType').val();
+        var _Status = $('#Status').val();
+        var _ChargeCode = $('#ChargeCode').val();
+        var _EmployeeSearch = $('#EmployeeSearch').val();
+        var _OTPlanningCode = $('#OTPlanningCode').val();
+
+        if (_DateFrom === '' || _DateTo === '')
+        {
+            alert("Please enter Start Date & End Date");
+        }
+        else {
+            $("#SearchResult").html("LOADING...");
+
+            $.ajax({
+                type: "GET",
+                url: '@Url.Content("~/TimeAttendance/_OvertimePlanningReportResult")',
+                cache: false,
+                dataType: "html",
+                data: {
+                    StartDate: _DateFrom,
+                    EndDate: _DateTo,
+                    ChargeType: _ChargeType,
+                    Status: _Status,
+                    ChargeCode: _ChargeCode,
+                    Employee: _EmployeeSearch,
+                    OTPlanningCode: _OTPlanningCode
+                },
+                success: function (content) {
+                    $("#SearchResult").html(content);
+                    //ExportToExcel();
+                    //BindExport();
+                },
+                error: function (e) {
+                    console.log(e);
+                }
+            });
+        }
+        
+    }
+
+
+    function ClearFilter() {
+
+        $('#StartDate').val('');
+        $('#EndDate').val('');
+        $('#ChargeType').val('');
+        $('#Status').val('');
+        $('#ChargeCode').val('');
+        $('#EmployeeSearch').val('');
+        $('#OTPlanningCode').val('');
+    }
+
+    jQuery(document).ready(function () {
+        $('.date-picker').datepicker({
+            format: 'dd/mm/yyyy',
+            autoclose: true,
+            setStartDate: '@dtStrStart',
+            setEndDate: '@dtStrEnd'
+        });
+
+        //SearchListing();
+
+        //$('input[type=checkbox]').uniform();
+    });
+
+
+
+</script>
+

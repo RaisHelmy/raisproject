@@ -1,0 +1,220 @@
+﻿
+
+<div class="modal fade" id="SearchTCS" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                <h4 class="modal-title">
+                    <p>TCS No Search</p>
+                </h4>
+            </div>
+            <div class="modal-body">
+                <div>
+
+                    <div class="row" onkeypress="return event.keyCode!=13;">
+                        <div class="col-md-12">
+                            <div class="form-horizontal">
+                                <div class="form-body">
+                                    <div class="row">
+                                        <label class="control-label col-md-2 ">
+                                            Start Date
+                                        </label>
+                                        <div class="col-md-4 form-control-static">
+                                            <div class="date date-picker input-group" data-date-format="dd MM yyyy">
+                                                <input type="text" class="form-control Date" id="StartDateSearch" />
+                                                <span class="input-group-btn">
+                                                    <button type="button" class="btn default"><i class="fa fa-calendar"></i></button>
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <label class="control-label col-md-2 ">
+                                            End Date
+                                        </label>
+                                        <div class="col-md-4 form-control-static">
+                                            <div class="date date-picker input-group" data-date-format="dd MM yyyy">
+                                                <input type="text" class="form-control Date" id="EndDateSearch" />
+                                                <span class="input-group-btn">
+                                                    <button type="button" class="btn default"><i class="fa fa-calendar"></i></button>
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <label class="control-label col-md-2 ">
+                                            TCS No.
+                                        </label>
+                                        <div class="col-md-4 form-control-static">
+                                            <input type="text" id="TCSNoSearch" class="form-control" />
+                                        </div>
+                                        <label class="control-label col-md-2 ">
+                                            State
+                                        </label>
+                                        <div class="col-md-4 form-control-static">
+                                            <select id="StateSearch" class="form-control">
+                                                <option selected="selected" value="">- All -</option>
+                                                <option value="Johor">Johor</option>
+                                                <option value="Kedah">Kedah</option>
+                                                <option value="Kelantan">Kelantan</option>
+                                                <option value="Melaka">Melaka</option>
+                                                <option value="Negeri Sembilan">Negeri Sembilan</option>
+                                                <option value="Pahang">Pahang</option>
+                                                <option value="Perak">Perak</option>
+                                                <option value="Perlis">Perlis</option>
+                                                <option value="Pulau Pinang">Pulau Pinang</option>
+                                                <option value="Putrajaya & Cyberjaya">Putrajaya & Cyberjaya</option>
+                                                <option value="Selangor">Selangor</option>
+                                                <option value="Terengganu">Terengganu</option>
+                                                <option value="WP Kuala Lumpur">WP Kuala Lumpur</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <label class="control-label col-md-2 ">
+                                            Location
+                                        </label>
+                                        <div class="col-md-4 form-control-static">
+                                            <input type="text" id="LocationSearch" class="form-control" />
+                                        </div>
+                                        <label class="control-label col-md-2 ">
+                                            Branch
+                                        </label>
+                                        <div class="col-md-4 form-control-static">
+                                            <input type="text" id="BranchSearch" class="form-control" />
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <label class="control-label col-md-2 ">
+                                            Remarks
+                                        </label>
+                                        <div class="col-md-4 form-control-static">
+                                            <input type="text" id="RemarksSearch" class="form-control" />
+                                        </div>
+                                    </div>
+                                    <div class="form-group ">
+                                        <div class="text-right">
+                                            <input id="btn-Search" type="button" value="Search" class="btn green btn-Search" onclick="SearchTSC();">
+                                        </div>
+                                    </div>
+                                </div>
+                                <br />
+                                <div id="TCSResult">
+
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn default green" onclick="setSelectedTCSNo()">Select</button>
+                <button type="button" class="btn default" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    
+
+    function TCSPickerSetDate(obj)
+    {
+        var element = $(obj).parent().siblings('.TCSNoDisplayText');
+        if (element.attr('name') === 'TCSNoDisplayText')
+        {
+            var row = $(element).closest('tr');
+            var StartDate = $(row).find('.StartDate').val();
+            var EndDate = $(row).find('.EndDate').val();
+            if ((StartDate !== '' && StartDate !== undefined)
+                && (EndDate !== '' && EndDate !== undefined))
+            {
+                $('#StartDateSearch').val(StartDate);
+                $('#EndDateSearch').val(EndDate);
+            }
+            else {
+                StartDate = $('input[name="StartDate"]').val();
+                EndDate = $('input[name="EndDate"]').val();
+                if ((StartDate !== '' && StartDate !== undefined)
+                    && (EndDate !== '' && EndDate !== undefined)) {
+                    $('#StartDateSearch').val(StartDate);
+                    $('#EndDateSearch').val(EndDate);
+                }
+            }
+        }
+        else if (element.attr('name') === 'BulkTCSNoDisplayText')
+        {
+            var StartDate = $('input[name="BulkStartDate"]').val();
+            var EndDate = $('input[name="BulkEndDate"]').val();
+            if (StartDate !== '' && EndDate !== '') {
+                $('#StartDateSearch').val(StartDate);
+                $('#EndDateSearch').val(EndDate);
+            }
+        }
+        else {
+
+            $('#StartDateSearch').val('');
+            $('#EndDateSearch').val('');
+        }
+
+    }
+
+    function SearchTSC()
+    {
+        var _StartDate = $('#StartDateSearch').val();
+        var _EndDate = $('#EndDateSearch').val();
+        var _TCSNo = $('#TCSNoSearch').val();
+        var _State = $('#StateSearch').val();
+        var _Location = $('#LocationSearch').val();
+        var _Branch = $('#BranchSearch').val();
+        var _Remarks = $('#RemarksSearch').val();
+        var _PPB = "";
+
+        $.ajax({
+            url: '@Url.Content("~/TimeAttendance/_TCSSearchResult")',
+            type: 'POST',
+            data: {
+                StartDate: _StartDate,
+                EndDate: _EndDate,
+                TCSNo: _TCSNo,
+                State: _State,
+                Location: _Location,
+                Branch: _Branch,
+                Remarks: _Remarks,
+                PPB: _PPB
+            },
+            success: function (result) {
+
+                $('#TCSResult').html(result);
+                // ... Process the result ...
+            }
+        });
+    }
+
+    var currentSelectedTCS = null
+
+    function setSelectedTCSNo() {
+        $.each($('input[name="AddTCS"]:checked'), function (i, val) {
+            var TCSNo = $(this).parent().parent().find('.TCSNo').text().trim();
+
+            $(currentSelectedTCS).parent().siblings('.TCSNoPickerValue').val(TCSNo);
+            $(currentSelectedTCS).parent().siblings('.TCSNoDisplayText').val(TCSNo);
+        });
+
+        $('#SearchTCS').modal('toggle');
+        currentSelectedTCS = null;
+    }
+
+    function SetCurrentSelectedTCS() {
+
+        currentSelectedTCS = $(this);
+        $('#TCSResult').empty();
+        //$('#chargecodedll').val('ALL');
+    }
+
+    $(function () {
+        $('.TCSNoPicker').on("click", SetCurrentSelectedTCS);
+    })
+
+</script>

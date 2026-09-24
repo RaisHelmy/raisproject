@@ -1,0 +1,85 @@
+﻿@model OJA.Models.Assessment
+@{
+    Layout = null;
+}
+
+<style>
+    .assessment .form-group {
+        margin-bottom: 6px;
+    }
+</style>
+<div class="row">
+    <div class="col-md-12">
+        <div class="portlet box blue">
+            <div class="mini-triangle"><img src="~/Assets/img/menu-red-triangle.png" /></div>
+            <div class="portlet-title">
+                <div class="caption">
+                    <i class="fa fa-reorder"></i>Applicant Assessment
+                </div>
+                @if (Model.CanEdit)
+                {
+                    <div class="actions">
+                        <a class="btn btn-primary" id="btnSaveAssessment" style="background-color:black"><i class="fa fa-save"></i> Save</a>
+                        <a class="btn btn-primary" id="btnCopyAssessment" style="background-color:black"><i class="fa fa-copy"></i> Copy</a>
+                    </div>
+                }
+                
+            </div>
+            <div class="portlet-body form">
+                @using (Html.BeginForm("SaveAssessment", "OJA", FormMethod.Post, new { @id = "assessmentForm" }))
+                {
+                    @Html.HiddenFor(m => m.JobId)
+                    <input type="hidden" id="SaveType" name="SaveType" value="@Model.SaveType" />
+                    <div class="form-horizontal">
+                        <div class="form-body">
+
+                            @for (var i = 0; i < Model.Questions.Count; i++)
+                            {
+                                var item = Model.Questions[i];
+
+                                @Html.HiddenFor(m => m.Questions[i].Question)
+                                <div class="form-group">
+                                    <label class="control-label col-md-5">@item.Question</label>
+                                    <div class="col-md-5">
+                                        @if (Model.CanEdit)
+                                        {
+                                            @Html.DropDownListFor(m => Model.Questions[i].Answer, new SelectList(Model.Questions[i].MultipleChoice, "Value", "Text", Model.Questions[i].Answer), "Select", new { @class = "form-control assess_edit" })
+                                        }
+                                        else
+                                        {
+                                            @Html.DropDownListFor(m => Model.Questions[i].Answer, new SelectList(Model.Questions[i].MultipleChoice, "Value", "Text", Model.Questions[i].Answer), "Select", new { @class = "form-control", @disabled = true })
+                                        }
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="control-label col-md-5"></label>
+                                    <div class="col-md-5">
+                                        @if (Model.CanEdit)
+                                        {
+                                            @Html.TextAreaFor(m => Model.Questions[i].Remarks, new { @class = "form-control assess_edit"})
+                                        }
+                                        else
+                                        {
+                                            @Html.TextAreaFor(m => Model.Questions[i].Remarks, new { @class = "form-control", @readonly = "readonly" })
+                                        }
+                                    </div>
+                                </div>
+                            }
+
+                           @if (Model.CanEdit)
+                           {
+                                <div class="form-group">
+                                    <label class="mt-checkbox" style="padding-left:10px">
+                                        @Html.CheckBoxFor(m => m.ConfirmAndCertifyCheck) I confirm and certify my assessment of the applicants is to my best knowledge and ability.
+                                        <span></span>
+                                    </label>
+                                </div>
+                           }
+                        </div>
+                    </div>
+                }
+            </div>
+
+        </div>
+    </div>
+</div>

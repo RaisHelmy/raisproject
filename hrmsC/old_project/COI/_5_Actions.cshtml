@@ -1,0 +1,254 @@
+﻿@using ESS.Core
+@using Integrity.ConflictOfInterest;
+@model Integrity.ConflictOfInterest.Models.ConflictVM
+@{
+    var task = Model.GetTask();
+}
+
+@{
+    var allowAction = Model.GetAllowAction();
+
+    if (allowAction != null && allowAction.CanAcknowledge == "1")
+    {
+        <div id="portletComment" class="row">
+            <div class="col-md-12">
+                <div class="portlet box blue">
+                    <div class="mini-triangle"><img src="/_layouts/15/TNBESS/Assets/img/menu-red-triangle.png" /></div>
+                    <div class="portlet-title">
+                        <div class="caption">
+                            <i class="fa fa-reorder"></i>Comment
+                        </div>
+                        <div class="tools">
+                            <a title="" data-original-title="" href="javascript:;" class="collapse"> </a>
+                        </div>
+                    </div>
+                    <div class="portlet-body form">
+                        <div class="form-body">
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="form-horizontal">
+                                        <div class="form-group">
+                                            <label class="control-label col-md-2">Comment</label>
+                                            <div class="col-md-10 form-control-static">
+                                                @if (Model.ConflictType != "None")
+                                                {
+                                                    var notes = COIService.SPGetApprovalNotes();
+
+                                                    <p class="BI" style="font-weight: bold;">@(notes.ContainsKey("BI") ? notes["BI"] : "")</p>
+                                                    <p class="BM" style="font-weight: bold;">@(notes.ContainsKey("BM") ? notes["BM"] : "")</p>
+                                                }
+                                                <textarea class="form-control" id="txtAppComment" rows="5" cols="60"></textarea>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+    <div id="claimActionDiv">
+        @if (Model.CanEdit)
+        {
+            <!-- Disclaimer -->
+            <div class="row">
+                <div class="col-md-12">
+                    <b class="BI">Disclaimer</b>
+                    <b class="BM">Perakuan</b>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-12">
+                    <input type="checkbox" id="chkDisclaimer">
+                    <b class="BI">
+                        I hereby certify that my answers to the foregoing questions are complete, truthful, and accurate to the best of my knowledge.
+                    </b>
+                    <b class="BM">
+                        Saya dengan ini memperakui bahawa jawapan saya bagi semua soalan sebelum ini adalah lengkap, benar dan tepat sepanjang pengetahuan saya.
+                    </b>
+                </div>
+            </div>
+            <br />
+        }
+        <!-- Buttons -->
+        <div class="row">
+            <div class="col-md-12">
+                @if (Model.CanEdit && Model.Status == "Draft")
+                {
+                    <input type="button" class="btn green" value="Save as Draft" id="btnDraft" onclick="ExecuteAction('Draft'); " />
+                    <input type="button" class="btn green" value="Submit" id="btnSubmit" onclick="ExecuteAction('Submit'); " />
+                    if (!Model.IsNewRecord)
+                    {
+                        <input type="button" class="btn red" value="Delete" id="btnDelete" onclick="ExecuteAction('Delete'); " />
+                    }
+                }
+                else if (Model.CanEdit && (Model.Status == "Withdrawn" || Model.Status == "Declined"))
+                {
+                    <input type="button" class="btn green" value="Submit" id="btnSubmit" onclick="ExecuteAction('Submit'); " />
+                }
+                else if (Model.CanEdit && Model.Status == "Pending")
+                {
+                    <input type="button" class="btn green" value="Save" id="btnDraft" onclick="ExecuteAction('UpdateOnPending'); " />
+                    <input type="button" class="btn red" value="Withdraw" id="btnWithdraw" onclick="ExecuteAction('Withdraw'); " />
+                }
+
+                @if (allowAction != null && allowAction.CanAcknowledge == "1")
+                {
+                    <input type="button" class="btn green" value="Acknowledge" id="btnAcknowledge" onclick="ExecuteApproverAction('Acknowledge'); " />
+                }
+
+                @if (allowAction != null && allowAction.CanDecline == "1")
+                {
+                    <input type="button" class="btn red" value="Decline" id="btnReject" onclick="ExecuteApproverAction('Decline'); " />
+                }
+            </div>
+        </div>
+    </div>
+}
+
+<script>
+    var _draftAction = '@Url.Action("Draft", "COI")';
+    var _submitAction = '@Url.Action("Submit", "COI")';
+    var _deleteAction = '@Url.Action("Delete", "COI")';
+    var _updateOnPending = '@Url.Action("UpdateOnPending", "COI")';
+    var _approverAction = '@Url.Action("ApproverAction", "COI")';
+    var _withdrawAction = '@Url.Action("Withdraw", "COI")';
+
+    function ExecuteAction(action) {
+        var actionUrl = "";
+        var confirmationMessage = "Are you sure you want to " + action + " this declaration?";
+
+        switch (action) {
+            case "Draft": actionUrl = _draftAction;
+                confirmationMessage = "Are you sure you want to save this declaration as draft?";
+                break;
+            case "Submit": actionUrl = _submitAction;
+                confirmationMessage = "Are you sure you want to submit this declaration?";
+                break;
+            case "Delete": actionUrl = _deleteAction;
+                confirmationMessage = "Are you sure you want to delete this declaration?";
+                break;
+            case "UpdateOnPending": actionUrl = _updateOnPending;
+                confirmationMessage = "Are you sure you want to update this declaration?";
+                break;
+            case "Withdraw": actionUrl = _withdrawAction;
+                confirmationMessage = "Are you sure you want to withdraw this declaration?";
+                break;
+            default: return;
+        }
+
+        var selectedCategory = $('select[name="Category"]').val();
+        var selectedType = $('[name="ConflictType"]:checked').val();
+        var chairman = $('[name="Chairman"]').val();
+        var validateDetails = ValidateDetailsOfConflict();
+
+        if (action == "Submit" || action == "UpdateOnPending") {
+            if (selectedCategory == null || selectedCategory == '') {
+                alert("Please select a category.");
+                return;
+            }
+
+            if (selectedType == null || selectedType == '') {
+                alert("Please select type of conflict interest.");
+                return;
+            }
+
+            if (selectedCategory != 'Staff' && (chairman == null || chairman == '')) {
+                alert("Please select a chairman in (Chairman of Committee) section.");
+                return;
+            }
+        }
+
+        if (validateDetails != "" && (action == "Submit" || action == "UpdateOnPending")) {
+            alert(validateDetails);
+            return;
+        }
+
+        if (!$('#chkDisclaimer').is(':checked') && (action == "Submit" || action == "UpdateOnPending")) {
+            alert('- Please read and check the Disclaimer section before proceeding to submit.\n');
+            return;
+        }
+
+        ShowConfirmationDialog({
+            message: confirmationMessage,
+            positiveCallback: function () {
+                var data = $('form').serializeArray();
+
+                HideConfirmationDialog();
+                ShowLoadingScreen();
+
+                $.post(actionUrl, data, function (result) {
+                    HideLoadingScreen();
+                    if (result.Success) {
+                        ShowDialog({
+                            message: result.Message,
+                            okCallback: function () {
+                                window.location.href = "@Url.Action("History", "COI")";
+                            }
+                        });
+                    }
+                    else {
+                        ShowDialog({
+                            title: "Failed",
+                            message: result.Message,
+                            okCallback: function () {
+                                HideDialog();
+                            }
+                        });
+                    }
+                });
+            }
+        });
+    }
+
+    function ExecuteApproverAction(action) {
+        var actionUrl = _approverAction;
+        var confirmationMessage = "Are you sure you want to " + action + " this declaration?";
+        var approvalComment = $("#txtAppComment").val();
+
+        if (action == "Decline" && (approvalComment == null || approvalComment.length < 1)) {
+            alert("Comment is mandatory for declining.");
+            return;
+        }
+
+        ShowConfirmationDialog({
+            message: confirmationMessage,
+            positiveCallback: function () {
+                var data = {
+                    DeclarationID: '@Model.DeclarationID',
+                    TaskID: '@(task == null ? "" : task.ID.ToString())',
+                    ApproverID: '@Common.GetEmployeeID()',
+                    ApproverAction: action,
+                    ApproverComment: $("#txtAppComment").val()
+                };
+
+                HideConfirmationDialog();
+                ShowLoadingScreen();
+
+                $.post(actionUrl, data, function (result) {
+                    HideLoadingScreen();
+                    if (result.Success) {
+                        ShowDialog({
+                            message: result.Message,
+                            okCallback: function () {
+                                window.location.href = "@Url.Action("InTray", "COI")";
+                            }
+                        });
+                    }
+                    else {
+                        ShowDialog({
+                            title: "Failed",
+                            message: result.Message,
+                            okCallback: function () {
+                                HideDialog();
+                            }
+                        });
+                    }
+                });
+            }
+        });
+    }
+</script>

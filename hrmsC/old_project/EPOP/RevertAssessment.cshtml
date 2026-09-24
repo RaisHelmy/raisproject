@@ -1,0 +1,599 @@
+﻿@using ESS.Core
+@model List<ESS.Core.DropDownObject>
+
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewBag.Title = "Revert Assessment";
+    string IsSSCUser = ViewBag.IsSSCUser;
+    DateTime d1 = DateTime.Now.AddYears(-20);
+    DateTime d2 = DateTime.Now.AddYears(20);
+    string dtStrStart = d1.ToString("dd MMM yyyy");
+    string dtStrEnd = d2.ToString("dd MMM yyyy");
+    if (!(ESS.EPop.Service.isApprover(Common.GetEmployeeID(), "SSC") || ESS.EPop.Service.isApprover(Common.GetEmployeeID(), "HRBP")))
+    {
+        Response.Redirect("~/AccessControl/ErrorPermission");
+    }
+}
+<div class="row">
+    <div class="col-md-12">
+        <br />
+        <h1 class="page-title">
+            EPOP - Revert Assessment to Business Partner's Form<span style="padding-left:20px;"><small></small></span>
+        </h1>
+    </div>
+</div>
+<br />
+<input type="hidden" id="hfEmployeeID" value="@ViewBag.EmployeeID" />
+<div class="form-body">
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-4 control-label">Start Date</label>
+                    <div class="col-md-8 form-control-static">
+                        <div class="input-group date date-picker" id="divSubmissionDateFrom" data-date-format="dd MM yyyy">
+                            <input type="text" class="form-control" id="StartDate" name="StartDate" />
+                            <span class="input-group-btn">
+                                <button type="button" class="btn default"><i class="fa fa-calendar"></i></button>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-4 control-label">End Date</label>
+                    <div class="col-md-8 form-control-static">
+                        <div class="input-group date date-picker" id="divSubmissionDateTo" data-date-format="dd MM yyyy">
+                            <input type="text" class="form-control" id="EndDate" name="EndDate" />
+                            <span class="input-group-btn">
+                                <button type="button" class="btn default"><i class="fa fa-calendar"></i></button>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-4 control-label">Company</label>
+                    <div class="col-md-8 form-control-static">
+                        @Html.DropDownList("Company", new SelectList(Model, "Value", "Text"), "- All -", new { @class = "bs-select form-control", @onchange = "changeCompany(this)" })
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-4 control-label">Division / Department</label>
+                    <div class="col-md-8 form-control-static">
+                        @Html.Action("_DDLDepartment", "Training", new { })
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-4 control-label">Unit / Section</label>
+                    <div class="col-md-8 form-control-static">
+                        @Html.Action("_DDLUnitSection", "Training", new { })
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-4 control-label">Employee</label>
+                    <div class="col-md-8 form-control-static">
+                        <input class="form-control" type="text" id="EmployeeName" />
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-4 control-label">Category</label>
+                    <div class="col-md-8 form-control-static">
+                        <select name="ExecutiveCategory" class="bs-select form-control" id="ExecutiveCategory">
+                            <option value="">- All -</option>
+                            <option value="Non-Executive">Non-Executive</option>
+                            <option value="Executive">Executive</option>
+                            <option value="Specialist">Specialist</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-4 control-label">Request Reference No</label>
+                    <div class="col-md-8 form-control-static">
+                        <input class="form-control" id="ReferenceNo" />
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">&nbsp;</div>
+    <div class="row">
+        <div class="col-md-12">
+            <div class="text-right">
+                <input type="button" id="btn-Search" class="btn green btn-Search" value="Search" onclick="SearchListing();">
+
+            </div>
+        </div>
+    </div>
+    <div class="row">&nbsp;</div>
+    <div class="row">
+        <div class="col-md-12">
+            <div id="SearchResult">
+
+            </div>
+        </div>
+    </div>
+    <!--Hide this Revert Assessment button since there is Revert Status function-->
+    @*<div class="row">
+        <div class="col-md-12">
+            <div class="text-right">
+                <input type="button" id="btn-Start" class="btn green btn-Start DivBAUserOnly" value="Revert Assessment" onclick="javascript: ApproverAction(this)">
+            </div>
+        </div>
+    </div>*@
+</div>
+
+<div id="ConfirmDelete" class="modal fade PopUpModal" tabindex="-1" data-focus-on="input:first">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" data-number="" aria-hidden="true"></button>
+                <h4 class="modal-title">Confirmation - Delete This Record</h4>
+            </div>
+            <div class="modal-body">
+                <div class="well">
+                    Are you sure to Delete this EPOP Assessment? <br />
+                    Press Delete to proceed, or Close to stay on the current page.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" data-dismiss="modal" data-number="5" class="btn default">Close</button>
+                <button type="submit" class="btn default blue" id="btnSubmitForm" onclick="javascript: DeleteAssessment()">
+                    <i class="fa fa-check"></i>
+                    Delete
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="SuccessDelete" tabindex="-1" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header Success-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true" style="display: none;"></button>
+                <h4 class="Success-title">Action Successfully Completed</h4>
+            </div>
+            <div class="modal-body Success-body">
+                <div class="well">
+                    The EPOP Assessment is deleted.
+                </div>
+            </div>
+            <div class="modal-footer Success-footer">
+                <button type="submit" class="btn default blue" id="btnDeleteOK">
+                    <i class="fa fa-check"></i>
+                    OK
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="SuccessSubmit" tabindex="-1" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header Success-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true" style="display: none;"></button>
+                <h4 class="Success-title">Action Successfully Completed</h4>
+            </div>
+            <div class="modal-body Success-body">
+                <div class="well">
+                    The EPOP Assessment is reverted.
+                </div>
+            </div>
+            <div class="modal-footer Success-footer">
+                <button type="submit" class="btn default blue" id="btnOK">
+                    <i class="fa fa-check"></i>
+                    OK
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Loading Gif -->
+<div id="divLoading" style="margin: 0px; padding: 0px; position: fixed; right: 0px;
+    top: 0px; width: 100%; height: 100%; background-color:gainsboro; z-index: 30001;
+    opacity: .8; filter: alpha(opacity=70);display:none">
+    <p style="position: absolute; top: 30%; left: 30%; color: black;">
+        Loading, please wait...<img src="../Assets/img/ajax-loading.gif" />
+
+    </p>
+</div>
+
+<script type="text/javascript">
+
+    jQuery(document).ready(function () {
+        //$('.date-picker').datepicker({
+        //    format: 'dd/mm/yyyy',
+        //    autoclose: true
+        //});
+        var now = new Date();
+        var _Start = new Date(now.getFullYear(), 0, 1);
+
+        $('#StartDate').val(convertDate2(_Start));
+
+        $('#EndDate').val(convertDate2(new Date()));
+
+        $('#divSubmissionDateFrom').datepicker('setStartDate', '@dtStrStart');
+        $('#divSubmissionDateFrom').datepicker('setEndDate', '@dtStrEnd');
+
+        $('#divSubmissionDateTo').datepicker('setStartDate', '@dtStrStart');
+        $('#divSubmissionDateTo').datepicker('setEndDate', '@dtStrEnd');
+
+        $("#divSubmissionDateFrom").datepicker({
+            autoclose: true,
+        }).on('changeDate', function (selected) {
+            var minDate = new Date(selected.date.valueOf());
+
+            minDate.setDate(minDate.getDate() + 1);
+            $('#divSubmissionDateTo').datepicker('setStartDate', minDate);
+        });
+
+        $("#divSubmissionDateTo").datepicker({
+            autoclose: true,
+        })
+            .on('changeDate', function (selected) {
+                var minDate = new Date(selected.date.valueOf());
+                minDate.setDate(minDate.getDate() - 1);
+                $('#divSubmissionDateFrom').datepicker('setEndDate', minDate);
+            });
+
+        $("#StartDate").on("blur", function (e) {
+            if ($('#StartDate').val() == "") {
+                $('#divSubmissionDateTo').datepicker('setStartDate', '@dtStrStart');
+            }
+
+        });
+
+        $("#EndDate").on("blur", function (e) {
+            if ($('#EndDate').val() == "") {
+                $('#divSubmissionDateFrom').datepicker('setEndDate', '@dtStrEnd');
+            }
+
+        });
+
+        SearchListing();
+    });
+
+    function convertDate2(inputFormat) {
+        function pad(s) { return (s < 10) ? '0' + s : s; }
+        var monthNames = ["January", "February", "March", "April", "May", "June",
+            "July", "August", "September", "October", "November", "December"
+        ];
+
+        var d = new Date(inputFormat);
+        return [pad(d.getDate()), monthNames[d.getMonth()], d.getFullYear()].join(' ');
+    }
+
+    function ExportToExcel() {
+        // EXPORT TO EXCEL
+        var ua = window.navigator.userAgent;
+        var msie = ua.indexOf("MSIE ");
+
+        // Internet Explorer
+        if (msie > 0 || !!navigator.userAgent.match(/Trident.*rv\:11\./)) {
+            var _btn = document.getElementById('btn-Export');
+            _btn.onclick = fnExcelReport;
+        }
+        else {
+            $("#btn-Export").click(function (e) {
+                //getting values of current time for generating the file name
+                var dt = new Date();
+                var day = dt.getDate();
+                var month = dt.getMonth() + 1;
+                var year = dt.getFullYear();
+                var hour = dt.getHours();
+                var mins = dt.getMinutes();
+                var postfix = day + "." + month + "." + year + "_" + hour + "." + mins;
+                //creating a temporary HTML link element (they support setting file names)
+                var a = document.createElement('a');
+                //getting data from our div that contains the HTML table
+                var data_type = 'data:application/vnd.ms-excel';
+                var table_div = document.getElementById('tblResult');
+                var table_html = table_div.outerHTML.replace(/ /g, '%20');
+                a.href = data_type + ', ' + table_html;
+                //setting the file name
+                a.download = 'EPOP_PendingAssessment_HR_' + postfix + '.xls';
+                //triggering the function
+                a.click();
+                //just in case, prevent default behaviour
+                e.preventDefault();
+            });
+        }
+    }
+
+    function ClearFilter() {
+        $('#StartDate').val('');
+        $('#EndDate').val('');
+        $('#Status').val('');
+        $('#txtEmpName').val('');
+        $('#hfEmpID').val('');
+        SearchListing();
+    }
+
+    function fnExcelReport() {
+        var dt = new Date();
+        var day = dt.getDate();
+        var month = dt.getMonth() + 1;
+        var year = dt.getFullYear();
+        var hour = dt.getHours();
+        var mins = dt.getMinutes();
+        var postfix = day + "." + month + "." + year + "_" + hour + "." + mins;
+        var _fileName = 'Payroll_Report_' + postfix + '.xls';
+
+        var tab_text = "<table border='2px'><tr bgcolor='#87AFC6'>";
+        var textRange; var j = 0;
+        tab = document.getElementById('tblResult'); // id of table
+
+        for (j = 0 ; j < tab.rows.length ; j++) {
+            tab_text = tab_text + tab.rows[j].innerHTML + "</tr>";
+            //tab_text=tab_text+"</tr>";
+        }
+
+        tab_text = tab_text + "</table>";
+
+
+        //var ua = window.navigator.userAgent;
+        //var msie = ua.indexOf("MSIE ");
+
+        //if (msie > 0 || !!navigator.userAgent.match(/Trident.*rv\:11\./))      // If Internet Explorer
+        //{
+        txtArea1.document.open("txt/html", "replace");
+        txtArea1.document.write(tab_text);
+        txtArea1.document.close();
+        txtArea1.focus();
+        sa = txtArea1.document.execCommand("SaveAs", true, _fileName);
+        //}
+        //else //other browser not tested on IE 11
+        //    sa = window.open('data:application/vnd.ms-excel,filename=aaa.xlsx' + encodeURIComponent(tab_text));
+        return (sa);
+    }
+
+    function SearchListing() {
+        var _CompanyCode = $('#Company option:selected').val();
+        var _DepartmentCode = $('#Department option:selected').val();
+        var _UnitSectionCode = $('#UnitSection option:selected').val();
+        var _EmployeeName = $('#EmployeeName').val();
+        var _Category = $('#ExecutiveCategory option:selected').val();
+        var _ReferenceNo = $('#ReferenceNo').val();
+        var _StartDate = $('#StartDate').val();
+        var _EndDate = $('#EndDate').val();
+
+        $("#SearchResult").html("LOADING...");
+
+        $.ajax({
+            type: "GET",
+            url: '@Url.Content("~/EPOP/_RevertAssessmentResult")',
+            cache: false,
+            dataType: "html",
+            data: {
+                Division: _CompanyCode, Department: _DepartmentCode,
+                UnitSection: _UnitSectionCode, EmployeeCode: _EmployeeName,
+                Category: _Category, ReferenceNo: _ReferenceNo, SubmitterID: "@ViewBag.EmployeeID",
+                StartDate: _StartDate, EndDate: _EndDate
+            },
+            success: function (content) {
+                $("#SearchResult").html(content);
+                ExportToExcel();
+            },
+            error: function (e) {
+                console.log(e);
+            }
+        });
+    }
+
+    function changeCompany(e) {
+        $.ajax({
+            type: "GET",
+            url: '@Url.Content("~/EPOP/_DDLDepartment")',
+            cache: false,
+            dataType: "html",
+            data: { CompanyCode: e.value, RoleCode: "@ViewBag.RoleCode" },
+            success: function (content) {
+                $("#Department").html(content);
+            },
+            error: function (e) {
+                console.log(e);
+            }
+        });
+    }
+
+    function changeDepartment(e) {
+        $.ajax({
+            type: "GET",
+            url: '@Url.Content("~/EPOP/_DDLUnitSection")',
+            cache: false,
+            dataType: "html",
+            data: { DepartmentCode: e.value, RoleCode: "@ViewBag.RoleCode" },
+            success: function (content) {
+                $("#UnitSectionResult").html(content);
+            },
+            error: function (e) {
+                console.log(e);
+            }
+        });
+    }
+
+    function ApproverAction(btn) {
+
+
+        var _ValidationMsg = '- Please ensure at least One EPOP Assessment is selected before proceed.\n';
+        var Category = '';
+
+        $("#tblResult td input[type=checkbox]:checked").each(function (i, value) {
+            var row = $(this).closest("tr");
+            Category = row.find(".AssessmentCheckBox").attr('data-category');
+            if (Category == 'Specialist' || Category == 'Non-Executive') {
+                _ValidationMsg = '- Please select only Executive category for Revert Assessment.\n';
+                return false;
+            } else {
+                _ValidationMsg = '';
+            }
+            
+        });
+
+
+
+        if (_ValidationMsg != null && _ValidationMsg != '') {
+            alert(_ValidationMsg);
+        }
+        else {
+            btn.disabled = true;
+            $("#divLoading").show();
+            var myVar = setTimeout(function () { StartRevertAssessment() }, 3000);
+            btn.disabled = false;
+        }
+
+    }
+
+    function StartRevertAssessment() {
+        var FullResultRequest = '';
+        var resultRequest = '';
+
+        var RequestIDs = '';
+
+        var _Employeee = document.getElementById('hfEmployeeID');
+
+        if ($('#divLoading').is(':visible')) {
+            $("#tblResult td input[type=checkbox]:checked").each(function (i, value) {
+                var row = $(this).closest("tr");
+                RequestIDs += row.find(".AssessmentCheckBox").val() + ",";
+            });
+            var form = {
+                RequestIDs: RequestIDs
+            };
+            ajaxVerify(form);
+        }
+
+    }
+    function ajaxVerify(form) {
+
+        $.ajax({
+            type: "POST",
+            url: '@Url.Content("~/EPOP/SubmitRevertAssessment")',
+            cache: false,
+            async: false,
+            dataType: "json",
+            data: form,
+            success: function (result) {
+                if (result.Success) {
+                    $("#divLoading").hide();
+                    $("#SuccessSubmit").modal();
+                    $("#btnOK").click(function () { window.location.href = '@Url.Action("RevertAssessment","EPOP")' });
+                }
+                else {
+                    $("#divLoading").hide();
+
+                    alert(result.ErrorMsg);
+                }
+            },
+            error: function (e) {
+
+            }
+
+        });
+
+    }
+
+    var RequestToDelete = "";
+    function SetRequestToDelete(RequestID)
+    {
+        RequestToDelete = RequestID;
+    }
+    function DeleteAssessment() {
+        if (RequestToDelete == '')
+        {
+            alert('Failed to Delete Assessment. RequestID is empty.')
+        }
+        else
+        {
+            var form = {
+                RequestID: RequestToDelete
+            };
+            $.ajax({
+                type: "POST",
+                url: '@Url.Content("~/EPOP/SubmitDeleteAssessment")',
+                cache: false,
+                async: false,
+                dataType: "json",
+                data: form,
+                success: function (result) {
+                    if (result.Success) {
+                        $("#divLoading").hide();
+                        $("#SuccessDelete").modal();
+                        $("#btnDeleteOK").click(function () { window.location.href = '@Url.Action("RevertAssessment","EPOP")' });
+                    }
+                    else {
+                        $("#divLoading").hide();
+
+                        alert(result.ErrorMsg);
+                    }
+                },
+                error: function (e) {
+
+                }
+
+            });
+        }
+
+
+    }
+
+    //function ExportToExcel() {
+    //    var dt = new Date();
+    //    var day = dt.getDate();
+    //    var month = dt.getMonth() + 1;
+    //    var year = dt.getFullYear();
+    //    var hour = dt.getHours();
+    //    var mins = dt.getMinutes();
+    //    var postfix = day + "." + month + "." + year + "_" + hour + "." + mins;
+
+    //    var _CompanyCode = $('#Company option:selected').val();
+    //    var _DepartmentCode = $('#Department option:selected').val();
+    //    var _UnitSectionCode = $('#UnitSection option:selected').val();
+    //    var _EmployeeName = $('#EmployeeName').val();
+    //    var _TrainingCategory = $('#TrainingCategory option:selected').val();
+    //    var _TrainingType = $('#TrainingType option:selected').val();
+    //    var _CourseTitle = $('#CourseTitle').val();
+    //    var _Status = $('#Status').val();
+    //    var _Provider = $('#Provider').val();
+    //    var _Venue = $('#Venue').val();
+    //    var _ReferenceNo = $('#ReferenceNo').val();
+
+    //    window.open("../Training/_ExportToExcel?FileName=TrainingRequest_Report_" + postfix + "&DateFrom=" + _DateFrom +
+    //                "&DateTo=" + _DateTo + "&CompanyCode=" + _CompanyCode + "&DepartmentCode=" + _DepartmentCode + "&UnitSectionCode=" + _UnitSectionCode + "&EmployeeName=" + _EmployeeName + "&TrainingCategory=" + _TrainingCategory + "&TrainingType=" + _TrainingType
+    //                + "&CourseTitle=" + _CourseTitle + "&Status=" + _Status + "&Provider=" + _Provider + "&Venue=" + _Venue + "&ReferenceNo=" + _ReferenceNo);
+    //}
+</script>

@@ -1,0 +1,52 @@
+﻿@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewBag.Title = "Service Acceptance: My Approval History";
+
+    bool IsCheck = ViewBag.IsCheck;
+    string BlockMessage = ViewBag.BlockMessage;
+}
+
+<div class="row">
+    <div class="col-md-12">
+        <br />
+        <h1 class="page-title">
+            @ViewBag.Title <span style="padding-left:20px;"><small></small></span>
+        </h1>
+    </div>
+</div>
+<br />
+<div class="form-body">
+    <div class="row">
+        <div class="col-md-12">
+            <div id="SearchResult">
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+    jQuery(document).ready(function SearchListing() {
+        $("#SearchResult").html("LOADING...");
+
+        $.ajax({
+            type: "GET",
+            url: '@Url.Content("~/ServiceAcceptance/_AppHistoryResult")',
+            cache: false,
+            dataType: "html",
+            data: {},
+            success: function (content) {
+                $("#SearchResult").html(content);
+            },
+            error: function (e) {
+                console.log(e);
+            }
+        });
+
+        
+        if ('@IsCheck' == 'False')
+        {
+            alert('@Html.Raw(BlockMessage.Replace("'", "\\'").Replace("\\\"", "\\\\\""))')
+        }
+    });
+</script>

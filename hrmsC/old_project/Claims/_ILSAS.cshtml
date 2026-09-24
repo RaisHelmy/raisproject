@@ -1,0 +1,1112 @@
+﻿@model ESS.Claim.ViewModels.ClaimsSubtype
+@{
+    ViewBag.Title = "Test";
+    Layout = null;
+
+    List<SelectListItem> ILSASSelection = new List<SelectListItem>
+    {
+        new SelectListItem { Text = "RM200/Day (Full Day)", Value = "Full Day" },
+        new SelectListItem { Text = "RM200/Day (Half Day AM)", Value = "Half Day AM"},
+        new SelectListItem { Text = "RM200/Day (Half Day PM)", Value = "Half Day PM"},
+        new SelectListItem { Text = "RM200/Day (By Hour)", Value = "By Hour"},
+        new SelectListItem { Text = "RM100/Hour", Value = "Hour"},
+    };
+    string dtStrStart = @ViewBag.ILSAS_StartDate;
+    string dtStrEnd = @ViewBag.ILSAS_EndDate;
+    string Status = @ViewBag.IlsasStatus;
+}
+
+
+<div class="portlet box blue subtypeportlet" id="dTable_ILSAS">
+    <div class="mini-triangle"><img src="../Assets/img/menu-red-triangle.png" /></div>
+
+    <div class="portlet-title">
+
+        <div class="caption">
+            <i class="fa fa-reorder"></i>ILSAS SME Teaching Allowance
+        </div>
+        <div class="tools">
+            <a id="subtypeToggle" title="" data-original-title="" href="javascript:;" class="collapse"> </a>
+        </div>
+    </div>
+    <div class="portlet-body form">
+        <div class="form-body">
+
+            @if (Status == "Draft" || Status == "Withdrawn" || Status == "Declined" || Status =="Returned")
+            {
+                <table id="ILSASTable" class="table table-striped table-bordered table-hover table-full-width">
+                    <thead>
+                        <tr>
+                            <th scope="col"></th>
+                            <th scope="col">Course Title</th>
+                            <th scope="col">Rate</th>
+                            <th scope="col">Start Date</th>
+                            <th scope="col">Start Time</th>
+                            <th scope="col">End Date</th>
+                            <th scope="col">End Time</th>
+                            <th scope="col">No. of Hour</th>
+                            <th scope="col">Amount</th>
+                        </tr>
+                    </thead>
+
+
+                    @if (Model.SubTypeDetails == null)
+                    {
+
+                        string DetailName = "ClaimsSubtypeCategory[" + @Model.categoryIndex + "].ClaimSubtype[" + @Model.subtypeIndex + "].SubTypeDetails[0].";
+
+                        <tbody>
+                            <tr>
+                                <td>
+                                    <input type="checkbox" class="ILSASRemoveCheckbox" />
+                                </td>
+                                <td>
+                                    @*Course Name*@
+                                    @Html.TextBoxFor(x => x.SubTypeDetails[0].SubTypeColumn1, new { @Name = (DetailName + "SubTypeColumn1"), @class = "form-control Name", @style = "width: 250px;" })
+                                </td>
+                                <td>
+                                    @*Rate*@
+                                    @Html.DropDownListFor(x => x.SubTypeDetails[0].SubTypeColumn2, ILSASSelection, new { @class = "form-control ILSASRate", @Name = DetailName + "SubTypeColumn2", @style = "width: 250px;", @onchange = "CalculateILSASAmount()" })
+                                </td>
+                                <td>
+                                    @*Start Date*@
+                                    <div class="input-group date date-picker">
+                                        @Html.TextBoxFor(x => x.SubTypeDetails[0].SubTypeColumn3, new { @class = "form-control StartDate", @Name = DetailName + "SubTypeColumn3", @style = "width: 150px;", @onchange = "CalculateILSASAmount(); return false;" })
+                                        <span class="input-group-btn">
+                                            <button type="button" class="btn default"><i class="fa fa-calendar"></i></button>
+                                        </span>
+                                    </div>
+                                </td>
+                                <td>
+                                    @*Start Time*@
+                                    @Html.TextBoxFor(x => x.SubTypeDetails[0].SubTypeColumn4, new { @class = "form-control ilsastimeinput StartTime", @Name = DetailName + "SubTypeColumn4", @style = "width: 150px;", @readonly = "readonly" })
+                                </td>
+                                <td>
+                                    @*End Date*@
+                                    <div class="input-group date date-picker">
+                                        @Html.TextBoxFor(x => x.SubTypeDetails[0].SubTypeColumn5, new { @class = "form-control EndDate", @Name = DetailName + "SubTypeColumn5", @style = "width: 150px;", @onchange = "CalculateILSASAmount()" })
+                                        <span class="input-group-btn">
+                                            <button type="button" class="btn default"><i class="fa fa-calendar"></i></button>
+                                        </span>
+                                    </div>
+                                </td>
+                                <td>
+                                    @*End Time*@
+                                    @Html.TextBoxFor(x => x.SubTypeDetails[0].SubTypeColumn6, new { @class = "form-control ilsastimeinput EndTime", @Name = DetailName + "SubTypeColumn6", @style = "width: 150px;", @readonly = "readonly" })
+                                </td>
+                                <td>
+                                    @*No of Hour*@
+                                    @Html.TextBoxFor(x => x.SubTypeDetails[0].SubTypeColumn7, new { @class = "form-control Hour", @Name = DetailName + "SubTypeColumn7", @style = "width: 150px;", @onkeyup = "CalculateILSASAmount();" })
+                                </td>
+                                <td>
+                                    @{
+                                        var hiddenAmount = @DetailName + "SubTypeColumn8";
+                                        var chargecode = @DetailName + "SubTypeColumn0";
+                                    }
+                                    <input type="hidden" name='@hiddenAmount' class="HiddenAmount" />
+                                    <input type="hidden" name='@chargecode' class="chargecode" value="@ViewBag.ChargeCode" />
+                                    @Html.HiddenFor(x => x.SubTypeDetails[0].Amount, new { @Name = DetailName + "Amount", @class = "Amount" })
+
+
+                                    @Html.TextBoxFor(x => x.SubTypeDetails[0].TotalAmount, new { @class = "form-control text-right GrandAmount Amount", @Name = DetailName + "TotalAmount", @readonly = "readonly", @style = "width: 150px;" })
+                                </td>
+                            </tr>
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <td colspan="8"></td>
+                                <td><input type="text" class="form-control text-right GrandTotalAmount" readonly /></td>
+                            </tr>
+                        </tfoot>
+                                        }
+                    else
+                    {
+                        <tbody>
+                            @for (int i = 0; i < Model.SubTypeDetails.Count; i++)
+                            {
+
+                                List<SelectListItem> thisRate = new List<SelectListItem>();
+                                thisRate = ILSASSelection;
+                                thisRate.Where(x => x.Selected == true).ToList().ForEach(y => y.Selected = false);
+                                thisRate.Where(x => x.Value == @Model.SubTypeDetails[i].SubTypeColumn2).First().Selected = true;
+                                string ExtDetailName = "ClaimsSubtypeCategory[" + @Model.categoryIndex + "].ClaimSubtype[" + @Model.subtypeIndex + "].SubTypeDetails[" + i + "].";
+
+                                <tr>
+                                    <td><input type="checkbox" class="ILSASRemoveCheckbox" /></td>
+                                    <td>
+                                        @*Course Name*@
+                                        @Html.TextBoxFor(x => x.SubTypeDetails[i].SubTypeColumn1, new { @Name = (ExtDetailName + "SubTypeColumn1"), @style = "width: 250px;", @class = "form-control Name" })
+                                    </td>
+                                    <td>
+                                        @*Rate*@
+                                        @Html.DropDownListFor(x => x.SubTypeDetails[i].SubTypeColumn2, thisRate, new { @class = "form-control ILSASRate", @style = "width: 250px;", @Name = ExtDetailName + "SubTypeColumn2", @onchange = "CalculateILSASAmount()" })
+                                    </td>
+                                    <td>
+                                        @*Start Date*@
+                                        <div class="input-group date date-picker">
+                                            @Html.TextBoxFor(x => x.SubTypeDetails[i].SubTypeColumn3, new { @class = "form-control StartDate", @Name = ExtDetailName + "SubTypeColumn3", @style = "width: 150px;", @onchange = "CalculateILSASAmount()" })
+                                            <span class="input-group-btn">
+                                                <button type="button" class="btn default"><i class="fa fa-calendar"></i></button>
+                                            </span>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        @*Start Time*@
+                                        @Html.TextBoxFor(x => x.SubTypeDetails[i].SubTypeColumn4, new { @class = "form-control ilsastimeinput StartTime", @Name = ExtDetailName + "SubTypeColumn4", @style = "width: 150px;", @readonly = "readonly" })
+                                    </td>
+                                    <td>
+                                        @*End Date*@
+                                        <div class="input-group date date-picker">
+                                            @Html.TextBoxFor(x => x.SubTypeDetails[i].SubTypeColumn5, new { @class = "form-control EndDate", @Name = ExtDetailName + "SubTypeColumn5", @style = "width: 150px;", @onchange = "CalculateILSASAmount()" })
+                                            <span class="input-group-btn">
+                                                <button type="button" class="btn default"><i class="fa fa-calendar"></i></button>
+                                            </span>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        @*End Time*@
+                                        @Html.TextBoxFor(x => x.SubTypeDetails[i].SubTypeColumn6, new { @class = "form-control ilsastimeinput EndTime", @Name = ExtDetailName + "SubTypeColumn6", @style = "width: 150px;", @readonly = "readonly" })
+                                    </td>
+                                    <td>
+                                        @*No of Hour*@
+                                        @Html.TextBoxFor(x => x.SubTypeDetails[i].SubTypeColumn7, new { @class = "form-control Hour", @Name = ExtDetailName + "SubTypeColumn7", @style = "width: 150px;", @onkeyup = "CalculateILSASAmount();" })
+                                    </td>
+                                    <td>
+
+                                        @Html.HiddenFor(x => x.SubTypeDetails[i].SubTypeColumn8, new { @Name = ExtDetailName + "SubTypeColumn8", @class = "HiddenAmount" })
+                                        @Html.HiddenFor(x => x.SubTypeDetails[i].SubTypeColumn0, new { @Name = ExtDetailName + "SubTypeColumn0", @class = "ChargeCode", @value = @ViewBag.ChargeCode })
+                                        @Html.HiddenFor(x => x.SubTypeDetails[i].Amount, new { @Name = ExtDetailName + "Amount", @class = "Amount" })
+                                        @Html.TextBoxFor(x => x.SubTypeDetails[i].TotalAmount, new { @class = "form-control text-right GrandAmount Amount", @Name = ExtDetailName + "TotalAmount", @readonly = "readonly", @style = "width: 150px;" })
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <td colspan="8"></td>
+                                <td><input type="text" class="form-control text-right GrandTotalAmount" value="@Model.SubTypeDetails.Sum(m => Convert.ToDecimal(m.TotalAmount))" readonly /></td>
+                            </tr>
+                        </tfoot>
+                    }
+                </table>
+
+                <div class="form-horizontal">
+                    <div class="table-toolbar">
+
+                        <div class="row">
+                            <div class="col-md-12">
+
+                                <div class="btn-group">
+                                    <a class="BtnPlus btn green" title="dTable_ILSAS" href="javascript:addILSASRow();">
+                                        Add Row
+                                        <i class="fa fa-plus"></i>
+                                    </a>
+                                </div>
+
+                                <div class="btn-group">
+                                    <a class="BtnPlus5 btn green" title="dTable_ILSAS" href="javascript:addILSAS5Row();">
+                                        Add 5 Rows
+                                        <i class="fa fa-plus"></i>
+                                    </a>
+
+                                </div>
+                                <div class="btn-group">
+                                    <a class="deleteall btn red" title="dTable_ILSAS" href="javascript:removeILSASRow();">
+                                        Delete Row
+                                        <i class="fa fa-minus"></i>
+                                    </a>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+
+                </div>
+                }
+                else if (Status == "Pending")
+                {
+                    <input id="ILSASApprovedAmount" type="hidden" value="" />
+                    <table id="ILSASTable" class="table table-striped table-bordered table-hover table-full-width">
+                        <thead>
+                            <tr>
+                                <th scope="col"></th>
+                                <th scope="col">Course Title</th>
+                                <th scope="col">Rate</th>
+                                <th scope="col">Start Date</th>
+                                <th scope="col">Start Time</th>
+                                <th scope="col">End Date</th>
+                                <th scope="col">End Time</th>
+                                <th scope="col">No. of Hour</th>
+                                <th scope="col">Submit Amount</th>
+                                <th scope="col">Approved Amount</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            @for (int i = 0; i < Model.SubTypeDetails.Count; i++)
+                            {
+
+                                List<SelectListItem> thisRate = new List<SelectListItem>();
+                                thisRate = ILSASSelection;
+                                thisRate.Where(x => x.Selected == true).ToList().ForEach(y => y.Selected = false);
+                                thisRate.Where(x => x.Value == @Model.SubTypeDetails[i].SubTypeColumn2).First().Selected = true;
+                                string ExtDetailName = "ClaimsSubtypeCategory[" + @Model.categoryIndex + "].ClaimSubtype[" + @Model.subtypeIndex + "].SubTypeDetails[" + i + "].";
+
+
+                                <tr>
+                                    <td></td>
+                                    <td>
+                                        @*Course Name*@
+                                        @Html.TextBoxFor(x => x.SubTypeDetails[i].SubTypeColumn1, new { @Name = (ExtDetailName + "SubTypeColumn1"), @style = "width: 250px;", @class = "form-control Name", @readonly = "readonly" })
+                                    </td>
+                                    <td>
+                                        @*Rate*@
+                                        @Html.DropDownListFor(x => x.SubTypeDetails[i].SubTypeColumn2, thisRate, new { @class = "form-control ILSASRate", @style = "width: 250px;", @Name = ExtDetailName + "SubTypeColumn2", @readonly = "readonly" })
+                                    </td>
+                                    <td>
+                                        @*Start Date*@
+                                        <div class="input-group date">
+                                            @Html.TextBoxFor(x => x.SubTypeDetails[i].SubTypeColumn3, new { @class = "form-control StartDate", @Name = ExtDetailName + "SubTypeColumn3", @style = "width: 150px;", @readonly = "readonly" })
+                                            <span class="input-group-btn">
+                                                <button type="button" class="btn default"><i class="fa fa-calendar"></i></button>
+                                            </span>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        @*Start Time*@
+                                        @Html.TextBoxFor(x => x.SubTypeDetails[i].SubTypeColumn4, new { @class = "form-control ilsastimeinput StartTime", @Name = ExtDetailName + "SubTypeColumn4", @style = "width: 150px;", @readonly = "readonly" })
+                                    </td>
+                                    <td>
+                                        @*End Date*@
+                                        <div class="input-group date">
+
+
+                                            @Html.TextBoxFor(x => x.SubTypeDetails[i].SubTypeColumn5, new { @class = "form-control EndDate", @Name = ExtDetailName + "SubTypeColumn5", @style = "width: 150px;", @readonly = "readonly" })
+                                            <span class="input-group-btn">
+                                                <button type="button" class="btn default"><i class="fa fa-calendar"></i></button>
+                                            </span>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        @*End Time*@
+                                        @Html.TextBoxFor(x => x.SubTypeDetails[i].SubTypeColumn6, new { @class = "form-control ilsastimeinput EndTime", @Name = ExtDetailName + "SubTypeColumn6", @style = "width: 150px;", @readonly = "readonly" })
+                                    </td>
+                                    <td>
+                                        @*No of Hour*@
+                                        @Html.TextBoxFor(x => x.SubTypeDetails[i].SubTypeColumn7, new { @class = "form-control Hour", @Name = ExtDetailName + "SubTypeColumn7", @style = "width: 150px;", @readonly = "readonly" })
+                                    </td>
+                                    <td>
+                                        @Html.HiddenFor(x => x.SubTypeDetails[i].SubTypeColumn0, new { @Name = ExtDetailName + "SubTypeColumn0", @class = "ChargeCode", @value = @ViewBag.ChargeCode })
+
+
+                                        @Html.TextBoxFor(x => x.SubTypeDetails[i].SubTypeColumn8, new { @class = "form-control HiddenAmount", @Name = ExtDetailName + "SubTypeColumn8", @style = "width: 150px;", @readonly = "readonly" })
+                                    </td>
+
+                                    <td>
+
+                                        @Html.TextBoxFor(x => x.SubTypeDetails[i].TotalAmount, new { @class = "form-control text-right GrandAmount Amount", @Name = ExtDetailName + "TotalAmount", @style = "width: 150px;", @onkeyup = "CalIlsasApproveAmount();", @onblur = "ValidateApprovedAmount(this);" })
+                                    </td>
+                                </tr>
+
+
+                            }
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <td colspan="9"></td>
+                                <td><input type="text" class="form-control text-right GrandTotalAmount" value="@Model.SubTypeDetails.Sum(m => Convert.ToDecimal(m.TotalAmount))" readonly /></td>
+
+                            </tr>
+
+                        </tfoot>
+
+                    </table>
+                }
+                else
+                {
+                    <table id="ILSASTable" class="table table-striped table-bordered table-hover table-full-width">
+                        <thead>
+                            <tr>
+                                <th scope="col"></th>
+                                <th scope="col">Course Title</th>
+                                <th scope="col">Rate</th>
+                                <th scope="col">Start Date</th>
+                                <th scope="col">Start Time</th>
+                                <th scope="col">End Date</th>
+                                <th scope="col">End Time</th>
+                                <th scope="col">No. of Hour</th>
+                                <th scope="col">Submit Amount</th>
+                                <th scope="col">Approved Amount</th>
+                            </tr>
+                        </thead>
+
+
+
+
+                        <tbody>
+                            @for (int i = 0; i < Model.SubTypeDetails.Count; i++)
+                            {
+
+                                List<SelectListItem> thisRate = new List<SelectListItem>();
+                                thisRate = ILSASSelection;
+                                thisRate.Where(x => x.Selected == true).ToList().ForEach(y => y.Selected = false);
+                                thisRate.Where(x => x.Value == @Model.SubTypeDetails[i].SubTypeColumn2).First().Selected = true;
+                                string ExtDetailName = "ClaimsSubtypeCategory[" + @Model.categoryIndex + "].ClaimSubtype[" + @Model.subtypeIndex + "].SubTypeDetails[" + i + "].";
+
+
+
+
+                                <tr>
+                                    <td></td>
+                                    <td>
+                                        @*Course Name*@
+                                        @Html.TextBoxFor(x => x.SubTypeDetails[i].SubTypeColumn1, new { @Name = (ExtDetailName + "SubTypeColumn1"), @style = "width: 250px;", @class = "form-control Name", @readonly = "readonly" })
+                                    </td>
+                                    <td>
+                                        @*Rate*@
+                                        @Html.DropDownListFor(x => x.SubTypeDetails[i].SubTypeColumn2, thisRate, new { @class = "form-control ILSASRate", @style = "width: 250px;", @Name = ExtDetailName + "SubTypeColumn2", @readonly = "readonly" })
+                                    </td>
+                                    <td>
+                                        @*Start Date*@
+                                        <div class="input-group date">
+                                            @Html.TextBoxFor(x => x.SubTypeDetails[i].SubTypeColumn3, new { @class = "form-control StartDate", @Name = ExtDetailName + "SubTypeColumn3", @style = "width: 150px;", @readonly = "readonly" })
+                                            <span class="input-group-btn">
+                                                <button type="button" class="btn default"><i class="fa fa-calendar"></i></button>
+                                            </span>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        @*Start Time*@
+                                        @Html.TextBoxFor(x => x.SubTypeDetails[i].SubTypeColumn4, new { @class = "form-control ilsastimeinput StartTime", @Name = ExtDetailName + "SubTypeColumn4", @style = "width: 150px;", @readonly = "readonly" })
+                                    </td>
+                                    <td>
+                                        @*End Date*@
+                                        <div class="input-group date">
+
+
+                                            @Html.TextBoxFor(x => x.SubTypeDetails[i].SubTypeColumn5, new { @class = "form-control EndDate", @Name = ExtDetailName + "SubTypeColumn5", @style = "width: 150px;", @readonly = "readonly" })
+                                            <span class="input-group-btn">
+                                                <button type="button" class="btn default"><i class="fa fa-calendar"></i></button>
+                                            </span>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        @*End Time*@
+                                        @Html.TextBoxFor(x => x.SubTypeDetails[i].SubTypeColumn6, new { @class = "form-control ilsastimeinput EndTime", @Name = ExtDetailName + "SubTypeColumn6", @style = "width: 150px;", @readonly = "readonly" })
+                                    </td>
+                                    <td>
+                                        @*No of Hour*@
+                                        @Html.TextBoxFor(x => x.SubTypeDetails[i].SubTypeColumn7, new { @class = "form-control Hour", @Name = ExtDetailName + "SubTypeColumn7", @style = "width: 150px;", @readonly = "readonly" })
+                                    </td>
+                                    <td>
+                                        @Html.HiddenFor(x => x.SubTypeDetails[i].SubTypeColumn0, new { @Name = ExtDetailName + "SubTypeColumn0", @class = "ChargeCode" })
+
+
+                                        @Html.TextBoxFor(x => x.SubTypeDetails[i].SubTypeColumn8, new { @class = "form-control HiddenAmount", @Name = ExtDetailName + "SubTypeColumn8", @style = "width: 150px;", @readonly = "readonly" })
+                                    </td>
+
+                                    <td>
+
+                                        @Html.TextBoxFor(x => x.SubTypeDetails[i].TotalAmount, new { @class = "form-control text-right GrandAmount Amount", @Name = ExtDetailName + "TotalAmount", @style = "width: 150px;", @readonly = "readonly" })
+                                    </td>
+                                </tr>
+
+
+                            }
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <td colspan="9"></td>
+                                <td><input type="text" class="form-control text-right GrandTotalAmount" value="@Model.SubTypeDetails.Sum(m => Convert.ToDecimal(m.TotalAmount))" readonly /></td>
+
+                            </tr>
+
+                        </tfoot>
+
+                    </table>
+                }
+        </div>
+    </div>
+</div>
+
+<script>
+    var AssignedDate = [];
+
+    function dTable_ILSASValidation() {
+        var ErrorMessage = "";
+
+        AssignedDate = []
+        var i = 0;
+        $('#ILSASTable .ILSASRate').each(function () {
+            var $row = $(this).closest("tr");
+
+            var Name = $row.find(".Name").val();
+            if (Name == "") {
+                ErrorMessage += "Course Name cannot empty\n";
+            }
+
+            var strStartDate = $row.find(".StartDate").val();
+            var StartDate;
+            if (strStartDate == "") {
+                ErrorMessage += "Start Date cannot empty\n";
+            }
+            else {
+                StartDate = moment(strStartDate, "DD/MM/YYYY")._d;
+            }
+
+            AssignedDate[i] = StartDate;
+            i++;
+
+            var strEndDate = $row.find(".EndDate").val();
+            var EndDate;
+            if (strEndDate == "") {
+                ErrorMessage += "End Date cannot empty\n";
+            }
+            else {
+                EndDate = moment(strEndDate, "DD/MM/YYYY")._d;
+            }
+            AssignedDate[i] = EndDate;
+            i++;
+
+            var Amount = $row.find(".Amount").val();
+            if (Amount == "" || Amount == "NaN") {
+                ErrorMessage += "Amount cannot be Empty\n";
+            }
+
+            if (EndDate < StartDate) {
+                ErrorMessage += "End Date cannot greater than StartDate\n";
+            }
+
+            if ((StartDate && EndDate) && StartDate.getMonth() != EndDate.getMonth()) {
+                ErrorMessage += Name + " : Cross month selection is not allowed, please add as new row.\n";
+            }
+            //console.log(i + ":" + EndDate);
+        });
+
+        if (ErrorMessage != "") {
+            ErrorMessage = "ILSAS Teaching Claim\n" + ErrorMessage;
+            return ErrorMessage;
+        }
+
+
+        //console.log(AssignedDate);
+        if (multipleDateRangeOverlaps()) { ErrorMessage += "Duplicated Date detected" }
+        return ErrorMessage;
+    }
+
+
+    function dateRangeOverlaps(a_start, a_end, b_start, b_end) {
+        //console.log(a_start + ":" + a_end + ":" + b_start + ":" + b_end);
+        if (a_start <= b_start && b_start <= a_end) { return true; } // b starts in a
+        if (a_start <= b_end && b_end <= a_end) { return true; } // b ends in a
+        if (b_start < a_start && a_end < b_end) { return true; } // a in b
+        return false;
+    }
+
+    function multipleDateRangeOverlaps() {
+        var i, j;
+
+        if (AssignedDate.length % 2 !== 0)
+            throw new TypeError('AssignedDate length must be a multiple of 2');
+        for (i = 0; i < AssignedDate.length - 2; i += 2) {
+            for (j = i + 2; j < AssignedDate.length; j += 2) {
+
+                if (
+                    dateRangeOverlaps(
+                        AssignedDate[i], AssignedDate[i + 1],
+                        AssignedDate[j], AssignedDate[j + 1]
+                    )
+                ) return true;
+            }
+        }
+        return false;
+    }
+
+    var ILSASTable = $('#ILSASTable').DataTable({
+        "bLengthChange": false,
+        "bFilter": false,
+        "bPaginate": false,
+        "bInfo": false,
+        "bSort": false
+    });
+
+    function addILSASRow() {
+
+        ILSASTable.fnAddData([
+            '<input type="checkbox" class="ILSASRemoveCheckbox" /><input name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[' + ILSASTable.fnSettings().fnRecordsTotal() + '].SubTypeColumn0" class="ChargeCode" type="hidden" value="@ViewBag.ChargeCode">',
+            '<input type="text" name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[' + ILSASTable.fnSettings().fnRecordsTotal() + '].SubTypeColumn1" class="form-control" style="width:250px" />',
+            '<select name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[' + ILSASTable.fnSettings().fnRecordsTotal() + '].SubTypeColumn2" class="form-control ILSASRate" style="width:250px" onchange="CalculateILSASAmount()"></select>',
+            '<div class="input-group date date-picker"><input type="text" name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[' + ILSASTable.fnSettings().fnRecordsTotal() + '].SubTypeColumn3" class="form-control StartDate" style="width:150px" onchange="CalculateILSASAmount()"/><span class="input-group-btn"><button type="button" class="btn default"><i class="fa fa-calendar"></i></button></span></div>',
+            '<input type="text" name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[' + ILSASTable.fnSettings().fnRecordsTotal() + '].SubTypeColumn4" class="form-control ilsastimeinput StartTime" style="width:150px" readonly />',
+            '<div class="input-group date date-picker"><input type="text" name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[' + ILSASTable.fnSettings().fnRecordsTotal() + '].SubTypeColumn5" class="form-control EndDate" style="width:150px" onchange="CalculateILSASAmount()" /><span class="input-group-btn"><button type="button" class="btn default"><i class="fa fa-calendar"></i></button></span></div>',
+            '<input type="text" name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[' + ILSASTable.fnSettings().fnRecordsTotal() + '].SubTypeColumn6" class="form-control ilsastimeinput EndTime" style="width:150px" readonly />',
+            '<input type="text" name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[' + ILSASTable.fnSettings().fnRecordsTotal() + '].SubTypeColumn7" class="form-control Hour" style="width:150px" onkeyup = "CalculateILSASAmount();" />',
+            '<input type="hidden" name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[' + ILSASTable.fnSettings().fnRecordsTotal() + '].Amount" class="Amount" ><input type="hidden" name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[' + ILSASTable.fnSettings().fnRecordsTotal() + '].SubTypeColumn8" class="HiddenAmount" ><input type="text" name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[' + ILSASTable.fnSettings().fnRecordsTotal() + '].TotalAmount" class="form-control text-right GrandAmount Amount" style="width:150px" readonly />'
+        ]);
+
+        $(".ILSASRemoveCheckbox").uniform();
+        $('.ILSASRate:Last').html($('.ILSASRate:first').html()).val($(".ILSASRate:Last option:first").val());;
+        $('.date-picker').datepicker({
+            format: 'dd/mm/yyyy',
+            autoclose: true
+        });
+
+        $('#ILSASTable .date-picker').datepicker('setStartDate', '@dtStrStart');
+        $('#ILSASTable .date-picker').datepicker('setEndDate', '@dtStrEnd');
+
+        $('.ilsastimeinput').inputmask("mask", {
+            "mask": "99:99"
+        });
+        //jquery init
+        //CalculateILSASAmount();
+    }
+
+    function addILSAS5Row() {
+        addILSASRow();
+        addILSASRow();
+        addILSASRow();
+        addILSASRow();
+        addILSASRow();
+    }
+
+    function removeILSASRow() {
+
+
+        //if (ILSASTable.fnSettings().fnRecordsTotal() == $('input[class="ILSASRemoveCheckbox"]:checked').length) {
+        //    alert("Cannot Remove All Rows");
+        //    return false;
+        //}
+
+        $.each($('input[class="ILSASRemoveCheckbox"]:checked'), function (i, val) {
+
+            var row = $(this).closest("tr").get(0);
+            var id = $(this).attr("id");
+            ILSASTable.fnDeleteRow(ILSASTable.fnGetPosition(row));
+
+        });
+        reorderTable('#ILSASTable');
+        CalculateILSASAmount();
+    }
+
+    function ValidateApprovedAmount(x) {
+        var TAmount = $(x);
+
+        if (TAmount.val() != undefined) {
+            var myNumeric = parseFloat(TAmount.val().replace(/,/g, ''));
+            if (!myNumeric) {
+                TAmount.val('0.00');
+            }
+            else {
+                TAmount.val(myNumeric.toFixed(2));
+                //$(this).val(ThousandSeparator(myNumeric.toFixed(2)));
+            }
+        }
+    }
+
+    function CalIlsasApproveAmount() {
+        var thisTable = $('#ILSASTable');
+        var GrandTotalAmt = 0;
+        var index = 0;
+        var ApprovedAmountString = "";
+        thisTable.find(".ILSASRate").each(function () {
+            var $row = $(this).closest("tr");
+            var TAmount = $row.find(".Amount");
+
+            //console.log(TAmount.val());
+            GrandTotalAmt += parseFloat(TAmount.val());
+            //console.log(GrandTotalAmt);
+            ApprovedAmountString += index + ":" + TAmount.val() + ";";
+
+            index++;
+        });
+
+        //console.log(ApprovedAmountString);
+        $('#ILSASApprovedAmount').val(ApprovedAmountString);
+        $('#ILSASTable .GrandTotalAmount').val(GrandTotalAmt.toFixed(2));
+        CalculateSummary();
+    }
+
+    @*function newExceedLimit(done) {
+        $('#ILSASCAP').hide();
+        var monthNames = ["January", "February", "March", "April", "May", "June",
+          "July", "August", "September", "October", "November", "December"
+        ];
+        var FormStatus = '@Status';
+        var capTable;
+
+        $.ajax({
+            url: '../Claims/ILSASCheckCap',
+            type: 'POST',
+            data: { EmployeeID: $("[name='Submiter.ID']").val() },
+            success: function (result) {
+                capTable = result;
+
+                var thisTable = $('#ILSASTable');
+                var NR = 0;
+                var SR = 0;
+                var isExceedLimit = false;
+                var message = "";
+
+                $('#ILSASCAP .exceedDetail').html('Details:');
+                thisTable.find(".ILSASRate").each(function () {
+                    var $row = $(this).closest("tr");
+                    var thisDate = moment($row.find('.StartDate').val(), "DD/MM/YYYY")._d;
+                    var Rate = $row.find(".ILSASRate").val();
+                    var Hour = $row.find(".Hour");
+                    var SubmitAmount = $row.find(".HiddenAmount").val();
+
+                    console.log(capTable);
+
+                    var found = 0;
+                    for (var i in capTable) {
+                        if (capTable[i].Month == (thisDate.getMonth() + 1) && capTable[i].Year == thisDate.getFullYear()) {
+                            found = 1;
+
+                            console.log('Found');
+                            console.log(capTable[i]);
+
+                            NR = capTable[i].NR;
+                            SR = capTable[i].SR;
+
+                            if (FormStatus == "Draft" || FormStatus == "Withdrawn" || FormStatus == "Declined") {
+                                console.log("RATE: " + Rate + " NR = " + NR + " SR = " + SR);
+                                switch (Rate) {
+                                    case "Full Day":
+                                        NR += parseFloat(SubmitAmount);
+                                        break;
+                                    case "Half Day AM":
+                                        NR += parseFloat(SubmitAmount);
+                                        break;
+                                    case "Half Day PM":
+                                        NR += parseFloat(SubmitAmount);
+                                        break;
+                                    case "By Hour":
+                                        NR += parseFloat(SubmitAmount);
+                                        break;
+                                    case "Hour":
+                                        SR += parseFloat(Hour.val());
+                                        break;
+                                    default:
+                                        break;
+                                }
+
+                            }
+                            capTable[i].NR = NR;
+                            capTable[i].SR = SR;
+                            console.log(capTable);
+
+                            break;
+                        }
+                    }
+
+                    if (found == 0) {
+                        switch (Rate) {
+                            case "Full Day":
+                                NR += parseFloat(SubmitAmount);
+                                break;
+                            case "Half Day AM":
+                                NR += parseFloat(SubmitAmount);
+                                break;
+                            case "Half Day PM":
+                                NR += parseFloat(SubmitAmount);
+                                break;
+                            case "By Hour":
+                                NR += parseFloat(SubmitAmount);
+                                break;
+                            case "Hour":
+                                SR += parseFloat(Hour.val());
+                                break;
+                            default:
+                                break;
+                        }
+                    }
+                });
+
+                if (NR > 1000 || SR > 30) {
+                    console.log(thisDate.getFullYear() + " " + monthNames[thisDate.getMonth() + 1] + " Exceed Limit");
+                    $('#ILSASCAP').show();
+                    $('#ILSASExceed').val(true);
+                    isExceedLimit = true;
+                    $('#ILSASCAP .exceedDetail').append('<br/>' + thisDate.getFullYear() + " " + monthNames[thisDate.getMonth()] + " Exceed Limit");
+                }
+                else if (SR > 0) {
+                    $('#ILSASExceed').val(true);
+                }
+
+                if ($('#ILSASCAP:visible').length) {
+                    alert('ILSAS claim exceed capping limit.');
+                }
+
+                done(isExceedLimit, message);
+            }
+        });
+    }*@
+
+    function newExceedLimit(done) {
+        $('#ILSASCAP').hide();
+        $('#ILSASExceed').val(false);
+
+        var monthNames = ["January", "February", "March", "April", "May", "June",
+            "July", "August", "September", "October", "November", "December"
+        ];
+        var FormStatus = '@Status';
+        var capTable;
+        var exceedTable = {};
+
+        $.ajax({
+            url: '../Claims/ILSASCheckCap',
+            type: 'POST',
+            data: { EmployeeID: $("[name='Submiter.ID']").val() },
+            success: function (result) {
+                capTable = result;
+
+                var thisTable = $('#ILSASTable');
+                var NR = 0;
+                var SR = 0;
+                var isExceedLimit = false;
+                var message = "";
+
+                $('#ILSASCAP .exceedDetail').html('Details:');
+                thisTable.find(".ILSASRate").each(function () {
+                    var $row = $(this).closest("tr");
+                    var thisDate = moment($row.find('.StartDate').val(), "DD/MM/YYYY")._d;
+                    var Rate = $row.find(".ILSASRate").val();
+                    var Hour = $row.find(".Hour");
+                    var SubmitAmount = $row.find(".HiddenAmount").val();
+
+                    console.log(capTable);
+
+                    var found = 0;
+                    for (var i in capTable) {
+                        if (capTable[i].Month == (thisDate.getMonth() + 1) && capTable[i].Year == thisDate.getFullYear()) {
+                            found = 1;
+
+                            console.log('Found');
+                            console.log(capTable[i]);
+
+                            // Month for this row is in captable
+                            if (exceedTable[thisDate.getMonth()] == undefined) {
+                                exceedTable[thisDate.getMonth()] = {
+                                    NR: capTable[i].NR,
+                                    SR: capTable[i].SR,
+                                    Year: thisDate.getFullYear()
+                                };
+                            }
+
+                            if (FormStatus == "Draft" || FormStatus == "Withdrawn" || FormStatus == "Declined") {
+                                console.log("RATE: " + Rate + " NR = " + NR + " SR = " + SR);
+                                switch (Rate) {
+                                    case "Full Day":
+                                        exceedTable[thisDate.getMonth()].NR += parseFloat(SubmitAmount);
+                                        break;
+                                    case "Half Day AM":
+                                        exceedTable[thisDate.getMonth()].NR += parseFloat(SubmitAmount);
+                                        break;
+                                    case "Half Day PM":
+                                        exceedTable[thisDate.getMonth()].NR += parseFloat(SubmitAmount);
+                                        break;
+                                    case "By Hour":
+                                        exceedTable[thisDate.getMonth()].NR += parseFloat(SubmitAmount);
+                                        break;
+                                    case "Hour":
+                                        exceedTable[thisDate.getMonth()].SR += parseFloat(Hour.val());
+                                        break;
+                                    default:
+                                        break;
+                                }
+                            }
+
+                            console.log(exceedTable);
+
+                            break;
+                        }
+                    }
+
+                    if (found == 0) {
+
+                        // Month for this row isn't in captable
+                        if (exceedTable[thisDate.getMonth()] == undefined) {
+                            exceedTable[thisDate.getMonth()] = {
+                                NR: 0,
+                                SR: 0,
+                                Year: thisDate.getFullYear()
+                            };
+                        }
+
+                        switch (Rate) {
+                            case "Full Day":
+                                exceedTable[thisDate.getMonth()].NR += parseFloat(SubmitAmount);
+                                break;
+                            case "Half Day AM":
+                                exceedTable[thisDate.getMonth()].NR += parseFloat(SubmitAmount);
+                                break;
+                            case "Half Day PM":
+                                exceedTable[thisDate.getMonth()].NR += parseFloat(SubmitAmount);
+                                break;
+                            case "By Hour":
+                                exceedTable[thisDate.getMonth()].NR += parseFloat(SubmitAmount);
+                                break;
+                            case "Hour":
+                                exceedTable[thisDate.getMonth()].SR += parseFloat(Hour.val());
+                                break;
+                            default:
+                                break;
+                        }
+                    }
+                });
+
+                for (var month in exceedTable) {
+                    if (exceedTable[month].NR > 1000 || exceedTable[month].SR > 30) {
+                        $('#ILSASExceed').val(true);
+                        isExceedLimit = true;
+                        $('#ILSASCAP .exceedDetail').append('<br/>' + exceedTable[month].Year + " " + monthNames[month] + " Exceed Limit");
+                        $('#ILSASCAP').show();
+                    }
+                    else if (exceedTable[month].SR > 0) {
+                        $('#ILSASExceed').val(true);
+                    }
+
+                    if ($('#ILSASCAP:visible').length) {
+                        alert('ILSAS claim exceed capping limit.');
+                    }
+                }
+
+                    done(isExceedLimit, message);
+            }
+        });
+    }
+
+    function isExceed() {
+        var thisTable = $('#ILSASTable');
+        var NR = 0;
+        var SR = 0;
+        thisTable.find(".ILSASRate").each(function () {
+
+            var $row = $(this).closest("tr");
+            var Rate = $row.find(".ILSASRate").val();
+            var Hour = $row.find(".Hour");
+            var SubmitAmount = $row.find(".HiddenAmount").val();
+
+            switch (Rate) {
+                case "Full Day":
+                    NR += parseFloat(SubmitAmount);
+                    break;
+                case "Half Day AM":
+                    NR += parseFloat(SubmitAmount);
+                    break;
+                case "Half Day PM":
+                    NR += parseFloat(SubmitAmount);
+                    break;
+                case "By Hour":
+                    NR += parseFloat(SubmitAmount);
+                    break;
+                case "Hour":
+                    SR += Hour.val();
+                    break;
+                default:
+                    break;
+            }
+        })
+
+        //console.log("NR = " + NR + " SR = " + SR);
+        if (NR > 1000 || SR > 30) {
+
+            $('#ILSASCAP').show();
+            $('#ILSASExceed').val(true);
+            return true;
+        }
+        else if (SR > 0) {
+
+            $('#ILSASCAP').hide();
+            $('#ILSASExceed').val(true);
+            return true;
+        }
+        else {
+
+            $('#ILSASCAP').hide();
+            $('#ILSASExceed').val(false);
+            return false;
+        }
+    }
+
+    function CalculateILSASAmount() {
+        var NR = 0;
+        var SR = 0;
+        var grandTotal = 0;
+        var thisTable = $('#ILSASTable');
+
+        thisTable.find(".ILSASRate").each(function () {
+
+            var $row = $(this).closest("tr");
+            var Rate = $row.find(".ILSASRate").val();
+            var StartDate = $row.find(".StartDate");
+            var StartTime = $row.find(".StartTime");
+            var EndDate = $row.find(".EndDate");
+            var EndTime = $row.find(".EndTime");
+            var Hour = $row.find(".Hour");
+            var Hidden = $row.find(".HiddenAmount");
+            var amount = 0;
+
+            //var d = new Date();
+            //var curr_date = d.getDate();
+            //var curr_month = d.getMonth();
+            //var curr_year = d.getFullYear();
+
+            //if (StartDate.val() == "") {
+            //StartDate.val(("0" + curr_date).slice(-2) + "/" + ("0" + curr_month).slice(-2) + "/" + curr_year);
+            //}
+
+            if (StartDate.val() != "" && EndDate.val() == "") {
+                EndDate.val(StartDate.val());
+            }
+
+            if (StartDate.val() == "" && EndDate.val() != "") {
+                StartDate.val(EndDate.val());
+            }                       
+
+            //var sstLastDay = moment("31/08/2018", "DD/MM/YYYY");
+            //var sstThreshold = moment("01/09/2018", "DD/MM/YYYY");
+            //var SStartDate = moment(StartDate.val(), "DD/MM/YYYY");
+            //var EEndDate = moment(EndDate.val(), "DD/MM/YYYY");
+
+            //if (SStartDate.isSame(sstThreshold) || SStartDate.isAfter(sstThreshold)) {
+            //    $(EndDate.parent()).datepicker("setStartDate", "01/09/2018");
+
+            //    if (EEndDate.isBefore(sstThreshold)) {
+            //        $(EndDate.parent()).datepicker("setDate", "01/09/2018");
+            //    }
+            //}
+            //else if (SStartDate.isBefore(sstThreshold)) {
+            //    $(EndDate.parent()).datepicker("setEndDate", "31/08/2018");
+
+            //    if (EEndDate.isAfter(sstLastDay)) {
+            //        $(EndDate.parent()).datepicker("setDate", "31/08/2018");
+            //    }
+            //}
+
+            if (StartDate.val() != '' && EndDate.val() != '') {
+
+                var SDate = moment(StartDate.val(), "DD/MM/YYYY")._d;
+                var EDate = moment(EndDate.val(), "DD/MM/YYYY")._d;
+
+                if (SDate > EDate) {
+                    EndDate.val(StartDate.val());
+                    //alert('Start Date cannot bigger than End Date!');
+                }
+
+                var diff = Math.ceil((EDate - SDate) / (1000 * 60 * 60 * 24)) + 1;
+
+                switch (Rate) {
+                    case "Full Day":
+                        amount = diff * 200;
+                        NR += amount;
+                        Hour.val("6");
+                        Hour.attr("readonly", "readonly");
+                        StartTime.val("0830");
+                        EndTime.val("1700");
+                        StartTime.attr("readonly", "readonly");
+                        EndTime.attr("readonly", "readonly");
+                        EndDate.removeAttr("readonly");
+                        break;
+                    case "Half Day AM":
+                        amount = diff * 116.67;
+                        NR += amount;
+                        Hour.val("3.5");
+                        Hour.attr("readonly", "readonly");
+                        StartTime.val("0830");
+                        EndTime.val("1230");
+                        StartTime.attr("readonly", "readonly");
+                        EndTime.attr("readonly", "readonly");
+                        EndDate.removeAttr("readonly");
+                        break;
+                    case "Half Day PM":
+                        amount = diff * 83.33
+                        NR += amount;
+                        Hour.val("2.5");
+                        Hour.attr("readonly", "readonly");
+                        StartTime.attr("readonly", "readonly");
+                        EndTime.attr("readonly", "readonly");
+                        StartTime.val("1500");
+                        EndTime.val("1730");
+                        EndDate.removeAttr("readonly");
+                        break;
+                    case "By Hour":
+                        amount = diff * 33.33 * Hour.val();
+                        if (amount > 200)
+                            amount = 200;
+                        NR += amount;
+                        Hour.removeAttr("readonly");
+                        StartTime.removeAttr("readonly");
+                        EndTime.removeAttr("readonly");
+                        EndDate.val(StartDate.val());
+                        EndDate.attr("readonly", "readonly");
+                        break;
+                    case "Hour":
+                        amount = diff * 100 * Hour.val();
+                        if (amount > 800)
+                            amount = 800;
+                        SR += Hour.val();
+                        Hour.removeAttr("readonly");
+                        StartTime.removeAttr("readonly");
+                        EndTime.removeAttr("readonly");
+                        EndDate.val(StartDate.val());
+                        EndDate.attr("readonly", "readonly");
+                        break;
+                    default:
+                        amount = 0;
+                }
+
+                if (amount < 0) {
+                    amount = 0;
+                }
+                $row.find(".Amount").val(amount.toFixed(2));
+                $row.find(".HiddenAmount").val(amount.toFixed(2));
+                grandTotal += amount;
+            }
+
+        });
+
+        thisTable.find(".GrandTotalAmount").val(grandTotal.toFixed(2));
+
+        var ilsasCC = $("#ChargeCodeList").val().split(",")[0];
+        $("#dTable_ILSAS .ChargeCode").val(ilsasCC);
+
+        CalculateSummary();
+    }
+
+
+    $(document).ready(function () {
+        $('#ILSASTable .date-picker').datepicker({
+            format: 'dd/mm/yyyy',
+            autoclose: true
+        });
+
+        $('.ilsastimeinput').inputmask("mask", {
+            "mask": "99:99"
+        });
+
+        $('#ILSASTable .date-picker').datepicker('setStartDate', '@dtStrStart');
+        $('#ILSASTable .date-picker').datepicker('setEndDate', '@dtStrEnd');
+    });
+
+</script>
+@if (Status == "Pending")
+{
+    <script>
+        $(document).ready(function () {
+
+            CalIlsasApproveAmount();
+            //CalculateILSASAmount();
+            newExceedLimit(function (isExceed, message) { });
+        });
+    </script>
+}
+else if (Status != "Pending" && Status != "Draft")
+{
+    <script>
+        $(document).ready(function () {
+            //CalculateILSASAmount();
+            newExceedLimit(function (isExceed, message) { });
+        });
+    </script>
+}

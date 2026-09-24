@@ -1,0 +1,136 @@
+﻿@model List<RoutingLogs.Models.RoutingLog>
+@using RoutingLogs.Controllers
+@{
+    Layout = null;
+}
+
+<div class="portlet box blue">
+    <div class="mini-triangle"><img src="../Assets/img/menu-red-triangle.png" /></div>
+    <div class="portlet-title">
+        <div class="caption">
+            <i class="fa fa-reorder"></i>Routing Logs
+        </div>
+        <div class="tools">
+        </div>
+    </div>
+    <div class="portlet-body form">
+        <div class="form-body">
+            <div class="form-horizontal">
+                <div class="table-toolbar">
+                    <table id="tblResult" class="table table-striped table-bordered table-hover table-full-width">
+                        <thead>
+                            <tr>
+                                <th></th>
+                                <th style="max-width: 80px;">App Name</th>
+                                <th>Ref No.</th>
+                                <th>Result</th>
+                                <th style="max-width: 70px;">
+                                    <span class="long-text">Routing Created</span>
+                                </th>
+                                <th style="max-width: 70px;">
+                                    <span class="long-text">Routing Rule Created</span>
+                                </th>
+                                <th style="max-width: 70px;">
+                                    <span class="long-text">Email Enabled</span>
+                                </th>
+                                <th style="max-width: 60px;">
+                                    <span class="long-text">Email Sent</span>
+                                </th>
+                                <th style="max-width: 80px;">
+                                    <span class="long-text">Approver Found</span>
+                                </th>
+                                <th>Created Date</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            @foreach (var item in @Model)
+                            {
+                                <tr>
+                                    <td>
+                                        <a class="btn blue btn-sm" href="@Url.Action("RoutingLogDetails","RoutingLogs", new { ID = item.ID.ToString() }) ">
+                                            <i class="fa fa-edit"></i>
+                                        </a>
+                                    </td>
+                                    <td>
+                                        <span class="long-text">@RoutingLogsController.DisplayHelper(item.ApplicationName.ToString())</span>
+                                    </td>
+                                    <td>
+                                        <span class="long-text">@RoutingLogsController.DisplayHelper(item.ReferenceNo.ToString())</span>
+                                    </td>
+                                    <td>@RoutingLogsController.DisplayHelper(item.Result.ToString())</td>
+                                    <td>@RoutingLogsController.DisplayHelper(item.RoutingCreated.ToString())</td>
+                                    <td>@RoutingLogsController.DisplayHelper(item.RoutingRuleCreated.ToString()) </td>
+                                    <td>@RoutingLogsController.DisplayHelper(item.EmailEnabled.ToString())</td>
+                                    <td>@RoutingLogsController.DisplayHelper(item.EmailSent.ToString())</td>
+                                    <td>@RoutingLogsController.DisplayHelper(item.ApproverFound.ToString())</td>
+
+                                    @if (@item.CreatedDate.HasValue)
+                                    {
+                                        <td style="min-width: 100px;">
+                                            <span class="long-text">@item.CreatedDate.Value.ToString("dd-MM-yyyy hh:mm:ss tt")</span>
+                                        </td>
+                                    }
+                                    else
+                                    {
+                                        <td>-</td>
+                                    }
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+
+    jQuery.extend(jQuery.fn.dataTableExt.oSort, {
+        "date-dmy-pre": function (a) {
+            if (a == null || a == "") {
+                return 0;
+            }
+            var date = a.split('-');
+            return (date[2] + date[1] + date[0]) * 1;
+        },
+
+        "date-dmy-asc": function (a, b) {
+            return ((a < b) ? -1 : ((a > b) ? 1 : 0));
+        },
+
+        "date-dmy-desc": function (a, b) {
+            return ((a < b) ? 1 : ((a > b) ? -1 : 0));
+        }
+    });
+
+    function customTable() {
+        //console.log('asdas');
+        $('#tblResult').dataTable({
+            "bDestroy": true,
+            "aLengthMenu": [
+                [10, 15, 20, -1],
+                [10, 15, 20, "All"] // change per page values here
+            ],
+            // set the initial value
+            "iDisplayLength": 10,
+
+            "sPaginationType": "bootstrap",
+            "oLanguage": {
+                "sLengthMenu": "_MENU_ records",
+                "oPaginate": {
+                    "sPrevious": "Prev",
+                    "sNext": "Next"
+                }
+            },
+            "aoColumnDefs": [
+                { "sType": "date-dmy", "aTargets": [6] }],
+            //disable init sorting
+            "aaSorting": []
+
+
+        });
+    }
+
+    customTable("#tblResult");
+</script>

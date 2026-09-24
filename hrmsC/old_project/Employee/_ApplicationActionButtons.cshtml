@@ -1,0 +1,116 @@
+﻿@model SEP.RoutingManagement.Service.AllowAction
+@using ESS.Employee.Models;
+@{
+    String CurrentEmployeeID = ViewBag.CurrentEmployeeID + "";
+    String CurrentApproverID = ViewBag.CurrentApproverID + "";
+    String RequestStatus = ViewBag.RequestStatus + "";
+    String CommentType = "";
+
+    RequestStatus myRequestStatus;
+    Enum.TryParse(RequestStatus, true, out myRequestStatus);
+
+    bool ForceCloseTickBox = false;
+    if (ViewBag.ForceCloseDisclaimer != null)
+    {
+        ForceCloseTickBox = ViewBag.ForceCloseDisclaimer == "1";
+    }
+
+}
+
+@*@if (LeaveStatus != "Draft" && LeaveStatus != "Cancelled" &&
+                     LeaveStatus != "DR" && LeaveStatus != "CA")
+    {
+
+    }*@
+
+@*Request ID*@
+<input type="hidden" value="@ViewBag.IsNewRecord.ToString()" />
+@if (Model.CanApprove == "1" || Model.CanDecline == "1" || Model.CanVerify == "1")
+{
+    <div id="portletComment" class="row">
+        <div class="col-md-12">
+            <div class="portlet box blue">
+                <div class="mini-triangle"><img src="../Assets/img/menu-red-triangle.png" /></div>
+                <div class="portlet-title">
+                    <div class="caption">
+                        <i class="fa fa-reorder"></i>Comment
+                    </div>
+                    <div class="tools">
+                        <a title="" data-original-title="" href="javascript:;" class="collapse"> </a>
+                    </div>
+                </div>
+                <div class="portlet-body form">
+                    <div class="form-body">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <label class="control-label col-md-2">Comment<span class="required">*</span></label>
+                                        <div class="col-md-10 form-control-static">
+                                            <textarea class="form-control" id="txtAppComment" rows="5" cols="60"></textarea>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    if ((Model.CanApprove == "1" || Model.CanVerify == "1"))
+    {
+        if (!ForceCloseTickBox)
+        {
+            <div class="row" id="_Disclaimer">
+                <div class="col-md-12">
+                    <input type="checkbox" id="disclaimer" class="form-control" />
+                    I have verified all the supporting document(s) and they are in order.
+                </div>
+            </div>
+        }
+    }
+}
+<br />
+<br />
+<div class="row">
+    <div class="col-md-12">
+
+        @if (Model.CanApprove == "1")
+        {
+            <input type="button" class="btn green" value="Approve" id="btnApprove" onclick="ApproverAction2('Approve')" />
+        }
+
+        @if (Model.CanVerify == "1")
+        {
+            <input type="button" class="btn green" value="Verify" id="btnVerify" onclick="ApproverAction2('Verify')" />
+        }
+
+        @if (Model.CanDecline == "1")
+        {
+            <input type="button" class="btn red" value="Decline" id="btnDecline" onclick="ApproverAction2('Decline')" />
+        }
+
+        @if (Model.CanRecommend == "1" && ViewBag.IsEditPersonalVisible == true)
+        {
+            <input type="button" class="btn green editPersonal" value="Edit Profile" id="EditPersonal" />
+        }
+
+        @if (Model.CanRecommend == "1" && ViewBag.IsEditFamilyVisible == true)
+        {
+            <input type="button" class="btn green" value="Edit Profile" id="EditFamily" />
+        }
+
+        @if (Model.CanWithdraw == "1")
+        {
+            <input type="button" class="btn red" value="Withdraw" id="btnWithdraw" onclick="ApproverAction2('Withdraw')" />
+        }
+
+        @if (ViewBag.CanEscalate == "1")
+        {
+            <input type="button" class="btn green" value="Escalate" id="Escalate" />
+        }
+        <input type="button" class="btn green" value="Back" id="btnBack" onclick="BackToHistory()" />
+    </div>
+</div>

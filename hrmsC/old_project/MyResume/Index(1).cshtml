@@ -1,0 +1,1057 @@
+﻿@model ESS.Employee.Models.EmployeeVM
+@using OJA.Models
+@{
+    ViewBag.Title = "Employee CV";
+    bool canEdit = false;
+    if(ViewBag.CanEdit != null)
+    {
+        canEdit = ViewBag.CanEdit;
+    }
+}
+
+<script src="~/Assets/plugins/jstree/dist/jstree.min.js"></script>
+<link href="~/Assets/plugins/jstree/dist/themes/default/style.min.css" rel="stylesheet" />
+
+<style>
+    .editBtn {
+        margin-left: 9px !important;
+    }
+
+    .resume .portlet {
+        margin-bottom: 10px !important;
+    } 
+    
+</style>
+<div class="Section1"></div>
+<div class="form-section">
+    <div class="row">
+        <div class="col-md-12">
+            <h1 class="page-title">
+                @(canEdit ? "My" : "") Curriculum Vitae
+            </h1>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12"> 
+       <div class="pull-right">
+           <a class="btn green " style="margin: 5px;" href="@Url.Action("ResumePrint", new { EmployeeID = Model.EmployeeID, EmployeeCode = Model.EmployeeCode, PhotoID = Model.PhotoID})">Print  <i class="fa fa-print"></i></a>
+           <a class="btn green " style="margin: 5px;" href="javascript:CollapseAll();">Collapse All  <i class="fa fa-angle-down"></i></a>
+
+           <a class="btn green" style="margin: 5px;" href="javascript:ExpendAll();">Expand All  <i class="fa fa-angle-up"></i></a>
+       </div>
+    </div>
+</div>
+
+<!-- Loading Gif -->
+<div id="divLoading" style="margin: 0px; padding: 0px; position: fixed; right: 0px; top: 0px; width: 100%; height: 100%; background-color: gainsboro; z-index: 30001; opacity: .8; filter: alpha(opacity=70); display: none; ">
+    <p style="position: absolute; top: 30%; left: 30%; color: black;">
+        Performing action, please wait...<img src="~/Assets/img/ajax-loading.gif">
+    </p>
+</div>
+
+
+<div class="resume">
+
+    <div id="PersonalInfo" class="row">
+        <div class="col-md-12">
+            <div class="EmployeePortlet portlet box blue">
+                <div class="mini-triangle"><img src="../Assets/img/menu-red-triangle.png" /></div>
+                <div class="portlet-title">
+                    <div class="caption">
+                        <i class="fa fa-reorder"></i>Personal Info
+                    </div>
+                    <div class="tools">
+                        <a style="margin-left:10px" href="javascript:;" class="collapse arrow-down">
+                        </a>
+                    </div>
+                </div>
+                <div class="portlet-body form" id="SearchGetPersonalInfo">
+                    @Html.Action("GetPersonalInfo", "MyResume", new { EmployeeID = Model.EmployeeID, EmployeeCode = Model.EmployeeCode, PhotoID = Model.PhotoID })
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!--Physical Attributes-->
+    @Html.Action("PhysicalAttributesInfo")
+
+    <div id="FamilyInfo" class="row">
+        <div class="col-md-12">
+            <div class="EmployeePortlet portlet box blue"
+                 data-url="@Url.Action("GetFamilyInfo", "MyResume", new { EmployeeID = Model.EmployeeID, EmployeeCode = Model.EmployeeCode})">
+                <div class="mini-triangle"><img src="../Assets/img/menu-red-triangle.png" /></div>
+                <div class="portlet-title">
+                    <div class="caption">
+                        <i class="fa fa-reorder"></i>Family Info
+                    </div>
+                    <div class="tools">
+                        <a style="margin-left:10px" href="javascript:;" class="expand  arrow-down partial-show">
+                        </a>
+                    </div>
+                </div>
+                <div class="portlet-body form" id="SearchGetFamilyInfo" style="display:none">
+                    @*@Html.Action("GetFamilyInfo", "MyResume", new { EmployeeID = Model.EmployeeID, EmployeeCode = Model.EmployeeCode })*@
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="EmergencyContactInfo" class="row">
+        <div class="col-md-12">
+            <div class="EmployeePortlet portlet box blue" data-url="@Url.Action("GetEmergencyContactInfo", "MyResume", new { EmployeeID = Model.EmployeeID, EmployeeCode = Model.EmployeeCode})">
+                <div class="mini-triangle"><img src="../Assets/img/menu-red-triangle.png" /></div>
+                <div class="portlet-title">
+                    <div class="caption">
+                        <i class="fa fa-reorder"></i>Emergency Contact Info
+                    </div>
+                    <div class="tools">
+                        <a style="margin-left:10px" href="javascript:;" class="expand arrow-down partial-show">
+                        </a>
+                    </div>
+                </div>
+                <div class="portlet-body form" id="SearchGetEmergencyContactInfo" style="display:none">
+                    @*@Html.Action("GetEmergencyContactInfo", "MyResume", new { EmployeeID = Model.EmployeeID, EmployeeCode = Model.EmployeeCode })*@
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!--Address-->
+    <div id="AddressInfo" class="row">
+        <div class="col-md-12">
+            <div class="EmployeePortlet portlet box blue"
+                data-url="@Url.Action("GetAddressInfo", "MyResume", new { EmployeeID = Model.EmployeeID, EmployeeCode = Model.EmployeeCode})">
+                <div class="mini-triangle"><img src="../Assets/img/menu-red-triangle.png" /></div>
+                <div class="portlet-title">
+                    <div class="caption">
+                        <i class="fa fa-reorder"></i>Address
+                    </div>
+                    <div class="tools">
+                        <a style="margin-left:10px" href="javascript:;" class="expand arrow-down partial-show">
+                        </a>
+                    </div>
+                </div>
+                <div class="portlet-body form" id="SearchGetAddressInfo" style="display:none">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!--PMS Info-->
+    @Html.Action("PMSInfo") 
+
+    <!--Current employment info-->
+    <div id="CurrentEmploymentInfo" class="row">
+        <div class="col-md-12">
+            <div class="EmployeePortlet portlet box blue" data-url="@Url.Action("GetCurrentEmploymentInfo", "MyResume", new { EmployeeID = Model.EmployeeID, EmployeeCode = Model.EmployeeCode})">
+                <div class="mini-triangle"><img src="../Assets/img/menu-red-triangle.png" /></div>
+                <div class="portlet-title">
+                    <div class="caption">
+                        <i class="fa fa-reorder"></i>Current Employment Info
+                    </div>
+                    <div class="tools">
+                        <a style="margin-left:10px" href="javascript:;" class="expand arrow-down partial-show">
+                        </a>
+                    </div>
+                </div>
+                <div class="portlet-body form" id="SearchGetCurrentEmploymentInfo">
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!--Work experiences-->
+    @Html.Action("WorkExperience")
+
+    <!--Previous employer-->
+    <div id="PreviousEmployerInfo" class="row">
+        <div class="col-md-12">
+            <div class="EmployeePortlet portlet box blue" data-url="@Url.Action("GetPreviousEmployerInfo", "MyResume", new { EmployeeID = Model.EmployeeID, EmployeeCode = Model.EmployeeCode})">
+                <div class="mini-triangle"><img src="../Assets/img/menu-red-triangle.png" /></div>
+                <div class="portlet-title">
+                    <div class="caption">
+                        <i class="fa fa-reorder"></i>Previous Employer
+                    </div>
+                    <div class="tools">
+                        <a style="margin-left:10px" href="javascript:;" class="expand arrow-down partial-show">
+                        </a>
+                    </div>
+                </div>
+                <div class="portlet-body form" id="SearchGetPreviousEmployerInfo">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!--Education info-->
+    <div id="EducationInfo" class="row">
+        <div class="col-md-12">
+            <div class="EmployeePortlet portlet box blue" data-url="@Url.Action("GetEducationInfo", "MyResume", new { EmployeeID = Model.EmployeeID, EmployeeCode = Model.EmployeeCode})">
+                <div class="mini-triangle"><img src="../Assets/img/menu-red-triangle.png" /></div>
+                <div class="portlet-title">
+                    <div class="caption">
+                        <i class="fa fa-reorder"></i>Education Info
+                    </div>
+                    <div class="tools">
+                        <a style="margin-left:10px" href="javascript:;" class="expand arrow-down partial-show">
+                        </a>
+                    </div>
+                </div>
+                <div class="portlet-body form" id="SearchGetEducationInfo">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!--Additional education info-->
+    <div id="educationInfoDiv">
+        @Html.Action("Specialization", new { FormType = SpecializationType.EDUCATION })
+    </div>
+
+    <div id="skillsDiv">
+        @Html.Action("Specialization", new { FormType = SpecializationType.SKILLS })
+    </div>
+
+    <div id="certificationDiv">
+        @Html.Action("Specialization", new { FormType = SpecializationType.CERTIFICATION })
+    </div> 
+
+    <div id="divAdditionalInfo">
+        @Html.Action("AdditionalInformation", new { InfoType = AdditionalInfoType.AdditionalInformation })
+    </div>
+
+    @Html.Action("Awards")
+
+    <div id="divAchievements">
+        @Html.Action("AdditionalInformation", new { InfoType = AdditionalInfoType.Achievements })
+    </div>
+
+    <div id="divJobPreferences">
+        @Html.Action("AdditionalInformation", new { InfoType = AdditionalInfoType.JobPreferences })
+    </div>
+
+    <div id="geographyDiv">
+        @Html.Action("Specialization", new { FormType = SpecializationType.GEOGRAPHY })
+    </div>
+
+    <div id="divReferences">
+        @Html.Action("References")
+    </div>
+
+    <!--Training approved in ESS-->
+    <div id="TrainingApprovedInfo" class="row">
+        <div class="col-md-12">
+            <div class="EmployeePortlet portlet box blue"  data-url="@Url.Action("GetTrainingApprovedInfo", "MyResume", new { EmployeeID = Model.EmployeeID, EmployeeCode = Model.EmployeeCode})">
+                <div class="mini-triangle"><img src="../Assets/img/menu-red-triangle.png" /></div>
+                <div class="portlet-title">
+                    <div class="caption">
+                        <i class="fa fa-reorder"></i>Training Approved in ESS
+                    </div>
+                    <div class="tools">
+                        <a style="margin-left:10px" href="javascript:;" class="expand arrow-down partial-show">
+                        </a>
+                    </div>
+                </div>
+                <div class="portlet-body form" id="SearchGetTrainingApprovedInfo">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-12">
+            <div class="form-horizontal">
+                <div class="form-body">
+                    <div class="form-group">
+                        <label class="control-label col-md-6"> Last Modified Date:  @ViewBag.LastModifiedDate</label>
+                    </div>
+
+                    <br />
+                    @if (ViewBag.CanEdit)
+                    {
+                        <div class="form-group">
+                            <div class="col-md-4 ">
+                                <a class="btn btn-primary" id="btnSendCV">Submit CV to EHRMS</a>
+                            </div>
+                        </div>
+                    }
+                    <br />
+                    <div class="form-group">
+                        <label class="control-label col-md-6"> Last Submission Date:  @ViewBag.LastSubmissionDate</label>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div id="divEPM_Modal">
+    <div class="modal fade" id="FormModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                    <h4 id="ConfirmationDialog_Title" class="modal-title"></h4>
+                </div>
+                <div class="modal-body">
+                    <div class="row hidden">
+                        <div class="col-md-12 btnModeEdit hidden">
+                            <a class="btn green pull-right" style="margin: 5px;" href="javascript:AllowRefresh(this);">Refresh</a>
+                        </div>
+                    </div>
+                    <div id="_Form">
+
+                    </div>
+                    <div id="_Attachment" class="divAttachment">
+
+                    </div>
+                    <div id="FormInformation" class="hidden divEPMSecretForm">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <label class="control-label col-md-4">
+                                            Employee ID
+                                        </label>
+                                        <div class="col-md-8 form-control-static">
+                                            <input type="text" class="form-control"
+                                                   name="EmployeeID" value="@Model.EmployeeID" id="EmployeeID">
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="control-label col-md-4">
+                                            Employee Code
+                                        </label>
+                                        <div class="col-md-8 form-control-static">
+                                            <input type="text" class="form-control"
+                                                   name="EmployeeCode" value="@Model.EmployeeCode" id="EmployeeCode">
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="control-label col-md-4">
+                                            Photo ID :  @((string.IsNullOrEmpty(Model.PhotoID + "")) ? "No" : "Yes")
+                                        </label>
+                                        <div class="col-md-8 form-control-static">
+                                            <input type="text" class="form-control"
+                                                   name="PhotoID" value="@Model.PhotoID" id="PhotoID">
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="control-label col-md-4">
+                                            Actioner ID (Created By)
+                                        </label>
+                                        <div class="col-md-8 form-control-static">
+                                            <input type="text" class="form-control"
+                                                   name="ActionerID" value="@Model.ActionerID" id="ActionerID">
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="control-label col-md-4">
+                                            Form Category
+                                        </label>
+                                        <div class="col-md-8 form-control-static">
+                                            <input type="text" class="form-control"
+                                                   name="FormCategory" value="" id="FormCategory">
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="control-label col-md-4">
+                                            Form Action
+                                        </label>
+                                        <div class="col-md-8 form-control-static">
+                                            <input type="text" class="form-control"
+                                                   name="FormAction" value="" id="FormAction">
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="control-label col-md-4">
+                                            Form Url
+                                        </label>
+                                        <div class="col-md-8 form-control-static">
+                                            <input type="text" class="form-control"
+                                                   name="FormUrl" value="" id="FormUrl">
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="control-label col-md-4">
+                                            Attachment Session Name
+                                        </label>
+                                        <div class="col-md-8 form-control-static">
+                                            <input type="text" class="form-control"
+                                                   name="AttachmentSessionName" value="" id="AttachmentSessionName">
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="control-label col-md-4">
+                                            Attachment Source Type
+                                        </label>
+                                        <div class="col-md-8 form-control-static">
+                                            <input type="text" class="form-control"
+                                                   name="AttachmentSourceType" value="" id="AttachmentSourceType">
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="control-label col-md-4">
+                                            Section Visible
+                                        </label>
+                                        <div class="col-md-8 form-control-static">
+                                            <textarea id="SettingSection" class="form-control" name="SettingSection" Rows="6"></textarea>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="control-label col-md-4">
+                                            Form On Load
+                                        </label>
+                                        <div class="col-md-8 form-control-static">
+                                            <textarea id="SettingFormLoad" class="form-control" name="SettingFormLoad" Rows="6"></textarea>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="control-label col-md-4">
+                                            Form On Change
+                                        </label>
+                                        <div class="col-md-8 form-control-static">
+                                            <textarea id="SettingFormChange" class="form-control" name="SettingFormChange" Rows="6"></textarea>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    @*<button type="button" class="btn default blue btnModeAllowEdit hidden" onclick="AllowEdit(this)">
+                            Edit
+                        </button>
+                        <button type="button" class="btn default blue btnModeInsert hidden" id="PanelFormAdd" onclick="FormValidation(this)">
+                            Add
+                        </button>
+                        <button type="button" class="btn default blue btnModeEdit hidden" id="PanelFormEdit" onclick="FormValidation(this)">
+                            Update
+                        </button>*@
+                    <button type="button" class="btn default" data-dismiss="modal">
+                        Close
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="divLoading2" style="margin: 0px; padding: 0px; position: fixed; right: 0px;
+        top: 0px; width: 100%; height: 100%; background-color:gainsboro; z-index: 25000;
+        opacity: .8; filter: alpha(opacity=70); display:none;">
+    </div>
+
+    <!-- Confirmation Message -->
+    <div class="modal fade" id="ConfirmUpdate" tabindex="-1" aria-hidden="true" style="z-index: 27000!important;">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true" onclick="ClosedivLoading2()"></button>
+                    <h4 class="modal-title">Confirmation</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="well">
+
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn default blue btnModeInsert hidden" id="btnSubmit" onclick="javascript: ApproverAction(this)">
+                        <i class="fa fa-check"></i>
+                        Add
+                    </button>
+                    <button type="submit" class="btn default blue btnModeEdit hidden" id="btnEdit" onclick="javascript: ApproverAction(this)">
+                        <i class="fa fa-check"></i>
+                        Update
+                    </button>
+                    <button type="button" class="btn default" data-dismiss="modal" onclick="ClosedivLoading2()">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="SuccessSubmit" tabindex="-1" aria-hidden="true" data-backdrop="static" data-keyboard="false" style="z-index: 27003!important;">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header Success-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true" style="display: none;"></button>
+                    <h4 class="Success-title">Action Successfully Completed</h4>
+                </div>
+                <div class="modal-body Success-body">
+                    <div class="well">
+                        Your Application has been successfully submitted.
+                    </div>
+                </div>
+                <div class="modal-footer Success-footer">
+                    <button type="submit" class="btn default blue" id="btnOK">
+                        <i class="fa fa-check"></i>
+                        OK
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="ResumeConfirmationModal" tabindex="-1" aria-hidden="true" data-status="">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                <h4 class="modal-title">Confirmation</h4>
+            </div>
+            <div class="modal-body">
+                <div class="well">
+                    Are you sure you want to <p id="confirmationAction" style="display:inline">submit</p>? <br />
+                    Press Confirm to proceed, or Close to stay on the current page.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn default blue" id="btnConfirmAction">
+                    <i class="fa fa-check"></i>
+                    Confirm
+                </button>
+                <button type="button" id="btnCloseAction" class="btn default" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Success Message -->
+<div class="modal fade" id="SuccessResultModal" tabindex="-1" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header Success-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true" style="display: none;"></button>
+                <h4 class="Success-title">Success</h4>
+            </div>
+            <div class="modal-body Success-body">
+                <div class="well">
+                    <p id="SuccessResultModalBody">Action Successfully Completed</p>
+                </div>
+            </div>
+            <div class="modal-footer Success-footer">
+                <button type="button" class="btn default blue" id="btnSuccessOK">
+                    <i class="fa fa-check"></i>
+                    OK
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+
+    function confirmationModal(confirmationText, callback) {
+
+        var promise = $.Deferred();
+        $("#confirmationAction").text(confirmationText);
+        $("#ResumeConfirmationModal").modal();
+
+        $("#btnConfirmAction").on('click', function () {
+
+            if (callback != "undefined" && callback != null)
+                callback(true);
+            promise.resolve();
+            $("#ResumeConfirmationModal").modal('hide');
+        });
+
+        $("#btnCloseAction").on('click', function () {
+            if (callback != "undefined" && callback != null)
+                callback(false);
+            promise.reject();
+            $("#ResumeConfirmationModal").modal('hide');
+        });
+
+        return promise;
+    }
+
+    function displaySuccessModal(successMessage) {
+        if (successMessage) {
+            $("#SuccessResultModalBody").text(successMessage);
+        }
+
+        $("#SuccessResultModal").modal();
+
+        $("#btnSuccessOK").on('click', function () {
+            ShowLoading();
+            location.reload();
+        });
+    }
+
+    $(document).ready(function () {
+        $('.arrow-down:not(:first)').removeClass('collapse').addClass('expand');
+        $('.portlet-body:not(:first)').hide();
+    });
+
+    $(document).on('click', '.partial-show', function () {
+        var portlet = $(this).closest('.portlet');
+        onPartialViewLoad(portlet);
+    });
+
+    function onPartialViewLoad(portlet) {
+        if (portlet.data('loaded') == 'true')
+            return;
+
+        var url = portlet.data('url');
+        var container = portlet.find('.portlet-body');
+        LoadPartialView(container, url);
+        portlet.data('loaded', 'true');
+    }
+
+    function LoadPartialView(container, url) {
+        container.html("LOADING...");
+        $.ajax({
+            type: "GET",
+            url: url,
+            cache: false,
+            dataType: "html",
+            success: function (content) {
+                container.html(content);
+            },
+            error: function (e) {
+                console.log(e);
+            }
+        });
+    }
+
+
+    function ShowLoading() {
+        $("#divLoading").show();
+    }
+
+    function HideLoading() {
+        $("#divLoading").hide();
+    }
+
+    $(document).ajaxStop(HideLoading);
+    $(document).ajaxComplete(HideLoading);
+    $(document).ajaxError(HideLoading);
+    $(document).ajaxSuccess(HideLoading);
+
+    function UpdateSpecialization(data) {
+        console.log(data);
+        ShowLoading();
+        $.ajax({
+            url: '@Url.Action("UpdateSpecialization")',
+            data: data,
+            success: function (response) {
+                if (response.Success) {
+                    displaySuccessModal(response.Message);
+                }
+                else {
+                    alert(response.Message);
+                }
+            }
+        });
+    }
+
+    function DeleteSpecialization(Id) {
+        var promise = confirmationModal('delete this item', null);
+        promise.done(function () {
+             ShowLoading();
+             $.ajax({
+                 url: '@Url.Action("DeleteSpecialization")',
+                 data: { Id: Id },
+                success: function (response) {
+                    if (response.Success) {
+                        displaySuccessModal(response.Message);
+                    }
+                    else {
+                        alert(response.Message);
+                    }
+                }
+            });
+        });
+    }
+
+    function PopulateTreeView(location, source, nodeSelectedCallback, jsonData) {
+        if (jsonData == "undefined" || jsonData == null) {
+            //setTimeout(ShowLoading, 500); 
+            $.ajax({
+            url: '@Url.Action("GetSpecializationTreeView")',
+            data: { Source : source},
+            success: function (result) {
+                $(location).jstree({
+                    'types': {
+                        "root": {
+                            "icon": "glyphicon glyphicon-plus"
+                        },
+                        "child": {
+                            "icon": "glyphicon glyphicon-book"
+                        }
+                    },
+                    'core': {
+                        'data': result.Data,
+                        "themes": {
+                            "variant": "large"
+                        }
+                    },
+                    "plugins": ["search", "themes", "types"]
+                }).on('changed.jstree', function (e, data) {
+
+                    if (data.node.type == "child") {
+                        nodeSelectedCallback(data);
+                    }
+                });
+            },
+            error: function (err) {
+                alert(error);
+            }
+            }).always(HideLoading);
+        }
+        else {
+            console.log('data passed to tree view');
+            $(location).jstree({
+                'types': {
+                    "root": {
+                        "icon": "glyphicon glyphicon-plus"
+                    },
+                    "child": {
+                        "icon": "glyphicon glyphicon-book"
+                    }
+                },
+                'core': {
+                    'data': jsonData,
+                    "themes": {
+                        "variant": "large"
+                    }
+                },
+                "plugins": ["search", "themes", "types"]
+            }).on('changed.jstree', function (e, data) {
+
+                if (data.node.type == "child") {
+                    nodeSelectedCallback(data);
+                }
+            });
+        }
+
+    }
+
+    function GradeChanged(parentId, mainDiv) {
+         $.ajax({
+            type: "GET",
+            url: '@Url.Content("~/MyResume/_DDLGrade")',
+            cache: false,
+            dataType: "html",
+            data: { ParentObjectId: parentId },
+            success: function (content) {
+                $(mainDiv + " #EducationGradeResult").html(content);
+                $(mainDiv + " #EducationGrade").trigger('change');
+            },
+            error: function (e) {
+                console.log(e);
+            }
+        });
+     }
+
+    function ExpendAll() {
+        $('.partial-show').each(function (i, val) {
+            var portlet = $(this).closest('.portlet');
+            onPartialViewLoad(portlet);
+        });
+        $('.resume  .form').show();
+        $('.resume  a.expand').removeClass('expand').addClass('collapse');
+    }
+
+    function CollapseAll() {
+        $('.resume  .form').hide();
+        $('.resume  a.collapse').removeClass('collapse').addClass('expand');
+    }
+
+
+    //employee profile pages
+    function OpenEditPanel(title, Action, url, data) {
+        $('#FormModal').modal();
+        $("#ConfirmationDialog_Title").html(title);
+        $("#_Form").html("LOADING...");
+        $("#_Attachment").html("");
+
+
+        $("#divLoading").show();
+
+        $.ajax({
+            type: "GET",
+            url: url,
+            //   link.NavigateUrl = "javascript:openWindow('ProfileEmergency.aspx?EmployeeID=" + profileID + "&FamilyNo=" + familyNo + "', 'ProfileEmergency', '700', '370')";
+            cache: false,
+            dataType: "html",
+            data: data,
+            success: function (content) {
+                $("#_Form").html(content);
+            },
+            error: function (e) {
+                console.log(e);
+            }
+        });
+
+        setTimeout(function () { $("#divLoading").hide(); }, 3000);
+    }
+
+    function OpenViewModal(title, url, data) {
+
+        ShowLoading();
+
+        $('#FormModal').modal();
+        $("#FormModalTitle").html(title);
+        $("#FormModalBody").html("LOADING...");
+        $.ajax({
+            type: "GET",
+            url: url,
+            cache: false,
+            dataType: "html",
+            data: data,
+            success: function (content) {
+                $("#FormModalBody").html(content);
+            },
+            error: function (e) {
+                console.log(e);
+            }
+        });
+    }
+
+    function PopulateSetting(divMode, divMain, LogDiv, Setting_FieldVisible, Setting_FieldEnable, Setting_FieldChecked, Setting_FieldValue) {
+
+        divMain = $.trim(divMain);
+        divMode = $.trim(divMode);
+        var PopulateSettingLog = "";
+        PopulateSettingLog += "DivMode: " + divMode + "; ";
+        PopulateSettingLog += "DivMain: " + divMain + "; ";
+        PopulateSettingLog += "Log: " + LogDiv + "; " + "\n";
+
+        //var ddlRelationshipType = $('#ddlRelationshipType');
+        if (Setting_FieldVisible != null) {
+            var i = 0;
+            PopulateSettingLog += "Setting: Setting_FieldVisible" + "\n";
+            PopulateSettingLog += "-----------Start---------------" + "\n";
+            for (i = 0; i < Setting_FieldVisible.length; i++) {
+
+                var checkdivMode = divMode;
+                var checkConfirmation = Setting_FieldVisible[i].ConfirmationButton + "";
+                var checkVisible = Setting_FieldVisible[i].Visible + "";
+                var checkVisibleName = Setting_FieldVisible[i].Name;
+                checkVisibleName = $.trim(checkVisibleName);
+
+                PopulateSettingLog += "No: " + i + "; "
+                PopulateSettingLog += "Name: " + Setting_FieldVisible[i].Name + "; "
+                PopulateSettingLog += "Visible: " + Setting_FieldVisible[i].Visible + "; ";
+                PopulateSettingLog += "ConfirmationButton: " + Setting_FieldVisible[i].ConfirmationButton + "; ";
+
+                if (checkConfirmation.toUpperCase() == "TRUE") {
+                    checkdivMode = "";
+                }
+
+                PopulateSettingLog += "Final divMode: " + checkdivMode + "; ";
+                PopulateSettingLog += "Final Name: " + divMain + " ." + checkVisibleName + checkdivMode + "; ";
+
+                if (checkVisible.toUpperCase() == "TRUE") {
+                    //show it
+                    // check if the hidden properties is added before
+                    // if yes, remove hidden class
+                    PopulateSettingLog += "Check Visible: TRUE" + "; ";
+
+                    $(divMain + " ." + checkVisibleName + checkdivMode).each(function (i, obj) {
+                        PopulateSettingLog += "HAS CLASS HIDDEN: " + $(this).hasClass("hidden") + "; ";
+                        if ($(this).hasClass("hidden")) {
+                            $(this).removeClass("hidden");
+                            PopulateSettingLog += "Remove Hidden Class" + "; ";
+                        }
+                    });
+
+
+                }
+                else {
+                    //hide it.
+
+                    PopulateSettingLog += "Check Visible: False" + "; ";
+                    // check if the hidden properties is added before
+                    // if not, add hidden class
+                    $(divMain + " ." + checkVisibleName + checkdivMode).each(function (i, obj) {
+                        PopulateSettingLog += "DO NOT HAS CLASS HIDDEN: " + $(this).hasClass("hidden") + "; ";
+                        if (!($(this).hasClass("hidden"))) {
+                            $(this).addClass("hidden");
+                            //alert("False-OK");
+                            PopulateSettingLog += "Add Hidden Class" + "; ";
+                        }
+                    });
+
+                }
+
+                PopulateSettingLog += "\n";
+            }
+
+            PopulateSettingLog += "\n" + "-----------End------------------" + "\n \n";
+        }
+
+        if (Setting_FieldEnable != null) {
+            var j = 0;
+            PopulateSettingLog += "Setting: Setting_FieldEnable" + "\n";
+            PopulateSettingLog += "-----------Start---------------" + "\n";
+            for (j = 0; j < Setting_FieldEnable.length; j++) {
+
+                var checkdivMode = divMode;
+                var checkEnable = Setting_FieldEnable[j].Enable + "";
+                var checkEnableName = Setting_FieldEnable[j].Name;
+                checkEnableName = $.trim(checkEnableName);
+                var FinalName1 = divMain + " #" + checkEnableName;
+                var FinalName2 = divMain + " #uniform-" + checkEnableName;
+
+                PopulateSettingLog += "No: " + j + "; "
+                PopulateSettingLog += "Name: " + Setting_FieldEnable[j].Name + "; "
+                PopulateSettingLog += "Enable: " + Setting_FieldEnable[j].Enable + "; ";
+
+                PopulateSettingLog += "Final divMode: " + checkdivMode + "; ";
+                PopulateSettingLog += "Final Name1: " + FinalName1 + "; ";
+                PopulateSettingLog += "Final Name2: " + FinalName2 + "; ";
+
+                if (checkEnable.toUpperCase() == "TRUE") {
+                    //enable it
+                    // check if the enable properties is added before
+                    // if yes, remove enable class
+                    PopulateSettingLog += "Check Enable: TRUE" + "; ";
+
+                    PopulateSettingLog += "Check Has Disabled Attribute (YES):" + $(FinalName1).is(':disabled') + "; ";
+
+                    if ($(FinalName1).is(':disabled')) {
+                        $(FinalName1).removeAttr("disabled");
+                        PopulateSettingLog += "Remove Main Disabled Attribute" + "; ";
+                    }
+
+                    if ($(FinalName2).hasClass("disabled")) {
+                        $(FinalName2).removeClass("disabled");
+                        PopulateSettingLog += "Remove Sub Disabled Attribute" + "; ";
+                    }
+                }
+                else {
+                    //hide it.
+
+                    PopulateSettingLog += "Check Enable: False" + "; ";
+                    PopulateSettingLog += "Check Has Disabled Attribute (NO):" + $(FinalName1).is(':disabled') + "; ";
+                    // check if the enable properties is added before
+                    // if not, add enable class
+                    if (!$(FinalName1).is(':disabled')) {
+                        $(FinalName1).attr('disabled', 'disabled');
+                        PopulateSettingLog += "Add Main Disabled Attribute" + "; ";
+                    }
+
+                    if (!$(FinalName2).hasClass("disabled")) {
+                        $(FinalName2).addClass("disabled");
+                        PopulateSettingLog += "Add Sub Disabled Attribute" + "; ";
+                    }
+                }
+
+                PopulateSettingLog += "\n";
+            }
+
+            PopulateSettingLog += "\n" + "-----------End------------------" + "\n \n";
+        }
+
+
+
+        if (Setting_FieldChecked != null) {
+            var k = 0;
+
+            for (k = 0; k < Setting_FieldChecked.length; k++) {
+                var checkChecked = Setting_FieldChecked[k].Checked + "";
+                var checkCheckedName = Setting_FieldChecked[k].Name;
+                checkCheckedName = $.trim(checkCheckedName);
+
+                if (checkChecked.toUpperCase() == "TRUE") {
+                    //is checked
+
+                    // check if the checked properties is added before
+                    // if not, checked it
+                    if (!$(divMain + " #" + checkCheckedName).is(":checked")) {
+                        $(divMain + " #" + checkCheckedName).attr('checked');
+                    }
+                    else {
+                        // is not checked
+                        // check if the checked properties is added before
+                        // if yes, remove enable class
+                        if ($(divMain + " #" + checkCheckedName).is(":checked")) {
+                            $(divMain + " #" + checkCheckedName).removeAttr("checked");
+                        }
+                    }
+                }
+            }
+        }
+
+        if (Setting_FieldValue != null) {
+            var m = 0;
+            PopulateSettingLog += "Setting: Setting_FieldValue" + "\n";
+            PopulateSettingLog += "-----------Start---------------" + "\n";
+            for (m = 0; m < Setting_FieldValue.length; m++) {
+
+                var checkName = Setting_FieldValue[m].Name;
+                var checkValue = Setting_FieldValue[m].Value + "";
+                var checkType = Setting_FieldValue[m].Type + "";
+
+                checkName = $.trim(checkName);
+                var FinalName = divMain + " #" + checkName;
+                PopulateSettingLog += "No: " + m + "; "
+                PopulateSettingLog += "Name: " + checkName + "; "
+                PopulateSettingLog += "Value: " + checkValue + "; ";
+                PopulateSettingLog += "Type: " + checkType + "; ";
+                PopulateSettingLog += "Final Name: " + FinalName + "; ";
+
+                if (checkType.toUpperCase() == "DROPDOWNLIST") {
+                    PopulateSettingLog += "DROPDOWNLIST : TRUE" + "; ";
+
+                    $(FinalName).val(checkValue).change();
+                }
+                else if (checkType.toUpperCase() == "TEXTBOX") {
+                    PopulateSettingLog += "TEXTBOX : TRUE" + "; ";
+
+                    $(FinalName).val(checkValue);
+                }
+
+                PopulateSettingLog += "\n";
+            }
+
+            PopulateSettingLog += "\n" + "-----------End------------------" + "\n \n";
+        }
+
+        $(LogDiv).val(PopulateSettingLog);
+    }
+
+    function makeDataTable(tableId) {
+        var oTable =  $("#" +tableId).dataTable({
+            "aLengthMenu": [[10, 25, 50, 100, 1000], [10, 25, 50, 100, 1000]],
+            "bPaginate": false
+        });
+
+        var tableWrapper = "#" + tableId + "_wrapper";
+
+        jQuery(tableWrapper + ' .dataTables_filter input').addClass("form-control input-medium input-inline"); // modify table search input
+        jQuery(tableWrapper + ' .dataTables_length select').addClass("form-control input-small"); // modify table per page dropdown
+        jQuery(tableWrapper + ' .dataTables_length select').select2({
+            showSearchInput: false //hide search box with special css class
+        });
+
+        return oTable;
+    }
+
+    $("#btnSendCV").click(function () {
+        confirmationModal('send CV to EHRMS', sendCV);
+    });
+
+    function sendCV(confirmed) {
+        if (!confirmed)
+            return;
+
+        $.ajax({
+            url: '@Url.Action("SendCV", "MyResume")',
+            success: function (response) {
+                if (response.Success) {
+                    displaySuccessModal(response.Message);
+                }
+                else {
+                    alert(response.Message);
+                }
+                console.log(response.TechnicalError);
+            }
+        });
+    }
+</script>

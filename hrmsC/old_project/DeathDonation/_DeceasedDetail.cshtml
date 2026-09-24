@@ -1,0 +1,581 @@
+﻿@*@model ESS.DeathDonation.Models.Application*@
+@model Tuple<ESS.DeathDonation.Models.Application, SEP.RoutingManagement.Service.AllowAction>
+@using ESS.DeathDonation.Constants
+@{
+    Layout = null;
+
+    bool isCreate = false;
+    string _readonly = "readonly";
+    if (string.IsNullOrEmpty(Model.Item1.deceasedDetail.status) || Model.Item1.deceasedDetail.status == StatusConstants.STATUS_WITHDRAW)
+    {
+        isCreate = true;
+        _readonly = "";
+    }
+
+    bool canComplete = false;
+    if (Model.Item1.deceasedDetail.createdBy == ViewBag.EmployeeID && Model.Item1.deceasedDetail.status == StatusConstants.STATUS_APPROVED)
+    {
+        canComplete = true;
+    }
+
+}
+
+<style>
+    .inputfile {
+        border: 0px !important;
+        margin-left: -10px;
+    }
+    .backgroundColorReadonly {
+        background-color: #F9F9F9 !important;
+    }
+</style>
+<div id="DeceasedDetails" class="row">
+    <input type="hidden" name="donateAmount" id="donateAmount" value="@Model.Item1.deceasedDetail.amount" />
+    <input type="hidden" name="id" id="id" value="@Model.Item1.deceasedDetail.id" />
+    <input type="hidden" name="receiptId" id="receiptId" value="@Model.Item1.deceasedDetail.receiptId" />
+    <input type="hidden" name="deathCertId" id="deathCertId" value="@Model.Item1.deceasedDetail.deathCertId" />
+    <div class="col-md-12">
+        <div class="portlet box blue">
+            <div class="mini-triangle"><img src="/_layouts/15/TNBESS/Assets/img/menu-red-triangle.png" /></div>
+            <div class="portlet-title">
+                <div class="caption">
+                    <i class="fa fa-reorder"></i>Deceased Details
+                </div>
+            </div>
+            <div class="portlet-body form">
+                <div class="form-body" id="ct00_CustomFieldFormView">
+                    @if (!string.IsNullOrEmpty(Model.Item1.deceasedDetail.status))
+                    {
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <label class="control-label col-md-4 ">
+                                            Reference No
+                                        </label>
+                                        <div class="col-md-8 form-control-static">
+                                            <input type="text" class="form-control" value="@Model.Item1.deceasedDetail.referenceNo" name="referenceNo" id="referenceNo" readonly />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <label class="control-label col-md-4 ">
+                                            Status
+                                        </label>
+                                        <div class="col-md-8 form-control-static">
+                                            <input type="text" class="form-control" value="@Model.Item1.deceasedDetail.status" name="status" id="status" readonly />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+
+                    @if (!isCreate)
+                    {
+                        if (Model.Item1.deceasedDetail.status == StatusConstants.STATUS_PENDING ||
+                            Model.Item1.deceasedDetail.status == StatusConstants.STATUS_APPROVED)
+                        {
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-horizontal">
+                                        <div class="form-group">
+                                            <label class="control-label col-md-4 ">
+                                                Current Approver
+                                            </label>
+                                            <div class="col-md-8 form-control-static">
+                                                <input type="text" class="form-control" value="@Model.Item1.deceasedDetail.currentApprover" name="currentApprover" id="currentApprover" readonly />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <label class="control-label col-md-4 ">
+                                            Employee
+                                        </label>
+                                        <div class="col-md-8 form-control-static">
+                                            <input type="text" class="form-control" value="@Model.Item1.deceasedDetail.employeeCode - @Model.Item1.deceasedDetail.employeeName" name="employee" id="employee" readonly />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <label class="control-label col-md-4 ">
+                                            Date Of Death
+                                        </label>
+                                        <div class="col-md-8 form-control-static">
+                                            <input type="text" class="form-control" value="@Model.Item1.deceasedDetail.dateOfDeath.ToString("dd/MM/yyyy")" name="dateOfDeath" id="dateOfDeath" readonly />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <label class="control-label col-md-4">Employee<span style="color:red;"> *</span></label>
+                                        <div class="col-md-8 form-control-static">
+                                            @Html.Action("_PeoplePickerExt", "PeoplePicker", new { CurrEmpID = Model.Item1.deceasedDetail.employeeId, SearchType = "All" })
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <label class="control-label col-md-4 ">
+                                            Date Of Death <span style="color:red;"> *</span>
+                                        </label>
+                                        <div class="col-md-8 form-control-static">
+                                            <div class="input-group date death-date-picker" data-date-format="dd/mm/yyyy">
+                                                <input type="text" class="form-control StartDate" id="dateOfDeath" name="dateOfDeath" />
+                                                <span class="input-group-btn">
+                                                    <button type="button" id="btnDateOfDeath" class="btn default"><i class="fa fa-calendar"></i></button>
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    }
+
+
+
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-horizontal">
+                                <div class="form-group">
+                                    <label class="control-label col-md-4 ">
+                                        Company
+                                    </label>
+                                    <div class="col-md-8 form-control-static">
+                                        <span id="company" class="form-control backgroundColorReadonly">@Model.Item1.deceasedDetail.company</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-horizontal">
+                                <div class="form-group">
+                                    <label class="control-label col-md-4 ">
+                                        Position
+                                    </label>
+                                    <div class="col-md-8 form-control-static">
+                                        <span id="position" class="form-control backgroundColorReadonly">@Model.Item1.deceasedDetail.position</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-horizontal">
+                                <div class="form-group">
+                                    <label class="control-label col-md-4 ">
+                                        Department
+                                    </label>
+                                    <div class="col-md-8 form-control-static">
+                                        <span id="department" class="form-control backgroundColorReadonly">@Model.Item1.deceasedDetail.department</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-horizontal">
+                                <div class="form-group">
+                                    <label class="control-label col-md-4 ">
+                                        Joined Date
+                                    </label>
+                                    @if (!String.IsNullOrEmpty(Model.Item1.deceasedDetail.joinedDate.ToString()))
+                                    {
+                                        <div class="col-md-8  form-control-static">
+                                            <span id="joinedDate" class="form-control backgroundColorReadonly">@Model.Item1.deceasedDetail.joinedDate.Value.ToString("dd/MM/yyyy")</span>
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <div class="col-md-8  form-control-static">
+                                            <span id="joinedDate" class="form-control backgroundColorReadonly">-</span>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-horizontal">
+                                <div class="form-group">
+                                    <label class="control-label col-md-4 ">
+                                        Unit Section
+                                    </label>
+                                    <div class="col-md-8 form-control-static">
+                                        <span id="unitSection" class="form-control backgroundColorReadonly">@Model.Item1.deceasedDetail.unitSection</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-horizontal">
+                                <div class="form-group">
+                                    <label class="control-label col-md-4 ">
+                                        Duty
+                                    </label>
+                                    <div class="col-md-8 form-control-static">
+                                        <span id="duty" class="form-control backgroundColorReadonly">@Model.Item1.deceasedDetail.duty</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-horizontal">
+                                <div class="form-group">
+                                    <label class="control-label col-md-4 ">
+                                        Cost Center
+                                    </label>
+                                    <div class="col-md-8 form-control-static">
+                                        <span id="costCenter" class="form-control backgroundColorReadonly">@Model.Item1.deceasedDetail.costCenter</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-horizontal">
+                                <div class="form-group">
+                                    <label class="control-label col-md-4 ">
+                                        Manager
+                                    </label>
+                                    <div class="col-md-8 form-control-static">
+                                        <span id="manager" class="form-control backgroundColorReadonly">@Model.Item1.deceasedDetail.manager</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-horizontal">
+                                <div class="form-group">
+                                    <label class="control-label col-md-4 ">
+                                        Amount
+                                    </label>
+                                    <div class="col-md-8 form-control-static">
+                                        <span id="displayamount" class="form-control backgroundColorReadonly">@Model.Item1.deceasedDetail.amount.ToString("###,###,##0.00")</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        @if (!isCreate)
+                        {
+                            <div class="col-md-6">
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <label class="control-label col-md-4 ">
+                                            Charge Code
+                                        </label>
+                                        <div class="col-md-8 form-control-static">
+                                            <span id="chargeCode" class="form-control backgroundColorReadonly">@Model.Item1.deceasedDetail.chargeCode</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="col-md-6">
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <label class="control-label col-md-4 ">
+                                            Charge Code<span style="color:red;"> *</span>
+                                        </label>
+                                        <div class="col-md-8 form-control-static">
+                                            @Html.Partial("ChargeCodePicker", new Tuple<string, string>("", ""))
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+
+                    </div>
+
+                    <div class="row">
+                        @if (!isCreate)
+                        {
+                            <div class="col-md-6">
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <label class="control-label col-md-4 ">
+                                            BSO Bank
+                                        </label>
+                                        <div class="col-md-8 form-control-static">
+                                            <span class="form-control backgroundColorReadonly">@Model.Item1.deceasedDetail.bsoBank</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="col-md-6">
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <label class="control-label col-md-4 ">
+                                            BSO Bank<span style="color:red;"> *</span>
+                                        </label>
+                                        <div class="col-md-8 form-control-static">
+                                            <select class="form-control" id="bsoBank" name="bsoBank">
+                                                <option>-- Select a Bank -- </option>
+                                                @foreach (var item in Model.Item1.bankInfos)
+                                                {
+                                                    <option value="@item.bankAccountNo - @item.bankName">@item.bankAccountNo - @item.bankName</option>
+                                                }
+
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="form-horizontal">
+                                <div class="form-group">
+                                    <label class="control-label col-md-2 ">
+                                        Remarks
+                                    </label>
+                                    <div class="col-md-10 form-control-static">
+                                        <textarea class="form-control" name="remarks" @_readonly>@Model.Item1.deceasedDetail.remarks</textarea>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-horizontal">
+                                <div class="form-group">
+                                    <label class="control-label col-md-4 ">
+                                        Death Cert/ Register of Death
+                                    </label>
+                                    <div class="col-md-8 form-control-static">
+                                        @if (!string.IsNullOrEmpty(ViewBag.deathCertId))
+                                        {
+                                            <a href="" onclick="DownloadAttachment('@ViewBag.deathCertId')">@ViewBag.deathCertName</a>
+                                        }
+
+                                        @if ((string.IsNullOrEmpty(Model.Item1.deceasedDetail.status) ||
+                                                Model.Item2.CanDecline == "1" || 
+                                                Model.Item2.CanWithdraw == "1" || canComplete) && Model.Item1.deceasedDetail.status != "Pending")
+                                        {
+                                            <input type="file" name="deathCert" id="deathCert" class="form-control inputfile" onchange="readFile(this)" />
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-horizontal">
+                                <div class="form-group">
+                                    <label class="control-label col-md-4 ">
+                                        Receipt
+                                    </label>
+                                    <div class="col-md-8 form-control-static">
+                                        @if (!string.IsNullOrEmpty(ViewBag.receiptId))
+                                        {
+                                            <a href="" onclick="DownloadAttachment('@ViewBag.receiptId')">@ViewBag.receiptName</a>
+                                        }
+
+                                        @if ((string.IsNullOrEmpty(Model.Item1.deceasedDetail.status) ||
+                                                Model.Item2.CanDecline == "1" ||
+                                                Model.Item2.CanWithdraw == "1" || canComplete) && Model.Item1.deceasedDetail.status != "Pending")
+                                        {
+                                            <input type="file" name="receipt" id="receipt" class="form-control inputfile" />
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@if (isCreate)
+{
+    @Html.Action("ChargeCodeIndex", "DeathDonation", new { CurrEmpID = ViewBag.EmployeeID, SearchType = "" })
+    <script>
+        $(document).ready(function () {
+            var dpkDeathDate = $(".death-date-picker");
+            dpkDeathDate.datepicker({
+                format: 'dd/mm/yyyy',
+                autoclose: true,
+                endDate: "@DateTime.Now.ToString("dd/MM/yyyy")"
+            });
+
+            var btnPeoplePickerSelect = document.getElementById('btnPeoplePickerSelect');
+            var employeId = document.getElementById('hfEmpID');
+
+            btnPeoplePickerSelect.addEventListener("click", function () { // Add to OnClick of button.
+                employeId.dispatchEvent(new Event('change')); // force change event to run on textbox.
+            });
+
+            employeId.addEventListener("change", function (e) { // EventListener for OnChange of the element.
+                var hdEmpId = $("#hfEmpID").val();
+                retrieveEmployeeInfo(hdEmpId);
+            });
+
+            if ("@Model.Item1.deceasedDetail.status" == "@StatusConstants.STATUS_WITHDRAW") {
+                dpkDeathDate.datepicker("setDate", "@Model.Item1.deceasedDetail.dateOfDeath.ToString("dd/MM/yyyy")");
+                $("#bsoBank").val("@Model.Item1.deceasedDetail.bsoBank");
+                $("#txtEmpName").val("@Model.Item1.deceasedDetail.employeeCode - @Model.Item1.deceasedDetail.employeeName");
+                $("#hfEmpID").val("@Model.Item1.deceasedDetail.employeeId");
+                $("#ChargeCodePickerName").val("@Model.Item1.deceasedDetail.chargeCode - @Model.Item1.deceasedDetail.chargeDescription");
+                $("#ChargeCodePickerType").val("@Model.Item1.deceasedDetail.chargeType");
+                $("#ChargeCodePickerCC").val("@Model.Item1.deceasedDetail.chargeCode");
+                $("#ChargeCodePickerDesc").val("@Model.Item1.deceasedDetail.chargeDescription");
+            }
+        });
+    </script>
+}
+
+@if (string.IsNullOrEmpty(Model.Item1.deceasedDetail.status) ||
+    Model.Item1.deceasedDetail.status == StatusConstants.STATUS_APPROVED ||
+    Model.Item1.deceasedDetail.status == StatusConstants.STATUS_WITHDRAW)
+{
+    <script>
+        function readFile() {
+            var _AllowedMaxSize = parseFloat("@ViewBag.MaximumFileSize_") || 0;//'1572864';//
+            var _AllowedExtensions = "@ViewBag.AllowedFileTypes_";
+            var _file = this.id;
+            if (this.files && this.files[0]) {
+                var currentFile = this.files[0];
+                var _documentName = currentFile.name;
+                var _documentSize = currentFile.size;
+                var _fileExtension = _documentName.substring(_documentName.lastIndexOf('.') + 1).toLowerCase();
+                if (_AllowedExtensions.indexOf(_fileExtension) > -1) {
+                    var _docSize = parseFloat(_documentSize) || 0;
+                    if (_docSize > parseFloat(_AllowedMaxSize)) {
+                        $("#" + _file).val('');
+                        alert('- File size has exceeded the allowed limit of ' + _AllowedMaxSize + ' byte');
+                    }
+                }
+                else {
+                    $("#" + _file).val('');
+                    alert('- Invalid file type. Only files of the following extensions are allowed (' + _AllowedExtensions + ')');
+                }
+            }
+            else {
+                console.log("no file");
+            }
+        }
+
+        document.getElementById('deathCert').addEventListener("change", readFile, false);
+        document.getElementById('receipt').addEventListener("change", readFile, false);
+    </script>
+
+}
+
+
+
+<script>
+    function retrieveEmployeeInfo(empid) {
+        resetData();
+        $.ajax({
+            type: "GET",
+            url: '@Url.Content("~/DeathDonation/GetEmployeeInfo")',
+            cache: false,
+            data: { id: empid },
+            success: function (content) {
+                if (content.responseResult) {
+
+                    document.getElementById("company").innerHTML = content.responseData["CompanyCode"] + " - " + content.responseData["Company"];
+                    document.getElementById("position").innerHTML = content.responseData["Position"] + "";
+                    document.getElementById("department").innerHTML = content.responseData["Department"] + "";
+                    document.getElementById("joinedDate").innerHTML = content.responseJoinedDate + "";
+                    document.getElementById("unitSection").innerHTML = content.responseData["UnitSection"] + "";
+                    document.getElementById("duty").innerHTML = content.responseData["JobKeyName"] + "";
+                    document.getElementById("costCenter").innerHTML = content.responseData["CostCenterCode"] + " - " + content.responseData["CostCenterName"];
+                    document.getElementById("manager").innerHTML = content.responseData["ImmediateManager"] + "";
+                    document.getElementById("donateAmount").value = content.responseAmount + "";
+                    document.getElementById("displayamount").innerHTML = content.responseFormattedAmount + "";
+
+                    if (content.responseChargeType != null) {
+                        document.getElementById("ChargeCodePickerType").value = content.responseChargeType + "";
+                    }
+
+                    if (content.responseChargeCode != null) {
+                        document.getElementById("ChargeCodePickerCC").value = content.responseChargeCode + "";
+                    }
+
+                    if (content.responseChargeCodeDesc != null) {
+                        document.getElementById("ChargeCodePickerDesc").value = content.responseChargeCodeDesc + "";
+                        $("#ChargeCodePickerName").val(content.responseChargeCode + " - " + content.responseChargeCodeDesc);
+                    }
+
+                }
+                else {
+                    alert(content.responseErrorMessage)
+                }
+            },
+            error: function (e) {
+                console.log(e);
+            }
+        });
+    }
+
+    function resetData() {
+        document.getElementById("ChargeCodePickerType").value = "";
+        document.getElementById("ChargeCodePickerCC").value = "";
+        document.getElementById("ChargeCodePickerDesc").value = "";
+        $("#ChargeCodePickerName").val("");
+        document.getElementById("company").innerHTML = "";
+        document.getElementById("position").innerHTML = "";
+        document.getElementById("department").innerHTML = "";
+        document.getElementById("joinedDate").innerHTML = "";
+        document.getElementById("unitSection").innerHTML = "";
+        document.getElementById("duty").innerHTML = "";
+        document.getElementById("costCenter").innerHTML = "";
+        document.getElementById("manager").innerHTML = "";
+        document.getElementById("donateAmount").value = "";
+        document.getElementById("displayamount").innerHTML = "";
+    }
+
+
+</script>

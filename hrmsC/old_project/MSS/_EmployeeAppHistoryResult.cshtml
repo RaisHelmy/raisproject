@@ -1,0 +1,76 @@
+﻿@model List<SEP.RoutingManagement.Models.GetMyApprovalHistory>
+@using ESS.Employee;
+@using atQuest.Utilities
+@{
+
+    Layout = null;
+}
+
+<div class="portlet box blue">
+    <div class="mini-triangle"><img src="../Assets/img/menu-red-triangle.png" /></div>
+    <div class="portlet-title">
+        <div class="caption">
+            <i class="fa fa-reorder"></i>Approval History
+        </div>
+        <div class="tools">
+        </div>
+    </div>
+    <div class="portlet-body form">
+        <div class="form-body">
+            <div class="form-horizontal">
+                <div class="table-toolbar">
+                    <table id="tblResult" class="table table-striped table-bordered table-hover table-full-width">
+                        <thead>
+                            <tr>
+                                <th></th>
+                                <th>Reference No.</th>
+                                <th>Employee Number</th>
+                                <th>Name</th>
+                                <th>Category</th>
+                                <th>Type</th>
+                                <th>Action</th>
+                                <th>Action Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in @Model)
+                            {
+                                <tr>
+                                    <td>
+                                        <a class="btn blue btn-sm" href="@Url.Content("~/Employee/HistoryDetail")?RequestID=@item.SourceID&TaskID=@item.ID.ToString().Trim()">
+                                            <i class="fa fa-search"></i>
+                                        </a>
+                                    </td>
+                                    <td>@item.ApplicationRefNo</td>
+                                    <td>@item.ApplicantCode</td>
+                                    <td>@item.ApplicantName</td>
+                                    <td>@Helper.SplitText(item.DisplayText2)</td>
+                                    <td>@item.DisplayText3</td>
+                                    @if (item.ApproverAction == "Declined" || item.ApproverAction == "Withdrawn")
+                                    {
+                                        <td style="color:red;"><b>@item.ApproverAction</b></td>
+                                    }
+                                    else
+                                    {
+                                        <td style="color:green;"><b>@item.ApproverAction</b></td>
+                                    }
+                                    @if (item.ActionDate.HasValue)
+                                    {
+                                        <td>@item.ActionDate.Value.ToString("dd-MM-yyyy")</td>
+                                    }
+                                    else
+                                    {
+                                        <td>-</td>
+                                    }
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+    transformTable("#tblResult");
+</script>

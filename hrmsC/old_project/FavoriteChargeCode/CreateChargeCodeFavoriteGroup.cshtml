@@ -1,0 +1,73 @@
+﻿@model ESS.Models.ChargeCodeFavouriteGroup
+
+@{
+    ViewBag.Title = "Create Favourite Group";
+}
+
+<br />
+<br />
+
+<div class="form-horizontal">
+    <h4>Add New Favourite Group</h4>
+    <hr />
+    <div class="form-body">
+
+        <div class="form-group">
+            <label class="control-label col-md-2">Group Name <span style="color:red">*</span></label>
+            <div class="col-md-4">
+                <input type="text" class="form-control" id="groupName" />
+            </div>
+        </div>
+        <br />
+        <div class="form-group">
+            <label class="control-label col-md-2">Description <span style="color:red">*</span></label>
+            <div class="col-md-8">
+                <textarea id="description" class="form-control" style="margin: 0px -1.34375px 0px 0px; width: 703px; height: 160px;"></textarea>
+            </div>
+        </div>
+   
+        <div class="form-group" style="padding-top:50px">
+            <div class="col-md-10">
+                <a class="btn default pull-right" onclick="location.href='@Url.Action("ChargeCodeFavouriteGroup")'">Back</a>
+                <a class="btn blue pull-right" style="margin-right:10px"  onclick="javascript: AddGroup(); return false"><i class="fa fa-pencil"></i> Add</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function AddGroup()
+    {
+        var groupName = $("#groupName").val();
+        var description = $("#description").val();
+        var errorMessage = "";
+        if (groupName == '') {
+            errorMessage += "Group Name \n";
+        }
+
+        if (description == '')
+            errorMessage += "Description";
+
+        if (errorMessage != '')
+        {
+            alert("Please fill up the following fields. \n" + errorMessage);
+            return false;
+        }
+
+        $.ajax({
+            type: "POST",
+            url: '@Url.Action("AddChargeCodeFavoriteGroup")',
+            data: { groupName: groupName, description: description },
+            success: function (result) {
+                if(result.Success == true)
+                {
+                    var groupID = result.RequestID;
+                    window.location.href = '@Url.Action("EditChargeCodeFavoriteGroup")?groupId=' + groupID;
+                }
+                else {
+                    alert(result.ErrorMessage);
+                }
+            }
+        });
+    }
+</script>

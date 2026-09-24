@@ -1,0 +1,89 @@
+﻿@model List<OJA.Models.Specialization>
+@{
+    Layout = null;
+}
+<div class="portlet box blue">
+    <div class="mini-triangle"><img src="../Assets/img/menu-red-triangle.png" /></div>
+    <div class="portlet-title">
+        <div class="caption">
+            <i class="fa fa-reorder"></i>Geographical Preferences & Mobility
+        </div>
+        <div class="tools">
+            <a style="margin-left:10px" href="javascript:;" class="expand arrow-down">
+            </a>
+        </div>
+    </div>
+
+    <div class="portlet-body form" style="display:none">
+        <div class="form-body">
+            <div class="form-horizontal">
+                <table id="tblList" class="table table-striped table-bordered table-hover table-full-width">
+                    <thead>
+                        <tr>
+                            <th>Geographical Preferences & Mobility</th>
+                            <th>Start Date</th>
+                            <th>End Date</th>
+                            <th>Mobility / Priority</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td>
+                                    <a href="javascript: EditGeographyInfo('@item.SpecializationID')">@item.SpecializationName</a>
+                                </td>
+                                <td>@item.StartDate</td>
+                                <td>@item.EndDate</td>
+                                <td>@item.ProficiencyName</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            @if (ViewBag.CanEdit)
+            {
+                <div class="row">
+                    <div class="col-md-12">
+                        <a class="btn btn-primary" onclick="ShowGeographyList()">Add <i class="fa fa-plus"></i></a>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<script>
+    function ShowGeographyList() {
+        ShowLoading();
+
+        $.ajax({
+            url: '@Url.Action("AddSpecializationFromList")',
+            data: {SpecializationType: "GEOGRAPHY"},
+            success: function (content) {
+                $("#geographyDiv #EducationInfoBody").html(content);
+                $("#geographyDiv #AddEducationInfoModal").modal();
+            },
+            error: function (err) {
+                alert('Unable to retrieve geographical preferences list');
+            }
+        });
+    }
+
+    function EditGeographyInfo(specId) {
+        ShowLoading();
+        $.ajax({
+            url: '@Url.Action("EditSpecializationFromList")',
+            data: { Id: specId, specializationType: 'GEOGRAPHY' },
+            success: function (responseHtml) {
+                $("#geographyDiv #EducationInfoBody").html(responseHtml);
+                $("#geographyDiv #AddEducationInfoModal").modal();
+            },
+            error: function (err) {
+                alert('Unable to get geographical preferences details')
+            }
+        }).always(HideLoading);
+    }
+
+</script>

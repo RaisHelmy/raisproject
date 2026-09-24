@@ -1,0 +1,72 @@
+﻿@model List<ServiceAcceptance.Models.InTray>
+@{
+    Layout = null;
+}
+
+<div class="portlet box blue">
+    <div class="mini-triangle"><img src="../Assets/img/menu-red-triangle.png" /></div>
+    <div class="portlet-title">
+        <div class="caption">
+            <i class="fa fa-reorder"></i>My In-Tray
+        </div>
+        <div class="tools">
+        </div>
+    </div>
+    <div class="portlet-body form">
+        <div class="form-body">
+            <div class="form-horizontal">
+                <div class="table-toolbar">
+                    <table id="tblResult" class="table table-striped table-bordered table-hover table-full-width">
+                        <thead>
+                            <tr>
+                                <th></th>
+                                <th>Co. Code</th>
+                                <th>Bus. Area</th>
+                                <th>Pur. Grp.</th>
+                                <th>PO No.</th>
+                                <th>PO Item</th>
+                                <th>PO Curr</th>
+                                <th>PO Value</th>
+                                <th>Entry Sheet No.</th>
+                                <th>Short Text</th>
+                                <th>Entry Sheet Curr</th>
+                                <th>Entry Sheet Value</th>
+                                <th>Rel. Code</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in @Model)
+                            {
+                                var data = String.Format("{0},{1},{2}", item.EntrySheetNo, item.ReleaseCode, "InTray");
+                                var encodedData = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(data));
+
+                                <tr>
+                                    <td>
+                                        <a class="btn blue btn-sm" href="@Url.Action("Index", "ServiceAcceptance", new { SaID = item.EntrySheetNo, Data = encodedData })">
+                                        <i class="fa fa-edit"></i>
+                                        </a>
+                                    </td>
+                                    <td>@item.CompanyCode</td>
+                                    <td>@item.BusinessArea</td>
+                                    <td>@item.PurchaseGroup</td> 
+                                    <td>@item.PurchaseOrder</td>
+                                    <td>@item.PurchaseItem</td>
+                                    <td>@item.PurchaseCurrency</td>
+                                    <td>@item.PurchaseValue</td>
+                                    <td>@item.EntrySheetNo</td>
+                                    <td>@item.ShortText</td>
+                                    <td>@item.EntrySheetCurrency</td>
+                                    <td>@item.EntrySheetValue</td>
+                                    <td>@item.ReleaseCode</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+    transformTable("#tblResult");
+</script>

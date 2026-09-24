@@ -1,0 +1,281 @@
+﻿@model ESS.Claim.ViewModels.ClaimVM
+@{
+    var EmpID = ESS.Core.Common.GetEmployeeID().ToUpper();
+    List<SEP.RoutingManagement.Service.AllowAction> AllowAction = new List<SEP.RoutingManagement.Service.AllowAction>();
+
+    bool IsClaimMileageExceedThreshold = false;
+    if(ViewBag.IsClaimMileageExceedThreshold != null)
+    {
+        IsClaimMileageExceedThreshold = ViewBag.IsClaimMileageExceedThreshold;
+    };
+
+}
+
+<style>
+</style>
+
+@if (Model.Status == "0" && EmpID == Model.Submiter.ID.ToString().ToUpper())
+{
+    if (Model.canSubmit)
+    {
+        <div id="claimActionDiv">
+
+            <div class="row ClaimMileageExceedWarning" @(IsClaimMileageExceedThreshold ? "" : "hidden")>
+                <div class="col-md-12">
+                    <div class="note note-danger">
+                        <h4 class="block">
+                            <strong>
+                                Note :<br>
+                                - Your claim exceeds the average mileage for your job group and will be inspected further.<br>
+                                - Tuntutan perjalanan anda melebihi had purata bagi kumpulan kerja anda dan akan diteliti dengan lebih lanjut.<br>
+                            </strong>
+                        </h4>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Disclaimer -->
+            <div class="row">
+                <div class="col-md-12">
+                    <input type="checkbox" id="chkDisclaimer"> <b>I declare that all the expenses claimed above are expenses that have incurred during my official job assignments related to TNB.</b>
+                </div>
+            </div>
+
+            <br />
+
+            <!-- Buttons -->
+            <div class="row">
+                <div class="col-md-12">
+                    <input type="button" class="btn green" value="Save as Draft" id="btnDraft" onclick="submitclaim('Draft'); " />
+
+                    <input type="button" class="btn green" value="Submit" id="btnSubmit" onclick="submitclaim('Submit'); " />
+
+                    <input type="button" class="btn red" value="Delete" id="btnDelete" onclick="javascript: $('#ConfirmDelete').modal()" />
+                </div>
+            </div>
+        </div>
+    }
+}
+else if ((Model.Status == "4" || Model.Status == "5") && EmpID == Model.Submiter.ID.ToString().ToUpper())
+{
+    <div class="row">
+        <div class="col-md-12">
+            <div class="portlet box blue">
+                <div class="mini-triangle"><img src="../Assets/img/menu-red-triangle.png" /></div>
+                <div class="portlet-title">
+                    <div class="caption">
+                        <i class="fa fa-reorder"></i> Submitter Comments
+                    </div>
+                </div>
+                <div class="portlet-body form">
+                    <div class="form-body">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <label class="control-label col-md-2">Comments</label>
+                                        <div class="col-md-10 form-control-static">
+                                            <textarea class="form-control" id="txtSubComment" rows="5" cols="60" maxlength="1000"></textarea>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <br />
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row ClaimMileageExceedWarning" @(IsClaimMileageExceedThreshold ? "" : "hidden")>
+        <div class="col-md-12">
+            <div class="note note-danger">
+                <h4 class="block">
+                    <strong>
+                        Note :<br>
+                        - Your claim exceeds the average mileage for your job group and will be inspected further.<br>
+                        - Tuntutan perjalanan anda melebihi had purata bagi kumpulan kerja anda dan akan diteliti dengan lebih lanjut.<br>
+                    </strong>
+                </h4>
+            </div>
+        </div>
+    </div>
+
+    <!-- Disclaimer -->
+    <div class="row">
+        <div class="col-md-12">
+            <input type="checkbox" id="chkDisclaimer"> <b>I declare that all the expenses claimed above are expenses that have incurred during my official job assignments related to TNB.</b>
+        </div>
+    </div>
+
+    <br />
+
+    <!-- Buttons -->
+    <div class="row">
+        <div class="col-md-12">
+
+            <input type="button" class="btn green" value="Submit" id="btnSubmit" onclick="submitclaim('Submit'); " />
+
+        </div>
+    </div>
+}
+else if (Model.ApproverID != null && Model.ApproverID.ToUpper().Contains(EmpID.ToUpper()))
+{
+    SEP.RoutingManagement.Service srv = new SEP.RoutingManagement.Service();
+    AllowAction = srv.GetUserAllowAction(Model.ID, Guid.Parse(EmpID));
+
+    @*<div class="row">
+            <div class="col-md-12">
+                <div class="portlet box blue">
+                    <div class="mini-triangle"><img src="../Assets/img/menu-red-triangle.png" /></div>
+                    <div class="portlet-title">
+                        <div class="caption">
+                            <i class="fa fa-reorder"></i>Approval Comments
+                        </div>
+                    </div>
+                    <div class="portlet-body form">
+                        <div class="form-body">
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="form-horizontal">
+                                        <div class="form-group">
+                                            <label class="control-label col-md-2">Comments</label>
+                                            <div class="col-md-10 form-control-static">
+                                                <textarea class="form-control" id="txtAppComment" rows="5" cols="60"
+                                                          maxlength="1000"></textarea>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>*@
+    @Html.Action("ApproverComment", "Component", new { module = "Claims" })
+
+    <div class="row ClaimMileageExceedWarning" @(IsClaimMileageExceedThreshold ? "" : "hidden")>
+        <div class="col-md-12">
+            <div class="note note-danger">
+                <h4 class="block">
+                    <strong>
+                        Note :<br>
+                        - Your staff claim exceeds the average mileage for his/her job group and will be inspected further.<br>
+                        - Tuntutan perjalanan staf anda melebihi had purata bagi kumpulan kerja beliau dan akan diteliti dengan lebih lanjut.<br>
+                    </strong>
+                </h4>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-12">
+            @if (AllowAction[0].CanAgree == "1")
+            {
+                <input type="button" class="btn green" value="Agree" onclick="ApproveReject('Agree'); " />
+            }
+            @if (AllowAction[0].CanApprove == "1")
+            {
+                <input type="button" class="btn green" value="Approve" onclick="ApproveReject('Approve'); " />
+            }
+            @*CR20170913 change Decline to Return*@
+            <input type="button" class="btn green" value="Return" onclick="ApproveReject('Reject'); " />
+            <input type="button" class="btn red" value="Back" onclick="BackToInTray()" />
+        </div>
+    </div>
+
+    if (Model.ClaimTypeCode == "COS01" || Model.ClaimTypeCode == "COV01" || Model.ClaimTypeCode == "COH01")
+    {
+        if (AllowAction[0].CanAgree == "1")
+        {
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="approver-button-note">
+                        <h5 class="block note-message" style="font-weight:bold !important;">
+                            <p>
+                                NOTE:
+                            </p>
+                            <p>
+                                The “AGREE” above means that the employee has carried out the activity/transaction as stated above.
+                            </p>
+                            <p>
+                                Claim rate and eligibility of the employee shall be verified by HR Administration and Support, HR Shared Service Centre.
+                            </p>
+                        </h5>
+
+                    </div>
+                </div>
+            </div>
+        }
+        else if (AllowAction[0].CanApprove == "1")
+        {
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="approver-button-note">
+                        <h5 class="block note-message" style="font-weight:bold !important;">
+                            <p>
+                                NOTE:
+                            </p>
+                            <p>
+                                The “APPROVE” above means that the employee has carried out the activity/transaction as stated above.
+                            </p>
+                            <p>
+                                Claim rate and eligibility of the employee shall be verified by HR Administration and Support, HR Shared Service Centre.
+                            </p>
+                        </h5>
+                    </div>
+                </div>
+            </div>
+        }
+    }
+}
+else if ((Model.Status == "1" || Model.Status == "2" || Model.Status == "3" || Model.Status == "6")
+         && EmpID == Model.Submiter.ID.ToString().ToUpper())
+{
+    if (Model.Status != "6")
+    {
+    <div class="row ClaimMileageExceedWarning" @(IsClaimMileageExceedThreshold ? "" : "hidden")>
+        <div class="col-md-12">
+            <div class="note note-danger">
+                <h4 class="block">
+                    <strong>
+                        Note :<br>
+                        - Your claim exceeds the average mileage for your job group and will be inspected further.<br>
+                        - Tuntutan perjalanan anda melebihi had purata bagi kumpulan kerja anda dan akan diteliti dengan lebih lanjut.<br>
+                    </strong>
+                </h4>
+            </div>
+        </div>
+    </div>
+    }
+
+    <!-- Disclaimer -->
+    <div class="row">
+        <div class="col-md-12">
+            <input type="checkbox" id="chkDisclaimer"> <b>I declare that all the expenses claimed above are expenses that have incurred during my official job assignments related to TNB.</b>
+        </div>
+    </div>
+
+    <br />
+
+    <!-- Buttons -->
+    <div class="row">
+        <div class="col-md-12">
+            <input type="button" class="btn green" value="Save" id="btnSubmit" onclick="submitclaim('Resubmit'); " />
+            @if (Model.Status != "6")
+            {
+            <input type="button" class="btn green" value="Withdraw" onclick="javascript: $('#ConfirmWithdraw').modal()" />
+            }
+            <input type="button" class="btn green" value="Back" onclick="history.back()" />
+        </div>
+    </div>
+}
+
+<script>
+    function BackToInTray() {
+        location.href = '@Url.Action("ClaimsInTray", "MSS")';
+    }
+</script>

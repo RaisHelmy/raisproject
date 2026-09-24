@@ -1,0 +1,2464 @@
+﻿@model Tuple<ESS.Employee.Models.FamilyInfo, ESS.Employee.Models.Setting>
+@using ESS.Employee;
+@{
+    #region
+    string module = "Family";
+
+    Layout = null;
+    bool ReadOnly = false;
+    bool EditReadOnly = false;
+    bool Create = false;
+
+    string classViewReadOnly = "";
+    string EmployeeCategory_Family = ViewBag.EmployeeCategory_Family + "";
+
+    string Mode = ViewBag.Mode + "";
+    string divMode = "";
+
+    if (string.Equals(Mode, "View", StringComparison.OrdinalIgnoreCase))
+    {
+        ReadOnly = true;
+        classViewReadOnly = "disabled = 'disabled' ";
+        divMode = "";
+    }
+    else if (string.Equals(Mode, "Edit", StringComparison.OrdinalIgnoreCase))
+    {
+        ReadOnly = false;
+        EditReadOnly = true;
+        classViewReadOnly = "";
+        divMode = "Edit";
+    }
+    else
+    {
+        Create = true;
+        divMode = "Insert";
+    }
+
+    bool runFieldVisible = false;
+    if (Model.Item2 != null)
+    {
+        runFieldVisible = true;
+    }
+
+    DateTime setdateEnd = DateTime.Now;
+    string dtStrEnd = setdateEnd.ToString("dd/MM/yyyy");
+    #endregion
+}
+
+<style>
+    #OtherEmployerName {
+        width: auto;
+        padding: 2px 2px;
+        display: unset;
+    }
+</style>
+
+<div id="EditItemTemplate">
+    <input type="hidden" id="HiddenStartDate" value="@Service.FormatDateInNumber(Model.Item1.StartDate, "dd/MM/yyyy")" />
+    <input type="hidden" id="HiddenEndDate" value="@Service.FormatDateInNumber(Model.Item1.EndDate, "dd/MM/yyyy")" />
+    <input type="hidden" id="HiddenFirstName" value="@Model.Item1.FirstName" />
+    <input type="hidden" id="HiddenLastName" value="@Model.Item1.LastName" />
+    <input type="hidden" id="HiddenSurnamePrefix" value="@Model.Item1.SurnamePrefix" />
+    <input type="hidden" id="HiddenMaidenName" value="@Model.Item1.MaidenName" />
+    <input type="hidden" id="HiddenInitials" value="@Model.Item1.Initials" />
+    <input type="hidden" id="HiddenTaxNumber" value="@Model.Item1.TaxNumber" />
+
+    <input type="hidden" id="HiddenTaxOffice" value="@Model.Item1.TaxOffice" />
+    <input type="hidden" id="HiddenReferenceNumber" value="@Model.Item1.ReferenceNumber" />
+    <input type="hidden" id="HiddenNameFormat" value="@Model.Item1.NameFormat" />
+    <input type="hidden" id="HiddenSchoolTypeCode" value="@Model.Item1.SchoolTypeCode" />
+    @*<input type="hidden" id="HiddenChildCustody" value="@Model.Item1.CheckChildCusdoty" />*@
+
+    <input type="hidden" id="HiddenAddressLine1" value="@Model.Item1.AddressLine1" />
+    <input type="hidden" id="HiddenAddressLine2" value="@Model.Item1.AddressLine2" />
+
+    <input type="hidden" id="HiddenAddressLine3" value="@Model.Item1.AddressLine3" />
+    <input type="hidden" id="HiddenPostcode" value="@Model.Item1.Postcode" />
+    <input type="hidden" id="HiddenCity" value="@Model.Item1.City" />
+    <input type="hidden" id="HiddenCOName" value="@Model.Item1.COName" />
+    <input type="hidden" id="HiddenTelephoneNumber" value="@Model.Item1.TelephoneNumber" />
+
+    <input type="hidden" id="HiddenCommType1" value="@Model.Item1.CommType1" />
+    <input type="hidden" id="HiddenPhoneNo1" value="@Model.Item1.PhoneNo1" />
+    <input type="hidden" id="HiddenCommType2" value="@Model.Item1.CommType2" />
+    <input type="hidden" id="HiddenPhoneNo2" value="@Model.Item1.PhoneNo2" />
+    <input type="hidden" id="HiddenCommType3" value="@Model.Item1.CommType3" />
+    <input type="hidden" id="HiddenPhoneNo3" value="@Model.Item1.PhoneNo3" />
+    <input type="hidden" id="HiddenCommType4" value="@Model.Item1.CommType4" />
+    <input type="hidden" id="HiddenPhoneNo4" value="@Model.Item1.PhoneNo4" />
+
+    <input type="hidden" id="HiddenCountryCode" value="@Model.Item1.CountryCode" />
+    <input type="hidden" id="HiddenStateCode" value="@Model.Item1.StateCode" />
+    <input type="hidden" id="HiddenZAddf" value="@Model.Item1.ZAddf" />
+    <input type="hidden" id="HiddenZRelt" value="@Model.Item1.ZRelt" />
+    <input type="hidden" id="HiddenZUniq" value="@Model.Item1.ZUniq" />
+</div>
+
+<div id="_FamilyInfo" class="row">
+    <div class="col-md-12">
+        <div class="portlet box blue">
+            <div class="mini-triangle"><img src="../Assets/img/menu-red-triangle.png" /></div>
+            <div class="portlet-title">
+                <div class="caption">
+                    <i class="fa fa-reorder"></i>Family Info
+                </div>
+            </div>
+            <div class="portlet-body form" id="SearchGet_FamilyInfo">
+                <div class="form-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-horizontal">
+                                <div class="form-group divRelationshipType">
+                                    <label class="control-label col-md-4 ">
+                                        Relationship Type<span class="required spanRelationshipTypeRequired">*</span>
+                                    </label>
+                                    <div class="col-md-8 form-control-static">
+                                        <input type="hidden" name="RelationshipTypeCode" id="RelationshipTypeCode" value="@Model.Item1.RelationshipTypeCode" />
+                                        @if (EditReadOnly || ReadOnly)
+                                        {
+                                            <input type="text" class="form-control" id="RelationshipTypeName" name="RelationshipTypeName" value="@Model.Item1.RelationshipType" readonly="readonly" @classViewReadOnly />
+                                        }
+                                        else
+                                        {
+                                            <input type="hidden" name="RelationshipTypeName" id="RelationshipTypeName" value="@Model.Item1.RelationshipType" />
+                                            <select tabindex="0" id="ddlRelationshipType" class="form-control" @classViewReadOnly></select>
+                                        }
+                                    </div>
+                                </div>
+                                <div class="form-group divGender">
+                                    <label class="control-label col-md-4 ">
+                                        Gender
+                                    </label>
+                                    <div class="col-md-8 form-control-static">
+                                        <input type="hidden" class="form-control"
+                                               name="HiddenGender" id="HiddenGender" value="@Model.Item1.Gender">
+                                        <input type="hidden" name="GenderCode" id="GenderCode" value="@Model.Item1.GenderCode" />
+                                        @if (ReadOnly)
+                                        {
+                                            <input type="text" class="form-control" id="GenderName" name="GenderName" value="@Model.Item1.Gender" @classViewReadOnly />
+                                        }
+                                        else
+                                        {
+                                            <input type="hidden" name="GenderName" id="GenderName" value="@Model.Item1.Gender" />
+                                            <select tabindex="0" id="ddlGender" class="form-control" @classViewReadOnly></select>
+                                        }
+                                    </div>
+                                </div>
+                                <div class="form-group divName">
+                                    <label class="control-label col-md-4 ">
+                                        Name <span class="required spanFamilyNameRequired">*</span>
+                                    </label>
+                                    <div class="col-md-8 form-control-static">
+                                        <input type="text" class="form-control FamilyName" MaxLength="80" style="text-transform:capitalize"
+                                               name="FamilyName" value="@Model.Item1.Name" pattern="\d{1,5}" id="FamilyName" @classViewReadOnly>
+                                        <input type="hidden" class="form-control"
+                                               name="HiddenFamilyName" value="@Model.Item1.Name" id="HiddenFamilyName">
+                                    </div>
+                                </div>
+                                <div class="form-group divNewICNo">
+                                    <label class="control-label col-md-4 ">
+                                        New IC No.
+                                        <span class="required spanNewICNoRequired" id="spanNewICNoRequired">*</span>
+                                    </label>
+                                    <div class="col-md-8 form-control-static">
+                                        <input type="text" class="form-control" MaxLength="12"
+                                               name="NewICNo" value="@Model.Item1.NewICNo" id="NewICNo" @classViewReadOnly>
+                                        <input type="hidden" class="form-control"
+                                               name="HiddenNewICNo" id="HiddenNewICNo" value="@Model.Item1.NewICNo">
+
+                                        <input type="hidden" class="form-control"
+                                               name="HiddenNewICNo_Name" id="HiddenNewICNo_Name" value="New IC No">
+                                    </div>
+                                </div>
+                                <div class="form-group divOldICNo">
+                                    <label class="control-label col-md-4 ">
+                                        Old IC No
+                                    </label>
+                                    <div class="col-md-8 form-control-static">
+                                        <input type="text" class="form-control" MaxLength="20"
+                                               name="OldICNo" value="@Model.Item1.OldICNo" id="OldICNo" @classViewReadOnly>
+                                        <input type="hidden" class="form-control"
+                                               name="HiddenOldICNo" id="HiddenOldICNo" value="@Model.Item1.OldICNo">
+                                    </div>
+                                </div>
+                                <div class="form-group divPassportNo">
+                                    <label class="control-label col-md-4 ">
+                                        Passport No.
+                                        <span class="required spanPassportNoRequired" id="spanPassportNoRequired">*</span>
+                                    </label>
+                                    <div class="col-md-8 form-control-static">
+                                        <input type="text" class="form-control" MaxLength="20"
+                                               name="PassportNo" value="@Model.Item1.PassportNo" id="PassportNo" @classViewReadOnly>
+                                        <input type="hidden" class="form-control"
+                                               name="HiddenPassportNo" id="HiddenPassportNo" value="@Model.Item1.PassportNo">
+                                    </div>
+                                </div>
+                                <div class="form-group divNationality divNationalityEdit">
+                                    <label class="control-label col-md-4 ">
+                                        Nationality <span class="required spanNationalityRequired">*</span>
+                                    </label>
+                                    <div class="col-md-8 form-control-static">
+                                        <input type="hidden" class="form-control"
+                                               name="HiddenNationality" id="HiddenNationality" value="@Model.Item1.Nationality">
+                                        <input type="hidden" name="NationalityCode" id="NationalityCode" value="@Model.Item1.NationalityCode" />
+                                        @if (ReadOnly)
+                                        {
+                                            <input type="text" class="form-control" id="NationalityName" name="NationalityName" value="@Model.Item1.Nationality" @classViewReadOnly />
+                                        }
+                                        else
+                                        {
+                                            <input type="hidden" name="NationalityName" id="NationalityName" value="@Model.Item1.Nationality" />
+                                            <select tabindex="0" id="ddlNationality" class="form-control" onchange="setTimeout(Checking,100);" @classViewReadOnly></select>
+                                        }
+                                    </div>
+                                </div>
+                                <div class="form-group divDateOfDeath">
+                                    <label class="control-label col-md-4 ">
+                                        Date of Death
+                                    </label>
+                                    <div class="col-md-8  form-control-static">
+                                        @if (ReadOnly)
+                                        {
+                                            <input type="text" class="form-control" id="DateOfDeath" name="DateOfDeath" value="@Service.FormatDateInNumber(Model.Item1.DateOfDeath, "dd/MM/yyyy")" readonly="readonly" />
+                                        }
+                                        else
+                                        {
+                                            <div class="input-group date date-picker" id="boxDateOfDeath" data-date-format="dd/mm/yyyy">
+                                                <input type="text" class="form-control DateOfDeath"
+                                                       id="DateOfDeath" name="DateOfDeath" value="@Service.FormatDateInNumber(Model.Item1.DateOfDeath, "dd/MM/yyyy")" />
+                                                <span class="input-group-btn">
+                                                    <button type="button" id="btnDateOfDeath" class="btn default"><i class="fa fa-calendar"></i></button>
+                                                </span>
+                                            </div>
+                                        }
+                                        <input type="hidden" class="form-control"
+                                               name="HiddenDateOfDeath" id="HiddenDateOfDeath" value="@Service.FormatDateInNumber(Model.Item1.DateOfDeath, "dd/MM/yyyy")">
+
+                                    </div>
+                                </div>
+                                <div class="form-group divDateOfAdoption divDateOfAdoptionInsert divDateOfAdoptionEdit hidden">
+                                    <label class="control-label col-md-4 ">
+                                        Date of Adoption <span class="required spanDateOfAdoptionRequired hidden">*</span>
+                                    </label>
+                                    <div class="col-md-8  form-control-static">
+                                        @if (ReadOnly)
+                                        {
+                                            <input type="text" class="form-control" id="DateOfAdoption" name="DateOfAdoption" value="@Service.FormatDateInNumber(Model.Item1.DateOfAdoption, "dd/MM/yyyy")" readonly="readonly" />
+                                        }
+                                        else
+                                        {
+                                            <div class="input-group date date-picker" id="boxDateOfAdoption" data-date-format="dd/mm/yyyy">
+                                                <input type="text" class="form-control DateOfAdoption"
+                                                       id="DateOfAdoption" name="DateOfAdoption" value="@Service.FormatDateInNumber(Model.Item1.DateOfAdoption, "dd/MM/yyyy")" />
+                                                <span class="input-group-btn">
+                                                    <button type="button" id="btnDateOfAdoption" class="btn default"><i class="fa fa-calendar"></i></button>
+                                                </span>
+                                            </div>
+                                        }
+                                        <input type="hidden" class="form-control"
+                                               name="HiddenDateOfAdoption" id="HiddenDateOfAdoption" value="@Service.FormatDateInNumber(Model.Item1.DateOfAdoption, "dd/MM/yyyy")">
+                                    </div>
+                                </div>
+                                <div class="form-group divEligibleForMedical divEligibleForMedicalInsert divEligibleForMedicalEdit hidden">
+                                    <label class="control-label col-md-4 ">
+                                        Eligible For Medical
+                                    </label>
+                                    <div class="col-md-8 form-control-static">
+                                        <div class="checkbox-list">
+                                            @{
+                                                string CheckMedical = "";
+                                                string boolMedical = "false";
+                                                string a = "";
+                                                if (Model.Item1.EligibleForMedical.HasValue)
+                                                {
+                                                    if (Model.Item1.EligibleForMedical.Value)
+                                                    {
+                                                        CheckMedical = "checked";
+                                                        a = CheckMedical;
+                                                    }
+                                                    boolMedical = Model.Item1.EligibleForMedical + "";
+                                                }
+
+                                            }
+
+                                            <input type="checkbox" id="chkMedical" @CheckMedical disabled>
+                                        </div>
+                                        <input type="hidden" class="form-control" name="HiddenMedical" id="HiddenMedical" value="@boolMedical">
+                                    </div>
+                                </div>
+
+                                <div class="form-group divEducationInstitution divEducationInstitutionInsert divEducationInstitutionEdit hidden">
+                                    <label class="control-label col-md-4 ">
+                                        Education Institution <span class="required spanEducationInstitutionRequired hidden">*</span>
+                                    </label>
+                                    <div class="col-md-8  form-control-static">
+                                        <input type="hidden" class="form-control"
+                                               name="HiddenEducationInstitutionText" id="HiddenEducationInstitutionText" value="@Model.Item1.EducationInstitution">
+
+                                        <input type="hidden" name="HiddenEducationInstitutionCode" id="HiddenEducationInstitutionCode" value="@Model.Item1.EducationInstitutionCode" />
+                                        <input type="hidden" name="EducationInstitutionCode" id="EducationInstitutionCode" value="@Model.Item1.EducationInstitutionCode" />
+                                        @if (ReadOnly)
+                                        {
+                                            <input type="text" class="form-control" id="EducationInstitutionName" name="EducationInstitutionName" value="@Model.Item1.EducationInstitution" @classViewReadOnly />
+                                        }
+                                        else
+                                        {
+                                            <input type="hidden" name="EducationInstitutionName" id="EducationInstitutionName" value="@Model.Item1.EducationInstitution" />
+                                            <select tabindex="0" id="ddlEducationInstitution" class="form-control" @classViewReadOnly></select>
+                                        }
+                                    </div>
+                                </div>
+                                <div class="form-group divEmployerName divEmployerNameInsert divEmployerNameEdit hidden">
+                                    <label class="control-label col-md-4 ">
+                                        Employer Name
+                                    </label>
+                                    <div class="col-md-8 form-control-static">
+                                        @if (ReadOnly)
+                                        {
+                                            <input type="text" class="form-control" id="EmployerName" name="EmployerName" value="@Model.Item1.EmployerName" @classViewReadOnly />
+                                        }
+                                        else
+                                        {
+                                            <div class="radio-list">
+                                                <label>
+                                                    <input type="radio" name="EmployerName" id="EmployerName_0" value="0" @classViewReadOnly> TNB / TNB Subsidiaries
+                                                </label>
+                                                <label>
+                                                    <input type="radio" name="EmployerName" id="EmployerName_1" value="1" @classViewReadOnly> Others <span id="SpanOtherEmployerName" class="divOtherEmployerName divOtherEmployerNameInsert divOtherEmployerNameEdit">:</span>
+                                                    <input type="text" class="form-control divOtherEmployerName divOtherEmployerNameInsert divOtherEmployerNameEdit" width="150" name="OtherEmployerName" @classViewReadOnly value="@Model.Item1.EmployerName" id="OtherEmployerName">
+                                                </label>
+                                            </div>
+                                        }
+
+                                        <input type="hidden" class="form-control"
+                                               name="HiddenOtherEmployerName" id="HiddenOtherEmployerName" value="@Model.Item1.EmployerName">
+                                    </div>
+                                </div>
+                                <div class="form-group divSpouseEmployeeNo divSpouseEmployeeNoInsert divSpouseEmployeeNoEdit hidden">
+                                    <label class="control-label col-md-4 ">
+                                        Spouse Employee No.<span class="required spanSpouseEmployeeNoRequired hidden">*</span>
+                                    </label>
+                                    <div class="col-md-8 form-control-static">
+                                        <input type="text" class="form-control"
+                                               name="SpouseEmployeeNo" id="SpouseEmployeeNo" value="@Model.Item1.SpouseEmployeeNo" maxlength="8" @classViewReadOnly>
+                                        <input type="hidden" class="form-control"
+                                               name="HiddenSpouseEmployeeNo" id="HiddenSpouseEmployeeNo" value="@Model.Item1.SpouseEmployeeNo">
+                                    </div>
+                                </div>
+                                <div class="form-group divJobTitle divJobTitleInsert divJobTitleEdit hidden">
+                                    <label class="control-label col-md-4 ">
+                                        Job Title
+                                    </label>
+                                    <div class="col-md-8 form-control-static">
+                                        <input type="text" class="form-control"
+                                               name="JobTitle" id="JobTitle" value="@Model.Item1.JobTitle" @classViewReadOnly>
+                                        <input type="hidden" class="form-control"
+                                               name="HiddenJobTitle" id="HiddenJobTitle" value="@Model.Item1.JobTitle">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-horizontal">
+                                <div class="form-group divFamilyNo divFamilyNoEdit divFamilyNoInsert hidden">
+                                    <label class="control-label col-md-4 ">
+                                        Family No.
+                                    </label>
+                                    <div class="col-md-8 form-control-static">
+                                        <input type="text" class="form-control"
+                                               name="FamilyNo" id="FamilyNo" value="@Model.Item1.FamilyNo" @classViewReadOnly>
+                                        <input type="hidden" class="form-control"
+                                               name="HiddenFamilyNo" id="HiddenFamilyNo" value="@Model.Item1.FamilyNo">
+                                    </div>
+                                </div>
+                                <div class="form-group divRelChild divRelChildInsert divRelChildEdit hidden">
+                                    <label class="control-label col-md-4 ">
+                                        Rel/Child<span class="required spanRelChildRequired">*</span>
+                                    </label>
+                                    <div class="col-md-8 form-control-static">
+                                        <input type="hidden" class="form-control"
+                                               name="HiddenRelChild" id="HiddenRelChild" value="@Model.Item1.RelChild">
+                                        <input type="hidden" name="RelChildCode" id="RelChildCode" value="@Model.Item1.RelChildCode" />
+                                        @if (ReadOnly)
+                                        {
+                                            <input type="text" class="form-control" id="RelChildName" name="RelChildName" value="@Model.Item1.RelChild" @classViewReadOnly />
+                                        }
+                                        else
+                                        {
+                                            <input type="hidden" name="RelChildName" id="RelChildName" value="@Model.Item1.RelChild" />
+                                            <select tabindex="0" id="ddlRelChild" class="form-control" onchange="setTimeout(Checking,100);" @classViewReadOnly></select>
+                                        }
+                                    </div>
+                                </div>
+                                <div class="form-group divChildSpouseNo divChildSpouseNoInsert divChildSpouseNoEdit hidden">
+                                    <label class="control-label col-md-4 ">
+                                        Child Spouse Name
+                                    </label>
+                                    <div class="col-md-8 form-control-static">
+                                        <input type="hidden" class="form-control"
+                                               name="HiddenChildSpouseNo" id="HiddenChildSpouseNo" value="@Model.Item1.ChildSpouseNo">
+                                        <input type="hidden" name="ChildSpouseNoCode" id="ChildSpouseNoCode" value="@Model.Item1.ChildSpouseNo" />
+                                        @if (ReadOnly)
+                                        {
+                                            <input type="text" class="form-control" id="ChildSpouseNoName" name="ChildSpouseNoName" value="" @classViewReadOnly />
+                                        }
+                                        else
+                                        {
+                                            <input type="hidden" name="ChildSpouseNoName" id="ChildSpouseNoName" value="" />
+                                            <select tabindex="0" id="ddlChildSpouseNo" class="form-control" @classViewReadOnly></select>
+                                        }
+                                        <input type="hidden" class="form-control" name="HiddenChildSpouseName" id="HiddenChildSpouseName" value="">
+                                    </div>
+                                </div>
+                                <div class="form-group divCountryOfBirth">
+                                    <label class="control-label col-md-4 ">
+                                        Country of Birth
+                                    </label>
+                                    <div class="col-md-8 form-control-static">
+                                        <input type="hidden" class="form-control"
+                                               name="HiddenCountryOfBirth" id="HiddenCountryOfBirth" value="@Model.Item1.CountryOfBirth">
+                                        <input type="hidden" name="CountryOfBirthCode" id="CountryOfBirthCode" value="@Model.Item1.CountryOfBirthCode" />
+                                        @if (ReadOnly)
+                                        {
+                                            <input type="text" class="form-control" id="CountryOfBirthName" name="CountryOfBirthName" value="@Model.Item1.CountryOfBirth" @classViewReadOnly />
+                                        }
+                                        else
+                                        {
+                                            <input type="hidden" name="CountryOfBirthName" id="CountryOfBirthName" value="@Model.Item1.CountryOfBirth" />
+                                            <select tabindex="0" id="ddlCountryOfBirth" class="form-control" onchange="setTimeout(Checking, 100);" @classViewReadOnly></select>
+                                        }
+                                    </div>
+                                </div>
+                                <div class="form-group divBirthPlace divBirthPlaceInsert divBirthPlaceEdit">
+                                    <label class="control-label col-md-4 ">
+                                        Birth Place
+                                    </label>
+                                    <div class="col-md-8 form-control-static">
+                                        <input type="text" class="form-control" name="BirthPlace" id="BirthPlace" value="@Model.Item1.BirthPlace" MaxLength="25" @classViewReadOnly>
+                                        <input type="hidden" class="form-control" name="HiddenBirthPlace" id="HiddenBirthPlace" value="@Model.Item1.BirthPlace">
+                                    </div>
+                                </div>
+                                <div class="form-group divDateOfBirth">
+                                    <label class="control-label col-md-4 ">
+                                        Date of Birth <span class="required spanDateOfBirthRequired">*</span>
+                                    </label>
+                                    <div class="col-md-8 form-control-static">
+                                        @if (ReadOnly)
+                                        {
+                                            <input type="text" class="form-control" id="DateOfBirth" name="DateOfBirth" value="@Service.FormatDateInNumber(Model.Item1.DateOfBirth, "dd/MM/yyyy")" readonly="readonly" />
+                                        }
+                                        else
+                                        {
+                                            <div class="input-group date date-picker" id="boxDateOfBirth" data-date-format="dd/mm/yyyy">
+                                                <input type="text" class="form-control DateOfBirth" onchange="DOBChange()" id="DateOfBirth" name="DateOfBirth" value="@Service.FormatDateInNumber(Model.Item1.DateOfBirth, "dd/MM/yyyy")" />
+                                                <span class="input-group-btn">
+                                                    <button type="button" id="btnDateOfBirth" class="btn default"><i class="fa fa-calendar"></i></button>
+                                                </span>
+                                            </div>
+                                        }
+
+                                        <input type="hidden" class="form-control" name="HiddenDateOfBirth" id="HiddenDateOfBirth" value="@Service.FormatDateInNumber(Model.Item1.DateOfBirth, "dd/MM/yyyy")" />
+                                    </div>
+                                </div>
+                                <div class="form-group divBirthCertNo">
+                                    <label class="control-label col-md-4 ">
+                                        Birth Cert No.<span class="required spanBirthCertNoRequired" id="spanBirthCertNoRequired">*</span>
+                                    </label>
+                                    <div class="col-md-8  form-control-static">
+                                        <input type="text" class="form-control"
+                                               name="BirthCertNo" id="BirthCertNo" value="@Model.Item1.BirthCertNo" @classViewReadOnly>
+                                        <input type="hidden" class="form-control"
+                                               name="HiddenBirthCertNo" id="HiddenBirthCertNo" value="@Model.Item1.BirthCertNo">
+                                        <input type="hidden" class="form-control"
+                                               name="HiddenBirthCertNo_Name" id="HiddenBirthCertNo_Name" value="Birth Cert No">
+                                    </div>
+                                </div>
+                                <div class="form-group divMaritalStatus divMaritalStatusInsert divMaritalStatusEdit hidden">
+                                    <label class="control-label col-md-4 ">
+                                        <span class="spanMaritalStatusLbl">Marital Status</span>
+                                        <span class="required spanMaritalStatusRequired hidden">*</span>
+                                    </label>
+                                    <div class="col-md-8 form-control-static">
+                                        <input type="hidden" class="form-control"
+                                               name="HiddenMaritalStatus" id="HiddenMaritalStatus" value="@Model.Item1.MaritalStatus">
+                                        <input type="hidden" name="MaritalStatusCode" id="MaritalStatusCode" value="@Model.Item1.MaritalStatusCode" />
+                                        @if (ReadOnly)
+                                        {
+                                            <input type="text" class="form-control" id="MaritalStatusName" name="MaritalStatusName" value="@Model.Item1.MaritalStatus" @classViewReadOnly />
+                                        }
+                                        else
+                                        {
+                                            <input type="hidden" name="MaritalStatusName" id="MaritalStatusName" value="@Model.Item1.MaritalStatus" />
+                                            <select tabindex="0" id="ddlMaritalStatus" class="form-control" @classViewReadOnly onchange="setTimeout(Checking,100);"></select>
+                                        }
+                                    </div>
+                                </div>
+                                <div class="form-group divMaritalStatusDate divMaritalStatusDateInsert divMaritalStatusDateEdit hidden">
+                                    <label class="control-label col-md-4 ">
+                                        <span class="spanMaritalStatusDateLbl">Marital Status Date</span>
+                                        <span class="required spanMaritalStatusDateRequired hidden">*</span>
+                                    </label>
+                                    <div class="col-md-8 form-control-static">
+                                        @if (ReadOnly)
+                                        {
+                                            <input type="text" class="form-control" id="MaritalStatusDate" name="MaritalStatusDate" value="@Service.FormatDateInNumber(Model.Item1.MaritalStatusDate, "dd/MM/yyyy")" readonly="readonly" />
+                                        }
+                                        else
+                                        {
+                                            <div class="input-group date date-picker" id="boxMaritalStatusDate" data-date-format="dd/mm/yyyy">
+                                                <input type="text" class="form-control MaritalStatusDate"
+                                                       id="MaritalStatusDate" name="MaritalStatusDate" value="@Service.FormatDateInNumber(Model.Item1.MaritalStatusDate, "dd/MM/yyyy")" />
+                                                <span class="input-group-btn">
+                                                    <button type="button" id="btnMaritalStatusDate" class="btn default"><i class="fa fa-calendar"></i></button>
+                                                </span>
+                                            </div>
+                                        }
+                                        <input type="hidden" class="form-control"
+                                               name="HiddenMaritalStatusDate" id="HiddenMaritalStatusDate" value="@Service.FormatDateInNumber(Model.Item1.MaritalStatusDate, "dd/MM/yyyy")">
+                                    </div>
+                                </div>
+
+                                <div class="form-group divStudent divStudentInsert divStudentEdit hidden">
+                                    <label class="control-label col-md-4 ">
+                                        Student
+                                    </label>
+                                    <div class="col-md-8  form-control-static">
+                                        @{
+                                            string CheckStudent = "";
+                                            string boolStudent = "false";
+                                            if (Model.Item1.Student.HasValue)
+                                            {
+                                                if (Model.Item1.Student.Value)
+                                                {
+                                                    CheckStudent = "Checked";
+                                                }
+                                                boolStudent = Model.Item1.Student + "";
+                                            }
+                                        }
+                                        <input type="checkbox" id="chkStudent" @CheckStudent @classViewReadOnly>
+                                        <input type="hidden" class="form-control"
+                                               name="HiddenStudent" id="HiddenStudent" value="@boolStudent">
+                                        <input type="hidden" class="form-control"
+                                               name="HiddenStudent_Name" id="HiddenStudent_Name" value="Surat Pengesahan Institusi">
+                                    </div>
+                                </div>
+                                <div class="form-group divEducationEndDate divEducationEndDateInsert divEducationEndDateEdit hidden">
+                                    <label class="control-label col-md-4 ">
+                                        Education End Date <span class="required spanEducationEndDateRequired">*</span>
+                                    </label>
+                                    <div class="col-md-8 form-control-static">
+                                        @if (ReadOnly)
+                                        {
+                                            <input type="text" class="form-control" id="EducationEndDate" name="EducationEndDate" value="@Service.FormatDateInNumber(Model.Item1.EducationEndDate, "dd/MM/yyyy")" readonly="readonly" />
+                                        }
+                                        else
+                                        {
+                                            <div class="input-group date education-end-date-picker" id="boxEducationEndDate" data-date-format="dd/mm/yyyy">
+                                                <input type="text" class="form-control EducationEndDate"
+                                                       id="EducationEndDate" name="EducationEndDate" value="@Service.FormatDateInNumber(Model.Item1.EducationEndDate, "dd/MM/yyyy")" />
+                                                <span class="input-group-btn">
+                                                    <button type="button" id="btnEducationEndDate" class="btn default"><i class="fa fa-calendar"></i></button>
+                                                </span>
+                                            </div>
+                                        }
+                                        <input type="hidden" class="form-control"
+                                               name="HiddenEducationEndDate" id="HiddenEducationEndDate" value="@Service.FormatDateInNumber(Model.Item1.EducationEndDate, "dd/MM/yyyy")">
+                                    </div>
+                                </div>
+                                <div class="form-group divInstitutionName divInstitutionNameInsert divInstitutionNameEdit hidden">
+                                    <label class="control-label col-md-4 ">
+                                        Institution Name<span class="required spanInstitutionNameRequired hidden">*</span>
+                                    </label>
+                                    <div class="col-md-8  form-control-static">
+                                        <input type="text" class="form-control"
+                                               name="InstitutionName" id="InstitutionName" value="@Model.Item1.InstitutionName" @classViewReadOnly>
+                                        <input type="hidden" class="form-control"
+                                               name="HiddenInstitutionName" id="HiddenInstitutionName" value="@Model.Item1.InstitutionName">
+                                    </div>
+                                </div>
+                                <div class="form-group divHandicapped divHandicappedInsert divHandicappedEdit hidden">
+                                    <label class="control-label col-md-4 ">
+                                        Handicapped
+                                    </label>
+                                    <div class="col-md-8  form-control-static">
+                                        @{
+                                            string CheckHandicapped = "";
+                                            string boolHandicapped = "false";
+                                            if (Model.Item1.Handicapped.HasValue)
+                                            {
+                                                if (Model.Item1.Handicapped.Value)
+                                                {
+                                                    CheckHandicapped = "Checked";
+                                                }
+                                                boolHandicapped = Model.Item1.Handicapped + "";
+                                            }
+                                        }
+                                        <input type="checkbox" id="chkHandicapped" @CheckHandicapped @classViewReadOnly>
+                                        <input type="hidden" class="form-control"
+                                               name="HiddenHandicapped" id="HiddenHandicapped" value="@boolHandicapped">
+                                    </div>
+                                </div>
+                                <div class="form-group divDisabilityType divDisabilityTypeInsert divDisabilityTypeEdit hidden">
+                                    <label class="control-label col-md-4 ">
+                                        Disability Type<span class="required spanDisabilityTypeRequired hidden">*</span>
+                                    </label>
+                                    <div class="col-md-8 form-control-static">
+                                        <input type="hidden" class="form-control"
+                                               name="HiddenDisabilityType" id="HiddenDisabilityType" value="@Model.Item1.DisabilityType">
+                                        <input type="hidden" name="DisabilityTypeCode" id="DisabilityTypeCode" value="@Model.Item1.DisabilityTypeCode" />
+                                        @if (ReadOnly)
+                                        {
+                                            <input type="text" class="form-control" id="DisabilityTypeName" name="DisabilityTypeName" value="@Model.Item1.DisabilityType" @classViewReadOnly />
+                                        }
+                                        else
+                                        {
+                                            <input type="hidden" name="DisabilityTypeName" id="DisabilityTypeName" value="@Model.Item1.DisabilityType" />
+                                            <select tabindex="0" id="ddlDisabilityType" class="form-control" @classViewReadOnly></select>
+                                        }
+                                    </div>
+                                </div>
+                                <div class="form-group divDisabilityDate divDisabilityDateInsert divDisabilityDateEdit hidden">
+                                    <label class="control-label col-md-4 ">
+                                        Disability Date<span class="required spanDisabilityDateRequired hidden">*</span>
+                                    </label>
+                                    <div class="col-md-8 form-control-static">
+                                        @if (ReadOnly)
+                                        {
+                                            <input type="text" class="form-control" id="DisabilityDate" name="DisabilityDate" value="@Service.FormatDateInNumber(Model.Item1.DisabilityDate, "dd/MM/yyyy")" readonly="readonly" />
+                                        }
+                                        else
+                                        {
+                                            <div class="input-group date date-picker" id="boxDisabilityDate" data-date-format="dd/mm/yyyy">
+                                                <input type="text" class="form-control DisabilityDate"
+                                                       id="DisabilityDate" name="DisabilityDate" value="@Service.FormatDateInNumber(Model.Item1.DisabilityDate, "dd/MM/yyyy")" />
+                                                <span class="input-group-btn">
+                                                    <button type="button" id="btnDisabilityDate" class="btn default"><i class="fa fa-calendar"></i></button>
+                                                </span>
+                                            </div>
+                                        }
+                                        <input type="hidden" class="form-control"
+                                               name="HiddenDisabilityDate" id="HiddenDisabilityDate" value="@Service.FormatDateInNumber(Model.Item1.DisabilityDate, "dd/MM/yyyy")">
+                                    </div>
+                                </div>
+                                <div class="form-group divEmployed divEmployedInsert divEmployedEdit hidden">
+                                    <label class="control-label col-md-4 ">
+                                        Employed
+                                    </label>
+                                    <div class="col-md-8  form-control-static">
+                                        @{
+                                            string CheckEmployed = "";
+                                            string boolEmployed = "false";
+                                            if (Model.Item1.Employed.HasValue)
+                                            {
+                                                if (Model.Item1.Employed.Value)
+                                                {
+                                                    CheckEmployed = "Checked";
+                                                }
+                                                boolEmployed = Model.Item1.Employed + "";
+                                            }
+                                        }
+                                        <input type="checkbox" id="chkEmployed" @CheckEmployed @classViewReadOnly>
+                                        <input type="hidden" class="form-control"
+                                               name="HiddenEmployed" id="HiddenEmployed" value="@boolEmployed">
+                                    </div>
+                                </div>
+                                <div class="form-group divChildCusdoty divChildCusdotyInsert divChildCusdotyEdit hidden">
+                                    <label class="control-label col-md-4 ">
+                                        Child Custody
+                                    </label>
+                                    <div class="col-md-8  form-control-static">
+                                        @{
+                                            string CheckChildCustody = "";
+                                            string boolChildCustody = "false";
+                                            if (Model.Item1.CheckChildCustody.HasValue)
+                                            {
+                                                if (Model.Item1.CheckChildCustody.Value)
+                                                {
+                                                    CheckChildCustody = "Checked";
+                                                }
+                                                boolChildCustody = Model.Item1.CheckChildCustody + "";
+                                            }
+                                        }
+                                        <a href="#" data-toggle="tooltip" data-placement="top" title="Saya dengan ini mengesahkan bahawa tanggungan adalah di bawah jagaan saya untuk pengisytiharaan LHDN">
+                                            <input type="checkbox" id="chkChildCustody" @CheckChildCustody @classViewReadOnly>
+                                        </a>
+                                            <input type="hidden" class="form-control"
+                                                   name="HiddenNewChildCustody" id="HiddenNewChildCustody" value="@boolChildCustody">
+                                    </div>
+                                </div>
+                                <div class="form-group divMarried divMarriedInsert divMarriedEdit hidden">
+                                    <label class="control-label col-md-4 ">
+                                        Married
+                                    </label>
+                                    <div class="col-md-8  form-control-static">
+                                        @{
+                                            string CheckMarried = "";
+                                            string boolMarried = "false";
+                                            if (Model.Item1.Married.HasValue)
+                                            {
+                                                if (Model.Item1.Married.Value)
+                                                {
+                                                    CheckMarried = "Checked";
+                                                }
+                                                boolMarried = Model.Item1.Married + "";
+                                            }
+                                        }
+                                        <input type="checkbox" id="chkMarried" @CheckMarried @classViewReadOnly>
+                                        <input type="hidden" class="form-control"
+                                               name="HiddenMarried" id="HiddenMarried" value="@boolMarried">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row divCommentInsert hidden divCommentEdit">
+                        <div class="col-md-12">
+                            <div class="form-horizontal">
+                                <div class="form-group">
+                                    <label class="control-label col-md-2 ">
+                                        Comment
+                                    </label>
+                                    <div class="col-md-10  form-control-static">
+                                        <textarea id="Comment" class="form-control" name="Comment" Rows="4" @classViewReadOnly>@Model.Item1.Comment</textarea>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<input type="hidden" id="FamilyAttachMandatory" value="false" />
+@*<input type="hidden" id="ByPassAttachment" value="No" />*@
+
+
+@*script Main Function *@
+<script type="text/javascript">
+    $(document).ready(function () {
+        $('[data-toggle="tooltip"]').tooltip();
+    });
+
+	$(".FamilyName").keyup(function () {
+		var returnValue = ChangeNameToTitleCase($(this).val());
+		$(this).val(returnValue);
+	});
+
+	function ChangeNameToTitleCase(str){
+		 return str = str.toLowerCase().replace(/\b[a-z]/g, function (letter) {
+			 return letter.toUpperCase();
+		 });
+    }
+
+    function ChangeLabelChild(str) {
+        var childText = '';
+        //if ($('#ddlRelationshipType :selected').text().trim() === 'Child') {
+        if (str.trim() === 'Child') {
+            childText = 'Child ';
+        }
+        $('#SearchGet_FamilyInfo div.form-group.divMaritalStatus label span.spanMaritalStatusLbl').text(childText + 'Marital Status')
+        $('#SearchGet_FamilyInfo div.form-group.divMaritalStatusDate  label span.spanMaritalStatusDateLbl').text(childText + 'Marital Status Date')
+    }
+
+    function LoadFormConfiguration()
+    {
+        $("#divEPM_Modal #AttachmentSessionName").val("@ViewBag.AttachmentSessionName");
+        $("#divEPM_Modal #AttachmentSourceType").val("@ViewBag.AttachmentSourceType");
+
+        //$('#divEPM_Modal #ddlRelationshipType').select2({
+        //    showSearchInput: false,
+        //    minimumResultsForSearch: -1
+        //});
+
+        //$('#divEPM_Modal #ddlGender').select2({
+        //    showSearchInput: false,
+        //    minimumResultsForSearch: -1
+        //});
+
+        //$('#divEPM_Modal #ddlRelChild').select2({
+        //    showSearchInput: false,
+        //    minimumResultsForSearch: -1
+        //});
+
+        //$('#divEPM_Modal #ddlChildSpouseNo').select2({
+        //    showSearchInput: false,
+        //    minimumResultsForSearch: -1
+        //});
+
+        //$('#divEPM_Modal #ddlDisabilityType').select2({
+        //    showSearchInput: false,
+        //    minimumResultsForSearch: -1
+        //});
+
+        //$('#divEPM_Modal #ddlMaritalStatus').select2({
+        //    showSearchInput: false,
+        //    minimumResultsForSearch: -1
+        //});
+
+        //$('#divEPM_Modal #ddlNationality').select2({
+        //    showSearchInput: false,
+        //    minimumResultsForSearch: -1
+        //});
+
+        //$('#divEPM_Modal #ddlCountryOfBirth').select2({
+        //    showSearchInput: false,
+        //    minimumResultsForSearch: -1
+        //});
+
+        $("#divEPM_Modal .date-picker #DateOfBirth").datepicker({
+            format: 'dd/mm/yyyy',
+            autoclose: true
+        });
+
+        $('#divEPM_Modal .date-picker').datepicker({
+            format: 'dd/mm/yyyy',
+            autoclose: true,
+            endDate: "@dtStrEnd"
+        });
+
+        //$('#EducationEndDate').datepicker({
+        //    format: 'dd/mm/yyyy',
+        //    autoclose: true,
+        //    setDate: new Date(9999,12,31)
+        //});
+
+
+        var dpkEducationStartDate = $(".education-end-date-picker");
+
+
+        dpkEducationStartDate.datepicker({
+            format: 'dd/mm/yyyy',
+            autoclose: true
+        });
+
+
+
+        $('.education-end-date-picker').datepicker('setStartDate', '01/01/2000');
+        $('.education-end-date-picker').datepicker('setEndDate', '31/12/9999');
+
+
+
+        @*$('#divEPM_Modal #boxDateOfBirth').datepicker('setEndDate', '@dtStrEnd');*@
+
+        @*var EditReadOnly = "@EditReadOnly";
+        if (EditReadOnly.toUpperCase() == "FALSE")
+        {*@
+        @Html.Raw("RetrieveRelationshipTypeOptions();");
+        @Html.Raw("RetrieveGenderOptions();");
+        @Html.Raw("RetrieveRelChildOptions();");
+        @Html.Raw("RetrieveChildSpouseNoOptions();");
+        @Html.Raw("RetrieveNationalityOptions();");
+        @Html.Raw("RetrieveCountryOfBirthOptions();");
+        @Html.Raw("RetrieveDisabilityTypeOptions();");
+        @Html.Raw("RetrieveMaritalStatusOptions();");
+		@Html.Raw("RetrieveEducationInstitutionOptions();");
+        //}
+
+        InitiateChecking();
+    }
+
+    function DOBChange() {
+        try {
+            var dateParse = $.datepicker.parseDate("dd/mm/yy", $("#divEPM_Modal #DateOfBirth").val());
+        }
+        catch (e) { }
+        if (dateParse) {
+            Checking('');
+        }
+    }
+    //function LoadFormValidation()
+    //{
+    //    $("#divEPM_Modal #SpouseEmployeeNo").keydown(function (e) {
+    //        // Allow: backspace, delete, tab, escape, enter and .
+    //        if ($.inArray(e.keyCode, [46, 8, 9, 27, 13, 110, 190]) !== -1 ||
+    //            // Allow: Ctrl+A, Command+A
+    //            (e.keyCode === 65 && (e.ctrlKey === true || e.metaKey === true)) ||
+    //            // Allow: home, end, left, right, down, up
+    //            (e.keyCode >= 35 && e.keyCode <= 40)) {
+    //            // let it happen, don't do anything
+    //            return;
+    //        }
+    //        // Ensure that it is a number and stop the keypress
+    //        if ((e.shiftKey || (e.keyCode < 48 || e.keyCode > 57)) && (e.keyCode < 96 || e.keyCode > 105)) {
+    //            e.preventDefault();
+    //        }
+    //    });
+    //    $("#divEPM_Modal #NewICNo").keydown(function (e) {
+    //        // Allow: backspace, delete, tab, escape, enter and .
+    //        if ($.inArray(e.keyCode, [46, 8, 9, 27, 13, 110, 190]) !== -1 ||
+    //            // Allow: Ctrl+A, Command+A
+    //            (e.keyCode === 65 && (e.ctrlKey === true || e.metaKey === true)) ||
+    //            // Allow: home, end, left, right, down, up
+    //            (e.keyCode >= 35 && e.keyCode <= 40) ) {
+    //            // let it happen, don't do anything
+    //            return;
+    //            //|| (e.keyCode === 109 || e.keyCode === 189)
+    //            //1.event.keyCode = 109 is '-' on numpad
+    //            //2.event.keyCode = 189 is'-' in alphabate keybord key on chrome
+    //            //3.event.keyCode= 173 is '-' in alphabate keybord key on firefox & on chrome 173 keycord is Mute On|Off
+    //        }
+    //        // Ensure that it is a number and stop the keypress
+    //        if ((e.shiftKey || (e.keyCode < 48 || e.keyCode > 57)) && (e.keyCode < 96 || e.keyCode > 105)) {
+    //            e.preventDefault();
+    //        }
+    //    });
+    //}
+
+    function LoadFormOnChange() {
+        $('#divEPM_Modal #ddlCountryOfBirth').change(function () {
+            // if changed to, for example, the last option, then
+            // $(this).find('option:selected').text() == D
+            // $(this).val() == 4
+            // get whatever value you want into a variable
+            var HiddenCountryOfBirthValue = $("#divEPM_Modal #ddlCountryOfBirth option:selected").val() + "";
+            var HiddenCountryOfBirthText = $("#divEPM_Modal #ddlCountryOfBirth option:selected").text() + "";
+
+            // and update the hidden input's value
+            $('#divEPM_Modal #CountryOfBirthName').val(HiddenCountryOfBirthText);
+			$('#divEPM_Modal #CountryOfBirthCode').val(HiddenCountryOfBirthValue);
+        });
+
+        $('#divEPM_Modal #ddlRelationshipType').change(function () {
+            // if changed to, for example, the last option, then
+            // $(this).find('option:selected').text() == D
+            // $(this).val() == 4
+            // get whatever value you want into a variable
+            var HiddenRelationshipTypeValue = $("#divEPM_Modal #ddlRelationshipType option:selected").val() + "";
+            var HiddenRelationshipTypeText = $("#divEPM_Modal #ddlRelationshipType option:selected").text() + "";
+
+            // and update the hidden input's value
+            $('#divEPM_Modal #RelationshipTypeName').val(HiddenRelationshipTypeText);
+            $('#divEPM_Modal #RelationshipTypeCode').val(HiddenRelationshipTypeValue);
+
+            // Checking if child selected
+            ChangeLabelChild(HiddenRelationshipTypeText);
+
+			Checking('attachmentSetting');
+			setTimeout(GetRequiredAttachment, 3500);
+        });
+
+        $('#divEPM_Modal #ddlNationality').change(function () {
+            // if changed to, for example, the last option, then
+            // $(this).find('option:selected').text() == D
+            // $(this).val() == 4
+            // get whatever value you want into a variable
+            var HiddenNationalityValue = $("#divEPM_Modal #ddlNationality option:selected").val() + "";
+            var HiddenNationalityText = $("#divEPM_Modal #ddlNationality option:selected").text() + "";
+
+            // and update the hidden input's value
+            $('#divEPM_Modal #NationalityName').val(HiddenNationalityText);
+			$('#divEPM_Modal #NationalityCode').val(HiddenNationalityValue);
+        });
+
+        $('#divEPM_Modal #ddlGender').change(function () {
+            // if changed to, for example, the last option, then
+            // $(this).find('option:selected').text() == D
+            // $(this).val() == 4
+            // get whatever value you want into a variable
+            var HiddenGenderValue = $("#divEPM_Modal #ddlGender option:selected").val() + "";
+            var HiddenGenderText = $("#divEPM_Modal #ddlGender option:selected").text() + "";
+
+            // and update the hidden input's value
+            $('#divEPM_Modal #GenderName').val(HiddenGenderText);
+			$('#divEPM_Modal #GenderCode').val(HiddenGenderValue);
+        });
+
+        $('#divEPM_Modal #ddlChildSpouseNo').change(function () {
+            // if changed to, for example, the last option, then
+            // $(this).find('option:selected').text() == D
+            // $(this).val() == 4
+            // get whatever value you want into a variable
+            var HiddenChildSpouseNoValue = $("#ddlChildSpouseNo option:selected").val() + "";
+            var HiddenChildSpouseNoText = $("#ddlChildSpouseNo option:selected").text() + "";
+
+            // and update the hidden input's value
+            $('#divEPM_Modal #ChildSpouseNoName').val(HiddenChildSpouseNoText);
+            $('#divEPM_Modal #ChildSpouseNoCode').val(HiddenChildSpouseNoValue);
+
+            $('#ChildSpouseNoName').val(HiddenChildSpouseNoText);
+            $('#HiddenChildSpouseName').val(HiddenChildSpouseNoText);
+        });
+
+        $('#divEPM_Modal #ddlDisabilityType').change(function () {
+            // if changed to, for example, the last option, then
+            // $(this).find('option:selected').text() == D
+            // $(this).val() == 4
+            // get whatever value you want into a variable
+            var HiddenDisabilityTypeValue = $("#ddlDisabilityType option:selected").val() + "";
+            var HiddenDisabilityTypeText = $("#ddlDisabilityType option:selected").text() + "";
+
+            // and update the hidden input's value
+            $('#divEPM_Modal #DisabilityTypeName').val(HiddenDisabilityTypeText);
+            $('#divEPM_Modal #DisabilityTypeCode').val(HiddenDisabilityTypeValue);
+        });
+
+		$('#divEPM_Modal #ddlEducationInstitution').change(function () {
+			// if changed to, for example, the last option, then
+			// $(this).find('option:selected').text() == D
+			// $(this).val() == 4
+			// get whatever value you want into a variable
+			var HiddenEducationInstitutionValue = $("#ddlEducationInstitution option:selected").val() + "";
+			var HiddenEducationInstitutionText = $("#ddlEducationInstitution option:selected").text() + "";
+
+			// and update the hidden input's value
+			$('#divEPM_Modal #EducationInstitutionName').val(HiddenEducationInstitutionText);
+			$('#divEPM_Modal #EducationInstitutionCode').val(HiddenEducationInstitutionValue);
+		});
+
+		$('#divEPM_Modal #ddlMaritalStatus').change(function () {
+			// if changed to, for example, the last option, then
+			// $(this).find('option:selected').text() == D
+			// $(this).val() == 4
+			// get whatever value you want into a variable
+			var HiddenMaritalStatusValue = $("#ddlMaritalStatus option:selected").val() + "";
+			var HiddenMaritalStatusText = $("#ddlMaritalStatus option:selected").text() + "";
+
+			// and update the hidden input's value
+			$('#divEPM_Modal #MaritalStatusName').val(HiddenMaritalStatusText);
+			$('#divEPM_Modal #MaritalStatusCode').val(HiddenMaritalStatusValue);
+
+			GetRequiredAttachment();
+		});
+
+		$('#divEPM_Modal #MaritalStatusDate').change(function () {
+			GetRequiredAttachment();
+		});
+
+		$('#divEPM_Modal #ddlRelChild').change(function () {
+			// if changed to, for example, the last option, then
+			// $(this).find('option:selected').text() == D
+			// $(this).val() == 4
+			// get whatever value you want into a variable
+			var HiddenRelChildValue = $("#ddlRelChild option:selected").val() + "";
+			var HiddenRelChildText = $("#ddlRelChild option:selected").text() + "";
+
+			// and update the hidden input's value
+			$('#divEPM_Modal #RelChildName').val(HiddenRelChildText);
+			$('#divEPM_Modal #RelChildCode').val(HiddenRelChildValue);
+
+			GetRequiredAttachment();
+		});
+
+		$('#divEPM_Modal #BirthCertNo').blur(function () {
+			GetRequiredAttachment();
+		});
+
+		$('#divEPM_Modal #NewICNo').blur(function () {
+			GetRequiredAttachment();
+		});
+
+		$('#divEPM_Modal #chkStudent').change(function () {
+			Checking('');
+			GetRequiredAttachment();
+        });
+
+        $('#divEPM_Modal #chkHandicapped').change(function () {
+			Checking('');
+			GetRequiredAttachment();
+		});
+
+        //$('#divEPM_Modal #chkMarried').change(function () {
+        //    Checking('');
+        //});
+
+        $('input[type=radio][name=EmployerName]').change(function () {
+            if (this.value == '0')
+            {
+                //check is hidden
+                if (!$("#divEPM_Modal #OtherEmployerName").hasClass("hidden")) {
+                    //if not hide it
+                    $("#divEPM_Modal .divOtherEmployerName").addClass("hidden");
+                }
+            }
+            else if (this.value == '1') {
+                //check is hidden
+                if ($("#divEPM_Modal #OtherEmployerName").hasClass("hidden")) {
+                    //if is hidden show it
+                    $("#divEPM_Modal .divOtherEmployerName").removeClass("hidden");
+                }
+            }
+            Checking('');
+		});
+
+        var divBoxes = $("div[id^='uniform-EmployerName_']"); //checkbox items
+        var EmployerNameValue = "@Model.Item1.EmployerNameValue";
+
+        for (i = 0; i < divBoxes.length; i++) {
+            var divID = divBoxes[i].id;
+            if ($("#divEPM_Modal #" + divID + " span").hasClass("checked")) {
+                $("#divEPM_Modal #" + divID + " span").removeClass("checked");
+            }
+            var checkboxID = divID.replace("uniform-", "");
+
+            if ($("#divEPM_Modal #" + checkboxID).val() == EmployerNameValue) {
+                $("#divEPM_Modal #" + divID + " span").addClass("checked");
+            }
+
+            if (EmployerNameValue == '1') {
+                //check is hidden
+                if ($("#divEPM_Modal .divOtherEmployerName").hasClass("hidden")) {
+                    //if is hidden show it
+                    $("#divEPM_Modal .divOtherEmployerName").removeClass("hidden");
+                }
+            }
+            else {
+                if (!$("#divEPM_Modal .divOtherEmployerName").hasClass("hidden")) {
+                    //if not hide it
+                    $("#divEPM_Modal .divOtherEmployerName").addClass("hidden");
+                }
+            }
+        }
+    }
+</script>
+
+@*script Sub Function -->Get Required Attachment *@
+<script type="text/javascript">
+	function GetRequiredAttachment() {
+		var BirtCertNo = $("#divEPM_Modal #BirthCertNo").val() + "";
+		var NewICNo = $("#divEPM_Modal #NewICNo").val() + "";
+		var IsStudent = $('#divEPM_Modal #chkStudent').is(":checked") + "";
+		var IsDisabled = $('#divEPM_Modal #chkHandicapped').is(":checked") + "";
+		var IsAdopted = $("#ddlRelChild option:selected").val() + "" == '02' ? "true" : "false";
+		var MaritalStatus = $('#ddlMaritalStatus option:selected').val() + "";
+		var MaritalStatusDate = $('#divEPM_Modal #MaritalStatusDate').val() + "";
+		var Category = "@EmployeeCategory_Family" + "";
+		var Criteria = $("#divEPM_Modal #RelationshipTypeName").val() + "";
+
+		$.ajax({
+			type: "POST",
+			url: "@Url.Action("GetRequiredAttachmentOnFieldChanged", "Employee")?Category=" + Category
+				+ "&Criteria=" + Criteria
+				+ "&BirthCertNo=" + BirtCertNo
+				+ "&NewICNo=" + NewICNo
+				+ "&IsStudent=" + IsStudent
+				+ "&IsDisabled=" + IsDisabled
+				+ "&IsAdopted=" + IsAdopted
+				+ "&MaritalStatus=" + MaritalStatus
+				+ "&MaritalStatusDate=" + MaritalStatusDate,
+			success: function (result) {
+				if (result != "")
+					$(".divAttachmentRequired").removeClass("hidden");
+				else
+					$(".divAttachmentRequired").addClass("hidden");
+
+				$(".DocumentsRequired").empty().append(result);
+			},
+			error: function (err) {
+				console.log(err);
+				alert("Error in the ajax call.");
+			}
+		});
+	}
+</script>
+
+@*script Sub Function -->Get DDL Value *@
+<script type="text/javascript">
+    function RetrieveRelationshipTypeOptions() {
+        var EmployeeCode = $("#divEPM_Modal #EmployeeCode").val() + "";
+        var url = '@Url.Action("GetRelationshipTypeOptions", "Employee")?employeeCode=' + EmployeeCode;
+        $.get(url, function (result) {
+            RelationshipTypes = result;
+            PopulateRelationshipType();
+        });
+    }
+
+    function RetrieveGenderOptions() {
+        $.get('@Url.Action("GetGenderOptions", "Employee")', function (result) {
+            Genders = result;
+            PopulateGender();
+        });
+    }
+
+    function RetrieveRelChildOptions() {
+        $.get('@Url.Action("GetRelChildOptions", "Employee")', function (result) {
+            RelChilds = result;
+            PopulateRelChild();
+        });
+    }
+
+    function RetrieveChildSpouseNoOptions() {
+        var EmployeeCode = $("#divEPM_Modal #EmployeeCode").val() + "";
+        var url = '@Url.Action("GetChildSpouseNoOptions", "Employee")?employeeCode=' + EmployeeCode;
+
+        $.get(url, function (result) {
+            ChildSpouseNo = result;
+            PopulateChildSpouseNo();
+        });
+    }
+
+    function RetrieveDisabilityTypeOptions() {
+        $.get('@Url.Action("GetDisabilityTypeOptions", "Employee")', function (result) {
+            DisabilityType = result;
+            PopulateDisabilityType();
+        });
+    }
+
+    function RetrieveMaritalStatusOptions() {
+        $.get('@Url.Action("GetMaritalStatusOptions", "Employee")', function (result) {
+            MaritalStatus = result;
+            PopulateMaritalStatus();
+        });
+    }
+
+    function RetrieveNationalityOptions() {
+        $.get('@Url.Action("GetNationalityOptions", "Employee")', function (result) {
+            Nationality = result;
+            PopulateNationality();
+        });
+    }
+
+    function RetrieveCountryOfBirthOptions() {
+        $.get('@Url.Action("GetCountryOptions", "Employee")', function (result) {
+            CountryOfBirths = result;
+            PopulateCountryOfBirth();
+        });
+	}
+
+	//New added
+	function RetrieveEducationInstitutionOptions() {
+		 $.get('@Url.Action("GetEducationOptions", "Employee")', function (result) {
+            EducationInstitution = result;
+            PopulateEducationInstitution();
+        });
+	}
+
+    // Populate Relationship type dropdown
+    function PopulateRelationshipType() {
+        var ddlRelationshipType = $('#divEPM_Modal #ddlRelationshipType');
+
+        var i = 0;
+        ddlRelationshipType.empty();
+        ddlRelationshipType.append('<option value="" selected="selected"> - Please Select - </option>');
+        for (i = 0; i < RelationshipTypes.length; i++) {
+            ddlRelationshipType.append('<option value="' + RelationshipTypes[i].Value + '">' + RelationshipTypes[i].Text + '</option>');
+        }
+
+        var selectedRelationshipTypeCode = $('input[name="RelationshipTypeCode"]');
+        var selectedRelationshipTypeName = $('input[name="RelationshipTypeName"]');
+
+        // Set dropdown value if has previous value available
+        var checkSelectedRelationshipTypeCode = "";
+        // Check if has previous value available in DDL
+        $('#divEPM_Modal #ddlRelationshipType option').each(function () {
+            if (this.value == selectedRelationshipTypeCode.val()) {
+                checkSelectedRelationshipTypeCode = selectedRelationshipTypeCode.val();
+                return false;
+            }
+        });
+        ddlRelationshipType.val(checkSelectedRelationshipTypeCode).change();
+
+        //$('#divEPM_Modal #ddlRelationshipType').select2({
+        //    showSearchInput: false,
+        //    minimumResultsForSearch: -1
+        //});
+    }
+
+    // Populate Gender dropdown
+    function PopulateGender() {
+        var ddlGender = $('#divEPM_Modal #ddlGender');
+
+        var i = 0;
+        ddlGender.empty();
+        ddlGender.append('<option value="" selected="selected"> - Please Select - </option>');
+        for (i = 0; i < Genders.length; i++) {
+            ddlGender.append('<option value="' + Genders[i].Value + '">' + Genders[i].Text + '</option>');
+        }
+
+        var selectedGenderCode = $('input[name="GenderCode"]');
+        var selectedGenderName = $('input[name="GenderName"]');
+
+        // Set dropdown value if has previous value available
+        var checkSelectedGenderCode = "";
+        // Check if has previous value available in DDL
+        $('#divEPM_Modal #ddlGender option').each(function () {
+            if (this.value == selectedGenderCode.val()) {
+                checkSelectedGenderCode = selectedGenderCode.val();
+                return false;
+            }
+        });
+        ddlGender.val(checkSelectedGenderCode).change();
+
+        //$('#ddlGender').select2({
+        //    showSearchInput: false,
+        //    minimumResultsForSearch: -1
+        //});
+    }
+
+    // Populate RelChild dropdown
+    function PopulateRelChild() {
+        var ddlRelChild = $('#divEPM_Modal #ddlRelChild');
+
+        var i = 0;
+        ddlRelChild.empty();
+        ddlRelChild.append('<option value="" selected="selected"> - Please Select - </option>');
+        for (i = 0; i < RelChilds.length; i++) {
+            ddlRelChild.append('<option value="' + RelChilds[i].Value + '">' + RelChilds[i].Text + '</option>');
+        }
+
+        var selectedRelChildCode = $('input[name="RelChildCode"]');
+        var selectedRelChildName = $('input[name="RelChildName"]');
+
+        // Set dropdown value if has previous value available
+        var checkSelectedRelChildCode = "";
+        // Check if has previous value available in DDL
+        $('#divEPM_Modal #ddlRelChild option').each(function () {
+            if (this.value == selectedRelChildCode.val()) {
+                checkSelectedRelChildCode = selectedRelChildCode.val();
+                return false;
+            }
+        });
+        ddlRelChild.val(checkSelectedRelChildCode).change();
+
+        //$('#divEPM_Modal #ddlRelChild').select2({
+        //    showSearchInput: false,
+        //    minimumResultsForSearch: -1
+        //});
+    }
+
+    // Populate Child Spouse No dropdown
+    function PopulateChildSpouseNo() {
+        var ddlChildSpouseNo = $('#divEPM_Modal #ddlChildSpouseNo');
+
+        var i = 0;
+        ddlChildSpouseNo.empty();
+        ddlChildSpouseNo.append('<option value="" selected="selected"> - Please Select - </option>');
+        for (i = 0; i < ChildSpouseNo.length; i++) {
+            ddlChildSpouseNo.append('<option value="' + ChildSpouseNo[i].Value + '">' + ChildSpouseNo[i].Text + '</option>');
+        }
+
+        var selectedChildSpouseNoCode = $('input[name="ChildSpouseNoCode"]');
+        //var selectedChildSpouseNoName = $('input[name="ChildSpouseNoName"]');
+
+        // Set dropdown value if has previous value available
+        //if (selectedChildSpouseNoCode.val()) {
+        //    ddlChildSpouseNo.val(selectedChildSpouseNoCode.val());
+        //    var HiddenChildSpouseNoText = $("#ddlChildSpouseNo option:selected").text() + "";
+
+        //    // and update the hidden input's value
+        //    $('#ChildSpouseNoName').val(HiddenChildSpouseNoText);
+        //    $('#HiddenChildSpouseName').val(HiddenChildSpouseNoText);
+        //}
+
+        // Set dropdown value if has previous value available
+        var checkSelectedChildSpouseNoCode = "";
+        // Check if has previous value available in DDL
+        $('#divEPM_Modal #ddlChildSpouseNo option').each(function () {
+            if (this.value == selectedChildSpouseNoCode.val()) {
+                checkSelectedChildSpouseNoCode = selectedChildSpouseNoCode.val();
+                return false;
+            }
+        });
+        ddlChildSpouseNo.val(checkSelectedChildSpouseNoCode).change();
+
+        //$('#divEPM_Modal #ddlChildSpouseNo').select2({
+        //    showSearchInput: false,
+        //    minimumResultsForSearch: -1
+        //});
+    }
+
+    // Populate Disability Type dropdown
+    function PopulateDisabilityType() {
+        var ddlDisabilityType = $('#divEPM_Modal #ddlDisabilityType');
+
+        var i = 0;
+        ddlDisabilityType.empty();
+        ddlDisabilityType.append('<option value="" selected="selected"> - Please Select - </option>');
+        for (i = 0; i < DisabilityType.length; i++) {
+            ddlDisabilityType.append('<option value="' + DisabilityType[i].Value + '">' + DisabilityType[i].Text + '</option>');
+        }
+
+        var selectedDisabilityTypeCode = $('input[name="DisabilityTypeCode"]');
+        var selectedDisabilityTypeName = $('input[name="DisabilityTypeName"]');
+
+        // Set dropdown value if has previous value available
+        var checkSelectedDisabilityTypeCode = "";
+        // Check if has previous value available in DDL
+        $('#divEPM_Modal #ddlDisabilityType option').each(function () {
+            if (this.value == selectedDisabilityTypeCode.val()) {
+                checkSelectedDisabilityTypeCode = selectedDisabilityTypeCode.val();
+                return false;
+            }
+        });
+        ddlDisabilityType.val(checkSelectedDisabilityTypeCode).change();
+
+        //$('#divEPM_Modal #ddlDisabilityType').select2({
+        //    showSearchInput: false,
+        //    minimumResultsForSearch: -1
+        //});
+    }
+
+    // Populate Marital Status dropdown
+    function PopulateMaritalStatus() {
+        var ddlMaritalStatus = $('#divEPM_Modal #ddlMaritalStatus');
+
+        var i = 0;
+        ddlMaritalStatus.empty();
+        ddlMaritalStatus.append('<option value="" selected="selected"> - Please Select - </option>');
+        for (i = 0; i < MaritalStatus.length; i++) {
+            ddlMaritalStatus.append('<option value="' + MaritalStatus[i].Value + '">' + MaritalStatus[i].Text + '</option>');
+        }
+
+        var selectedMaritalStatusCode = $('input[name="MaritalStatusCode"]');
+        var selectedMaritalStatusName = $('input[name="MaritalStatusName"]');
+
+        // Set dropdown value if has previous value available
+        var checkSelectedMaritalStatusCode = "";
+        // Check if has previous value available in DDL
+        $('#divEPM_Modal #ddlMaritalStatus option').each(function () {
+            if (this.value == selectedMaritalStatusCode.val()) {
+                checkSelectedMaritalStatusCode = selectedMaritalStatusCode.val();
+                return false;
+            }
+        });
+        ddlMaritalStatus.val(checkSelectedMaritalStatusCode).change();
+
+        //$('#divEPM_Modal #ddlMaritalStatus').select2({
+        //    showSearchInput: false,
+        //    minimumResultsForSearch: -1
+        //});
+    }
+
+    // Populate Nationality dropdown
+    function PopulateNationality() {
+        var ddlNationality = $('#divEPM_Modal #ddlNationality');
+
+        var i = 0;
+        ddlNationality.empty();
+        ddlNationality.append('<option value="" selected="selected"> - Please Select - </option>');
+        for (i = 0; i < Nationality.length; i++) {
+            ddlNationality.append('<option value="' + Nationality[i].Value + '">' + Nationality[i].Text + '</option>');
+        }
+
+        var selectedNationalityCode = $('input[name="NationalityCode"]');
+        var selectedNationalityName = $('input[name="NationalityName"]');
+
+        // Set dropdown value if has previous value available
+
+        var checkSelectedNationalityCode = "";
+        // Check if has previous value available in DDL
+        $('#divEPM_Modal #ddlNationality option').each(function () {
+            if (this.value == selectedNationalityCode.val()) {
+                checkSelectedNationalityCode = selectedNationalityCode.val();
+                return false;
+            }
+        });
+        ddlNationality.val(checkSelectedNationalityCode).change();
+
+        //$('#divEPM_Modal #ddlNationality').select2({
+        //    showSearchInput: false,
+        //    minimumResultsForSearch: -1
+        //});
+    }
+
+    // Populate Country Birth dropdown
+    function PopulateCountryOfBirth() {
+        var ddlCountryOfBirth = $('#divEPM_Modal #ddlCountryOfBirth');
+
+        var i = 0;
+        ddlCountryOfBirth.empty();
+        ddlCountryOfBirth.append('<option value="" selected="selected"> - Please Select - </option>');
+        for (i = 0; i < CountryOfBirths.length; i++) {
+            ddlCountryOfBirth.append('<option value="' + CountryOfBirths[i].Value + '">' + CountryOfBirths[i].Text + '</option>');
+        }
+
+        var selectedCountryOfBirthCode = $('input[name="CountryOfBirthCode"]');
+        var selectedCountryOfBirthName = $('input[name="CountryOfBirthName"]');
+
+        // Set dropdown value if has previous value available
+        var checkSelectedCountryOfBirthCode = "";
+        // Check if has previous value available in DDL
+        $('#divEPM_Modal #ddlCountryOfBirth option').each(function () {
+            if (this.value == selectedCountryOfBirthCode.val()) {
+                checkSelectedCountryOfBirthCode = selectedCountryOfBirthCode.val();
+                return false;
+            }
+        });
+        ddlCountryOfBirth.val(checkSelectedCountryOfBirthCode).change();
+
+        //$('#divEPM_Modal #ddlCountryOfBirth').select2({
+        //    showSearchInput: false,
+        //    minimumResultsForSearch: -1
+        //});
+	}
+
+	// Populate Education Institution
+	function PopulateEducationInstitution() {
+		var ddlEducationInstitution = $('#divEPM_Modal #ddlEducationInstitution');
+
+		var i = 0;
+		ddlEducationInstitution.empty();
+		ddlEducationInstitution.append('<option value="" selected="selected"> - Please Select - </option>');
+		for (i = 0; i < EducationInstitution.length; i++) {
+			ddlEducationInstitution.append('<option value="' + EducationInstitution[i].Value + '">' + EducationInstitution[i].Text + '</option>');
+		}
+
+		var selectedEducationInstitutionCode = $('input[name="EducationInstitutionCode"]').val();
+
+		// Set dropdown value if has previous value available
+		var checkSelectedEducationInstitutionCode = "";
+		// Check if has previous value available in DDL
+		$('#divEPM_Modal #ddlEducationInstitution option').each(function () {
+			if (this.value == selectedEducationInstitutionCode) {
+				checkSelectedEducationInstitutionCode = selectedEducationInstitutionCode;
+				return false;
+			}
+		});
+
+		if (checkSelectedEducationInstitutionCode == "") {
+			ddlEducationInstitution.find('option:first').prop('selected', true).change();
+		}
+		else {
+			ddlEducationInstitution.val(checkSelectedEducationInstitutionCode).change();
+		}
+	}
+</script>
+
+@*script Submission Activity *@
+<script type="text/javascript">
+	function FormValidation(btn) {
+		var deferred = $.Deferred();
+		btn.disabled = true;
+		var action = btn.innerHTML;
+		if (action.indexOf("Add") > -1)
+			action = "Add";
+
+		if (action.indexOf("Update") > -1)
+			action = "Edit";
+
+		var _ValidationMsg = '';
+
+		var EmpNo = $("#divEPM_Modal #EmployeeCode").val() + "";
+		var RelationshipTypeCode = $("#divEPM_Modal #RelationshipTypeCode").val() + "";
+		var FamilyName = $("#divEPM_Modal #FamilyName").val() + "";
+		var InstitutionName = $("#divEPM_Modal #InstitutionName").val() + "";
+		var NewICNo = $("#divEPM_Modal #NewICNo").val() + "";
+		var _hdnNewICNo = $("#divEPM_Modal #HiddenNewICNo").val() + "";
+		var OldICNo = $("#divEPM_Modal #OldICNo").val() + "";
+		var PassportNo = $("#divEPM_Modal #PassportNo").val() + "";
+		var NationalityCode = $("#divEPM_Modal #NationalityCode").val() + "";
+		var BirthCertNo = $("#divEPM_Modal #BirthCertNo").val() + "";
+		var SpouseEmployeeNo = $("#divEPM_Modal #SpouseEmployeeNo").val() + "";
+
+		var _chkStudent = $('#divEPM_Modal #chkStudent').is(":checked");
+
+		var FamilyAttachMandatory = $("#divEPM_Modal #FamilyAttachMandatory").val() + "";
+		var CreateONLY = "@Create";
+		var DateOfBirth = $("#divEPM_Modal #DateOfBirth").val() + "";
+		var _DateOfBirthValue = ReformatDate($("#divEPM_Modal #DateOfBirth").val() + "", "Date of Birth");
+
+		var DateOfDeath = $("#divEPM_Modal #DateOfDeath").val() + "";
+		var _DateOfDeathValue = ReformatDate($("#divEPM_Modal #DateOfDeath").val() + "", "Date of Death");
+
+		var DateOfAdoption = $("#divEPM_Modal #DateOfAdoption").val() + "";
+		var _DateOfAdoptionValue = ReformatDate($("#divEPM_Modal #DateOfAdoption").val() + "", "Date of Adoption");
+
+		var EducationEndDate = $("#divEPM_Modal #EducationEndDate").val() + "";
+		var _EducationEndDateValue = ReformatDate($("#divEPM_Modal #EducationEndDate").val() + "", "Date of Education End");
+
+		var DisabilityTypeCode = $("#divEPM_Modal #DisabilityTypeCode").val() + "";
+		var DisabilityDate = $("#divEPM_Modal #DisabilityDate").val() + "";
+		var _DisabilityDateValue = ReformatDate($("#divEPM_Modal #DisabilityDate").val() + "", "Date of Disability");
+
+		var MaritalStatusCode = $("#divEPM_Modal #MaritalStatusCode").val() + "";
+		var MaritalStatusDate = $("#divEPM_Modal #MaritalStatusDate").val() + "";
+		var _MaritalStatusDateValue = ReformatDate($("#divEPM_Modal #MaritalStatusDate").val() + "", "Date of Marital Status");
+
+		var RelChildCode = $("#divEPM_Modal #RelChildCode").val() + "";
+
+		var CountTotal_Attachment = "";
+		if (FamilyAttachMandatory == "true") {
+			CountTotal_Attachment = $("#divEPM_Modal #CountTotal_Attachment").val() + "";
+		}
+
+		if (RelationshipTypeCode == "") {
+			if (!$("#divEPM_Modal .spanRelationshipTypeRequired").hasClass("hidden")) {
+				_ValidationMsg += '- Relationship Type is required.\n';
+			}
+		}
+
+		if (FamilyName == "") {
+			_ValidationMsg += '- Name is required.\n';
+		}
+
+		if (OldICNo != "") {
+			var regex = /^[a-zA-Z0-9]+$/;
+			if (!regex.test(OldICNo)) {
+				// Wrong
+				_ValidationMsg += '- Old IC No. is invalid.\n';
+			}
+		}
+
+		if (PassportNo == "") {
+			if (!$("#divEPM_Modal .spanPassportNoRequired").hasClass("hidden")) {
+				_ValidationMsg += '- Passport No. is required.\n';
+			}
+		}
+
+		if (NationalityCode == "") {
+			if (!$("#divEPM_Modal .spanNationalityRequired").hasClass("hidden")) {
+				_ValidationMsg += '- Nationality is required.\n';
+			}
+		}
+
+		if (BirthCertNo == "") {
+			if (!$("#divEPM_Modal .spanBirthCertNoRequired").hasClass("hidden")) {
+				_ValidationMsg += '- Birth Cert No. is required.\n';
+			}
+		}
+
+		if (SpouseEmployeeNo != "") {
+			var re = /^[0-9]{8}$/;
+
+			if (!re.test(SpouseEmployeeNo)) {
+				// Wrong
+				_ValidationMsg += '- Spouse Employee No. is invalid.\n';
+			}
+		}
+		else {
+			if (!$("#divEPM_Modal .spanSpouseEmployeeNoRequired").hasClass("hidden")) {
+				_ValidationMsg += '- Spouse Employee No. is required.\n';
+			}
+		}
+
+		if (DateOfBirth == "") {
+			if (!$("#divEPM_Modal .spanDateOfBirthRequired").hasClass("hidden")) {
+				_ValidationMsg += '- Date of Birth is required.\n';
+			}
+		}
+		else if (_DateOfBirthValue.toUpperCase() == "ERROR") {
+			_ValidationMsg += '- Invalid Date of Birth Format (dd/MM/yyyy).\n';
+		}
+
+		if (DateOfDeath == "") {
+			//if (!$(".spanDateOfDeathRequired").hasClass("hidden")) {
+			//    _ValidationMsg += '- Date of Death is required.\n';
+			//}
+		}
+		else if (_DateOfDeathValue.toUpperCase() == "ERROR") {
+			_ValidationMsg += '- Invalid Date of Death Format (dd/MM/yyyy).\n';
+		}
+
+		if (DateOfAdoption == "") {
+			if (!$(".spanDateOfAdoptionRequired").hasClass("hidden")) {
+			    _ValidationMsg += '- Date of Adoption is required.\n';
+			}
+		}
+		else if (_DateOfAdoptionValue.toUpperCase() == "ERROR") {
+			_ValidationMsg += '- Invalid Date of Adoption Format (dd/MM/yyyy).\n';
+		}
+
+		//Student checkbox is checked, then education end date is mandatory
+		if (_chkStudent) {
+			if (EducationEndDate == "") {
+				if (!$("#divEPM_Modal .spanEducationEndDateRequired").hasClass("hidden")) {
+					_ValidationMsg += '- Education End Date is required.\n';
+				}
+			}
+			else if (_EducationEndDateValue.toUpperCase() == "ERROR") {
+				_ValidationMsg += '- Invalid Date of Education End Format (dd/MM/yyyy).\n';
+			}
+		}
+		else {
+			$("#divEPM_Modal #EducationEndDate").val("");
+			$("#divEPM_Modal #EducationEndDate").val("");
+		}
+
+		if (InstitutionName == "") {
+			if (!$("#divEPM_Modal .spanInstitutionNameRequired").hasClass("hidden")) {
+				_ValidationMsg += '- Institution Name is required.\n';
+			}
+		}
+
+		if (DisabilityTypeCode == "") {
+			if (!$("#divEPM_Modal .spanDisabilityTypeRequired").hasClass("hidden")) {
+				_ValidationMsg += '- Disability Type is required.\n';
+			}
+		}
+
+		if (DisabilityDate == "") {
+			if (!$("#divEPM_Modal .spanDisabilityDateRequired").hasClass("hidden")) {
+				_ValidationMsg += '- Disability Date is required.\n';
+			}
+		}
+		else if (_DisabilityDateValue.toUpperCase() == "ERROR") {
+			_ValidationMsg += '- Invalid Date of Disability Format (dd/MM/yyyy).\n';
+		}
+
+		if (MaritalStatusCode == "") {
+			if (!$("#divEPM_Modal .spanMaritalStatusRequired").hasClass("hidden")) {
+				_ValidationMsg += '- Marital Status is required.\n';
+			}
+		}
+
+		if ((MaritalStatusDate == "" && RelationshipTypeCode != "2" && !$("#divEPM_Modal .spanMaritalStatusDateRequired").hasClass("hidden")) ||
+			(MaritalStatusCode == "1" && MaritalStatusDate == "" && !$("#divEPM_Modal .spanMaritalStatusDateRequired").hasClass("hidden"))) {
+			_ValidationMsg += '- Marital Status Date is required.\n';
+		}
+		else if (MaritalStatusCode == "1" && MaritalStatusDate != "" && _MaritalStatusDateValue.toUpperCase() != "ERROR" && RelationshipTypeCode == "2") {
+			$('#divEPM_Modal #chkMarried').prop("checked", true);
+		}
+		else if (_MaritalStatusDateValue.toUpperCase() == "ERROR") {
+			_ValidationMsg += '- Invalid Marital Status Date Format (dd/MM/yyyy).\n';
+		}
+		else {
+			$('#divEPM_Modal #chkMarried').prop("checked", false);
+		}
+
+		if (DateOfBirth != "" && NewICNo != "" && NewICNo.length == 12) {
+			var regex = /^[0-9]{12}$/;
+
+			if (regex.test(NewICNo)) {
+				var splitDOB = DateOfBirth.split('/');
+				var IC_DOB = NewICNo.substring(0, 6);
+				var DOB_IC_Format = splitDOB[2].substring(2, 4) + splitDOB[1] + splitDOB[0];
+
+				if (DOB_IC_Format != IC_DOB) {
+					_ValidationMsg += '- New IC No and Date Of Birth are not match.\n';
+				}
+			}
+		}
+
+		if (RelChildCode == "") {
+			if (!$("#divEPM_Modal .spanRelChildRequired").hasClass("hidden")) {
+				_ValidationMsg += '- Rel/Child is required.\n';
+			}
+		}
+
+		if (FamilyAttachMandatory.toUpperCase() == "TRUE" && CreateONLY.toUpperCase() == "TRUE") {
+			if (CountTotal_Attachment == "0") {
+				_ValidationMsg += '- Attachment is required.\n';
+			}
+		}
+
+		var valid = false;
+
+		if (NewICNo == "") {
+			if (!$("#divEPM_Modal .spanNewICNoRequired").hasClass("hidden")) {
+				_ValidationMsg += '- New IC No. is required.\n';
+			}
+		}
+		else {
+			var regex = /^[0-9]{12}$/;
+			if (!regex.test(NewICNo)) {
+				_ValidationMsg += '- New IC No. is invalid.\n';
+				//deferred.reject();
+			}
+			else {
+				valid = true;
+				//deferred.resolve();
+			}
+		}
+
+		ValidateIsICExist(EmpNo, NewICNo, valid, action).fail(
+			function () {
+				_ValidationMsg += '- New IC No. is existed.\n';
+				alert(_ValidationMsg);
+				deferred.reject();
+			}).done(
+			function () {
+				if (_ValidationMsg != "") {
+					alert(_ValidationMsg);
+					deferred.reject();
+				}
+				else {
+					deferred.resolve();
+					$("#ConfirmUpdate .modal-body .well").html('Clicking Confirm will submit this application. If you want to make changes, click Close.');
+					$("#divLoading2").show();
+					$("#ConfirmUpdate").modal('show');
+				}
+		});
+
+		//if (_ValidationMsg != "") {
+		//	if (deferred.reject()) {
+		//		ValidateIsICExist(EmpNo, NewICNo).fail(
+		//			function () {
+		//				_ValidationMsg += '- New IC No. is existed.\n';
+		//				alert(_ValidationMsg);
+		//			}).done(
+		//			function () {
+		//				alert(_ValidationMsg);
+		//			});
+		//	}
+		//	else {
+		//		alert(_ValidationMsg);
+		//		deferred.reject();
+		//	}
+		//}
+		//else {
+		//	if (deferred.resolve()) {
+		//		ValidateIsICExist(EmpNo, NewICNo).fail(
+		//			function () {
+		//				_ValidationMsg += '- New IC No. is existed.\n';
+		//				alert(_ValidationMsg);
+		//				deferred.reject();
+		//			}).done(
+		//			function () {
+		//				deferred.resolve();
+		//				$("#ConfirmUpdate .modal-body .well").html('Clicking Confirm will submit this application. If you want to make changes, click Close.');
+		//				$("#divLoading2").show();
+		//				$("#ConfirmUpdate").modal('show');
+		//			});
+		//	}
+		//	else {
+		//		deferred.resolve();
+		//		//document.getElementById('FamilyAttachMandatory').value = 'true';
+		//		$("#ConfirmUpdate .modal-body .well").html('Clicking Confirm will submit this application. If you want to make changes, click Close.');
+		//		$("#divLoading2").show();
+		//		$("#ConfirmUpdate").modal('show');
+		//	}
+		//}
+
+		btn.disabled = false;
+		return deferred;
+    }
+
+    function ValidateIsICExist(EmpNo, NewICNo, valid, action) {
+		var deferred = $.Deferred();
+
+		if (valid) {
+			$.ajax({
+				type: "POST",
+				url: "@Url.Action("CheckNewICExist", "Employee")?EmpNo=" + EmpNo + "&IC=" + NewICNo,
+				success: function (result) {
+					if (result.result == "1") {
+						if (action == "Edit")
+							deferred.resolve();
+						else
+							deferred.reject();
+					}
+					else {
+						deferred.resolve();
+					}
+				},
+				error: function (err) {
+					console.log(err);
+					alert("Error in the ajax call.");
+					deferred.reject();
+				}
+			});
+		}
+		else {
+			deferred.resolve();
+		}
+
+		return deferred;
+	}
+
+	function ConfirmAction_Family(btn, FormAction, RequestID) {
+        var _EmployeeID = $("#divEPM_Modal #EmployeeID").val() + "";
+        var _FamilyNo = $("#divEPM_Modal #FamilyNo").val() + "";
+
+        var _RelationshipTypeSelectedValue = $("#divEPM_Modal #RelationshipTypeCode").val() + "";
+        var _RelationshipTypeSelectedText = $("#divEPM_Modal #RelationshipTypeName").val() + "";
+
+        var _GenderSelectedValue = $("#divEPM_Modal #GenderCode").val() + "";
+        var _GenderSelectedText = $("#divEPM_Modal #GenderName").val() + "";
+
+        var _FamilyName = ($("#divEPM_Modal #FamilyName").val() + "").trim();
+        
+        var _CountryOfBirthSelectedValue = $("#divEPM_Modal #CountryOfBirthCode").val() + "";
+        var _CountryOfBirthSelectedText = $("#divEPM_Modal #CountryOfBirthName").val() + "";
+
+        //DateOfBirthText = 27/07/1956 dd/MM/yyyy
+        //DateOfBirthValue = 1956/07/27 yyyy/MM/dd
+
+        var _DateOfBirthText = $("#divEPM_Modal #DateOfBirth").val() + "";
+		var _DateOfBirthValue = ReformatDate($("#divEPM_Modal #DateOfBirth").val() + "", "Date of Birth");
+
+        var _BirthCertNo = $("#divEPM_Modal #BirthCertNo").val() + "";
+        var _NewICNo = $("#divEPM_Modal #NewICNo").val() + "";
+        var _OldICNo = $("#divEPM_Modal #OldICNo").val() + "";
+        var _PassportNo = $("#divEPM_Modal #PassportNo").val() + "";
+
+        var _NationalitySelectedValue = $("#divEPM_Modal #NationalityCode").val() + "";
+        var _NationalitySelectedText = $("#NationalityName").val() + "";
+
+        var _DateOfDeathText = $("#divEPM_Modal #DateOfDeath").val() + "";
+        var _DateOfDeathValue = ReformatDate($("#divEPM_Modal #DateOfDeath").val() + "", "Date of Death");
+
+        var _RelChildSelectedValue = $("#divEPM_Modal #RelChildCode").val() + "";
+        var _RelChildSelectedText = $("#divEPM_Modal #RelChildName").val() + "";
+
+        var _ChildSpouseNoSelectedValue = $("#divEPM_Modal #ChildSpouseNoCode").val() + "";
+        var _ChildSpouseNoSelectedText = $("#divEPM_Modal #ChildSpouseNoName").val() + "";
+
+        var _DateOfAdoptionText = $("#divEPM_Modal #DateOfAdoption").val() + "";
+        var _DateOfAdoptionValue = ReformatDate($("#divEPM_Modal #DateOfAdoption").val() + "", "Date of Adoption");
+
+		var _chkMarried = $('#divEPM_Modal #chkMarried').is(":checked") + "";
+        var _chkStudent = $('#divEPM_Modal #chkStudent').is(":checked") + "";
+
+        var _EducationEndDateValue = $("#divEPM_Modal #EducationEndDate").val() + "";
+        var _EducationEndDateText = $("#divEPM_Modal #EducationEndDate").val() + "";
+
+        var _EducationEndDateText = $("#divEPM_Modal #EducationEndDate").val() + "";
+        var _EducationEndDateValue = ReformatDate($("#divEPM_Modal #EducationEndDate").val() + "", "Date of Education End");
+
+		var _EducationInstitutionSelectedValue = $("#divEPM_Modal #EducationInstitutionCode").val() + "";
+		var _EducationInstitutionSelectedText = $("#divEPM_Modal #EducationInstitutionName").val() + "";
+
+        var _InstitutionName = $("#divEPM_Modal #InstitutionName").val() + "";
+		var _chkHandicapped = $('#divEPM_Modal #chkHandicapped').is(":checked") + "";
+
+        var _DisabilityTypeSelectedValue = $("#divEPM_Modal #DisabilityTypeCode").val() + "";
+        var _DisabilityTypeSelectedText = $("#divEPM_Modal #DisabilityTypeName").val() + "";
+
+        var _DisabilityDateText = $("#divEPM_Modal #DisabilityDate").val() + "";
+        var _DisabilityDateValue = ReformatDate($("#divEPM_Modal #DisabilityDate").val() + "", "Date of Disability");
+
+		var _chkEmployed = $('#divEPM_Modal #chkEmployed').is(":checked") + "";
+		var _chkChildCustody = $('#divEPM_Modal #chkChildCustody').is(":checked") + "";
+
+        var _BirthPlace = $("#divEPM_Modal #BirthPlace").val() + "";
+        var _EmployerNameSelectedValue =  "";
+        var _EmployerNameSelectedText =  "";
+
+        if ($('input[name=EmployerName]').is(":checked"))
+        {
+            _EmployerNameSelectedValue = $('input[name=EmployerName]:checked').val() + "";
+            _EmployerNameSelectedText = $('input[name=EmployerName]:checked').val() + "";
+        }
+        var _SpouseEmployeeNo = $("#divEPM_Modal #SpouseEmployeeNo").val() + "";
+        var _OtherEmployerName = $("#divEPM_Modal #OtherEmployerName").val() + "";
+        var _JobTitle = $("#divEPM_Modal #JobTitle").val() + "";
+
+        var _MaritalStatusSelectedValue = $("#divEPM_Modal #MaritalStatusCode").val() + "";
+        var _MaritalStatusSelectedText = $("#divEPM_Modal #MaritalStatusName").val() + "";
+
+        var _MaritalStatusDateText = $("#divEPM_Modal #MaritalStatusDate").val() + "";
+        var _MaritalStatusDateValue = ReformatDate($("#divEPM_Modal #MaritalStatusDate").val() + "", "Date of Marital Status");
+
+		var _chkMedical = "false";
+		if ('@Model.Item1.EligibleForMedical.HasValue' == "True" ) {
+			_chkMedical = '@Model.Item1.EligibleForMedical';
+			_chkMedical = _chkMedical.toLowerCase();
+		}
+
+		var _chkMedicalEdit = $('#chkMedical').is(":checked") + "";
+        var _FamilyAttachMandatory = $("#divEPM_Modal #FamilyAttachMandatory").val() + "";
+        var _AttachmentSessionName = $("#divEPM_Modal #AttachmentSessionName").val() + "";
+        var _AttachmentSourceType = $("#divEPM_Modal #AttachmentSourceType").val() + "";
+        var _AttachmentCategory = "@EmployeeCategory_Family" + "";
+        var _Comment = $("#divEPM_Modal #Comment").val() + "";
+        var _createdBy = $("#divEPM_Modal #ActionerID").val() + "";
+
+        var _hiddenFirstName = $("#divEPM_Modal #HiddenFirstName").val() + "";
+        var _hiddenLastName = $("#divEPM_Modal #HiddenLastName").val() + "";
+        var _hiddenSurnamePrefix = $("#divEPM_Modal #HiddenSurnamePrefix").val() + "";
+        var _hiddenMaidenName = $("#divEPM_Modal #HiddenMaidenName").val() + "";
+        var _hiddenInitials = $("#divEPM_Modal #HiddenInitials").val() + "";
+        var _hiddenTaxNumber = $("#divEPM_Modal #HiddenTaxNumber").val() + "";
+        var _hiddenTaxOffice = $("#divEPM_Modal #HiddenTaxOffice").val() + "";
+        var _hiddenReferenceNumber = $("#divEPM_Modal #HiddenReferenceNumber").val() + "";
+        var _hiddenNameFormat = $("#divEPM_Modal #HiddenNameFormat").val() + "";
+        var _hiddenSchoolTypeCode = $("#divEPM_Modal #HiddenSchoolTypeCode").val() + "";
+		var _hiddenChildCustody = $("#divEPM_Modal #HiddenNewChildCustody").val() + "";
+        var _hiddenAddressLine1 = $("#divEPM_Modal #HiddenAddressLine1").val() + "";
+        var _hiddenAddressLine2 = $("#divEPM_Modal #HiddenAddressLine2").val() + "";
+        var _hiddenAddressLine3 = $("#divEPM_Modal #HiddenAddressLine3").val() + "";
+        var _hiddenPostcode = $("#divEPM_Modal #HiddenPostcode").val() + "";
+        var _hiddenCity = $("#divEPM_Modal #HiddenCity").val() + "";
+        var _hiddenCOName = $("#divEPM_Modal #HiddenCOName").val() + "";
+        var _hiddenTelephoneNumber = $("#divEPM_Modal #HiddenTelephoneNumber").val() + "";
+        var _hiddenCommType1 = $("#divEPM_Modal #HiddenCommType1").val() + "";
+        var _hiddenPhoneNo1 = $("#divEPM_Modal #HiddenPhoneNo1").val() + "";
+        var _hiddenCommType2 = $("#divEPM_Modal #HiddenCommType2").val() + "";
+        var _hiddenPhoneNo2 = $("#divEPM_Modal #HiddenPhoneNo2").val() + "";
+        var _hiddenCommType3 = $("#divEPM_Modal #HiddenCommType3").val() + "";
+        var _hiddenPhoneNo3 = $("#divEPM_Modal #HiddenPhoneNo3").val() + "";
+        var _hiddenCommType4 = $("#divEPM_Modal #HiddenCommType4").val() + "";
+        var _hiddenPhoneNo4 = $("#divEPM_Modal #HiddenPhoneNo4").val() + "";
+        var _hiddenCountryCode = $("#divEPM_Modal #HiddenCountryCode").val() + "";
+        var _hiddenStateCode = $("#divEPM_Modal #HiddenStateCode").val() + "";
+        var _hiddenZAddf = $("#divEPM_Modal #HiddenZAddf").val() + "";
+        var _hiddenZRelt = $("#divEPM_Modal #HiddenZRelt").val() + "";
+        var _hiddenZUniq = $("#divEPM_Modal #HiddenZUniq").val() + "";
+        var _hdnStartDate = $("#divEPM_Modal #HiddenStartDate").val() + "";
+        var _hdnEndDate = $("#divEPM_Modal #HiddenEndDate").val() + "";
+        var _hdnGender = $("#divEPM_Modal #HiddenGender").val() + "";
+        var _hdnFamilyName = $("#divEPM_Modal #HiddenFamilyName").val() + "";
+        var _hdnCountryOfBirth = $("#divEPM_Modal #HiddenCountryOfBirth").val() + "";
+        var _hiddenDateOfBirth = $("#divEPM_Modal #HiddenDateOfBirth").val() + "";
+        var _hdnBirthCertNo = $("#divEPM_Modal #HiddenBirthCertNo").val() + "";
+        var _hdnNewICNo = $("#divEPM_Modal #HiddenNewICNo").val() + "";
+        var _hdnOldICNo = $("#divEPM_Modal #HiddenOldICNo").val() + "";
+        var _hdnPassportNo = $("#divEPM_Modal #HiddenPassportNo").val() + "";
+        var _hdnNationality = $("#divEPM_Modal #HiddenNationality").val() + "";
+        var _hdnDateOfDeath = $("#divEPM_Modal #HiddenDateOfDeath").val() + "";
+        var _hdnRelChild = $("#divEPM_Modal #HiddenRelChild").val() + "";
+        var _hdnChildSpouseNo = $("#divEPM_Modal #HiddenChildSpouseNo").val() + "";
+        var _hdnChildSpouseName = $("#divEPM_Modal #HiddenChildSpouseName").val() + "";
+        var _hdnDateOfAdoption = $("#divEPM_Modal #HiddenDateOfAdoption").val() + "";
+        var _hdnMarried = $("#divEPM_Modal #HiddenMarried").val() + "";
+        var _hdnStudent = $("#divEPM_Modal #HiddenStudent").val() + "";
+        var _hdnEducationEndDate = $("#divEPM_Modal #HiddenEducationEndDate").val() + "";
+		var _hdnInstitutionName = $("#divEPM_Modal #HiddenInstitutionName").val() + "";
+		var _hdnEducationInstitutionText = $("#divEPM_Modal #HiddenEducationInstitutionText").val() + "";
+		var _hdnEducationInstitutionCode = $("#divEPM_Modal #HiddenEducationInstitutionCode").val() + "";
+        var _hdnHandicapped = $("#divEPM_Modal #HiddenHandicapped").val() + "";
+        var _hdnDisabilityType = $("#divEPM_Modal #HiddenDisabilityType").val() + "";
+        var _hdnDisabilityDate = $("#divEPM_Modal #HiddenDisabilityDate").val() + "";
+		var _hdnEmployed = $("#divEPM_Modal #HiddenEmployed").val() + "";
+		var _hdnChildCustody = $("#divEPM_Modal #HiddenNewChildCustody").val() + "";
+        var _hdnBirthPlace = $("#divEPM_Modal #HiddenBirthPlace").val() + "";
+        var _hdnEmployerName = $("#divEPM_Modal #HiddenOtherEmployerName").val() + "";
+        var _hdnSpouseEmployeeNo = $("#divEPM_Modal #HiddenSpouseEmployeeNo").val() + "";
+        var _hdnJobTitle = $("#divEPM_Modal #HiddenJobTitle").val() + "";
+		var _hdnMaritalStatus = $("#divEPM_Modal #HiddenMaritalStatus").val() + "";
+        var _hdnMaritalStatusDate = $("#divEPM_Modal #HiddenMaritalStatusDate").val() + "";
+		var _hdnMedical = $("#divEPM_Modal #HiddenMedical").val() + "";
+
+		var url = window.location.href;
+		var TaskID = "";
+
+		if (url.indexOf("TaskID") >= 0)
+			TaskID = "1";
+
+        var Url = "";
+		if (FormAction.toUpperCase() == "INSERT") {
+
+			var form = {
+                EmployeeID: _EmployeeID,
+                FamilyNo: _FamilyNo,
+                RelationshipTypeSelectedValue: _RelationshipTypeSelectedValue,
+                RelationshipTypeSelectedText: _RelationshipTypeSelectedText,
+                GenderSelectedValue: _GenderSelectedValue,
+                GenderSelectedText: _GenderSelectedText,
+                FamilyName: _FamilyName,
+                CountryOfBirthSelectedValue: _CountryOfBirthSelectedValue,
+                CountryOfBirthSelectedText: _CountryOfBirthSelectedText,
+                DateOfBirthText: _DateOfBirthText,
+                DateOfBirthValue: _DateOfBirthValue,
+                BirthCertNo: _BirthCertNo,
+                NewICNo: _NewICNo,
+                OldICNo: _OldICNo,
+                PassportNo: _PassportNo,
+                NationalitySelectedValue: _NationalitySelectedValue,
+                NationalitySelectedText: _NationalitySelectedText,
+                DateOfDeathValue: _DateOfDeathValue,
+                DateOfDeathText: _DateOfDeathText,
+                RelChildSelectedValue: _RelChildSelectedValue,
+                RelChildSelectedText: _RelChildSelectedText,
+                ChildSpouseNoSelectedValue: _ChildSpouseNoSelectedValue,
+                ChildSpouseNoSelectedText: _ChildSpouseNoSelectedText,
+                DateOfAdoptionText: _DateOfAdoptionText,
+                DateOfAdoptionValue: _DateOfAdoptionValue,
+                chkMarried: _chkMarried,
+                chkStudent: _chkStudent,
+                EducationEndDateValue: _EducationEndDateValue,
+                EducationEndDateText: _EducationEndDateText,
+				InstitutionName: _InstitutionName,
+				EducationInstitutionSelectedValue: "",
+				EducationInstitutionSelectedText: "",
+                chkHandicapped: _chkHandicapped,
+                DisabilityTypeSelectedValue: _DisabilityTypeSelectedValue,
+                DisabilityTypeSelectedText: _DisabilityTypeSelectedText,
+                DisabilityDateValue: _DisabilityDateValue,
+                DisabilityDateText: _DisabilityDateText,
+				chkEmployed: _chkEmployed,
+				chkChildCustody: _chkChildCustody,
+				BirthPlace: _BirthPlace,
+				EmployerNameSelectedValue: _EmployerNameSelectedValue,
+				EmployerNameSelectedText: _EmployerNameSelectedText,
+                SpouseEmployeeNo: _SpouseEmployeeNo,
+                OtherEmployerName: _OtherEmployerName,
+                JobTitle: _JobTitle,
+                MaritalStatusSelectedValue: _MaritalStatusSelectedValue,
+                MaritalStatusSelectedText: _MaritalStatusSelectedText,
+                MaritalStatusDateValue: _MaritalStatusDateValue,
+                MaritalStatusDateText: _MaritalStatusDateText,
+                chkMedical: _chkMedical,
+                FamilyAttachMandatory: _FamilyAttachMandatory,
+                AttachmentSessionName: _AttachmentSessionName,
+                AttachmentSourceType: _AttachmentSourceType,
+                AttachmentCategory: _AttachmentCategory,
+                Comment: _Comment,
+                createdBy: _createdBy
+			};
+            ResultMsg = "The request (Add Family Information) has been successfully submitted.";
+            Url = '@Url.Content("~/Employee/SubmitFamilyForm")';
+        }
+		else if (FormAction.toUpperCase() == "EDIT") {
+			var form = {
+                EmployeeID: _EmployeeID,
+                FamilyNo: _FamilyNo,
+                RelationshipTypeSelectedValue: _RelationshipTypeSelectedValue,
+                RelationshipTypeSelectedText: _RelationshipTypeSelectedText,
+                GenderSelectedValue: _GenderSelectedValue,
+                GenderSelectedText: _GenderSelectedText,
+                FamilyName: _FamilyName,
+                CountryOfBirthSelectedValue: _CountryOfBirthSelectedValue,
+                CountryOfBirthSelectedText: _CountryOfBirthSelectedText,
+                DateOfBirthText: _DateOfBirthText,
+                DateOfBirthValue: _DateOfBirthValue,
+                BirthCertNo: _BirthCertNo,
+                NewICNo: _NewICNo,
+                OldICNo: _OldICNo,
+                PassportNo: _PassportNo,
+                NationalitySelectedValue: _NationalitySelectedValue,
+                NationalitySelectedText: _NationalitySelectedText,
+                DateOfDeathValue: _DateOfDeathValue,
+                DateOfDeathText: _DateOfDeathText,
+                RelChildSelectedValue: _RelChildSelectedValue,
+                RelChildSelectedText: _RelChildSelectedText,
+                ChildSpouseNoSelectedValue: _ChildSpouseNoSelectedValue,
+                ChildSpouseNoSelectedText: _ChildSpouseNoSelectedText,
+                DateOfAdoptionText: _DateOfAdoptionText,
+				DateOfAdoptionValue: _DateOfAdoptionValue,
+                chkMarried: _chkMarried,
+                chkStudent: _chkStudent,
+                EducationEndDateValue: _EducationEndDateValue,
+                EducationEndDateText: _EducationEndDateText,
+				InstitutionName: _InstitutionName,
+				EducationInstitutionSelectedValue: _EducationInstitutionSelectedValue,
+				EducationInstitutionSelectedText : _EducationInstitutionSelectedText,
+                chkHandicapped: _chkHandicapped,
+                DisabilityTypeSelectedValue: _DisabilityTypeSelectedValue,
+                DisabilityTypeSelectedText: _DisabilityTypeSelectedText,
+                DisabilityDateValue: _DisabilityDateValue,
+                DisabilityDateText: _DisabilityDateText,
+				chkEmployed: _chkEmployed,
+				chkChildCustody: _chkChildCustody,
+                BirthPlace: _BirthPlace,
+                EmployerNameSelectedValue: _EmployerNameSelectedValue,
+                EmployerNameSelectedText: _EmployerNameSelectedText,
+                SpouseEmployeeNo: _SpouseEmployeeNo,
+                OtherEmployerName: _OtherEmployerName,
+                JobTitle: _JobTitle,
+                MaritalStatusSelectedValue: _MaritalStatusSelectedValue,
+                MaritalStatusSelectedText: _MaritalStatusSelectedText,
+                MaritalStatusDateValue: _MaritalStatusDateValue,
+                MaritalStatusDateText: _MaritalStatusDateText,
+				chkMedical: _chkMedicalEdit,
+                FamilyAttachMandatory: _FamilyAttachMandatory,
+                AttachmentSessionName: _AttachmentSessionName,
+                AttachmentSourceType: _AttachmentSourceType,
+                AttachmentCategory: _AttachmentCategory,
+                Comment: _Comment,
+                createdBy: _createdBy,
+                hiddenFirstName: _hiddenFirstName,
+                hiddenLastName: _hiddenLastName,
+                hiddenSurnamePrefix: _hiddenSurnamePrefix,
+                hiddenMaidenName: _hiddenMaidenName,
+                hiddenInitials: _hiddenInitials,
+                hiddenTaxNumber: _hiddenTaxNumber,
+                hiddenTaxOffice: _hiddenTaxOffice,
+                hiddenReferenceNumber: _hiddenReferenceNumber,
+                hiddenNameFormat: _hiddenNameFormat,
+                hiddenSchoolTypeCode: _hiddenSchoolTypeCode,
+                hiddenChildCustody: _hiddenChildCustody,
+                hiddenAddressLine1: _hiddenAddressLine1,
+                hiddenAddressLine2: _hiddenAddressLine2,
+                hiddenAddressLine3: _hiddenAddressLine3,
+                hiddenPostcode: _hiddenPostcode,
+                hiddenCity: _hiddenCity,
+                hiddenCOName: _hiddenCOName,
+                hiddenTelephoneNumber: _hiddenTelephoneNumber,
+                hiddenCommType1: _hiddenCommType1,
+                hiddenPhoneNo1: _hiddenPhoneNo1,
+                hiddenCommType2: _hiddenCommType2,
+                hiddenPhoneNo2: _hiddenPhoneNo2,
+                hiddenCommType3: _hiddenCommType3,
+                hiddenPhoneNo3: _hiddenPhoneNo3,
+                hiddenCommType4: _hiddenCommType4,
+                hiddenPhoneNo4: _hiddenPhoneNo4,
+                hiddenCountryCode: _hiddenCountryCode,
+                hiddenStateCode: _hiddenStateCode,
+                hiddenZAddf: _hiddenZAddf,
+                hiddenZRelt: _hiddenZRelt,
+                hiddenZUniq: _hiddenZUniq,
+                hdnStartDate: _hdnStartDate,
+                hdnEndDate: _hdnEndDate,
+                hdnGender: _hdnGender,
+                hdnFamilyName: _hdnFamilyName,
+                hdnCountryOfBirth: _hdnCountryOfBirth,
+                hiddenDateOfBirth: _hiddenDateOfBirth,
+                hdnBirthCertNo: _hdnBirthCertNo,
+                hdnNewICNo: _hdnNewICNo,
+                hdnOldICNo: _hdnOldICNo,
+                hdnPassportNo: _hdnPassportNo,
+                hdnNationality: _hdnNationality,
+                hdnDateOfDeath: _hdnDateOfDeath,
+                hdnRelChild: _hdnRelChild,
+                hdnChildSpouseNo: _hdnChildSpouseNo,
+                hdnChildSpouseName: _hdnChildSpouseName,
+                hdnDateOfAdoption: _hdnDateOfAdoption,
+                hdnMarried: _hdnMarried,
+                hdnStudent: _hdnStudent,
+                hdnEducationEndDate: _hdnEducationEndDate,
+				hdnInstitutionName: _hdnInstitutionName,
+				hdnEducationInstitutionText: _hdnEducationInstitutionText,
+				hdnEducationInstitutionCode: _hdnEducationInstitutionCode,
+                hdnHandicapped: _hdnHandicapped,
+                hdnDisabilityType: _hdnDisabilityType,
+                hdnDisabilityDate: _hdnDisabilityDate,
+				hdnEmployed: _hdnEmployed,
+				hdnChildCustody: _hdnChildCustody,
+                hdnBirthPlace: _hdnBirthPlace,
+                hdnEmployerName: _hdnEmployerName,
+                hdnSpouseEmployeeNo: _hdnSpouseEmployeeNo,
+                hdnJobTitle: _hdnJobTitle,
+                hdnMaritalStatus: _hdnMaritalStatus,
+                hdnMaritalStatusDate: _hdnMaritalStatusDate,
+                hdnMedical: _hdnMedical,
+				RequestID: RequestID,
+				TaskID: TaskID
+			};
+            if (RequestID)
+                ResultMsg = "Family Info was updated successfully.";
+            else
+                ResultMsg = "The request (Edit Family Information) has been successfully submitted.";
+            Url = '@Url.Content("~/Employee/UpdateFamilyForm")';
+        }
+
+        if ($('#divLoading').is(':visible')) {
+            $.ajax({
+                type: "POST",
+                url: Url,
+                cache: false,
+                async: false,
+                dataType: "json",
+                data: form,
+                success: function (result) {
+                    if (result.Success) {
+                        $("#ConfirmUpdate").modal('toggle');
+                        $("#divLoading").hide();
+                        $("#divLoading2").show();
+
+                        if (!RequestID)
+                            ResultMsg += "<br/><br/>Request No: <label class='refno'>" + result.RequestNo + "</label>";
+
+                        $(".Success-body .well").html(ResultMsg);
+                        $("#SuccessSubmit").modal();
+
+                        $("#btnOK").click(function () { RedirectTo(FormAction.toUpperCase()); });
+                    }
+                    else {
+                        $("#ConfirmUpdate").modal('toggle');
+                        $("#divLoading").hide();
+                        $("#divLoading2").hide();
+                        btn.disabled = false;
+
+                        alert(result.ErrorMsg);
+                    }
+                },
+                error: function (xhr, status, errorThrown) {
+                    //Here the status code can be retrieved like;
+                    xhr.status;
+
+                    //The message added to Response object in Controller can be retrieved as following.
+                    xhr.responseText;
+                }
+            });
+        }
+    }
+
+    function RedirectTo(_Action) {
+        switch (_Action) {
+            case "INSERT":
+                //Response.Redirect("/Employee/_layouts/tnbess/Employee/Confirmation.aspx?RequestNo=" + requestNo + "&Status=" + Employee.ActivityAction.Submitted);
+                @*var url = '@Url.Action("Profile", "Employee")?RequestNo=' + EmployeeCode + '&Status=Submitted';
+                window.location.href = url;*@
+                location.reload();
+                break;
+            case "EDIT":
+                //Response.Redirect("/Employee/_layouts/tnbess/Employee/Confirmation.aspx?RequestNo=" + requestNo + "&Status=" + Employee.ActivityAction.Submitted);
+                @*var url = '@Url.Action("Profile", "Employee")?RequestNo=' + EmployeeCode + '&Status=Submitted';
+                window.location.href = url;*@
+                location.reload();
+                break;
+            default:
+                window.location.href = '/Pages/default.aspx';
+        }
+    }
+
+    function AllowEdit_Family(btn, FormAction)
+    {
+        var EmployeeCode = "@Model.Item1.EmployeeCode";
+        var EmployeeID = "@Model.Item1.EmployeeID";
+
+        var FamilyNo = "@Model.Item1.FamilyNo";
+
+        var RelationshipTypeCode = "@Model.Item1.RelationshipTypeCode";
+        var RelationshipTypeText = "@Model.Item1.RelationshipType";
+        var Action = 'Edit';
+
+        $("#divEPM_Modal #FormCategory").val("@module");
+        $("#divEPM_Modal #FormAction").val(Action);
+        var url="@Url.Content("~/Employee/_FamilyForm")";
+        var data = {
+            EmployeeCode: EmployeeCode,
+            EmployeeID: EmployeeID,
+            RelationshipTypeText: RelationshipTypeText,
+            RelationshipTypeValue: RelationshipTypeCode,
+            FamilyNo: FamilyNo,
+            Mode: Action
+        };
+        btn.disabled = false;
+        OpenEditPanel('Edit Family Info', Action, url, data)
+	}
+</script>
+
+@*Script Load Form Function*@
+<script type="text/javascript">
+	function InitiateChecking() {
+		var HiddenRelationshipTypeValue = "@Model.Item1.RelationshipTypeCode" + "";
+		var HiddenRelationshipChildValue = "@Model.Item1.RelChildCode" + "";
+        var HiddenStudentValue = "@Model.Item1.Student" + "";
+        var HiddenHandicappedValue = "@Model.Item1.Handicapped" + "";
+        var HiddenNationalityValue = "@Model.Item1.NationalityCode" + "";
+        var DateOfBirth = $("#divEPM_Modal #DateOfBirth").val() + "";
+        var ReadOnly = "@ReadOnly" + "";
+        var HiddenEmployerNameValue = "@Model.Item1.EmployerNameValue" + "";
+        var HiddenGenderValue = "@Model.Item1.GenderCode" + "";
+        var HiddenMarriedValue = "@Model.Item1.MaritalStatusCode" + "";
+		var HiddenEmployedValue = "@Model.Item1.Employed" + "";
+        var HiddenRelationshipTypeText = "@Model.Item1.RelationshipType" + "";
+        var Category = "@EmployeeCategory_Family" + "";
+
+		GetFamilyFormSetting(HiddenRelationshipTypeValue, HiddenRelationshipTypeText, HiddenRelationshipChildValue, HiddenGenderValue, DateOfBirth, HiddenNationalityValue, HiddenStudentValue,
+			HiddenMarriedValue, HiddenHandicappedValue, HiddenEmployerNameValue, HiddenOtherEmployerName, HiddenEmployedValue, ReadOnly, "attachmentSetting");
+    }
+
+    //On DDL Change
+	function Checking(ddlType) {
+        var HiddenRelationshipTypeValue = $("#divEPM_Modal #RelationshipTypeCode").val() + "";
+        var HiddenRelationshipTypeText = $("#divEPM_Modal #RelationshipTypeName").val() + "";
+		var HiddenRelationshipChildValue = $("#divEPM_Modal #RelChildCode").val() + "";
+        var HiddenStudentValue = $('#divEPM_Modal #chkStudent').is(":checked") + "";
+		var HiddenHandicappedValue = $('#divEPM_Modal #chkHandicapped').is(":checked") + "";
+        var HiddenNationalityValue = $("#divEPM_Modal #NationalityCode").val() + "";
+        var DateOfBirth = $('#divEPM_Modal #DateOfBirth').val() + "";
+        var ReadOnly = "@ReadOnly" + "";
+
+        var HiddenEmployerNameValue = "";
+        if ($('input[name=EmployerName]').is(":checked")) {
+            HiddenEmployerNameValue = $('input[name=EmployerName]:checked').val() + "";
+        }
+
+        var HiddenOtherEmployerName = $("#divEPM_Modal #OtherEmployerName").val() + "";
+        var HiddenGenderValue = $("#divEPM_Modal #GenderCode").val() + "";
+		var HiddenMarriedValue = $('#divEPM_Modal #MaritalStatusCode').val();
+        var HiddenEmployedValue = $('#divEPM_Modal #chkEmployed').is(":checked") + "";
+
+		GetFamilyFormSetting(HiddenRelationshipTypeValue, HiddenRelationshipTypeText, HiddenRelationshipChildValue, HiddenGenderValue, DateOfBirth, HiddenNationalityValue, HiddenStudentValue,
+			HiddenMarriedValue, HiddenHandicappedValue, HiddenEmployerNameValue, HiddenOtherEmployerName, HiddenEmployedValue, ReadOnly, ddlType);
+    }
+
+	function GetFamilyFormSetting(HiddenRelationshipTypeValue, HiddenRelationshipTypeText, HiddenRelationshipChildValue, HiddenGenderValue, DateOfBirth, HiddenNationalityValue, HiddenStudentValue,
+		HiddenMarriedValue, HiddenHandicappedValue, HiddenEmployerNameValue, HiddenOtherEmployerName, HiddenEmployedValue, ReadOnly, ddlType) {
+        var Category = "@EmployeeCategory_Family" + "";
+        var RequestID = "";
+        var FormAction = $("#divEPM_Modal #FormAction").val();
+        var divMode = "@divMode";
+        var PreMaritalStatusValue = $("#divEPM_Modal #MaritalStatusCode").val();
+		var PreMaritalStatusName = "";
+
+		var HiddenMedicalValue = "false";
+		if ('@Model.Item1.EligibleForMedical.HasValue' == "True") {
+			HiddenMedicalValue = '@Model.Item1.EligibleForMedical';
+			HiddenMedicalValue = HiddenMedicalValue.toLowerCase();
+		}
+
+		var url = window.location.href;
+		var TaskID = "";
+
+		if (url.indexOf("TaskID") >= 0)
+			TaskID = "1";
+
+        var _DateOfBirthValue = ReformatDate($("#DateOfBirth").val() + "", "Date of Birth");
+
+        if (_DateOfBirthValue.toUpperCase() == "ERROR")
+        {
+            alert(_DateOfBirthValue);
+        }
+        else
+		{
+			$.get('@Url.Action("GetFamilyFormSetting", "Employee")?HiddenRelationshipTypeValue=' + HiddenRelationshipTypeValue
+								   + '&HiddenRelationshipChildValue=' + HiddenRelationshipChildValue
+                                   + '&HiddenGenderValue=' + HiddenGenderValue
+                                   + '&DateOfBirth=' + DateOfBirth
+                                   + '&HiddenNationalityValue=' + HiddenNationalityValue
+                                   + '&HiddenStudentValue=' + HiddenStudentValue
+                                   + '&HiddenMarriedValue=' + HiddenMarriedValue
+                                   + '&HiddenHandicappedValue=' + HiddenHandicappedValue
+                                   + '&HiddenEmployerNameValue=' + HiddenEmployerNameValue
+                                   + '&HiddenOtherEmployerName=' + HiddenOtherEmployerName
+								   + '&HiddenEmployedValue=' + HiddenEmployedValue
+								   + '&HiddenMedicalValue=' + HiddenMedicalValue
+                                   + '&PreMaritalStatusValue=' + PreMaritalStatusValue
+                                   + '&PreMaritalStatusName=' + PreMaritalStatusName
+								   + '&ReadOnly=' + ReadOnly
+								   + '&TaskID=' + TaskID,
+				function (result) {
+                   Setting_FieldVisible = result.FieldVisible;
+                   Setting_FieldEnable = result.FieldEnable;
+                   Setting_FieldChecked = result.FieldChecked;
+                   Setting_FieldValue = result.FieldValue;
+                   var ReadOnly = "@ReadOnly";
+
+                   PopulateSetting(divMode, "#divEPM_Modal", "#SettingFormChange", Setting_FieldVisible, Setting_FieldEnable, Setting_FieldChecked, Setting_FieldValue);
+                   //PopulateSetting(divMode, divMain, LogDiv, Setting_FieldVisible, Setting_FieldEnable, Setting_FieldChecked, Setting_FieldValue)
+
+                   if (ReadOnly.toUpperCase() == "FALSE") {
+					   if (ddlType == 'attachmentSetting') {
+                           SearchGet_AttachmentInfo(Category, HiddenRelationshipTypeText, RequestID);
+                       }
+                   }
+               });
+        }
+	}
+
+    function ReformatDate(edate, Type) {
+        try {
+            if (edate.length > 0)
+            {
+                var myDate = $.datepicker.parseDate("dd/mm/yy", edate);
+                var d = myDate.getDate();
+                var m = myDate.getMonth();
+                m += 1;
+                var y = myDate.getFullYear();
+
+                var newdate = (y + "-" + m + "-" + d);
+                return newdate;
+            }
+            return "";
+        }
+        catch (e) {
+            var Error = "ERROR";
+            //alert('Invalid Date Format ('+Type+')' + e);
+            //alert(e);
+            return Error;
+        }
+    }
+</script>
+
+@*script Load Form *@
+<script type="text/javascript">
+
+    $(function () {
+        App.initAjax();
+
+        var divMode = "@divMode";
+        var runFieldVisible = "@runFieldVisible";
+
+        if (runFieldVisible.toUpperCase() == "TRUE") {
+            Setting_FieldVisible = JSON.parse('@Html.Raw(Json.Encode(Model.Item2.FieldVisible))');
+            Setting_FieldEnable = JSON.parse('@Html.Raw(Json.Encode(Model.Item2.FieldEnable))');
+            Setting_FieldChecked = JSON.parse('@Html.Raw(Json.Encode(Model.Item2.FieldChecked))');
+			Setting_FieldValue = JSON.parse('@Html.Raw(Json.Encode(Model.Item2.FieldValue))');
+
+            PopulateSetting(divMode, "#divEPM_Modal", "#SettingFormLoad", Setting_FieldVisible, Setting_FieldEnable, Setting_FieldChecked, Setting_FieldValue);
+            //PopulateSetting(divMode, divMain, LogDiv, Setting_FieldVisible, Setting_FieldEnable, Setting_FieldChecked, Setting_FieldValue)
+        }
+
+        // Check if child selected
+        ChangeLabelChild($('#divEPM_Modal #RelationshipTypeName').val());
+
+        LoadFormConfiguration();
+
+        LoadFormOnChange();
+    });
+</script>

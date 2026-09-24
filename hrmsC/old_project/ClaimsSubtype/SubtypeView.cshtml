@@ -1,0 +1,530 @@
+﻿@using ESS.Claim.ViewModels
+@using ESS.Claim.ClaimSubtype
+@using Newtonsoft.Json
+@model ClaimsSubtype
+@{
+    Template template = Model.Template;
+    string DataTableID = template.TableID;
+
+    var colList = template.Columns.Where(column => column.ColumnType != ColumnType.HiddenInput).Select(column =>
+                  
+                   Html.Partial(String.Format("~/Views/ClaimsSubtype/_{0}.cshtml", column.ColumnType.ToString()),
+                                Tuple.Create(column, Model)).ToHtmlString()).ToList();
+
+    var hiddenInputs = String.Join("", template.Columns.Where(column => column.ColumnType == ColumnType.HiddenInput).Select(column =>
+                       WebUtility.HtmlDecode(
+                          Html.Partial(
+                              String.Format("~/Views/ClaimsSubtype/_{0}.cshtml", column.ColumnType.ToString()),
+                              Tuple.Create(column, Model)).ToHtmlString())));
+
+    colList[0] += hiddenInputs;
+
+    var colDefs = JsonConvert.SerializeObject(colList);
+}
+
+<style>
+    .RemoveCheckboxTd {
+        width: 1%;
+    }
+</style>
+
+<div class="portlet box blue subtypeportlet" id="dTable_@(DataTableID)">
+    <div class="mini-triangle"><img src="../Assets/img/menu-red-triangle.png" /></div>
+    <div class="portlet-title">
+        <div class="caption">
+            <i class="fa fa-reorder"></i>@template.TableName
+        </div>
+        @if (!template.IsReadonly)
+        {
+            <div class="tools">
+                <a href="javascript:;" onclick="RemoveSubtype('@Model.categoryIndex','@Model.subtypeIndex')">
+                    <img style=" vertical-align: initial;" src="../Assets/img/portlet-remove-icon-white.png" />
+                </a>
+            </div>
+        }
+        <div class="tools">
+            <a title="" data-original-title="" href="javascript:;" class="collapse"></a>
+        </div>
+    </div>
+    <div class="portlet-body form">
+        <div class="form-body">
+            <div class="form-horizontal">
+                <div class="table-toolbar">
+                    <table class="table table-striped table-bordered table-hover table-full-width" id="tbl@(DataTableID)">
+                        <thead>
+                            <tr>
+                                @foreach (var column in template.Columns)
+                                {
+                                    if (column.ColumnType == ColumnType.HiddenInput)
+                                    {
+                                        continue;
+                                    }
+
+                                    <th scope="col">@column.ColumnLabel @(column.IsMandatory ? "*" : "")</th>
+                                }
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (!template.IsReadonly)
+                            {
+
+                                if (Model.SubTypeDetails == null)
+                                {
+                                    for (int defaultRowCount = 0; defaultRowCount < template.DefaultRowCount; defaultRowCount++)
+                                    {
+                                        <tr>
+                                            @foreach (var column in template.Columns)
+                                            {
+                                                if (column.ColumnType == ColumnType.HiddenInput)
+                                                {
+                                                    @Html.Partial(String.Format("~/Views/ClaimsSubtype/_{0}.cshtml",
+                                                                  column.ColumnType.ToString()), Tuple.Create(column, Model))
+                                                    continue;
+                                                }
+
+                                                <td class="@((column.ColumnClass == "RemoveCheckbox") ? @"RemoveCheckboxTd" : "")">
+                                                    @Html.Partial(String.Format("~/Views/ClaimsSubtype/_{0}.cshtml",
+                                                                  column.ColumnType.ToString()), Tuple.Create(column, Model))
+                                                </td>
+                                            }
+                                        </tr>
+                                    }
+                                }
+                                else
+                                {
+                                    foreach (var detail in Model.SubTypeDetails)
+                                    {
+                                        <tr>
+                                            @foreach (var column in template.Columns)
+                                            {
+                                                if (column.ColumnType == ColumnType.HiddenInput)
+                                                {
+                                                    @Html.Partial(String.Format("~/Views/ClaimsSubtype/_{0}.cshtml",
+                                                                  column.ColumnType.ToString()), Tuple.Create(column.SetValue(detail), Model))
+                                                    continue;
+                                                }
+
+                                                <td class="@((column.ColumnClass == "RemoveCheckbox") ? @"RemoveCheckboxTd" : "")">
+                                                    @Html.Partial(String.Format("~/Views/ClaimsSubtype/_{0}.cshtml",
+                                                                  column.ColumnType.ToString()), Tuple.Create(column.SetValue(detail), Model))
+                                                </td>
+                                            }
+                                        </tr>
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                foreach (var detail in Model.SubTypeDetails)
+                                {
+                                    <tr>
+                                        @foreach (var column in template.Columns)
+                                        {
+                                            if (column.ColumnType == ColumnType.HiddenInput)
+                                            {
+                                                @Html.Partial(String.Format("~/Views/ClaimsSubtype/_{0}.cshtml",
+                                                              column.ColumnType.ToString()), Tuple.Create(column.SetValue(detail), Model))
+                                                continue;
+                                            }
+
+                                            column.SetReadonly(true);
+
+                                            <td class="@((column.ColumnClass == "RemoveCheckbox") ? @"RemoveCheckboxTd" : "")">
+                                                @Html.Partial(String.Format("~/Views/ClaimsSubtype/_{0}.cshtml",
+                                                              column.ColumnType.ToString()), Tuple.Create(column.SetValue(detail), Model))
+                                            </td>
+                                        }
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+
+                        @Html.Partial("~/Views/ClaimsSubtype/TableFooter.cshtml", Model)
+                    </table>
+                </div>
+            </div>
+
+            @if (!template.IsReadonly && template.AllowAddRow)
+            {
+                <div class="form-horizontal">
+                    <div class="table-toolbar">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="btn-group">
+                                    <a class="BtnPlus btn green" title="dTable_@(DataTableID)" href="javascript:@(DataTableID)_subtype.addRow(1);">
+                                        Add Row
+                                        <i class="fa fa-plus"></i>
+                                    </a>
+                                </div>
+
+                                @if (template.MaxRowCount >= 5)
+                                {
+                                    <div class="btn-group">
+                                        <a class="BtnPlus5 btn green" title="dTable_@(DataTableID)" href="javascript:@(DataTableID)_subtype.addRow(5);">
+                                            Add 5 Rows
+                                            <i class="fa fa-plus"></i>
+                                        </a>
+                                    </div>
+                                }
+                                <div class="btn-group">
+                                    <a class="deleteall btn red" title="dTable_@(DataTableID)" href="javascript:@(DataTableID)_subtype.removeRow();">
+                                        Delete Row
+                                        <i class="fa fa-minus"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<script>
+    var @(DataTableID)_subtype = {
+        // Assign in initialize
+        subtype : @Html.Raw(JsonConvert.SerializeObject(Model, new JsonSerializerSettings() {ReferenceLoopHandling = ReferenceLoopHandling.Ignore})),
+
+        table: null,
+
+        maxRow : @template.MaxRowCount,
+
+        initTable: function () {
+
+            this.table = $('#tbl@(DataTableID)').DataTable({
+                "bLengthChange": false,
+                "bFilter": false,
+                "bPaginate": false,
+                "bInfo": false,
+                "bSort": false
+            });
+        },
+        initialize: function () {
+
+            this.table.find(".date-picker").each(function () {
+                $(this).datepicker({
+                    format: 'dd/mm/yyyy',
+                    autoclose: true,
+                });
+
+                $(this).datepicker('setStartDate', '@Model.FormattedMinDate');
+                $(this).datepicker('setEndDate', '@Model.FormattedMaxDate');
+
+                var companionDate = $(this).find('.date-picker-companion-value').val();
+                if (companionDate) {
+                    $(this).datepicker('setDate', companionDate);
+                }
+            });
+
+            this.table.find('.timeinput').each(function () {
+                $(this).inputmask("h:s", {
+                    "placeholder": "__/__",
+                    onincomplete: function () {
+                        // replace placeholder with zero
+                        $(this).val($(this).val().replace(/_/g, '0'));
+                    }
+                });
+            });
+
+            this.table.find(".numericinput").each(function () {
+                $(this).inputmask("integer", {
+                    min: 0,
+                    max: 10000,
+                    allowMinus: false,
+                    rightAlign: false
+                });
+            });
+
+            this.table.find('input[type=checkbox]').each(function () {
+                $(this).on('change', function () {
+                    $(this).parent().parent().siblings('.checkbox-companion').val($(this).prop('checked'));
+                });
+            });
+
+
+            this.reorderRow();
+
+            this.initStandardColumn();
+
+            InitDistanceMin("tbl@(DataTableID)", "OneWayDistance", 0);
+
+            if (typeof (this.subInitialize) == 'function') {
+                this.subInitialize();
+            }
+        },
+
+        update: function () {
+        @if (!Model.Template.IsReadonly)
+        {
+            <text>
+            this.initialize();
+
+            BindtoDDL();
+
+            this.calculateTax();
+            this.calculateSubtotal();
+            CalculateSummary();
+            </text>
+        }
+        },
+
+        addRow: function (count) {
+            if (this.maxRow > 0 && this.table.fnSettings().fnRecordsTotal() >= this.maxRow) {
+                alert("Maximum row(s) allowed for this subtype is " + this.maxRow);
+                return;
+            }
+
+            for (var i = 0; i < count; i++) {
+                this.table.fnAddData(this.rowTemplate);
+            }
+
+            this.reorderRow();
+            this.update();
+        },
+
+        removeRow: function () {
+            var table = this.table;
+            var rows = this.table.find('tbody tr');
+
+            rows.each(function () {
+                if (table.fnSettings().fnRecordsTotal() <= 1) {
+                    alert("Minimum 1 row is required.");
+                    return;
+                }
+
+                if ($(this).find('.RemoveCheckbox').prop("checked")) {
+                    table.fnDeleteRow(this);
+                }
+            });
+
+            this.reorderRow();
+            this.update();
+        },
+
+        rowTemplate: @Html.Raw(colDefs),
+
+        reorderRow: function () {
+            this.table.find('tbody tr')
+                .each(function (rowIndex, row) {
+                    $(this).find('td [name]').each(function (colIndex, col){
+                        var name = $(this).attr('name');
+                        $(this).attr('name', @(DataTableID)_subtype.reorderColumnName(rowIndex, name));
+                    });
+                });
+
+        },
+
+        reorderColumnName: function (currentIndex, name) {
+            if (name) {
+                var ColumnName = name.split('.');
+                var replaceIndex = ColumnName[2].match(/\d+/g);
+                ColumnName[2] = ColumnName[2].replace(replaceIndex, currentIndex);
+
+                return ColumnName.join('.');
+            }
+        },
+
+        initStandardColumn: function () {
+
+        }
+    };
+
+    $(function () {
+        @(DataTableID)_subtype.initTable();
+
+    @if (!Model.Template.IsReadonly)
+    {
+        <text>
+        @(DataTableID)_subtype.initialize();
+        </text>
+    }
+    });
+
+    function dTable_@(DataTableID)Validation() {
+        var _ValidationMsg = '';
+        var thisTable = @(DataTableID)_subtype.table;
+
+        thisTable.fnGetNodes().forEach(function (val, index) {
+            var $row = $(val);
+
+            @foreach (var column in template.Columns)
+            {
+                if (!column.IsMandatory)
+                {
+                    continue;
+                }
+
+                <text>
+                var _@column.ColumnName = $row.find(".@column.ColumnName").val();
+                if (_@column.ColumnName == null || _@column.ColumnName == '') {
+                    _ValidationMsg += '- @Model.ClaimsSubtypeName (@column.ColumnLabel) is required.\n';
+                }
+
+                </text>
+
+                if(column.ColumnName == "OneWayDistance")
+                {
+                    <text>
+                else if ((parseFloat(_@column.ColumnName) || 0) < parseFloat( @ViewBag.MinimumDistance)) {
+                    _ValidationMsg += '- @Model.ClaimsSubtypeName (@column.ColumnLabel) has to be greater than or equal to @ViewBag.MinimumDistance km.\n'
+                }
+                    </text>
+                }
+            }
+
+
+            if ('Travelling Allowance - Subsistence Allowance Domestic (No SST)' == '@template.TableName') {
+                var _StartDate = $row.find(".StartDate").val();
+                var _StartTime = $row.find(".StartTime").val();
+                var _EndDate = $row.find(".EndDate").val();
+                var _EndTime = $row.find(".EndTime").val();
+
+                if (!(_StartTime == null || _StartTime == '') && !(_EndTime == null || _EndTime == '') && !(_StartDate == null || _StartDate == '') && !(_EndDate == null || _EndDate == '')) {
+                    var startDateString = _StartDate + " " + _StartTime;
+                    var endDateString = _EndDate + " " + _EndTime;
+
+                    var StartDate = moment(startDateString, "DD/MM/YYYY HH:mm")._d;
+                    var EndDate = moment(endDateString, "DD/MM/YYYY HH:mm")._d;
+
+                    if (EndDate <= StartDate) {
+                        _ValidationMsg += ('- @Model.ClaimsSubtypeName End Date/Time has to be later than Start Date/Time.\n');
+                    }
+                }
+            }
+
+            if (typeof @(DataTableID)_subtype.subValidation == 'function') {
+                _ValidationMsg += @(DataTableID)_subtype.subValidation('@Model.ClaimsSubtypeName', $row);
+            }
+
+
+        @if (Model.IsAllowGST)
+        {
+            <text>
+            var _Amount = parseFloat($row.find(".Amount").val()) || 0;
+            var _GSTAmount = parseFloat($row.find(".GSTAmount").val()) || 0;
+            var gstMaxValue = @Model.GST;
+            var gstAmt = Math.round(_Amount * (gstMaxValue / 100) * 100) / 100;
+            if (_GSTAmount == null || _GSTAmount == '') {
+                _ValidationMsg += '- @Model.ClaimsSubtypeName (GST Amount) is required.\n'
+            }
+
+            if (_GSTAmount > gstAmt) {
+                _ValidationMsg += '- @Model.ClaimsSubtypeName - The GST Amount (highlighted in yellow) has exceeded the maximum value.Please edit or delete the record to proceed.\n'
+                $row.find(".GSTAmount").css("background-color", "yellow");
+            }
+            else {
+                $row.find(".GSTAmount").css("background-color", "white");
+            }
+            </text>
+        }
+        });
+
+        return _ValidationMsg;
+    }
+
+    @(DataTableID)_subtype.calculateSubtotal = function (row) {
+        if ($(row).prop("tagName") != "tr") {
+            row = $(row).closest("tr");
+        }
+
+        if (row.context) {
+            var _Amount = $(row).find(".Amount");
+            var _GSTAmount = $(row).find(".GSTAmount");
+            var _TotalAmount = $(row).find(".TotalAmount");
+
+            var amount = parseFloat(_Amount.val()) || 0;
+            var gstAmount = parseFloat(_GSTAmount.val()) || 0;
+            var totalAmount = amount + gstAmount;
+
+            _TotalAmount.val(totalAmount);
+            FormatCurrency(_TotalAmount);
+        }
+        else {
+            this.table.fnGetNodes().forEach(function (v) {
+                var _Amount = $(v).find(".Amount");
+                var _GSTAmount = $(v).find(".GSTAmount");
+                var _TotalAmount = $(v).find(".TotalAmount");
+
+                var amount = parseFloat(_Amount.val()) || 0;
+                var gstAmount = parseFloat(_GSTAmount.val()) || 0;
+                var totalAmount = amount + gstAmount;
+
+                _TotalAmount.val(totalAmount);
+                FormatCurrency(_TotalAmount);
+            });
+        }
+
+        this.calculateGrandAmount();
+        CalculateSummary();
+    };
+
+    @(DataTableID)_subtype.calculateTax = function (row) {
+    @if (Model.IsAllowGST)
+    {
+        <text>
+        if ($(row).prop("tagName") != "tr") {
+            row = $(row).closest("tr");
+        }
+
+        var gstRate = @((Model.GST / 100).ToString("0.00"));
+
+        if (row.context) {
+            var _Amount = $(row).find(".Amount");
+            var _GSTAmount = $(row).find(".GSTAmount");
+
+            var amount = parseFloat(_Amount.val()) || 0;
+            var gstAmount = amount * gstRate;
+
+            _GSTAmount.val(gstAmount);
+            FormatCurrency(_GSTAmount);
+        }
+        else {
+            this.table.fnGetNodes().forEach(function (v) {
+                var _Amount = $(v).find(".Amount");
+                var _GSTAmount = $(v).find(".GSTAmount");
+
+                var amount = parseFloat(_Amount.val()) || 0;
+                var gstAmount = amount * gstRate;
+
+                _GSTAmount.val(gstAmount);
+                FormatCurrency(_GSTAmount);
+            });
+        }
+        </text>
+    }
+        this.calculateSubtotal();
+    };
+
+    @(DataTableID)_subtype.calculateGrandAmount = function () {
+        var _GrandAmount = this.table.find(".GrandAmount");
+        var _GrandGSTAmount = this.table.find(".GrandGSTAmount");
+        var _GrandTotalAmount = this.table.find(".GrandTotalAmount");
+
+        var grandAmount = 0;
+        var grandGSTAmount = 0;
+        var grandTotalAmount = 0;
+
+        this.table.fnGetNodes().forEach(function (v) {
+            var _Amount = $(v).find(".Amount");
+            var _GSTAmount = $(v).find(".GSTAmount");
+            var _TotalAmount = $(v).find(".TotalAmount");
+
+            var amount = parseFloat(_Amount.val()) || 0;
+            var gstAmount = parseFloat(_GSTAmount.val()) || 0;
+            var totalAmount = parseFloat(_TotalAmount.val()) || 0;
+
+            grandAmount += amount;
+            grandGSTAmount += gstAmount;
+            grandTotalAmount += totalAmount;
+        });
+
+        _GrandAmount.val(grandAmount);
+        _GrandGSTAmount.val(grandGSTAmount);
+        _GrandTotalAmount.val(grandTotalAmount);
+
+        FormatCurrency(_GrandAmount);
+        FormatCurrency(_GrandGSTAmount);
+        FormatCurrency(_GrandTotalAmount);
+    };
+</script>

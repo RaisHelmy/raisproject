@@ -1,0 +1,87 @@
+﻿@model List<RoleMaintenance.RoleMemberViewModel>
+
+@{
+    Layout = null;
+}
+
+@using (Html.BeginForm("DeleteRoleMember", "Role", FormMethod.Post, new { @id = "DeleteRole", @class = "form-horizontal" }))
+{
+    <div class="portlet box blue">
+        <div class="mini-triangle"><img src="../Assets/img/menu-red-triangle.png" /></div>
+        <div class="portlet-title">
+            <div class="caption">
+                <i class="fa fa-reorder"></i>User Roles
+            </div>
+            <a href="@Url.Content("~/Role/AddNewRole")" id="btn-Edit" class="btn btn-xs green btn-Edit pull-right"><i class="fa fa-plus"></i>Add New Role</a>
+        </div>
+        <div class="portlet-body form">
+            <!-- BEGIN FORM-->
+            <div class="form-horizontal">
+                <div class="form-body" id="UserRole">
+                    <div class="table-toolbar">
+                        <input type="hidden" id="roleTBD" name="RoleID" />
+                        <table id="tblRoles" class="table table-striped table-bordered table-hover table-full-width">
+                            <thead>
+                                <tr>
+                                    <th>Employee</th>
+                                    <th>Module</th>
+                                    <th>Division </th>
+                                    <th>Department </th>
+                                    <th>Unit/Section </th>
+                                    <th>Role</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in Model)
+                                {
+                                    <tr>
+                                        <td>@item.EmployeeCode - @item.EmployeeName</td>
+                                        <td>@item.ModuleName</td>
+                                        <td>@item.DivisionCode</td>
+                                        <td>@item.DepartmentCode</td>
+                                        <td>@item.UnitSectionCode</td>
+                                        <td>@item.RoleName</td>
+                                        <td>
+                                            <a class="btn red" data-toggle="modal" href="#ConfirmDeleteRole" onclick="$('#roleTBD').val('@item.ID')">
+                                                Delete
+                                            </a>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <!-- END FORM-->
+        </div>
+    </div>
+    <!-- Modal-->
+    <div class="modal fade" id="ConfirmDeleteRole" tabindex="-1" role="basic" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                    <h4 class="modal-title">Confirmation - Delete This Record</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="well">
+                        Clicking Delete will delete this record from the database. If you want to discard the changes, click Close.
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn default red" id="btnDeleteRole">
+                        <i class="fa fa-check"></i>
+                       Delete
+                    </button>
+                    <button type="button" class="btn default" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Modal-->
+}
+<script type="text/javascript">
+    transformTable("#tblRoles");
+</script>

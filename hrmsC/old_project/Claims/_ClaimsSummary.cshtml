@@ -1,0 +1,640 @@
+﻿@model ESS.Claim.ViewModels.ClaimVM
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="portlet box blue">
+
+            <div class="mini-triangle"><img src="../Assets/img/menu-red-triangle.png" /></div>
+            <div class="portlet-title">
+                <div class="caption">
+                    <i class="fa fa-reorder"></i>Summary
+                </div>
+                <div class="tools">
+                </div>
+            </div>
+            <div class="portlet-body form">
+                <div class="form-body">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <table class="table table-striped table-bordered table-hover table-full-width">
+                                <thead>
+                                    <tr>
+                                        <th class="col-md-9">Claim Subtype</th>
+                                        <th class="col-md-3 text-right">Amount (RM)</th>
+                                    </tr>
+                                </thead>
+
+                                @{
+                                    int SubtypeIndex = 0;
+                                    decimal GSTTotal = 0;
+                                    decimal SubTotal = 0;
+                                    double Total = 0;
+
+                                    //OVERSEA
+                                    decimal Oversea = 0;
+                                    decimal Subsistence = 0;
+                                    decimal PocketMoney = 0;
+                                }
+                                @foreach (ESS.Claim.ViewModels.ClaimsSubtypeCategory category in Model.ClaimsSubtypeCategory)
+                                {
+                                    foreach (var subtype in category.ClaimSubtype)
+                                    {
+                                        if (subtype.IsChoosen)
+                                        {
+                                            //OVERSEA
+                                            if (subtype.ClaimsSubtypeName.ToLower().Contains("subsistence"))
+                                            {
+                                                Decimal subAmt = 0;
+                                                if (subtype.SubTypeDetails != null)
+                                                {
+                                                    Subsistence += subtype.SubTypeDetails.Where(x => Decimal.TryParse(x.SubTypeColumn5, out subAmt))
+                                                                                        .Sum(x => subAmt);
+                                                }
+
+                                            }
+
+                                            if (subtype.ClaimsSubtypeName.ToLower().Contains("pocket"))
+                                            {
+                                                Decimal pocAmt = 0;
+                                                if (subtype.SubTypeDetails != null)
+                                                {
+                                                    PocketMoney += @subtype.SubTypeDetails.Where(x => Decimal.TryParse(x.TotalAmount, out pocAmt))
+                                                                                            .Sum(x => pocAmt);
+                                                }
+                                            }
+
+                                            var subtypename = "SubType" + SubtypeIndex;
+                                            if (subtype.SubTypeDetails != null)
+                                            {
+                                                Decimal Gstamt = 0;
+                                                GSTTotal += subtype.SubTypeDetails.Where(x => Decimal.TryParse(x.GSTAmount, out Gstamt))
+                                                                                  .Sum(x => Gstamt);
+                                                Decimal amt = 0;
+                                                SubTotal += subtype.SubTypeDetails.Where(x => Decimal.TryParse(x.Amount, out amt))
+                                                                                  .Sum(x => amt);
+                                                Double totamt = 0;
+                                                Total += subtype.SubTypeDetails.Where(x => Double.TryParse(x.TotalAmount, out totamt))
+                                                                                .Sum(x => totamt);
+
+                                                decimal OverSeaAmt = 0;
+                                                try
+                                                {
+                                                    OverSeaAmt = subtype.SubTypeDetails.Where(x => x.Location.ToUpper() == "OVERSEAS")
+                                                        .Sum(x => Decimal.Parse(String.IsNullOrEmpty(x.TotalAmount) ? "0.00" : x.TotalAmount));
+                                                }
+                                                catch (Exception ex)
+                                                {
+                                                    OverSeaAmt = 0;
+                                                }
+                                                Oversea += OverSeaAmt;
+                                                <tr>
+
+                                                    <td>@subtype.ClaimsSubtypeName</td>
+                                                    <td id="@subtypename"><div class="text-right">@subtype.SubTypeDetails.Sum(x => Convert.ToDecimal(x.TotalAmount)).ToString("0.00")</div></td>
+                                                </tr>
+
+
+
+                                            }
+                                            else
+                                            {
+                                                <tr>
+
+                                                    <td>@subtype.ClaimsSubtypeName</td>
+                                                    <td id="@subtypename"><div class="text-right">0.00</div></td>
+                                                </tr>
+                                            }
+                                            SubtypeIndex++;
+                                        }
+                                    }
+                                }
+
+
+
+                            </table>
+                        </div>
+                    </div>
+                    @if (Model.ClaimTypeCode == "COS01")
+                    {
+                        <div class="row">
+                            <div class="col-md-12">
+                                <table class="table table-striped table-bordered table-hover table-full-width">
+                                    @{
+                                        //double AdvanceClaim = 0;
+                                        //if (!String.IsNullOrEmpty(Model.AdvanceClaimAmount))
+                                        //{
+                                        //    AdvanceClaim = double.Parse(Model.AdvanceClaimAmount.ToString());
+                                        //}
+                                        double NettTotalBefore = /*AdvanceClaim +*/ Total;
+                                        double NettTotal = @ESS.Claim.Service.CustomRounding(NettTotalBefore);
+                                    }
+                                    <tbody>
+                                        <tr>
+                                            <td class="col-md-9">Total Tax (RM)</td>
+                                            <td class="col-md-3 text-right" id="dis_GSTTotal">@GSTTotal.ToString("0.00")</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="col-md-9">Total without Tax (RM)</td>
+                                            <td class="col-md-3 text-right" id="dis_Subtotal">@SubTotal.ToString("0.00")</td>
+
+                                        </tr>
+                                        <tr>
+                                            <td class="col-md-9">Grand Total (RM)</td>
+                                            <td class="col-md-3 text-right" id="dis_Grandtotal">@Total.ToString("0.00")</td>
+                                            <input type="hidden" name="GrandTotal" value="@Total.ToString("0.00")" />
+                                        </tr>
+                                        @*<tr>
+                                                <td class="col-md-9">Advance Request Amount (RM)</td>
+                                                <td class="col-md-3 text-right" id="dis_advClaimAmt">@AdvanceClaim.ToString("0.00")</td>
+                                                <input type="hidden" name="AdvanceClaimAmount" value="@AdvanceClaim.ToString("0.00")" />
+                                            </tr>*@
+                                        <tr>
+                                            <td class="col-md-9">Nett Claims Before Rounding (RM)</td>
+                                            <td class="col-md-3 text-right" id="dis_NettTotalBefore">@NettTotalBefore.ToString("0.00")</td>
+                                            <input type="hidden" name="NettTotalBefore" value="@NettTotalBefore.ToString("0.00")" />
+                                        </tr>
+                                        <tr>
+                                            <td class="col-md-9 bold">Nett Claims (RM)</td>
+                                            <td class="col-md-3 text-right" id="dis_NettTotal">@NettTotal.ToString("0.00")</td>
+                                            <input type="hidden" name="NettTotal" value="@NettTotal.ToString("0.00")" />
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <script>
+                            function calcSummary() {
+                                var GrandGST = 0;
+                                var GrandAmt = 0;
+                                var GrandTotalAmt = 0;
+                                var NettTotal = 0;
+                                //var AdvClaimAmt = parseFloat($('input[name=AdvanceClaimAmount]').val());
+
+                                $('.GrandGSTAmount').each(function (index) {
+                                    //console.log(this);
+                                    GrandGST += parseFloat($(this).val());
+                                });
+
+                                $('.GrandAmount').each(function (index) {
+                                    GrandAmt += parseFloat($(this).val());
+                                });
+
+                                $('.GrandTotalAmount').each(function (index) {
+                                    GrandTotalAmt += parseFloat($(this).val());
+                                });
+
+                                //console.log(GrandTotalAmt);
+                                $('#dis_GSTTotal').html(GrandGST.toFixed(2));
+
+                                $('input[name=GrandTotal]').val(GrandAmt.toFixed(2));
+                                $('#dis_Subtotal').html(GrandAmt.toFixed(2));
+
+                                $('#dis_Grandtotal').html(GrandTotalAmt.toFixed(2));
+
+                                //$('#dis_advClaimAmt').html(AdvClaimAmt.toFixed(2));
+
+                                var NettTotalBefore = GrandTotalAmt /*+ AdvClaimAmt*/;
+                                $('input[name=NettTotalBefore]').val(NettTotalBefore.toFixed(2));
+                                $('#dis_NettTotalBefore').html(NettTotalBefore.toFixed(2));
+
+                                NettTotal = CustomRounding(NettTotalBefore);
+                                $('input[name=NettTotal]').val(NettTotal.toFixed(2));
+                                $('#dis_NettTotal').html(NettTotal.toFixed(2));
+                            }
+                        </script>
+                    }
+                    else if (Model.ClaimTypeCode == "COV01")
+                    {
+                        <div class="row">
+                            <div class="col-md-12">
+
+                                <table class="table table-striped table-bordered table-hover table-full-width">
+                                    @{
+                                        decimal TipsAmount = 0;
+                                        decimal ForexLossAmount = 0;
+                                        double AdvanceClaim = 0;
+
+                                        if (Model.IsTips)
+                                        {
+                                            TipsAmount = (Subsistence + PocketMoney) * (decimal.Parse(Model.TipsRate) / 100);
+                                            Oversea = Oversea + TipsAmount;
+                                        }
+                                        if (Model.IsForexLoss)
+                                        {
+                                            ForexLossAmount = Oversea * (decimal.Parse(Model.ForexLossRate) / 100);
+                                        }
+
+                                        //if (!String.IsNullOrEmpty(Model.AdvanceClaimAmount))
+                                        //{
+                                        //    AdvanceClaim = double.Parse(Model.AdvanceClaimAmount.ToString());
+                                        //}
+                                        Total = Total + (double)TipsAmount + (double)ForexLossAmount;
+                                        double NettTotalBefore = /*AdvanceClaim +*/ Total;
+                                        double NettTotal = @ESS.Claim.Service.CustomRounding(NettTotalBefore);
+
+                                    }
+
+                                    @{
+                                        if (!String.IsNullOrEmpty(Model.ForexLoss)) { ForexLossAmount = decimal.Parse(Model.ForexLoss); }
+                                        if (!String.IsNullOrEmpty(Model.Tips)) { TipsAmount = decimal.Parse(Model.Tips); }
+
+
+                                    }
+
+
+                                    <tbody>
+                                        <tr>
+
+                                            <td class="col-md-3">Total Claims (RM)</td>
+                                            <td class="col-md-3 text-right" id="dis_SubTotal">@SubTotal.ToString("0.00")</td>
+                                            <td class="col-md-3">Total Overseas (RM)</td>
+                                            <td class="col-md-3 text-right" id="dis_Oversea">@Oversea.ToString("0.00")</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="col-md-3">Tips</td>
+                                            <td class="col-md-3 text-right">
+                                                @if (Model.Status == "0" || Model.Status == "Draft" ||
+                                                     Model.Status == "5" || Model.Status == "Withdrawn" ||
+                                                     Model.Status == "4" || Model.Status == "Declined" || Model.Status == "Returned")
+                                                {
+                                                    @Html.CheckBoxFor(x => x.IsTips, new { onchange = "CalculateSummary()" })
+                                                }
+                                                else
+                                                {
+                                                    @Html.CheckBoxFor(x => x.IsTips, new { disabled = "disabled" })
+                                                }
+
+                                            </td>
+                                            @Html.HiddenFor(x => x.TipsRate)
+                                            <td class="col-md-3">Forex Loss</td>
+                                            <td class="col-md-3 text-right">
+                                                @if (Model.Status == "0" || Model.Status == "Draft" ||
+                                                     Model.Status == "5" || Model.Status == "Withdrawn" ||
+                                                     Model.Status == "4" || Model.Status == "Declined" || Model.Status == "Returned")
+                                                {
+                                                    @Html.CheckBoxFor(x => x.IsForexLoss, new { onchange = "CalculateSummary()" })
+                                                }
+                                                else
+                                                {
+                                                    @Html.CheckBoxFor(x => x.IsForexLoss, new { disabled = "disabled" })
+                                                }
+
+                                            </td>
+
+                                            @Html.HiddenFor(x => x.ForexLossRate)
+                                        </tr>
+                                        <tr>
+                                            <td class="col-md-3">Total Tips (RM)</td>
+                                            <td class="col-md-3 text-right" id="dis_Tips">@TipsAmount.ToString("0.00")</td>
+                                            <input type="hidden" name="Tips" id="hdnTips" value="@TipsAmount.ToString("0.00")" />
+                                            <td class="col-md-3">Total Forex Loss (RM)</td>
+                                            <td class="col-md-3 text-right" id="dis_ForexLoss">@ForexLossAmount.ToString("0.00")</td>
+                                            <input type="hidden" name="ForexLoss" id="hdnForexLoss" value="@ForexLossAmount.ToString("0.00")" />
+                                        </tr>
+                                        <tr>
+                                            <td class="col-md-3" style="vertical-align: middle;">Tips Charge Code </td>
+                                            <td class="col-md-3 text-right">
+                                                @if (Model.Status == "0" || Model.Status == "Draft" ||
+                                                     Model.Status == "5" || Model.Status == "Withdrawn" ||
+                                                     Model.Status == "4" || Model.Status == "Declined" || Model.Status == "Returned")
+                                                {
+                                                    <input type="hidden" name="hdnTipsCC" class="hfChargeCode" value="@Model.TipsChargeCode" />
+                                                    <select class="form-control ddlChargeCode" style="min-width:130px" onchange="ChargeCodeChange(this); CalculateChargeCodeSummary();"
+                                                            name="TipsChargeCode">
+                                                        <option value="">Select One</option>
+                                                    </select>
+                                                }
+                                                else
+                                                {
+                                                    <input type="hidden" name="hdnTipsCC" value="@Model.TipsChargeCode" />
+                                                    <input type="hidden" name="TipsChargeCode" value="@Model.TipsChargeCode" />
+                                                    <span id="txtTipsChargeCode">@Model.TipsChargeCode</span>
+                                                }
+                                            </td>
+                                            <td class="col-md-3" style="vertical-align: middle;">Forex Loss Charge Code </td>
+
+                                            <td class="col-md-3 text-right">
+                                                @if (Model.Status == "0" || Model.Status == "Draft" ||
+                                                     Model.Status == "5" || Model.Status == "Withdrawn" ||
+                                                     Model.Status == "4" || Model.Status == "Declined" || Model.Status == "Returned")
+                                                {
+                                                    <input type="hidden" name="hdnForexCC" class="hfChargeCode" value="@Model.ForexLossChargeCode" />
+                                                    <select class="form-control ddlChargeCode" style="min-width:130px" onchange="ChargeCodeChange(this); CalculateChargeCodeSummary();"
+                                                            name="ForexLossChargeCode">
+                                                        <option value="">Select One</option>
+                                                    </select>
+                                                }
+                                                else
+                                                {
+
+                                                    <input type="hidden" name="hdnForexCC" value="@Model.ForexLossChargeCode" />
+                                                    <input type="hidden" name="ForexLossChargeCode" value="@Model.ForexLossChargeCode" />
+                                                    <span id="txtForexLossChargeCode">@Model.ForexLossChargeCode</span>
+                                                }
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="col-md-3">Total Tax (RM)</td>
+                                            <td class="col-md-3 text-right" id="dis_GSTTotal">@GSTTotal.ToString("0.00")</td>
+                                        </tr>
+                                        @*<tr>
+                                                <td class="col-md-3">Total without GST (RM)</td>
+                                                <td class="col-md-3" id="dis_Subtotal">@SubTotal.ToString("0.00")</td>
+
+                                            </tr>*@
+
+                                        <tr>
+                                            <td class="col-md-3">Grand Total (RM)</td>
+                                            <td class="col-md-3 text-right" id="dis_Grandtotal">@Total.ToString("0.00")</td>
+                                            <input type="hidden" name="GrandTotal" value="@Total.ToString("0.00")" />
+                                        </tr>
+                                        <tr>
+                                            <td class="col-md-3">Advance Request Amount (RM)</td>
+                                            <td class="col-md-3 text-right" id="dis_advClaimAmt">@AdvanceClaim.ToString("0.00")</td>
+                                            <input type="hidden" name="AdvanceClaimAmount" value="@AdvanceClaim.ToString("0.00")" />
+                                        </tr>
+                                        <tr>
+                                            <td class="col-md-3">Nett Claims Before Rounding (RM)</td>
+                                            <td class="col-md-3 text-right" id="dis_NettTotalBefore">@NettTotalBefore.ToString("0.00")</td>
+                                            <input type="hidden" name="NettTotalBefore" value="@NettTotalBefore.ToString("0.00")" />
+                                        </tr>
+                                        <tr>
+                                            <td class="col-md-3 bold">Nett Claims (RM)</td>
+                                            <td class="col-md-3 text-right" id="dis_NettTotal">@NettTotal.ToString("0.00")</td>
+                                            <input type="hidden" name="NettTotal" value="@NettTotal.ToString("0.00")" />
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <script>
+
+                            $(document).ready(function () {
+                                var hdnTipsCC = $("[name='hdnTipsCC']").val();
+                                var hdnForexLossCC = $("[name='hdnForexCC']").val();
+
+                                $("[name='TipsChargeCode']").val(hdnTipsCC);
+                                $("[name='ForexLossChargeCode']").val(hdnForexLossCC);
+                            });
+
+                            function calcSummary() {
+                                var GrandGST = new Decimal(0);
+                                var GrandAmt = new Decimal(0);
+                                var GrandTotalAmt = new Decimal(0);
+                                var NettTotal = new Decimal(0);
+                                var OverSea = new Decimal(0);
+                                var ForexLoss = new Decimal(0);
+                                var Tips = new Decimal(0);
+                                var TipsRate = (new Decimal($('#TipsRate').val())).dividedBy(100);
+                                var ForexLossRate = (new Decimal($('#ForexLossRate').val())).dividedBy(100);
+                                var AdvClaimAmt = new Decimal($('input[name=AdvanceClaimAmount]').val());
+
+                                $('.Location').each(function (index) {
+                                    var row;
+                                    if ($(this).val().toUpperCase() == "OVERSEAS") {
+                                        row = $(this).closest("tr");
+                                        OverSea = OverSea.plus(row.find('.TotalAmount').val());
+                                    }
+                                });
+
+                                $('.GrandGSTAmount').each(function (index) {
+                                    //console.log(this);
+                                    GrandGST = GrandGST.plus($(this).val());
+                                });
+
+                                $('.GrandAmount').each(function (index) {
+                                    GrandAmt = GrandAmt.plus($(this).val());
+                                });
+
+                                $('.GrandTotalAmount').each(function (index) {
+                                    GrandTotalAmt = GrandTotalAmt.plus($(this).val());
+                                });
+
+                                var AbleTipsAmt = new Decimal(0);
+                                if (document.getElementById('IsTips').checked) {
+
+                                    //outofpocket + subsistence
+                                    if (typeof $('.outofpocket .GrandTotalAmount').val() != "undefined") {
+                                        $.each($('.outofpocket .GrandTotalAmount'), function () {
+                                            AbleTipsAmt = AbleTipsAmt.plus($(this).val());
+                                        });
+                                    }
+
+                                    if (typeof $('.subsistence .SubTypeColumn5 ').val() != "undefined") {
+                                        $.each($('.subsistence .SubTypeColumn5'), function () {
+
+                                            if ($(this).val() != "undefined") {
+
+                                                var thisAmount = 0;
+                                                if ($(this).val() == "")
+                                                    thisAmount = 0;
+                                                else
+                                                    thisAmount = $(this).val();
+
+                                                //AbleTipsAmt = AbleTipsAmt.plus($(this).val());
+                                                AbleTipsAmt = AbleTipsAmt.plus(thisAmount);
+                                            }
+
+                                        });
+                                    }
+
+                                    Tips = evenRound(AbleTipsAmt.times(TipsRate), 2);
+                                    OverSea = OverSea.plus(Tips);
+                                    GrandTotalAmt = GrandTotalAmt.plus(Tips);
+                                }
+
+                                if (document.getElementById('IsForexLoss').checked) {
+                                    //console.log("FOREX");
+                                    ForexLoss = evenRound(OverSea.times(ForexLossRate), 2);
+                                    GrandTotalAmt = GrandTotalAmt.plus(ForexLoss);
+                                }
+
+
+                                $('#dis_SubTotal').html(GrandAmt.toFixed(2));
+                                $('#dis_Oversea').html(OverSea.toFixed(2));
+                                $('#dis_Tips').html(evenRound(Tips,2));
+                                $('#hdnTips').val(evenRound(Tips,2));
+                                $('#dis_ForexLoss').html(evenRound(ForexLoss,2));
+                                $('#hdnForexLoss').val(evenRound(ForexLoss,2));
+                                $('#dis_GSTTotal').html(GrandGST.toFixed(2));
+                                $('input[name=GrandTotal]').val(GrandAmt.toFixed(2));
+                                $('#dis_Subtotal').html(GrandAmt.toFixed(2));
+                                $('#dis_Grandtotal').html(GrandTotalAmt.toFixed(2));
+                                $('#dis_advClaimAmt').html(AdvClaimAmt.toFixed(2));
+
+                                var NettTotalBefore = GrandTotalAmt.plus(AdvClaimAmt);
+
+                                $('input[name=NettTotalBefore]').val(NettTotalBefore.toFixed(2));
+                                $('#dis_NettTotalBefore').html(NettTotalBefore.toFixed(2));
+
+                                NettTotal = CustomRounding(NettTotalBefore);
+                                $('input[name=NettTotal]').val(NettTotal.toFixed(2));
+                                $('#dis_NettTotal').html(NettTotal.toFixed(2));
+                            }
+                        </script>
+
+                    }
+                    else if (Model.ClaimTypeCode == "COH01" || Model.ClaimTypeCode == "CIS01" || Model.ClaimTypeCode == "COB01")
+                    {
+                        <div class="row">
+                            <div class="col-md-12">
+                                <table class="table table-striped table-bordered table-hover table-full-width">
+                                    @{
+                                        double AdvanceClaim = 0;
+                                        double NettTotalBefore = AdvanceClaim + Total;
+                                        double NettTotal = @ESS.Claim.Service.CustomRounding(NettTotalBefore);
+                                    }
+                                    <tbody>
+                                        <tr>
+                                            <td class="col-md-9">Total Tax (RM)</td>
+                                            <td class="col-md-3 text-right" id="dis_GSTTotal">@GSTTotal.ToString("0.00")</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="col-md-9">Total without Tax (RM)</td>
+                                            <td class="col-md-3 text-right" id="dis_Subtotal">@SubTotal.ToString("0.00")</td>
+                                            <input type="hidden" name="GrandTotal" value="@Total.ToString("0.00")" />
+                                        </tr>
+                                        <tr>
+                                            <td class="col-md-9">Nett Claims Before Rounding (RM)</td>
+                                            <td class="col-md-3 text-right" id="dis_NettTotalBefore">@NettTotalBefore.ToString("0.00")</td>
+                                            <input type="hidden" name="NettTotalBefore" value="@NettTotalBefore.ToString("0.00")" />
+                                        </tr>
+                                        <tr>
+                                            <td class="col-md-9 bold">Nett Claims (RM)</td>
+                                            <td class="col-md-3 text-right" id="dis_NettTotal">@NettTotal.ToString("0.00")</td>
+                                            <input type="hidden" name="NettTotal" value="@NettTotal.ToString("0.00")" />
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <script>
+                            function calcSummary() {
+                                var GrandGST = 0;
+                                var GrandAmt = 0;
+                                var GrandTotalAmt = 0;
+                                var NettTotal = 0;
+                                $('.GrandGSTAmount').each(function (index) {
+                                    //console.log(this);
+                                    GrandGST += parseFloat($(this).val());
+                                });
+
+                                $('.GrandTotalAmount').each(function (index) {
+                                    GrandTotalAmt += parseFloat($(this).val());
+                                });
+
+                                $('.GrandAmount').each(function (index) {
+                                    GrandAmt += parseFloat($(this).val());
+                                });
+
+                                //console.log(GrandTotalAmt);
+                                $('#dis_GSTTotal').html(GrandGST.toFixed(2));
+                                $('input[name=GrandTotal]').val(GrandAmt.toFixed(2));
+                                $('#dis_Subtotal').html(GrandAmt.toFixed(2));
+                                $('input[name=NettTotalBefore]').val(GrandTotalAmt.toFixed(2));
+                                $('#dis_NettTotalBefore').html(GrandTotalAmt.toFixed(2));
+                                NettTotal = CustomRounding(GrandTotalAmt);
+                                $('input[name=NettTotal]').val(NettTotal.toFixed(2));
+                                $('#dis_NettTotal').html(NettTotal.toFixed(2));
+                            }
+                        </script>
+                    }
+
+                    @if (Model.AdvanceClaimAmount != null)
+                    {
+                        if (decimal.Parse(Model.AdvanceClaimAmount) > 0m)
+                        {
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <table class="table table-striped table-bordered table-hover table-full-width">
+                                        <thead>
+                                            <tr>
+                                                <th class="col-md-9">Advance Claim</th>
+                                                <th class="col-md-3 text-right">Amount (RM)</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td>Advance Request Amount (RM)</td>
+                                                <td class="text-right">@decimal.Parse(Model.AdvanceClaimAmount).ToString("0.00")</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        }
+                    }
+
+                    <div class="row">
+                        <div class="col-md-12">
+                            <table class="table table-striped table-bordered table-hover table-full-width">
+
+                                <tbody>
+                                    <tr>
+                                        <td class="col-md-3">Processed Amount (RM)</td>
+                                        <td class="col-md-3 text-right">@Model.ProcessedAmount</td>
+                                        <td class="col-md-3"></td>
+                                        <td class="col-md-3 text-right"></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="col-md-3">Payment Amount (RM)</td>
+                                        <td class="col-md-3 text-right">@Model.PaymentAmount</td>
+                                        <td class="col-md-3">Payment Release Date</td>
+                                        <td class="col-md-3 text-right">@Model.PaymentReleaseDate</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="col-md-3">Payment Method</td>
+                                        <td class="col-md-3 text-right">@Model.PaymentMethod</td>
+                                        <td class="col-md-3"></td>
+                                        <td class="col-md-3 text-right"></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<script>
+    function CalculateSummary() {
+        var subtypename = 'SubType'
+        $('.subtypeportlet').each(function (index) {
+            var tablename = this.id;
+            var colname = subtypename + index;
+            var totalValue = $('#' + tablename).find('.GrandTotalAmount').val();
+            $('#' + colname).html('<div class="text-right">' + totalValue + '</div>');
+        });
+        calcSummary();
+        CheckMileageThreshold();
+        CalculateChargeCodeSummary();
+    }
+
+    function CustomRounding(inputAmount) {
+        var outputAmount = inputAmount * 10;
+        var fraction = outputAmount - Math.floor(outputAmount);
+        if ((fraction >= 0) & (fraction < 0.25)) {
+            fraction = 0.0;
+        }
+        else if ((fraction >= 0.25) & (fraction < 0.75)) {
+            fraction = 0.5;
+        }
+        else {
+            fraction = 1.0;
+        }
+        outputAmount = Math.floor(outputAmount) + fraction;
+        outputAmount = outputAmount / 10;
+        return outputAmount;
+    }
+
+    $(function () {
+        $("#txtTipsChargeCode").text(DisplayChargeCodeDesc($("#txtTipsChargeCode").text()));
+        $("#txtForexLossChargeCode").text(DisplayChargeCodeDesc($("#txtForexLossChargeCode").text()));
+        CalculateSummary();
+    });
+</script>

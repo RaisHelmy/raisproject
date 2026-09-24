@@ -1,0 +1,103 @@
+﻿@model List<Asset.Models.Income>
+@{
+    string Title = @"Pendapatan Bulanan";
+    string EmployeeID = ViewBag.EmployeeID;
+
+    bool Readonly = ViewBag.Readonly;
+}
+
+<div class="collapse-portlet portlet box blue">
+    <div class="mini-triangle"><img src="/_layouts/15/TNBESS/Assets/img/menu-red-triangle.png" /></div>
+    <div class="portlet-title">
+        <div class="caption">
+            <i class="fa fa-reorder"></i>@Title @(ViewBag.ErrorMessage)
+        </div>
+        <div class="tools">
+            <a title="" data-original-title="" href="javascript:;" class="collapse"></a>
+        </div>
+        @if (!Readonly)
+        {
+            <div class="actions">
+                <a href="javascript:void(0)" onclick="MonthlyIncome_OpenForm();" class="btn green">
+                    <i class="fa fa-pencil"></i> Kemaskini
+                </a>
+            </div>
+        }
+    </div>
+    <div class="portlet-body form">
+        <div class="form-body">
+            <div class="form-horizontal">
+                <div class="table-toolbar">
+                    <table id="tblResultMonthlyIncome" class="table table-striped table-bordered table-hover table-full-width">
+                        <thead>
+                            <tr>
+                                <th>Hubungan</th>
+                                <th>Gaji Pokok (RM)</th>
+                                <th>Elaun Tetap (RM)</th>
+                                <th>Sewa Rumah/Kedai (RM)</th>
+                                <th>Dividen (RM)</th>
+                                <th>Lain-Lain (RM)</th>
+                                <th>Jumlah (RM)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in @Model)
+                            {
+                                decimal tempDec = 0;
+
+                                <tr>
+                                    <td>@item.RelationshipTypeDesc</td>
+                                    <td>
+                                      @(decimal.TryParse(item.BasicPay, out tempDec) ? tempDec.ToString("#,##0.00") : "0.00")
+                                    </td>
+                                    <td>
+                                        @(decimal.TryParse(item.Allowance, out tempDec) ? tempDec.ToString("#,##0.00") : "0.00")
+                                    </td>
+                                    <td>
+                                        @(decimal.TryParse(item.Rent, out tempDec) ? tempDec.ToString("#,##0.00") : "0.00")
+                                    </td>
+                                    <td>
+                                        @(decimal.TryParse(item.Dividend, out tempDec) ? tempDec.ToString("#,##0.00") : "0.00")
+                                    </td>
+                                    <td>
+                                        @(decimal.TryParse(item.Others, out tempDec) ? tempDec.ToString("#,##0.00") : "0.00")
+                                    </td>
+                                    <td>
+                                        @(decimal.TryParse(item.Total, out tempDec) ? tempDec.ToString("#,##0.00") : "0.00")
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="MonthlyIncome_ModalContainer">
+</div>
+
+<script>
+    var tblResultMonthlyIncome =
+        $('#tblResultMonthlyIncome').dataTable({
+            "bLengthChange": false,
+            "bFilter": false,
+            "bPaginate": false,
+            "bInfo": false,
+            "bSortable": false,
+        });
+
+    function MonthlyIncome_OpenForm() {
+        ShowLoadingScreen();
+        var link = '@Url.Action("_MonthlyIncomeForm", "Asset", new { EmployeeID = EmployeeID })';
+        link += "&Readonly=" + '@Readonly';
+
+        $.get(link,
+            function (result) {
+                HideLoadingScreen();
+                $('#MonthlyIncome_ModalContainer').html(result);
+                $('#MonthlyIncomeForm_Modal').modal();
+        });
+    }
+</script>

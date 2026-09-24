@@ -1,0 +1,79 @@
+﻿@model LeaveApplication.Models.LeaveApplicationVM
+
+@*Brand new form*@
+@if ((Model.LeaveStatus == "Draft" || Model.LeaveStatus == "DR")
+    && Model.LeaveID == Guid.Empty)
+{
+    <div class="row iring-keluarga-sakit">
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="control-label col-md-4">Relationship <span style="color:red;"> *</span></label>
+                    <input type="hidden" name="Relationship" />
+                    <div class="col-md-8 form-control-static">
+                        <select id="ddlRelationship" class="form-control" onchange="_CutiKesihatanAhliKeluarga_RelationshipChanged()">
+                            <option value="" selected="selected">- Please Select -</option>
+                            <option value="Spouse">Spouse</option>
+                            <option value="Children">Children</option>
+                            <option value="Parent">Parent</option>
+                            <option value="In Law">In Law</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+@*Opening a draft*@
+else if ((Model.LeaveStatus == "Draft" || Model.LeaveStatus == "DR" ||
+          Model.LeaveStatus == "Cancelled" || Model.LeaveStatus == "CA" ||
+          Model.LeaveStatus == "Withdrawn" || Model.LeaveStatus == "WD")
+          && Model.LeaveID != Guid.Empty)
+{
+    <div class="row iring-keluarga-sakit">
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="control-label col-md-4">Relationship <span style="color:red;"> *</span></label>
+                    <input type="hidden" name="Relationship" value="@Model.Relationship" />
+                    <div class="col-md-8 form-control-static">
+                        <select id="ddlRelationship" class="form-control" onchange="_CutiKesihatanAhliKeluarga_RelationshipChanged()">
+                            <option value="" selected="selected">- Please Select -</option>
+                            <option value="Spouse">Spouse</option>
+                            <option value="Children">Children</option>
+                            <option value="Parent">Parent</option>
+                            <option value="In Law">In Law</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+else
+{
+    <div class="row iring-keluarga-sakit">
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="control-label col-md-4">Relationship </label>
+                    <div class="col-md-8 form-control-static">
+                        <input type="text" class="form-control" readonly
+                               id="Relationship" name="Relationship" value="@Model.Relationship">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<script>
+    function _CutiKesihatanAhliKeluarga_RelationshipChanged() {
+        $('input[name="Relationship"]').val($('#ddlRelationship').val());
+    }
+
+    $(function () {
+        InitializeCommonControls();
+        $('#ddlRelationship').val($('input[name="Relationship"]').val());
+    });
+</script>

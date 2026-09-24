@@ -1,0 +1,980 @@
+﻿@model UniformApplication.Model.UniformApplicationVM
+
+@{
+    Layout = "";
+    bool isViewOnlyFeedback = false;
+}
+
+<style>
+    .borderless td, .borderless th, .borderless tr {
+        border: none !important;
+    }
+
+    .radio {
+        padding-top: 0px !important;
+    }
+
+    .table-feedback tbody tr th {
+        padding-left: 0px;
+    }
+</style>
+
+@for (int x = 0; x < Model.RequestItems.Count; x++)
+{
+    <div class="row @Model.RequestItems[x].Code">
+        @if (Model.IsNewApplication || Model.IsEditable)
+        {
+            <div class="col-md-4">
+                <div class="form-horizontal">
+                    <div class="form-group">
+                        <img src="@Model.RequestItems[x].ImageURL" class="form-control-static col-md-12" />
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-8">
+                <div class="form-horizontal">
+                    <div class="form-group">
+                        <label class="control-label col-md-3">
+                            Item
+                        </label>
+                        <div class="col-md-7  form-control-static">
+                            <input type="hidden" name="RequestItems[@x].ID" value="@Model.RequestItems[x].ID" />
+                            <input type="hidden" name="RequestItems[@x].Code" value="@Model.RequestItems[x].Code" />
+                            <input type="text" class="form-control" name="RequestItems[@x].Title" value='@Model.RequestItems[x].Title' readonly />
+                        </div>
+                    </div>
+                </div>
+                <div class="form-horizontal">
+                    <div class="form-group">
+                        <label class="control-label col-md-3">
+                            Description
+                        </label>
+                        <div class="col-md-7  form-control-static">
+                            <input type="text" class="form-control" name="RequestItems[@x].Description" value='@Model.RequestItems[x].Description' readonly />
+                        </div>
+                    </div>
+                </div>
+                <div class="form-horizontal">
+                    <div class="form-group">
+                        <label class="control-label col-md-3">
+                            Quantity
+                        </label>
+                        <div class="col-md-7  form-control-static">
+                            <input type="hidden" name="RequestItems[@x].RequestQtyValue" value="@Model.RequestItems[@x].RequestQty" />
+                            @{
+                                string SpanName = "Eligibility_" + Model.RequestItems[x].Code + "_" + x;
+                            }
+                            <span class="eligibility-ddl" name="@SpanName">
+                                @Html.DropDownListFor(i => i.RequestItems[x].RequestQty, new SelectList(Model.RequestItems[x].EligibleQtyDDL, "Value", "Text"), new { @class = "bs-select form-control select-assign-value qty-ddl", @onchange= "disableSizeDDL(this)" })
+                            </span>
+
+                            @*@Html.DropDownList("RequestItems[" + @x + "].RequestQty", new SelectList(Model.RequestItems[x].EligibleQtyDDL, "Value", "Text"), null, new { @class = "bs-select form-control ", @name = "RequestItems[" + @x + "].RequestQty", @value = Model.RequestItems[x].RequestQty })*@
+                        </div>
+                    </div>
+                </div>
+                <div class="form-horizontal">
+                    <div class="form-group">
+                        <label class="control-label col-md-3">
+                            Size
+                        </label>
+                        <div class="col-md-7  form-control-static">
+                            <input type="hidden" name="RequestItems[@x].SizeValue" value="@Model.RequestItems[@x].Size" />
+                            @Html.DropDownListFor(i => i.RequestItems[x].Size, new SelectList(Model.RequestItems[x].SizeDDL, "Value", "Text"), new { @class = "bs-select form-control select-assign-value", @value = @Model.RequestItems[x].Size })
+                            @*@Html.DropDownList("RequestItems[" + @x + "].Size", new SelectList(Model.RequestItems[x].SizeDDL, "Value", "Text"), null, new { @class = "bs-select form-control ", @name = "RequestItems[" + @x + "].Size", @value = Model.RequestItems[x].Size })*@
+                        </div>
+                        @if (!string.IsNullOrEmpty(@Model.RequestItems[x].GuideURL))
+                        {
+                            <div class="col-md-1  form-control-static">
+                                <a class="btn blue btn-sm" title="View sizing guide" onclick="ViewSizingGuide('@Model.RequestItems[x].GuideURL');">
+                                    <i class="fa fa-folder-open-o"></i>
+                                </a>
+                            </div>
+                        }
+                    </div>
+                </div>
+                <div class="form-horizontal">
+                    <div class="form-group">
+                        <label class="control-label col-md-3">
+                            Comment
+                        </label>
+                        <div class="col-md-7  form-control-static">
+                            <textarea class="form-control " style="width:100%; height:100px;" name="RequestItems[@x].Remarks">@Model.RequestItems[x].Remarks</textarea>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+
+        }
+        else
+        {
+            int? currentQty = 0;
+
+            <div class="col-md-4">
+                <div class="form-horizontal">
+                    <div class="form-group">
+                        <img src="@Model.RequestItems[x].ImageURL" class="form-control-static col-md-12" />
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-8">
+                <div class="form-horizontal">
+                    <div class="form-group">
+                        <label class="control-label col-md-3">
+                            Item
+                        </label>
+                        <div class="col-md-7  form-control-static">
+                            <input type="hidden" name="RequestItems[@x].ID" value="@Model.RequestItems[x].ID" />
+                            <input type="hidden" name="RequestItems[@x].Code" value="@Model.RequestItems[x].Code" />
+                            <input type="text" class="form-control" name="RequestItems[@x].Title" value='@Model.RequestItems[x].Title' readonly />
+                        </div>
+                    </div>
+                </div>
+                <div class="form-horizontal">
+                    <div class="form-group">
+                        <label class="control-label col-md-3">
+                            Description
+                        </label>
+                        <div class="col-md-7  form-control-static">
+                            <input type="text" class="form-control" name="RequestItems[@x].Description" value='@Model.RequestItems[x].Description' readonly />
+                        </div>
+                    </div>
+                </div>
+                <div class="form-horizontal">
+                    <div class="form-group">
+                        <label class="control-label col-md-3">
+                            Quantity
+                        </label>
+                        <div class="col-md-7  form-control-static">
+
+                            @if (Model.IsPhaseBSOVerify && Model.IsBSOMemberOfRequest)
+                            {
+                                <input type="hidden" name="RequestItems[@x].RequestQty" value="@Model.RequestItems[@x].RequestQty" />
+                                <input type="hidden" name="RequestItems[@x].VerifiedQtyValue" value="@Model.RequestItems[@x].RequestQty" />
+
+                                @Html.DropDownListFor(i => i.RequestItems[x].VerifiedQty, new SelectList(Model.RequestItems[x].EligibleQtyDDL, "Value", "Text"), new { @class = "bs-select form-control select-assign-value qty-ddl" , @onchange= "disableSizeDDL(this)"})
+
+                            }
+                            else if (!Model.IsNewApplication && !Model.IsPhaseBSOVerify && Model.Status != "PE")
+                            {
+                                currentQty = Model.RequestItems[x].VerifiedQty;
+                                <input type="text" class="form-control current-qty" name="RequestItems[@x].VerifiedQty" value='@Model.RequestItems[x].VerifiedQty' readonly />
+                            }
+                            else
+                            {
+                                currentQty = Model.RequestItems[x].RequestQty;
+                                <input type="text" class="form-control current-qty" name="RequestItems[@x].RequestQty" value='@Model.RequestItems[x].RequestQty' readonly />
+                            }
+                        </div>
+                        @if (!Model.IsNewApplication && !Model.IsPhaseBSOVerify && Model.Status != "PE")
+                        {
+                            <input type="hidden" name="RequestItems[@x].RequestQtyValue" value='@Model.RequestItems[x].RequestQty' />
+                            <input type="hidden" name="RequestItems[@x].VerifiedQtyValue" value='@Model.RequestItems[x].VerifiedQty' />
+                            <div class="control-label col-md-2">
+                                <img class="imgQtyInfo" name="imgQtyInfo_@x" id="imgQtyInfo_@x" src="/_layouts/15/images/info16by16.gif" alt="QtyInfo" title="">
+                            </div>
+                        }
+                    </div>
+                </div>
+                <div class="form-horizontal">
+                    <div class="form-group">
+                        <label class="control-label col-md-3">
+                            Size
+                        </label>
+                        <div class="col-md-7  form-control-static">
+
+
+                            @if (Model.IsPhaseBSOVerify && Model.IsBSOMemberOfRequest)
+                            {
+                                <input type="hidden" name="RequestItems[@x].Size" value="@Model.RequestItems[@x].Size" />
+                                <input type="hidden" name="RequestItems[@x].VerifiedSizeValue" value="@Model.RequestItems[@x].Size" />
+
+                                @Html.DropDownListFor(i => i.RequestItems[x].VerifiedSize, new SelectList(Model.RequestItems[x].SizeDDL, "Value", "Text"), new { @class = "bs-select form-control select-assign-value" })
+
+                            }
+                            else if (!Model.IsNewApplication && !Model.IsPhaseBSOVerify && Model.Status != "PE")
+                            {
+                                <input type="text" class="form-control" name="RequestItems[@x].VerifiedSize" value='@Model.RequestItems[x].VerifiedSize' readonly />
+                            }
+                            else
+                            {
+                                <input type="text" class="form-control" name="RequestItems[@x].Size" value='@Model.RequestItems[x].Size' readonly />
+                            }
+
+                            @*<input type="text" class="form-control" name="RequestItems[@x].Size" value='@Model.RequestItems[x].Size' readonly />*@
+                        </div>
+                        @if (!Model.IsNewApplication && !Model.IsPhaseBSOVerify && Model.Status != "PE")
+                        {
+                            <input type="hidden" name="RequestItems[@x].SizeValue" value='@Model.RequestItems[x].Size' />
+                            <input type="hidden" name="RequestItems[@x].VerifiedSizeValue" value='@Model.RequestItems[x].VerifiedSize' />
+                            <div class="control-label col-md-2">
+                                <img class="imgSizeInfo" name="imgSizeInfo_@x" id="imgSizeInfo_@x" src="/_layouts/15/images/info16by16.gif" alt="SizeInfo" title="">
+                            </div>
+                        }
+                    </div>
+                </div>
+                <div class="form-horizontal">
+                    <div class="form-group">
+                        <label class="control-label col-md-3">
+                            Comment
+                        </label>
+                        <div class="col-md-7  form-control-static">
+                            <textarea class="form-control " style="width:100%; height:100px;" name="RequestItems[@x].Remarks" readonly>@Model.RequestItems[x].Remarks</textarea>
+                        </div>
+                    </div>
+                </div>
+
+
+                @if (Model.IsPhaseFeedback || Model.IsPhaseStatusUpdate)
+                {
+                    bool isItemQtyZero = currentQty.HasValue ? currentQty == 0 : false;
+                    if (Model.IsPhaseStatusUpdate && (Model.IsBSOMemberOfRequest))
+                    {
+
+                        <div class="form-horizontal">
+                            <div class="form-group">
+                                <label class="control-label col-md-3">
+                                    Status
+                                </label>
+                                <div class="col-md-7  form-control-static">
+                                    <input type="hidden" name="RequestItems[@x].StatusValue" value="@Model.RequestItems[@x].Status" />
+
+                                    @if (Model.RequestItems[x].VerifiedQty == 0 && Model.RequestItems[@x].Status == "NO")
+                                    {
+                                        <input type="hidden" class="form-control item-status" name="RequestItems[@x].Status" value='@Model.RequestItems[x].Status' readonly />
+                                        <input type="text" class="form-control" name="RequestItems[@x].StatusDesc" value='@Model.RequestItems[x].StatusDesc' readonly />
+
+
+                                    }
+                                    else
+                                    {
+                                        @Html.DropDownList("RequestItems[" + @x + "].Status", new SelectList(Model.RequestItems[x].StatusDDL, "Value", "Text"), null, new { @class = "bs-select form-control select-assign-value item-status", @name = "RequestItems[" + @x + "].Status", @value = Model.RequestItems[x].Status, @onchange = "changeItemStatus(this)" })
+
+                                    }
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-horizontal ReturnQtyDiv_@x">
+                            <div class="form-group">
+                                <label class="control-label col-md-3">
+                                    Return Quantity
+                                </label>
+                                <div class="col-md-7  form-control-static">
+                                    <input type="hidden" name="RequestItems[@x].ReturnQtyValue" value="@Model.RequestItems[@x].ReturnQty" />
+                                    @Html.DropDownList("RequestItems[" + @x + "].ReturnQty", new SelectList(Model.RequestItems[x].ReturnQtyDDL, "Value", "Text"), null, new { @class = "bs-select form-control select-assign-value", @name = "RequestItems[" + @x + "].ReturnQty", @value = Model.RequestItems[x].ReturnQty })
+                                </div>
+                            </div>
+                        </div>
+
+                    }
+                    else
+                    {
+                        <div class="form-horizontal">
+                            <div class="form-group">
+                                <label class="control-label col-md-3">
+                                    Status
+                                </label>
+                                <div class="col-md-7  form-control-static">
+                                    <input type="hidden" class="item-status" name="RequestItems[@x].Status" value="@Model.RequestItems[@x].Status" />
+                                    <input type="text" class="form-control" name="RequestItems[@x].StatusDesc" value='@Model.RequestItems[x].StatusDesc' readonly />
+                                </div>
+                            </div>
+                        </div>
+
+                        if (!string.IsNullOrEmpty(Model.RequestItems[@x].Status) && Model.RequestItems[@x].Status == "PR")
+                        {
+                            <div class="form-horizontal">
+                                <div class="form-group">
+                                    <label class="control-label col-md-3">
+                                        Return Quantity
+                                    </label>
+                                    <div class="col-md-7  form-control-static">
+                                        <input type="text" class="form-control" name="RequestItems[@x].ReturnQty" value='@Model.RequestItems[x].ReturnQty' readonly />
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    }
+
+                    if (Model.IsPhaseFeedback)
+                    {
+                        if ((Model.IsCurrentRecordEmployee || Model.IsBSOMemberOfRequest))
+                        {
+                            @*<div class="form-horizontal">
+                        <div class="form-group">
+                            <div class="col-md-3">
+                                <table class="table borderless table-header-column">
+                                    <thead>
+                                        <tr>
+                                            <th> <br /> </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>
+                                                <label class="control-label feedback-header-column">
+                                                    Quality
+                                                </label>
+                                                <br />
+                                                <input type="hidden" id="RequestItems[@x].ItemFeedback.Quality" name="RequestItems[@x].ItemFeedback.Quality" value="@Model.RequestItems[x].ItemFeedback.Quality" />
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <label class="control-label">
+                                                    Material
+                                                </label>
+                                                <br />
+                                                <input type="hidden" id="RequestItems[@x].ItemFeedback.Material" name="RequestItems[@x].ItemFeedback.Material" value="@Model.RequestItems[x].ItemFeedback.Material" />
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <label class="control-label">
+                                                    Delivery Process
+                                                </label>
+                                                <br />
+                                                <br />
+                                                <br />
+                                                <input type="hidden" id="RequestItems[@x].ItemFeedback.Delivery" name="RequestItems[@x].ItemFeedback.Delivery" value="@Model.RequestItems[x].ItemFeedback.Delivery" />
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="col-md-7">
+                                <table class="table borderless ">
+                                    <thead>
+                                        <tr>
+                                            <th>Very Poor</th>
+                                            <th>Poor</th>
+                                            <th>Fair</th>
+                                            <th>Good</th>
+                                            <th>Very Good</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td><label class="radio-inline radio-feedback">@Html.RadioButton("Quality_" + x + "", "1", Model.RequestItems[x].ItemFeedback.Quality == "1", new { @class = "radio-assign-value radio-feedback" }) 1</label></td>
+                                            <td><label class="radio-inline">@Html.RadioButton("Quality_" + x + "", "2", Model.RequestItems[x].ItemFeedback.Quality == "2", new { @class = "radio-assign-value radio-feedback" }) 2</label></td>
+                                            <td><label class="radio-inline">@Html.RadioButton("Quality_" + x + "", "3", Model.RequestItems[x].ItemFeedback.Quality == "3", new { @class = "radio-assign-value radio-feedback" }) 3</label></td>
+                                            <td><label class="radio-inline">@Html.RadioButton("Quality_" + x + "", "4", Model.RequestItems[x].ItemFeedback.Quality == "4", new { @class = "radio-assign-value radio-feedback" }) 4</label></td>
+                                            <td><label class="radio-inline">@Html.RadioButton("Quality_" + x + "", "5", Model.RequestItems[x].ItemFeedback.Quality == "5", new { @class = "radio-assign-value radio-feedback" }) 5</label></td>
+                                        </tr>
+                                        <tr>
+                                            <td><label class="radio-inline">@Html.RadioButton("Material_" + x + "", "1", Model.RequestItems[x].ItemFeedback.Material == "1", new { @class = "radio-assign-value radio-feedback" }) 1</label></td>
+                                            <td><label class="radio-inline">@Html.RadioButton("Material_" + x + "", "2", Model.RequestItems[x].ItemFeedback.Material == "2", new { @class = "radio-assign-value radio-feedback" }) 2</label></td>
+                                            <td><label class="radio-inline">@Html.RadioButton("Material_" + x + "", "3", Model.RequestItems[x].ItemFeedback.Material == "3", new { @class = "radio-assign-value radio-feedback" }) 3</label></td>
+                                            <td><label class="radio-inline">@Html.RadioButton("Material_" + x + "", "4", Model.RequestItems[x].ItemFeedback.Material == "4", new { @class = "radio-assign-value radio-feedback" }) 4</label></td>
+                                            <td><label class="radio-inline">@Html.RadioButton("Material_" + x + "", "5", Model.RequestItems[x].ItemFeedback.Material == "5", new { @class = "radio-assign-value radio-feedback" }) 5</label></td>
+                                        </tr>
+                                        <tr>
+                                            <td><label class="radio-inline">@Html.RadioButton("Delivery_" + x + "", "1", Model.RequestItems[x].ItemFeedback.Delivery == "1", new { @class = "radio-assign-value radio-feedback" }) 1</label></td>
+                                            <td><label class="radio-inline">@Html.RadioButton("Delivery_" + x + "", "2", Model.RequestItems[x].ItemFeedback.Delivery == "2", new { @class = "radio-assign-value radio-feedback" }) 2</label></td>
+                                            <td><label class="radio-inline">@Html.RadioButton("Delivery_" + x + "", "3", Model.RequestItems[x].ItemFeedback.Delivery == "3", new { @class = "radio-assign-value radio-feedback" }) 3</label></td>
+                                            <td><label class="radio-inline">@Html.RadioButton("Delivery_" + x + "", "4", Model.RequestItems[x].ItemFeedback.Delivery == "4", new { @class = "radio-assign-value radio-feedback" }) 4</label></td>
+                                            <td><label class="radio-inline">@Html.RadioButton("Delivery_" + x + "", "5", Model.RequestItems[x].ItemFeedback.Delivery == "5", new { @class = "radio-assign-value radio-feedback" }) 5</label></td>
+                                        </tr>
+                                    </tbody>
+
+                                </table>
+                            </div>
+                        </div>
+                    </div>*@
+                            <div class="FeedbackDiv_@x">
+
+                                <div class="row">
+                                    <div class="form-group">
+                                        <input type="hidden" name="RequestItems[@x].ItemFeedback.ID" value='@Model.RequestItems[x].ItemFeedback.ID' />
+                                        <div class="col-md-10">
+                                            <table class="table borderless table-feedback">
+                                                <thead>
+                                                    <tr>
+                                                        <th></th>
+                                                        <th></th>
+                                                        <th></th>
+                                                        <th></th>
+                                                        <th>Very Poor</th>
+                                                        <th>Poor</th>
+                                                        <th>Fair</th>
+                                                        <th>Good</th>
+                                                        <th>Very Good</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <tr>
+                                                        <th>
+                                                            <label class="control-label">
+                                                                Quality
+                                                            </label>
+                                                            <input type="hidden" id="RequestItems[@x].ItemFeedback.Quality" name="RequestItems[@x].ItemFeedback.Quality" value="@Model.RequestItems[x].ItemFeedback.Quality" />
+                                                        </th>
+                                                        <td></td>
+                                                        <td></td>
+                                                        <td></td>
+                                                        <td><label class="radio-inline">@Html.RadioButton("Quality_" + x + "", "1", Model.RequestItems[x].ItemFeedback.Quality == "1", new { @class = "radio-assign-value" }) 1</label></td>
+                                                        <td><label class="radio-inline">@Html.RadioButton("Quality_" + x + "", "2", Model.RequestItems[x].ItemFeedback.Quality == "2", new { @class = "radio-assign-value" }) 2</label></td>
+                                                        <td><label class="radio-inline">@Html.RadioButton("Quality_" + x + "", "3", Model.RequestItems[x].ItemFeedback.Quality == "3", new { @class = "radio-assign-value" }) 3</label></td>
+                                                        <td><label class="radio-inline">@Html.RadioButton("Quality_" + x + "", "4", Model.RequestItems[x].ItemFeedback.Quality == "4", new { @class = "radio-assign-value" }) 4</label></td>
+                                                        <td><label class="radio-inline">@Html.RadioButton("Quality_" + x + "", "5", Model.RequestItems[x].ItemFeedback.Quality == "5", new { @class = "radio-assign-value" }) 5</label></td>
+                                                    </tr>
+                                                    <tr>
+                                                        <th>
+                                                            <label class="control-label">
+                                                                Material
+                                                            </label>
+
+                                                            <input type="hidden" id="RequestItems[@x].ItemFeedback.Material" name="RequestItems[@x].ItemFeedback.Material" value="@Model.RequestItems[x].ItemFeedback.Material" />
+                                                        </th>
+                                                        <td></td>
+                                                        <td></td>
+                                                        <td></td>
+                                                        <td><label class="radio-inline">@Html.RadioButton("Material_" + x + "", "1", Model.RequestItems[x].ItemFeedback.Material == "1", new { @class = "radio-assign-value" }) 1</label></td>
+                                                        <td><label class="radio-inline">@Html.RadioButton("Material_" + x + "", "2", Model.RequestItems[x].ItemFeedback.Material == "2", new { @class = "radio-assign-value" }) 2</label></td>
+                                                        <td><label class="radio-inline">@Html.RadioButton("Material_" + x + "", "3", Model.RequestItems[x].ItemFeedback.Material == "3", new { @class = "radio-assign-value" }) 3</label></td>
+                                                        <td><label class="radio-inline">@Html.RadioButton("Material_" + x + "", "4", Model.RequestItems[x].ItemFeedback.Material == "4", new { @class = "radio-assign-value" }) 4</label></td>
+                                                        <td><label class="radio-inline">@Html.RadioButton("Material_" + x + "", "5", Model.RequestItems[x].ItemFeedback.Material == "5", new { @class = "radio-assign-value" }) 5</label></td>
+                                                    </tr>
+                                                    <tr>
+                                                        <th>
+                                                            <label class="control-label">
+                                                                Delivery Process
+                                                            </label>
+                                                            <input type="hidden" id="RequestItems[@x].ItemFeedback.Delivery" name="RequestItems[@x].ItemFeedback.Delivery" value="@Model.RequestItems[x].ItemFeedback.Delivery" />
+                                                        </th>
+                                                        <td></td>
+                                                        <td></td>
+                                                        <td></td>
+                                                        <td><label class="radio-inline">@Html.RadioButton("Delivery_" + x + "", "1", Model.RequestItems[x].ItemFeedback.Delivery == "1", new { @class = "radio-assign-value" }) 1</label></td>
+                                                        <td><label class="radio-inline">@Html.RadioButton("Delivery_" + x + "", "2", Model.RequestItems[x].ItemFeedback.Delivery == "2", new { @class = "radio-assign-value" }) 2</label></td>
+                                                        <td><label class="radio-inline">@Html.RadioButton("Delivery_" + x + "", "3", Model.RequestItems[x].ItemFeedback.Delivery == "3", new { @class = "radio-assign-value" }) 3</label></td>
+                                                        <td><label class="radio-inline">@Html.RadioButton("Delivery_" + x + "", "4", Model.RequestItems[x].ItemFeedback.Delivery == "4", new { @class = "radio-assign-value" }) 4</label></td>
+                                                        <td><label class="radio-inline">@Html.RadioButton("Delivery_" + x + "", "5", Model.RequestItems[x].ItemFeedback.Delivery == "5", new { @class = "radio-assign-value" }) 5</label></td>
+                                                    </tr>
+                                                </tbody>
+
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <label class="control-label col-md-3">
+                                            Feedback
+                                        </label>
+                                        <div class="col-md-7  form-control-static">
+                                            <textarea class="form-control " style="width:100%; height:100px;" name="RequestItems[@x].ItemFeedback.Comment">@Model.RequestItems[x].ItemFeedback.Comment</textarea>
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div>
+
+                        }
+                        else if (Model.IsCurrentEmployeeBSO)
+                        {
+                            isViewOnlyFeedback = true;
+
+                            <div class="FeedbackDiv_@x">
+
+                                <div class="row">
+                                    <div class="form-group">
+                                        <input type="hidden" name="RequestItems[@x].ItemFeedback.ID" value='@Model.RequestItems[x].ItemFeedback.ID' />
+                                        <div class="col-md-10">
+                                            <table class="table borderless ">
+                                                <thead>
+                                                    <tr>
+                                                        <th></th>
+                                                        <th>Very Poor</th>
+                                                        <th>Poor</th>
+                                                        <th>Fair</th>
+                                                        <th>Good</th>
+                                                        <th>Very Good</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <tr>
+                                                        <th>
+                                                            Quality
+                                                            <input type="hidden" id="RequestItems[@x].ItemFeedback.Quality" name="RequestItems[@x].ItemFeedback.Quality" value="@Model.RequestItems[x].ItemFeedback.Quality" />
+                                                        </th>
+                                                        <td><label class="radio-inline">@Html.RadioButton("Quality_" + x + "", "1", Model.RequestItems[x].ItemFeedback.Quality == "1", new { @class = "radio-assign-value", @readonly = "readonly" }) 1</label></td>
+                                                        <td><label class="radio-inline">@Html.RadioButton("Quality_" + x + "", "2", Model.RequestItems[x].ItemFeedback.Quality == "2", new { @class = "radio-assign-value", @readonly = "readonly" }) 2</label></td>
+                                                        <td><label class="radio-inline">@Html.RadioButton("Quality_" + x + "", "3", Model.RequestItems[x].ItemFeedback.Quality == "3", new { @class = "radio-assign-value", @readonly = "readonly" }) 3</label></td>
+                                                        <td><label class="radio-inline">@Html.RadioButton("Quality_" + x + "", "4", Model.RequestItems[x].ItemFeedback.Quality == "4", new { @class = "radio-assign-value", @readonly = "readonly" }) 4</label></td>
+                                                        <td><label class="radio-inline">@Html.RadioButton("Quality_" + x + "", "5", Model.RequestItems[x].ItemFeedback.Quality == "5", new { @class = "radio-assign-value", @readonly = "readonly" }) 5</label></td>
+                                                    </tr>
+                                                    <tr>
+                                                        <th>
+                                                            Material
+                                                            <input type="hidden" id="RequestItems[@x].ItemFeedback.Material" name="RequestItems[@x].ItemFeedback.Material" value="@Model.RequestItems[x].ItemFeedback.Material" />
+                                                        </th>
+                                                        <td><label class="radio-inline">@Html.RadioButton("Material_" + x + "", "1", Model.RequestItems[x].ItemFeedback.Material == "1", new { @class = "radio-assign-value", @readonly = "readonly" }) 1</label></td>
+                                                        <td><label class="radio-inline">@Html.RadioButton("Material_" + x + "", "2", Model.RequestItems[x].ItemFeedback.Material == "2", new { @class = "radio-assign-value", @readonly = "readonly" }) 2</label></td>
+                                                        <td><label class="radio-inline">@Html.RadioButton("Material_" + x + "", "3", Model.RequestItems[x].ItemFeedback.Material == "3", new { @class = "radio-assign-value", @readonly = "readonly" }) 3</label></td>
+                                                        <td><label class="radio-inline">@Html.RadioButton("Material_" + x + "", "4", Model.RequestItems[x].ItemFeedback.Material == "4", new { @class = "radio-assign-value", @readonly = "readonly" }) 4</label></td>
+                                                        <td><label class="radio-inline">@Html.RadioButton("Material_" + x + "", "5", Model.RequestItems[x].ItemFeedback.Material == "5", new { @class = "radio-assign-value", @readonly = "readonly" }) 5</label></td>
+                                                    </tr>
+                                                    <tr>
+                                                        <th>
+                                                            Delivery Process
+                                                            <input type="hidden" id="RequestItems[@x].ItemFeedback.Delivery" name="RequestItems[@x].ItemFeedback.Delivery" value="@Model.RequestItems[x].ItemFeedback.Delivery" />
+                                                        </th>
+                                                        <td><label class="radio-inline">@Html.RadioButton("Delivery_" + x + "", "1", Model.RequestItems[x].ItemFeedback.Delivery == "1", new { @class = "radio-assign-value", @readonly = "readonly" }) 1</label></td>
+                                                        <td><label class="radio-inline">@Html.RadioButton("Delivery_" + x + "", "2", Model.RequestItems[x].ItemFeedback.Delivery == "2", new { @class = "radio-assign-value", @readonly = "readonly" }) 2</label></td>
+                                                        <td><label class="radio-inline">@Html.RadioButton("Delivery_" + x + "", "3", Model.RequestItems[x].ItemFeedback.Delivery == "3", new { @class = "radio-assign-value", @readonly = "readonly" }) 3</label></td>
+                                                        <td><label class="radio-inline">@Html.RadioButton("Delivery_" + x + "", "4", Model.RequestItems[x].ItemFeedback.Delivery == "4", new { @class = "radio-assign-value", @readonly = "readonly" }) 4</label></td>
+                                                        <td><label class="radio-inline">@Html.RadioButton("Delivery_" + x + "", "5", Model.RequestItems[x].ItemFeedback.Delivery == "5", new { @class = "radio-assign-value", @readonly = "readonly" }) 5</label></td>
+                                                    </tr>
+                                                </tbody>
+
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <label class="control-label col-md-3">
+                                            Feedback
+                                        </label>
+                                        <div class="col-md-7  form-control-static">
+                                            <textarea class="form-control" readonly style="width:100%; height:100px;" name="RequestItems[@x].ItemFeedback.Comment">@Model.RequestItems[x].ItemFeedback.Comment</textarea>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    }
+
+                }
+
+
+            </div>
+        }
+    </div>
+
+    <br class="@Model.RequestItems[x].Code">
+    if (x < Model.RequestItems.Count)
+    {
+        <hr class="@Model.RequestItems[x].Code">
+        <br class="@Model.RequestItems[x].Code">
+    }
+}
+
+<script>
+
+    function AssignRadioValue() {
+
+        alert('test');
+    }
+
+    function AssignItemDDLValue() {
+        $('.select-assign-value').each(function (i, v) {
+            //console.log($("input[name='" + $(v).attr("name") + "Value']").val());
+            $(v).val($("input[name='" + $(v).attr("name") + "Value']").val());
+        })
+
+        specialRequirementAssignQty();
+        SetDefaultRequestQuantity();
+    }
+
+    function AssignItemEligibilityValue() {
+        var EmployeeID = $('#hfEmpID').val();
+        if ($('input[name="Category"]') !== "1") {
+            $('.eligibility-ddl').each(function (i, v) {
+                //console.log($("input[name='" + $(v).attr("name") + "Value']").val());
+                $(v).val($("input[name='" + $(v).attr("name") + "Value']").val());
+
+                //var EmployeeID = e.Value;
+                var TargetName = $(v).attr("name");
+                var NameSplit = ($(v).attr("name")).split("_");
+                var ItemCode = NameSplit[1];
+                var ItemCount = NameSplit[2];
+
+                changeEmployeeEligibility(EmployeeID, ItemCode, ItemCount, TargetName);
+            })
+        }
+    }
+
+    function changeEmployeeEligibility(EmployeeID, Code, Count, target) {
+
+        $.ajax({
+            type: "GET",
+            url: '@Url.Content("~/UniformApplication/_DDLEligibility")',
+            cache: false,
+            dataType: "html",
+                //string EmployeeID, string UniformCode, string Count
+                data: { EmployeeID: EmployeeID, UniformCode: Code, Count: Count},
+            success: function (content) {
+                $("span[name='" + target + "']").html(content);
+            },
+            error: function (e) {
+                console.log(e);
+            }
+        });
+    }
+
+    
+    function LoadItemsWithEligibility() {
+
+        var SubmitForEmpID = $('#hfEmpID').val();
+        $('input[name="SubmitFor"]').val(SubmitForEmpID);
+        if ('@Model.Category' == '0') {
+
+
+                  
+            
+        $.ajax({
+            url: '../UniformApplication/IsSubmitted',
+            type: 'POST',
+            data: {
+                EmployeeID: SubmitForEmpID,
+                StartDate: $("[name='CycleStart']").val(),
+                EndDate: $("[name='CycleEnd']").val()
+            },
+            success: function (result) {
+                   
+                   if (result) {
+                        
+                       $('#divUniformItem').hide();
+                       $('#divActionButton').hide()
+                       $('#divSubmittedWarning').show()
+                      
+                    } else {
+
+                        $('#divUniformItem').show();
+                       $('#divActionButton').show()
+                       $('#divSubmittedWarning').hide(); 
+
+                        $.ajax({
+                            type: "GET",
+                            url: '@Url.Content("~/UniformApplication/_UniformItems")',
+                            cache: false,
+                            dataType: "html",
+                            data: { EmployeeID: SubmitForEmpID },
+                            success: function (content) {
+                    
+                                $(".uniform-items").html(content);
+                            },
+                            error: function (e) {
+                                console.log(e);
+                            }
+                                                  });
+
+                    }
+               
+            },
+            error: function (e) {
+                   alert('error');
+                    console.log(e);
+                }
+        });
+          
+
+            @*if (isSubmitted == 'false') {
+                $.ajax({
+                type: "GET",
+                url: '@Url.Content("~/UniformApplication/_UniformItems")',
+                cache: false,
+                dataType: "html",
+                data: { EmployeeID: SubmitForEmpID },
+                success: function (content) {
+                    
+                    $(".uniform-items").html(content);
+                },
+                error: function (e) {
+                    console.log(e);
+                }
+            });
+            }*@
+            
+        }
+        
+    }
+
+    function RemoveNonEligibleItem() {
+        $('.remove-eligibility').each(function (i, v) {
+
+            $('.' + $(v).val()).remove();
+        })
+    }
+
+    function InitializeItemReturnShowHide() {
+        $('.item-status').each(function (i, v) {
+            changeItemStatus(v);
+
+            //var Status = $(v).val();
+
+            //var ElementName = $(v).attr("name");
+            //var m = ElementName.indexOf("[");
+            //var n = ElementName.indexOf("]");
+            //var TargetClass = 'ReturnQtyDiv_' + ElementName.substring(m + 1, n);
+
+            //if (Status === 'PR') {
+            //    $('.' + TargetClass).show();
+            //}
+            //else {
+            //    $('.' + TargetClass).hide();
+            //}
+
+        });
+    }
+
+    function changeItemStatus(e) {
+        var ElementName = $(e).attr("name");
+        var ElementValue = $(e).val();
+        var m = ElementName.indexOf("[");
+        var n = ElementName.indexOf("]");
+        var TargetClass = 'ReturnQtyDiv_' + ElementName.substring(m + 1, n);
+        var TargetClassFeedback = 'FeedbackDiv_' + ElementName.substring(m + 1, n);
+        if (ElementValue == "PR") {
+
+            $('.' + TargetClass).show();
+        }
+        else {
+
+            $('.' + TargetClass).hide();
+        }
+
+        if (ElementValue == "NO") {
+            $('.' + TargetClassFeedback).hide();
+        }
+        else {
+
+            $('.' + TargetClassFeedback).show();
+        }
+    }
+
+
+
+    function loadSizeTooltip() {
+        $('.imgSizeInfo').each(function (i, v) {
+
+            $(v).val($("input[name='" + $(v).attr("name") + "Value']").val());
+
+            var NameSplit = ($(v).attr("name")).split("_");
+            var Count = NameSplit[1];
+            var TargetName = 'imgSizeInfo_' + Count;
+
+            $('#' + TargetName).qtip({
+                content: createSizeTooltips(Count),
+                position: {
+                    corner: {
+                        target: 'leftMiddle',
+                        tooltip: 'rightMiddle',
+                        adjust: {
+                            method: 'shift none'
+                        }
+                    }
+                },
+                style: {
+                    width: " + this.Width + ",
+                    border: {
+                        width: 2,
+                        radius: 5,
+                        color: '#CECECE'
+                    },
+                    padding: 5,
+                    tip: true,
+                    name: 'light'
+                }
+            });
+        })
+    }
+
+    function loadQtyTooltip() {
+        $('.imgQtyInfo').each(function (i, v) {
+
+            $(v).val($("input[name='" + $(v).attr("name") + "Value']").val());
+
+            var NameSplit = ($(v).attr("name")).split("_");
+            var Count = NameSplit[1];
+            var TargetName = 'imgQtyInfo_' + Count;
+
+            $('#' + TargetName).qtip({
+                content: createQtyTooltips(Count),
+                position: {
+                    corner: {
+                        target: 'leftMiddle',
+                        tooltip: 'rightMiddle',
+                        adjust: {
+                            method: 'shift none'
+                        }
+                    }
+                },
+                style: {
+                    width: " + this.Width + ",
+                    border: {
+                        width: 2,
+                        radius: 5,
+                        color: '#CECECE'
+                    },
+                    padding: 5,
+                    tip: true,
+                    name: 'light'
+                }
+            });
+        })
+    }
+
+
+    function createQtyTooltips(Count) {
+        
+        return '<table align="center">' +
+        '<tr><td>Applied Quantity    :   </td><td align=right>' + $('input[name="RequestItems[' + Count + '].RequestQtyValue').val() + '</td></tr>' +
+            '<tr><td>Updated Quantity    :   </td><td align=right>' + $('input[name="RequestItems[' + Count + '].VerifiedQtyValue').val() + '</td></tr>' +
+            '</table > ';
+        
+    }
+
+
+    function createSizeTooltips(Count) {
+
+        return '<table align="center">' +
+            '<tr><td>Applied Size    :   </td><td align=right>' + $('input[name="RequestItems[' + Count + '].SizeValue').val() + '</td></tr>' +
+            '<tr><td>Updated Size    :   </td><td align=right>' + $('input[name="RequestItems[' + Count + '].VerifiedSizeValue').val() + '</td></tr>' +
+            '</table > ';
+
+    }
+
+    function readOnlyFeedbackRadio() {
+        $(':radio').attr('disabled', true)
+    }
+
+    function specialRequirementAssignQty() {
+        if ('@Model.Category' == '1') {
+            //$('.qty-ddl').val('0');
+            $.each($('.qty-ddl'), function (i, v) {
+                var ddlValue = $(v).val();
+                if (ddlValue === '') {
+                    $(v).val('0');
+                }
+            });
+        }
+    }
+
+    function SetDefaultRequestQuantity() {
+
+        if ('@Model.Category' == '0' && '@Model.IsNewApplication' == 'True') {
+            $.each($('.qty-ddl'), function (i, v) {
+                var ddlValue = $(v).val();
+
+                if (ddlValue === '') {
+                    $(v).val('0');
+                }
+            });
+        }
+    }
+
+
+    function disableStatusDDL() {
+
+
+        $.each($('.current-qty'), function (i, v) {
+
+            var Element = $(v);
+            var ElementName = Element.attr('name');
+            var SplittedName = ElementName.split(".");
+
+            var TargetElementName = SplittedName[0] + '.Status';
+            var TargetElement = $('[name="' + TargetElementName + '"]');
+            if (TargetElement.length > 0) {
+                if (Element.val() === "0") {
+                    TargetElement.val('NO');
+                    TargetElement.attr('disabled', true);
+                }
+                else {
+                    TargetElement.attr('disabled', false);
+                }
+            }
+            
+
+        })
+
+        
+    }
+
+    function disableSizeDDL(e) {
+        
+        var Element = $(e);
+        var ElementName = Element.attr('name');
+        var SplittedName = ElementName.split(".");
+
+        var TargetElementName = SplittedName[0] + '.Size';
+        var TargetElement = $('[name="' + TargetElementName + '"]');
+
+        //quickfix for disable/enable size ddl
+        var TargetElementNameVerified = SplittedName[0] + '.VerifiedSize';
+        var TargetElementVerified = $('[name="' + TargetElementNameVerified + '"]');
+
+
+        if (TargetElement.length > 0) {            
+            if (Element.val() === "0") {
+                TargetElement.val('');
+                TargetElement.attr('disabled', true); 
+            }
+            else {
+                TargetElement.attr('disabled', false); 
+            }
+        }
+
+        if (TargetElementVerified.length > 0) {            
+            if (Element.val() === "0") {
+                TargetElementVerified.val('');
+                TargetElementVerified.attr('disabled', true);
+
+ 
+            }
+            else {
+                TargetElementVerified.attr('disabled', false);
+ 
+            }
+        }
+    }
+
+
+    function initiateDisableSizeDDL() {
+        $.each($('.qty-ddl'), function (i, v) {
+            disableSizeDDL(v);
+        });
+    }
+
+    $(function () {
+        AssignItemDDLValue();
+        InitializeItemReturnShowHide();
+        //$('#hfEmpID').change(AssignItemEligibilityValue); 
+
+        $('#hfEmpID').change(LoadItemsWithEligibility);
+        
+        if ('@Model.IsNewApplication' == 'False' && '@Model.IsPhaseBSOVerify' == 'False' && '@Model.Status' != "PE")
+        {
+            loadQtyTooltip();
+            loadSizeTooltip();
+        }
+        if ('@isViewOnlyFeedback' == 'True') {
+            readOnlyFeedbackRadio();
+        }
+
+        //$('.radio-assign-value').change(AssignRadioValue);
+        $('.radio-assign-value').change(function () {
+            //console.log(this);
+            var element = $(this);
+            var SplitName = (element.attr("name")).split("_");
+            var FeedbackName = SplitName[0];
+            var Count = SplitName[1];
+            var TargetName = "RequestItems[" + Count + "].ItemFeedback." + FeedbackName;
+            $('[name="' + TargetName + '"]').val(element.val());
+        });
+
+        initiateDisableSizeDDL();
+        disableStatusDDL();
+
+
+    });
+</script>

@@ -1,0 +1,154 @@
+﻿@model Vendor.Models.VendorVM
+
+<div class="row" id="DivApproval" style="display: none;">
+    <div class="col-md-12">
+        <div class="portlet box blue">
+            <div class="mini-triangle"><img src="/_layouts/15/TNBESS/Assets/img/menu-red-triangle.png" /></div>
+            <div class="portlet-title">
+                <div class="caption">
+                    <i class="fa fa-reorder"></i>Approval Comments
+                </div>
+            </div>
+            <div class="portlet-body form">
+                <div class="form-body">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="form-horizontal">
+                                <div class="form-group">
+                                    <label class="control-label col-md-2">Comments</label>
+                                    <div class="col-md-10 form-control-static">
+                                        <textarea class="form-control" id="txtAppComment" rows="5" cols="60"></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row" id="tr_Disclaimer" style="display:none;">
+    <div class="col-md-12">
+        <div class="form-horizontal">
+            <div class="form-group">
+                <label class="control-label col-md-12">
+                    <input class="form-control" type="checkbox" id="ct_Disclaimer" />
+                    I declare that all the information stated above are accurate and reliable to the best of my knowledge.
+                </label>
+            </div>
+        </div>
+    </div>
+</div>
+
+<br />
+
+<div class="row">
+    <div class="col-md-12">
+        <!-- Submitter -->
+        @if (Model.Status == "Draft" && (String.IsNullOrEmpty(Model.CreatedBy) || Model.CreatedBy == ESS.Core.Common.GetEmployeeID()))
+        {
+            <input type="button" class="btn green" value="Save As Draft" id="btnSave" onclick="ConfirmAction('SaveAsDraft');" />
+        }
+
+        @if (Model.Editable && (String.IsNullOrEmpty(Model.CreatedBy) || Model.CreatedBy == ESS.Core.Common.GetEmployeeID()))
+        {
+            <input type="button" class="btn green" value="Submit" id="btnSubmit" onclick="FormValidation();" />
+        }
+
+        @if (Model.Status == "Draft" && Model.CreatedBy == ESS.Core.Common.GetEmployeeID())
+        {
+            <input type="button" class="btn green" value="Delete" id="btnDelete" onclick="ConfirmAction('Delete');" style="display:none;" />
+        }
+
+        <input type="button" class="btn green" value="Withdraw" id="btnWithdraw" onclick="ConfirmAction('Withdraw');" style="display:none;" />
+
+        <!-- Approver -->
+        <input type="button" class="btn green" value="Verify" id="btnVerify" onclick="ConfirmAction('Verify');" style="display:none;" />
+        <input type="button" class="btn green" value="PR Created" id="btnPRCreated" onclick="ConfirmAction('PRCreated');" style="display:none;" />
+        <input type="button" class="btn green" value="Process" id="btnProcess" onclick="ConfirmAction('Process');" style="display:none;" />
+        <input type="button" class="btn green" value="Decline" id="btnDecline" onclick="Decline_CommentMandatory();" style="display:none;" />
+        <input type="button" class="btn green" value="Back" id="btnBack" onclick="window.history.back()" />
+    </div>
+</div>
+
+<!-- Success Message -->
+<div class="modal fade" id="SuccessSubmit" tabindex="-1" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header Success-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true" style="display: none;"></button>
+                <h4 class="Success-title">Action Successfully Completed</h4>
+            </div>
+            <div class="modal-body Success-body">
+                <div class="well">
+                    Your Order Form has been successfully submitted.
+                </div>
+            </div>
+            <div class="modal-footer Success-footer">
+                <button type="submit" class="btn default blue" id="btnOK">
+                    <i class="fa fa-check"></i>
+                    OK
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Confirmation Message -->
+<div class="modal fade" id="ConfirmUpdate" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                <h4 class="modal-title">Confirmation</h4>
+            </div>
+            <div class="modal-body">
+                <div class="well">
+                    Are you sure you want to Submit this Order Form?\n\rPress Confirm to proceed, or Close to stay on the current page.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="submit" class="btn default blue" id="btnSubmitForm" onclick="javascript: SaveForm(this, true, '');">
+                    <i class="fa fa-check"></i>
+                    Confirm
+                </button>
+                <button type="submit" class="btn default blue" id="btnSubmitSave" onclick="javascript: SaveForm(this, false, '');">
+                    <i class="fa fa-check"></i>
+                    Confirm
+                </button>
+                <button type="submit" class="btn default blue" id="btnSubmitDelete" onclick="javascript: DeleteForm(this);">
+                    <i class="fa fa-check"></i>
+                    Confirm
+                </button>
+                <button type="submit" class="btn default blue" id="btnSubmitWithdraw" onclick="javascript: ApproverAction(this, 'Withdrawn');">
+                    <i class="fa fa-check"></i>
+                    Confirm
+                </button>
+                <button type="submit" class="btn default blue" id="btnSubmitVerify" onclick="javascript: SaveForm(this, false, 'Verified');">
+                    <i class="fa fa-check"></i>
+                    Confirm
+                </button>
+                <button type="submit" class="btn default blue" id="btnSubmitPRCreated" onclick="javascript: ApproverAction(this, 'PRCreated');">
+                    <i class="fa fa-check"></i>
+                    Confirm
+                </button>
+                <button type="submit" class="btn default blue" id="btnSubmitProcess" onclick="javascript: ApproverAction(this, 'Processed');">
+                    <i class="fa fa-check"></i>
+                    Confirm
+                </button>
+                <button type="submit" class="btn default blue" id="btnSubmitDecline" onclick="javascript: ApproverAction(this, 'Declined');">
+                    <i class="fa fa-check"></i>
+                    Confirm
+                </button>
+                <button type="button" class="btn default" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Loading Gif -->
+<div id="divLoading" style="margin: 0px; padding: 0px; position: fixed; right: 0px; top: 0px; width: 100%; height: 100%; background-color: gainsboro; z-index: 30001; opacity: .8; filter: alpha(opacity=70); display: none; ">
+    <p style="position: absolute; top: 30%; left: 30%; color: black;">
+        Performing action, please wait...<img src="/_layouts/15/TNBESS/Assets/img/ajax-loading.gif">
+    </p>
+</div>

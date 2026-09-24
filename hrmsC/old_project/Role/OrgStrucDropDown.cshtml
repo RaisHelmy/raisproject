@@ -1,0 +1,86 @@
+﻿@model List<ESS.Core.DropDownObject>
+
+@{
+    Layout = null;
+}
+
+
+<div class="form-group">
+    <label class="control-label col-md-4">Division:</label>
+    <div class="col-md-8">
+        <p class="form-control-static">
+            @Html.DropDownList("Division", new SelectList(Model, "Value", "Text"), "Select One", new { @class = "bs-select form-control", onchange = "DivisionChange()" })
+        </p>
+    </div>
+</div>
+
+
+<div class="form-group">
+    <label class="control-label col-md-4">Department:</label>
+    <div class="col-md-8">
+        <p class="form-control-static">
+            @Html.DropDownList("Department", Enumerable.Empty<SelectListItem>(), "Select One", new { @class = "bs-select form-control", onchange = "DepartmentChange()" })
+        </p>
+    </div>
+</div>
+
+
+<div class="form-group">
+    <label class="control-label col-md-4">Unit Section:</label>
+    <div class="col-md-8">
+        <p class="form-control-static">
+            @Html.DropDownList("hfUnitSection", Enumerable.Empty<SelectListItem>(), " Select One", new { @class = "bs-select form-control" })
+        </p>
+    </div>
+</div>
+
+
+<script type="text/javascript">
+
+    function DivisionChange() {
+        var Url = '@Url.Content("~/Role/GetDepartment")';
+
+        var ddlSource = '#Division';
+        var ddlTarget = '#Department';
+        var ddlTarget2 = '#hfUnitSection';
+
+        if ($(ddlSource).val() != "") {
+            $.ajaxSetup({ cache: false });
+            $.getJSON(Url, { selValue: $(ddlSource).val() }, function (data) {
+                $(ddlTarget).empty();
+                $(ddlTarget).append("<option  value=''>Select One</option>");
+                $.each(data, function (index, optionData) {
+                    $(ddlTarget).append("<option value='" + optionData.Value + "'>" + optionData.Text + "</option>");
+                });
+                $(ddlTarget2).append("<option value=''>Select One</option>");
+            });
+        }
+        else {
+            $(ddlTarget).empty();
+            $(ddlTarget).append("<option value=''>Select One</option>");
+            $(ddlTarget2).append("<option value=''>Select One</option>");
+        }
+    }
+
+   function DepartmentChange() {
+        var Url = '@Url.Content("~/Role/GetUnitSection")';
+
+        var ddlSource = '#Department';
+        var ddlTarget = '#hfUnitSection';
+
+        if ($(ddlSource).val() != "") {
+            $.ajaxSetup({ cache: false });
+            $.getJSON(Url, { selValue: $(ddlSource).val() }, function (data) {
+                $(ddlTarget).empty();
+                $(ddlTarget).append("<option  value=''>Select One</option>");
+                $.each(data, function (index, optionData) {
+                    $(ddlTarget).append("<option value='" + optionData.Value + "'>" + optionData.Text + "</option>");
+                });
+            });
+        }
+        else {
+            $(ddlTarget).empty();
+            $(ddlTarget).append("<option value=''>Select One</option>");
+        }
+    }
+</script>

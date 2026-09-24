@@ -1,0 +1,174 @@
+﻿@model TNB_ESS_MVC.Controllers.ILSASApproval
+
+@{
+    ViewBag.Title = "Create ILSAS Approval";
+}
+<br />
+<br />
+<div class="row">
+    <div class="col-md-12">
+        <div class="portlet blue box">
+            <div class="portlet-title">
+                <div class="caption">
+                   Add New ILSAS Approval
+                </div>
+            </div>
+            <div class="portlet-body form">
+                <form class="form-horizontal form-row-sepe">
+                    <div class="form-body">
+                   
+                        <div class="form-group">
+                            <label class="control-label col-md-2">Coordinator</label>
+                            <div class="col-md-4">
+                                @Html.Partial("_PeoplePickerControl", new ViewDataDictionary { { "PPID", "Coordinator" } })
+                            </div>
+                        </div>
+
+                        <br />
+                        <div class="form-group">
+                            <label class="control-label col-md-2">Department</label>
+                            <div class="col-md-4">
+                                <input class="form-control" type="text" id="department" />
+                            </div>
+                        </div>
+
+                        <br />
+                        <div class="form-group">
+                            @*<label class="control-label col-md-2">Chief Coordinator</label>*@
+                            <label class="control-label col-md-2">Head of Unit</label>
+                            <div class="col-md-4">
+                                @Html.Partial("_PeoplePickerControl", new ViewDataDictionary { { "PPID", "CC" } })
+                            </div>
+                        </div>
+
+                        <br />
+                        <div class="form-group">
+                            <label class="control-label col-md-2">HOD</label>
+                            <div class="col-md-4">
+                                @Html.Partial("_PeoplePickerControl", new ViewDataDictionary { { "PPID", "HOD" } })
+                            </div>
+                        </div>
+
+                        <br />
+                        <div class="form-group">
+                            @*<label class="control-label col-md-2">GM</label>*@
+                            <label class="control-label col-md-2">Managing Director</label>
+                            <div class="col-md-4">
+                                @Html.Partial("_PeoplePickerControl", new ViewDataDictionary { { "PPID", "GM" } })
+                            </div>
+                        </div>
+
+                        <div class="form-group last" style="padding-top:10px">
+                            <label class="control-label col-md-2"></label>
+                            <div class="col-md-4">
+                                <button type="button" class="btn default pull-right" id="btnBack" onclick="location.href='@Url.Action("ILSASApprovals")'">Back</button> 
+                                <button type="button" style="margin-right:10px" class="btn btn-primary pull-right" id="btnSubmit" onclick="javascript: Validate();"><i class="fa fa-pencil"></i> Add</button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <!--START MODAL-->
+            <div class="modal fade" id="createModal" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                            <h4 class="modal-title" id="deleteText">Update item</h4>
+                        </div>
+                        <div class="modal-body">
+                            <div class="well">
+                                Clicking Create will add a new record to the database. If you want to cancel this operation, click Close.
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="submit" class="btn default green" name="submitType" onclick="javascript: SubmitILSAS();" id="btnUpdate">
+                                <i class="fa fa-plus"></i>
+                                Create
+                            </button>
+
+                            <button type="button" class="btn default" data-dismiss="modal">Close</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!--END MODAL-->
+
+        </div>
+    </div>
+</div>
+
+@Html.Partial("_PeoplePickerInit")
+
+<script>
+    function Validate() {
+        var department = $("#department").val();
+        var gmId = $("#GM").val();
+        var gmName = $("#txtGM").val();
+        var hod = $("#HOD").val();
+        var hodName = $("#txtHOD").val();
+        var ccId = $("#CC").val();
+        var ccName = $("#txtCC").val();
+        var coordinator = $("#Coordinator").val();
+        var coordinatorName = $("#txtCoordinator").val();
+
+        var errorMessage = "";
+        if (department == '')
+            errorMessage += 'Department \n';
+        if (gmName == '')
+            errorMessage += "GM \n";
+        if (hodName == '')
+            errorMessage += "HOD \n";
+        if (ccName == '')
+            errorMessage += "Chief Coordinator \n";
+        if (coordinatorName == '')
+            errorMessage += "Coordinator \n";
+
+        if (errorMessage.length == 0)
+            $("#createModal").modal();
+        else
+            alert("Please fill up the following fields: \n" + errorMessage);
+    }
+
+
+    function SubmitILSAS() {
+
+        var department = $("#department").val();
+        var gmId = $("#GM").val();
+        var gmName = $("#txtGM").val();
+        var hod = $("#HOD").val();
+        var hodName = $("#txtHOD").val();
+        var ccId = $("#CC").val();
+        var ccName = $("#txtCC").val();
+        var coordinator = $("#Coordinator").val();
+        var coordinatorName = $("#txtCoordinator").val();
+
+        $.ajax({
+            type: "POST",
+            url: '@Url.Action("AddILSASApproval", "Role")',
+            data: {
+                Department: department, GM: gmId, GMName: gmName, HOD: hod, HODName: hodName,
+                CC: ccId, CCName: ccName, Coordinator: coordinator, CoordinatorName: coordinatorName
+            },
+            success: function (content) {
+                $("#createModal").modal('hide');
+                if(content.Success == true)
+                {
+                     window.location.href = '@Url.Action("ILSASApprovals")';
+                }
+                else
+                { 
+                    alert(content.Message);
+                }
+            },
+            error: function (err) {
+                console.log("Error in creating ILSAS Approval. \n" + err);
+            }
+        });
+    }
+
+    function BackToList() {
+        window.location.href = '@Url.Action("ILSASApprovals")';
+    }
+</script>

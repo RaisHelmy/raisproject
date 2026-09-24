@@ -1,0 +1,101 @@
+﻿@model IEnumerable<SEP.RoutingManagement.Models.GetMyIntray>
+
+@{
+    Layout = null;
+}
+<style>
+    td.wordWrap {
+        white-space : normal!important;
+        word-break: break-word!important;
+        min-width: 300px;
+    }
+</style>
+
+<div class="portlet box blue">
+    <div class="mini-triangle"><img src="~/Assets/img/menu-red-triangle.png" /></div>
+    <div class="portlet-title">
+        <div class="caption">
+            <i class="fa fa-reorder"></i>Intray Listing
+        </div>
+    </div>
+
+    <div class="portlet-body form">
+        <div class="form-body">
+            <div class="form-horizontal">
+                <table id="tblResult" class="table table-striped table-bordered table-hover table-full-width">
+                    <thead>
+                        <tr>
+                            <th></th>
+                            <th>Request Ref. No</th>
+                            <th>Position Category</th>
+                            <th>Position Text</th>
+                            <th>Job Text</th>
+                            @*<th>Job Grade</th>*@
+                            <th>Employee</th>
+                            <th>Effective Date</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            string color = "green";
+                            if (item.DisplayText13 == "Declined" || item.DisplayText13 == "Withdrawn")
+                            {
+                                color = "red";
+                            }
+                            <tr>
+                                <td>
+									<a class="btn btn-primary" href="@Url.Action("Edit", "TemporaryPosition")?ID=@item.SourceID">
+										<i class="fa fa-edit"></i>
+									</a>
+								</td>
+                                <td>
+                                    @item.ApplicationRefNo
+                                </td>
+                                <td>@item.DisplayText1</td>
+                                <td>@item.DisplayText3</td>
+                                <td class="wordWrap">@item.DisplayText4</td>
+                                @*<td>@item.DisplayText5</td>*@
+                                <td>
+                                    @if (!string.IsNullOrEmpty(item.DisplayText6))
+									{
+										var employeeList = item.DisplayText6.Split(',');
+										foreach (var emp in employeeList)
+										{
+											//string url = "@Url.Action(Index, Employee) ? EmployeeID";
+											var Employee = emp.Split('/');	
+                                            string employee = Employee[1].Trim()+ " - " + Employee[2].Trim() ;
+                                            @employee <br/>
+										}
+									}
+                                </td>
+                                <td>@item.DisplayText7</td>
+                                <td style="color: @color; font-weight: bold">@item.DisplayText13</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    $('#tblResult').dataTable({
+       // "aLengthMenu": [[10, 25, 50, 100, 1000], [10, 25, 50, 100, 1000]]
+    });
+
+    var tableWrapper = "#tblResult_wrapper";
+
+    jQuery(tableWrapper + ' .dataTables_filter input').addClass("form-control input-medium input-inline"); // modify table search input
+    jQuery(tableWrapper + ' .dataTables_length select').addClass("form-control input-small"); // modify table per page dropdown
+    jQuery(tableWrapper + ' .dataTables_length select').select2({
+        showSearchInput: false //hide search box with special css class
+    });
+
+
+
+
+</script>

@@ -1,0 +1,281 @@
+﻿
+@{
+    ViewBag.Title = "Reassign Task - Index";
+}
+
+<div class="row">
+    <div class="col-md-12">
+        <br />
+        <h1 class="page-title">
+            Reassign Task<span style="padding-left:20px;"><small></small></span>
+        </h1>
+    </div>
+</div>
+
+<div class="form-body">
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="control-label col-md-4">Module <span style="color:red">*</span></label>
+                    <div class="col-md-8">
+                        @Html.DropDownList("Processes", (IEnumerable<SelectListItem>)ViewBag.ProcessList, "-Select-", new { @class = "form-control", @id = "ddlProcessList" })
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">&nbsp;</div>
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="control-label col-md-4">Current Approver <span style="color:red">* </span></label>
+                    <div class="col-md-8">
+                        @Html.Partial("_PeoplePickerControl", new ViewDataDictionary { { "PPID", "CurrentApprover" } })
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">&nbsp;</div>
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="control-label col-md-4">Applicant</label>
+                    <div class="col-md-8">
+                        @Html.Partial("_PeoplePickerControl", new ViewDataDictionary { { "PPID", "Applicant" } })
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">&nbsp;</div>
+    <div class="row">
+        <div class="col-md-12">
+            <div class="text-right">
+                <input type="button" id="btn-Search" class="btn green btn-Search" value="Search" onclick="SearchTasks();">
+                <input type="button" id="btn-Clear" class="btn default" value="Clear" onclick="ClearSearch();" />
+            </div>
+        </div>
+    </div>
+    <div class="row">&nbsp;</div>
+    <div class="row">
+        <div class="col-md-12">
+            <div id="taskResult">
+                @Html.Action("SearchTasksResult", "ReAssignTask")
+            </div>
+        </div>
+    </div>
+    <div class="row">&nbsp;</div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-4 control-label">Reassign To<span style="color:red">*</span></label>
+                    <div class="col-md-8">
+                        @Html.Partial("_PeoplePickerControl", new ViewDataDictionary { { "PPID", "ReassignTo" } })
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">&nbsp;</div>
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-4 control-label">Comment<span style="color:red">*</span></label>
+                    <div class="col-md-8">
+                        <textarea id="comment" style="margin: 0px; width: 332px; height: 79px;"></textarea>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">&nbsp;</div>
+    <div class="row">&nbsp;</div>
+    <div class="row">&nbsp;</div>
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <input type="button" class="btn blue" value="Reassign Selected Tasks" data-target="#ReAssignSelectedTasksModal" data-toggle="modal" />
+                <input type="button" class="btn blue" value="Reassign All Tasks" data-target="#ReAssignAllTasksModal" data-toggle="modal" />
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="ReAssignSelectedTasksModal" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                <h4 class="modal-title" id="deleteText">Reassign Tasks</h4>
+            </div>
+            <div class="modal-body">
+                <div class="well">
+                    <p>The selected tasks will be reassigned. If you want to keep the tasks in your list, click the Close button.</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <a class="btn default blue" id="btnDelete" onclick="javascript: ReAssignSelectedTasks();">Re-Assign</a>
+                <button type="button" class="btn default" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="ReAssignAllTasksModal" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                <h4 class="modal-title" id="deleteText">Reassign Tasks</h4>
+            </div>
+            <div class="modal-body">
+                <div class="well">
+                    <p>All of your tasks will be reassigned. If you want to keep the tasks in your list, click the Close button.</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <a class="btn default blue" id="btnDelete" onclick="javascript: ReAssignAllTasks();">Re-Assign</a>
+                <button type="button" class="btn default" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@Html.Partial("_PeoplePickerInit", new ViewDataDictionary() { { "SearchType", "TaskReassign" } })
+
+<script>
+
+    $(document).ready(function () {
+        //SearchTasks();
+    });
+
+    function Validate() {
+
+        var reassignTo = $("#ReassignTo").val();
+        var comment = $("#comment").val();
+
+        var errorMessage = "";
+        if (reassignTo == '' || reassignTo == null)
+            errorMessage += "ReAssign To \n";
+        if (comment == '' || comment == null)
+            errorMessage += "Comment \n";
+
+        if (errorMessage != '') {
+            alert("Please fill up the following fields: \n" + errorMessage);
+            return false;
+        }
+
+        return true;
+    }
+
+    function ReAssignSelectedTasks() {
+        $("#ReAssignSelectedTasksModal").modal('hide');
+
+        if (!Validate())
+            return false;
+
+        var tasks = [];
+        $("#tblTasklist").find('input[type="checkbox"]:checked').each(function (i, val) {
+            var item = $(this);
+            tasks.push(item.attr("value"));
+        });
+
+        if (tasks.length == 0) {
+            alert("Please choose tasks to re-assign");
+            return false;
+        }
+
+        var reassignTo = $("#ReassignTo").val();
+        var comment = $("#comment").val();
+
+        TaskReAssign(tasks, reassignTo, comment);
+    }
+
+    function ReAssignAllTasks() {
+
+        $("#ReAssignAllTasksModal").modal('hide');
+
+        if (!Validate())
+            return false;
+
+        var tasks = [];
+        $("#tblTasklist").find('input[type="checkbox"]').each(function (i, val) {
+            var item = $(this);
+            tasks.push(item.attr("value"));
+        });
+
+        var reassignTo = $("#ReassignTo").val();
+        var comment = $("#comment").val();
+
+        TaskReAssign(tasks, reassignTo, comment);
+    }
+
+    function TaskReAssign(taskList, reassignTo, comment) {
+
+        var process = $("#ddlProcessList").val();
+        var approver = $("#CurrentApprover").val();
+        var applicant = $("#Applicant").val();
+
+        $("#taskResult").html("RE-LOADING...");
+        $.ajax({
+            type: "POST",
+            dataType: "html",
+            url: '@Url.Action("ReAssign", "ReAssignTask")',
+            data: { taskList: taskList, reassignTo: reassignTo, comment: comment, process: process, approver: approver, applicant: applicant },
+            success: function (content) {
+                $("#taskResult").html(content);
+
+                //clear the input
+                $("#txtReassignTo").val("");
+                $("#ReassignTo").val("");
+                $("#comment").val("");
+            },
+            error: function (err) {
+                console.log("Error occurred in re-assigning tasks: " + err);
+            }
+        });
+    }
+
+    function SearchTasks() {
+
+        var processGroup = $("#ddlProcessList").val();
+        var applicantId = $("#Applicant").val();
+        var currentApproverId = $("#CurrentApprover").val();
+
+        if (currentApproverId == null || currentApproverId == '') {
+            alert("Fill up the current approver to search.");
+            return false;
+        }
+
+        $("#taskResult").html("LOADING...");
+        $.ajax({
+            type: "GET",
+            dataTye: "html",
+            cache: false,
+            url: '@Url.Action("SearchTasksResult")',
+            data: { processGroup: processGroup, CurrentApproverId: currentApproverId, applicantId: applicantId },
+            success: function (content) {
+                $("#taskResult").html(content);
+            },
+            error: function (err) {
+                console.log("Error occurred in getting task list: " + err);
+            }
+        });
+    }
+
+    function ClearSearch() {
+        $("#CurrentApprover").val("");
+        $("#Applicant").val("");
+
+        $("#txtCurrentApprover").val("");
+        $("#txtApplicant").val("");
+    }
+
+</script>

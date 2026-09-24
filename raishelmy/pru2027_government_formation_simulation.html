@@ -1,0 +1,2202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PRU 2027 Government Formation Simulation | Rais Helmy</title>
+<meta name="description" content="2027 Malaysia government formation simulation with PH vote reduced by 10% and unified non-PH coalition.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #f6f2ea;
+  --bg-accent: #e8dfd2;
+  --panel: #ffffff;
+  --ink: #111111;
+  --muted: #626262;
+  --border: #ddcfbe;
+  --gov: #147a5d;
+  --opp: #b33b39;
+  --neutral: #6f665f;
+  --gold: #bc7f21;
+}
+html, body {
+  font-family: "Manrope", sans-serif;
+  background:
+    radial-gradient(900px 380px at 8% -10%, rgba(20, 122, 93, 0.11), transparent 60%),
+    radial-gradient(900px 380px at 100% -20%, rgba(188, 127, 33, 0.11), transparent 62%),
+    var(--bg);
+  color: var(--ink);
+}
+a { color: inherit; text-decoration: none; }
+.container { width: min(1180px, calc(100% - 36px)); margin: 0 auto; }
+header {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  border-bottom: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
+  backdrop-filter: blur(8px);
+  background: color-mix(in srgb, var(--bg-accent) 75%, transparent);
+}
+.header-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 13px 0;
+}
+.logo { font-weight: 900; letter-spacing: -0.6px; font-size: 21px; }
+.back {
+  border: 1px solid #222;
+  border-radius: 999px;
+  padding: 8px 14px;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  font-weight: 700;
+}
+.back:hover { background: #222; color: #fff; }
+main { padding: 30px 0 36px; }
+.top-photo {
+  border: 1px solid var(--border);
+  border-radius: 22px;
+  overflow: hidden;
+  box-shadow: 0 10px 32px rgba(0,0,0,0.06);
+  background: #fff;
+  margin-bottom: 14px;
+}
+.top-photo img {
+  display: block;
+  width: 100%;
+  height: clamp(220px, 38vw, 420px);
+  object-fit: cover;
+  object-position: center;
+}
+.hero {
+  border: 1px solid var(--border);
+  border-radius: 22px;
+  background: var(--panel);
+  box-shadow: 0 10px 32px rgba(0,0,0,0.06);
+  overflow: hidden;
+  margin-bottom: 14px;
+}
+.hero-inner { padding: 24px; }
+.tag-row { display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 10px; }
+.tag {
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 4px 10px;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  font-weight: 700;
+  color: #5f5751;
+}
+.tag.gov { border-color: rgba(20, 122, 93, 0.35); background: rgba(20, 122, 93, 0.1); color: #0f5e48; }
+.tag.warn { border-color: rgba(188, 127, 33, 0.35); background: rgba(188, 127, 33, 0.12); color: #754e12; }
+.tag.opp { border-color: rgba(179, 59, 57, 0.35); background: rgba(179, 59, 57, 0.1); color: #7f2a28; }
+h1 {
+  font-size: clamp(25px, 4.5vw, 40px);
+  line-height: 1.08;
+  letter-spacing: -1px;
+  margin-bottom: 8px;
+}
+.hero p { color: var(--muted); font-size: 14px; max-width: 960px; }
+.hero .line { margin-top: 8px; font-size: 13px; color: #5c544e; }
+.grid-metrics {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 10px;
+  margin: 14px 0;
+}
+.metric {
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--panel);
+  padding: 12px;
+}
+.metric .label {
+  color: #7d756f;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.55px;
+  font-weight: 700;
+  margin-bottom: 5px;
+}
+.metric .value {
+  font-size: clamp(24px, 4vw, 31px);
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: -0.8px;
+}
+.metric .sub { margin-top: 5px; color: #7d756f; font-size: 11px; }
+.panel {
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--panel);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.05);
+  padding: 14px;
+}
+.panel + .panel { margin-top: 12px; }
+.panel h2 {
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.7px;
+  color: #58514c;
+  margin-bottom: 10px;
+}
+.lead-line {
+  border: 1px solid #e5d8c8;
+  border-radius: 12px;
+  background: #fcf8f2;
+  padding: 10px 12px;
+  font-size: 13px;
+  color: #4f4843;
+}
+.vision-wrap {
+  margin: 14px 0;
+}
+.vision-panel {
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background:
+    linear-gradient(160deg, rgba(20, 122, 93, 0.08), rgba(188, 127, 33, 0.08)),
+    #fff;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.05);
+  padding: 14px;
+}
+.vision-kicker {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.7px;
+  font-weight: 800;
+  color: #5f5751;
+}
+.vision-title {
+  margin-top: 6px;
+  font-size: clamp(20px, 2.6vw, 28px);
+  line-height: 1.15;
+  letter-spacing: -0.6px;
+}
+.vision-sub {
+  margin-top: 8px;
+  color: #4f4843;
+  font-size: 13px;
+}
+.vision-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 12px;
+}
+.vision-card {
+  border: 1px solid #e3d7c8;
+  border-radius: 12px;
+  background: rgba(255,255,255,0.9);
+  padding: 10px;
+}
+.vision-card h3 {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #5f5751;
+  margin-bottom: 6px;
+}
+.vision-card p {
+  font-size: 13px;
+  color: #3f3a36;
+  line-height: 1.45;
+}
+.vision-hope {
+  margin-top: 10px;
+  border-left: 3px solid rgba(20, 122, 93, 0.45);
+  padding: 8px 10px;
+  background: rgba(255,255,255,0.72);
+  border-radius: 8px;
+  font-size: 13px;
+  color: #3f3a36;
+}
+.campaign-wrap {
+  margin: 14px 0;
+}
+.campaign-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.campaign-card {
+  border: 1px solid #e3d7c8;
+  border-radius: 12px;
+  background: #fff;
+  padding: 12px;
+}
+.campaign-card h3 {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.55px;
+  color: #5f5751;
+  margin-bottom: 6px;
+}
+.campaign-card p {
+  font-size: 13px;
+  color: #3f3a36;
+  line-height: 1.5;
+}
+.campaign-card.no-dap {
+  background: linear-gradient(160deg, rgba(179, 59, 57, 0.09), rgba(188, 127, 33, 0.06)), #fff;
+}
+.campaign-card.moderate {
+  background: linear-gradient(160deg, rgba(20, 122, 93, 0.09), rgba(37, 99, 235, 0.06)), #fff;
+}
+.chamber-filter-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 10px 0 12px;
+}
+.chamber-filter-btn {
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: #fff;
+  padding: 6px 10px;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.4px;
+  color: #4f4843;
+  cursor: pointer;
+}
+.chamber-filter-btn.active {
+  background: #222;
+  border-color: #222;
+  color: #fff;
+}
+.chamber-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 10px 0 4px;
+}
+.chamber-stat {
+  border: 1px solid #e5d8c8;
+  border-radius: 12px;
+  background: #fcf8f2;
+  padding: 8px 12px;
+  min-width: 106px;
+}
+.chamber-stat-value {
+  font-size: 22px;
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: -0.7px;
+}
+.chamber-stat-label {
+  margin-top: 4px;
+  font-size: 11px;
+  color: #6f6862;
+}
+.parliament-wrap {
+  position: relative;
+  border: 1px solid #e9ddd0;
+  border-radius: 16px;
+  background:
+    radial-gradient(560px 180px at 50% 0%, rgba(20, 122, 93, 0.06), transparent 65%),
+    linear-gradient(180deg, #fff, #fbf7f1);
+  padding: 14px;
+  overflow: hidden;
+}
+.parliament-chamber {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+.speaker-row {
+  border: 1px solid #e5d8c8;
+  border-radius: 999px;
+  background: #f6efe4;
+  padding: 5px 16px;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.7px;
+  color: #6f6862;
+  text-transform: uppercase;
+}
+.chamber-row {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 4px;
+  width: 100%;
+}
+.chamber-aisle {
+  width: 16px;
+  flex: 0 0 16px;
+}
+.seat-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 4px;
+  flex: 0 0 14px;
+  cursor: pointer;
+  transition: transform 0.12s ease, opacity 0.12s ease, box-shadow 0.12s ease;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.38);
+}
+.seat-dot:hover {
+  transform: scale(1.35);
+  box-shadow: 0 0 0 2px rgba(17, 17, 17, 0.15);
+}
+.seat-dot.pm-seat {
+  box-shadow: 0 0 0 2px #111, inset 0 0 0 2px rgba(255,255,255,0.48);
+}
+.seat-dot.dimmed {
+  opacity: 0.18;
+}
+.chamber-divider {
+  margin: 10px 0 0;
+  text-align: center;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.7px;
+  color: #7a736d;
+  text-transform: uppercase;
+}
+.chamber-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+.legend-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid #e7daca;
+  border-radius: 999px;
+  background: #fff;
+  padding: 5px 10px;
+  font-size: 11px;
+  color: #4f4843;
+}
+.legend-color {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  flex: 0 0 10px;
+}
+.seat-tooltip {
+  position: fixed;
+  z-index: 100;
+  display: none;
+  min-width: 190px;
+  max-width: 260px;
+  border: 1px solid #dbcdbd;
+  border-radius: 12px;
+  background: rgba(255, 252, 247, 0.98);
+  padding: 10px 12px;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.12);
+  pointer-events: none;
+}
+.seat-tooltip strong {
+  display: block;
+  font-size: 13px;
+}
+.seat-tooltip .meta {
+  margin-top: 3px;
+  font-size: 11px;
+  color: #675f59;
+}
+.stack {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.bar-list { display: grid; gap: 7px; }
+.bar-row {
+  display: grid;
+  grid-template-columns: 130px 1fr 64px;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+}
+.bar-party {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+}
+.bar-party strong {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.party-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  border: 1px solid rgba(17, 17, 17, 0.15);
+  flex: 0 0 10px;
+}
+.bar-shell {
+  height: 12px;
+  border-radius: 999px;
+  background: #ece4da;
+  overflow: hidden;
+  box-shadow: inset 0 0 0 1px rgba(17, 17, 17, 0.05);
+}
+.bar {
+  display: block;
+  height: 100%;
+  width: 0;
+  border-radius: 999px;
+  transition: width 260ms ease;
+}
+.bar.gov { background: linear-gradient(90deg, #147a5d, #37b18d); }
+.bar.opp { background: linear-gradient(90deg, #b33b39, #e06b69); }
+.bar-value {
+  text-align: right;
+  font-weight: 800;
+  color: #3f3a36;
+}
+.bar-value small {
+  color: #6f6862;
+  font-weight: 700;
+  margin-left: 4px;
+}
+.table-wrap {
+  overflow-x: auto;
+  border: 1px solid #e9ddd0;
+  border-radius: 11px;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 840px;
+  font-size: 12px;
+}
+th {
+  text-align: left;
+  padding: 9px 8px;
+  border-bottom: 1px solid var(--border);
+  color: #6f6862;
+  text-transform: uppercase;
+  letter-spacing: 0.55px;
+  font-size: 10px;
+}
+td { padding: 9px 8px; border-bottom: 1px solid #efe6dc; }
+tr:last-child td { border-bottom: 0; }
+tr:hover td { background: #faf6ef; }
+.badge {
+  display: inline-block;
+  border-radius: 999px;
+  padding: 2px 8px;
+  font-size: 11px;
+  font-weight: 700;
+}
+.b-gov { background: rgba(20, 122, 93, 0.12); color: #0f5e48; }
+.b-opp { background: rgba(179, 59, 57, 0.12); color: #832e2d; }
+.b-swing { background: rgba(188, 127, 33, 0.15); color: #754e12; }
+.b-gap-narrow { background: rgba(239, 159, 39, 0.2); color: #86530e; }
+.b-gap-huge { background: rgba(20, 122, 93, 0.16); color: #0f5e48; }
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.controls label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #6f6862;
+  font-weight: 700;
+}
+.controls select {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: #fff;
+  padding: 7px 10px;
+  font: inherit;
+  font-size: 12px;
+}
+.signal-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+.signal-card {
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: #fcf8f2;
+  padding: 12px;
+}
+.signal-card.top {
+  background: linear-gradient(180deg, rgba(20, 122, 93, 0.12), #fcf8f2 55%);
+  border-color: rgba(20, 122, 93, 0.28);
+}
+.signal-name {
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: -0.3px;
+}
+.signal-party {
+  margin-top: 4px;
+  font-size: 11px;
+  color: #6f6862;
+  text-transform: uppercase;
+  letter-spacing: 0.55px;
+  font-weight: 700;
+}
+.signal-score {
+  margin-top: 9px;
+  font-size: 29px;
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: -0.8px;
+}
+.signal-score span {
+  font-size: 12px;
+  color: #7b736c;
+  font-weight: 700;
+}
+.signal-meta {
+  margin-top: 7px;
+  font-size: 11px;
+  color: #675f59;
+}
+.signal-reason {
+  margin-top: 8px;
+  font-size: 11px;
+  color: #4f4843;
+  line-height: 1.45;
+}
+.cabinet-tree {
+  border: 1px solid #e5d8c8;
+  border-radius: 12px;
+  background: #fcf8f2;
+  padding: 10px;
+  max-height: 680px;
+  overflow: auto;
+}
+.cabinet-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 0;
+}
+.cabinet-row-wrap {
+  margin-left: var(--cabinet-indent, 0px);
+}
+.cabinet-toggle {
+  width: 18px;
+  height: 18px;
+  border: 1px solid #d4c7b8;
+  border-radius: 5px;
+  background: #fff;
+  color: #7a726c;
+  font-size: 11px;
+  line-height: 1;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 18px;
+}
+.cabinet-toggle.empty {
+  border-color: transparent;
+  background: transparent;
+  cursor: default;
+}
+.cabinet-node {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+  flex-wrap: wrap;
+}
+.cabinet-role {
+  font-size: 11px;
+  font-weight: 800;
+  color: #6b645e;
+  text-transform: uppercase;
+  letter-spacing: 0.35px;
+}
+.cabinet-person {
+  font-size: 13px;
+  font-weight: 800;
+  color: #2f2b28;
+}
+.cabinet-seat {
+  font-size: 11px;
+  color: #706860;
+}
+.cabinet-level {
+  font-size: 10px;
+  border-radius: 999px;
+  padding: 2px 7px;
+  font-weight: 800;
+  letter-spacing: 0.4px;
+}
+.cabinet-level.pm { background: rgba(188, 127, 33, 0.15); color: #754e12; }
+.cabinet-level.dpm { background: rgba(20, 122, 93, 0.12); color: #0f5e48; }
+.cabinet-level.min { background: rgba(37, 99, 235, 0.12); color: #1d4ed8; }
+.cabinet-level.support { background: rgba(120, 113, 108, 0.14); color: #57534e; }
+.cabinet-children {
+  margin-left: 22px;
+  padding-left: 8px;
+  border-left: 1px dashed #d8cec2;
+}
+footer {
+  margin-top: 18px;
+  font-size: 12px;
+  color: #6f6862;
+  text-align: center;
+}
+@media (max-width: 980px) {
+  .grid-metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .stack { grid-template-columns: 1fr; }
+  .signal-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .vision-grid { grid-template-columns: 1fr; }
+  .campaign-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 700px) {
+  .container { width: calc(100% - 22px); }
+  .hero-inner { padding: 18px 14px; }
+  .grid-metrics { grid-template-columns: 1fr; }
+  .bar-row { grid-template-columns: 92px 1fr 58px; }
+  .signal-grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+<header>
+  <div class="container header-inner">
+    <div class="logo">Rais Helmy</div>
+    <a class="back" href="/">Back to home</a>
+  </div>
+</header>
+
+<main class="container">
+  <section class="top-photo" aria-label="New government photo">
+    <img src="newgovernment_pic.png" alt="New government formation photo" loading="eager" decoding="async">
+  </section>
+
+  <section class="hero">
+    <div class="hero-inner">
+      <div class="tag-row">
+        <span class="tag warn">2027 scenario</span>
+        <span class="tag opp">PH vote -10%</span>
+        <span class="tag gov">Non-PH unity bloc</span>
+      </div>
+      <h1>PRU 2027 Government Formation Simulation</h1>
+      <p>This page simulates a federal government scenario under your assumption: all non-PH parties combine into one coalition, and PH votes are reduced by 10% as a conservative estimate. Prime Minister is selected from the largest party in the governing bloc. Every winning MP from governing parties is listed as a full minister.</p>
+      <p id="summaryLine" class="line">Loading simulation...</p>
+    </div>
+  </section>
+
+  <section class="vision-wrap" aria-label="New government vision">
+    <article class="vision-panel">
+      <div class="vision-kicker">New Government Vision</div>
+      <h2 class="vision-title">Stability You Can Feel: Better Jobs, Fairer Cost of Living, Stronger Public Services</h2>
+      <p class="vision-sub">This coalition vision focuses on day-to-day outcomes for families: income security, affordable essentials, and public systems that work without drama.</p>
+      <div class="vision-grid">
+        <div class="vision-card">
+          <h3>What We Will Do</h3>
+          <p>Grow quality jobs, raise take-home income, and support SMEs so economic growth reaches workers, youth, and local communities.</p>
+        </div>
+        <div class="vision-card">
+          <h3>For The People</h3>
+          <p>Reduce daily pressure through targeted cost-of-living action: food, transport, housing, childcare, and healthcare access.</p>
+        </div>
+        <div class="vision-card">
+          <h3>How We Govern</h3>
+          <p>Deliver transparent, accountable government with measurable targets, cleaner procurement, and faster service delivery.</p>
+        </div>
+      </div>
+      <p class="vision-hope"><strong>The hope:</strong> a Malaysia where hard work is rewarded, public institutions are trusted, and every state feels included in national progress.</p>
+    </article>
+  </section>
+
+  <section class="panel campaign-wrap" aria-label="Campaign framing">
+    <h2>Dual Campaign Narrative</h2>
+    <div class="campaign-grid">
+      <article class="campaign-card no-dap">
+        <h3>No DAP Campaign Side</h3>
+        <p>This side focuses on a clear anti-DAP political line: positioning the coalition as a firm alternative bloc and consolidating voters who want a non-DAP governing direction.</p>
+      </article>
+      <article class="campaign-card moderate">
+        <h3>Moderate and Equality Campaign Side</h3>
+        <p>This side emphasizes moderation, inclusive governance, and fair treatment for non-Malay communities, with policy messaging on equal opportunity, representation, and public service access.</p>
+      </article>
+    </div>
+  </section>
+
+  <section class="grid-metrics" id="metrics">
+    <article class="metric">
+      <div class="label">Simulated seats</div>
+      <div class="value" id="mTotal">-</div>
+      <div class="sub">Seats in this model</div>
+    </article>
+    <article class="metric">
+      <div class="label">Government bloc</div>
+      <div class="value" id="mGov" style="color:var(--gov)">-</div>
+      <div class="sub">All non-PH winning seats</div>
+    </article>
+    <article class="metric">
+      <div class="label">Opposition bloc</div>
+      <div class="value" id="mOpp" style="color:var(--opp)">-</div>
+      <div class="sub">PH winning seats</div>
+    </article>
+    <article class="metric">
+      <div class="label">Largest gov party</div>
+      <div class="value" id="mLargest">-</div>
+      <div class="sub" id="mLargestSeats">-</div>
+    </article>
+    <article class="metric">
+      <div class="label">Prime minister</div>
+      <div class="value" id="mPM" style="font-size:23px;line-height:1.15">-</div>
+      <div class="sub" id="mPMParty">-</div>
+    </article>
+  </section>
+
+  <section class="panel">
+    <h2>Projected Dewan Rakyat Seat Map</h2>
+    <div class="lead-line" id="chamberLine">Building projected parliamentary chamber...</div>
+    <div class="chamber-stats" id="chamberStats"></div>
+    <div class="chamber-filter-row" id="chamberFilterRow"></div>
+    <div class="parliament-wrap">
+      <div class="parliament-chamber" id="parliamentChamber"></div>
+      <div class="chamber-divider">Government bloc on the left · Opposition bloc on the right</div>
+      <div class="chamber-legend" id="chamberLegend"></div>
+    </div>
+    <div class="seat-tooltip" id="seatTooltip"></div>
+  </section>
+
+  <section class="panel">
+    <h2>Expected Prime Minister By Online Signal</h2>
+    <div class="lead-line" id="pmSignalLine">Calculating recent media-signal snapshot...</div>
+    <div id="pmSignalGrid" class="signal-grid" style="margin-top:10px"></div>
+  </section>
+
+  <section class="panel">
+    <h2>Government Formation Call</h2>
+    <div class="lead-line" id="formationLine">Calculating...</div>
+  </section>
+
+  <section class="panel">
+    <h2>Struktur Kabinet Baharu (Paparan Folder)</h2>
+    <div class="lead-line" id="cabinetLine">Sedang menyusun kabinet penuh daripada pemenang blok kerajaan...</div>
+    <div id="cabinetTree" class="cabinet-tree" style="margin-top:10px"></div>
+  </section>
+
+  <section class="panel">
+    <h2>Seat Strength By Party</h2>
+    <div class="stack">
+      <div>
+        <h3 style="font-size:12px;margin-bottom:7px;color:#5f5751">Governing coalition (non-PH)</h3>
+        <div id="govBars" class="bar-list"></div>
+      </div>
+      <div>
+        <h3 style="font-size:12px;margin-bottom:7px;color:#5f5751">Opposition bloc (PH)</h3>
+        <div id="oppBars" class="bar-list"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel">
+    <h2>Seats That Changed Winner</h2>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Seat</th>
+            <th>State</th>
+            <th>2022 winner</th>
+            <th>2027 simulated winner</th>
+            <th>Vote shift</th>
+            <th>Why seat changed</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="swingBody"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="panel">
+    <h2>Full Minister List (Governing MPs)</h2>
+    <div class="controls">
+      <label for="ministerPartyFilter">Party filter</label>
+      <select id="ministerPartyFilter">
+        <option value="all">All governing parties</option>
+      </select>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Government winner</th>
+            <th>Seat</th>
+            <th>1v1 contest</th>
+            <th>Gap signal</th>
+          </tr>
+        </thead>
+        <tbody id="ministerBody"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="panel">
+    <h2>All Parlimen Winners (Government + Opposition)</h2>
+    <div class="controls">
+      <label for="parlimenBlocFilter">Bloc filter</label>
+      <select id="parlimenBlocFilter">
+        <option value="all">All seats</option>
+        <option value="gov">Government</option>
+        <option value="opp">Opposition</option>
+      </select>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Bloc / source</th>
+            <th>Winner</th>
+            <th>Seat</th>
+            <th>1v1 contest</th>
+            <th>Gap signal</th>
+          </tr>
+        </thead>
+        <tbody id="parlimenBody"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="panel">
+    <h2>Kerajaan Bayangan (Coalition: All Non-PH Parties)</h2>
+    <div class="lead-line" id="shadowLine">Calculating shadow government...</div>
+    <div class="table-wrap" style="margin-top:10px">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Shadow minister</th>
+            <th>Party</th>
+            <th>Seat</th>
+            <th>State</th>
+            <th>Source</th>
+          </tr>
+        </thead>
+        <tbody id="shadowBody"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <footer>Sources: pru2022_parlimen_except_sabah.json + prn2025result.json | Model assumptions: PH-labeled candidates only are reduced by 10% votes; Sabah projection uses a calibrated aggregation threshold model. PM expectation uses a static recent online headline snapshot blended with simulated governing-seat weight.</footer>
+</main>
+
+<script>
+const PH_PARTIES = new Set(["PH"]);
+const PH_REDUCTION = 0.10;
+const WARISAN_PARTY = "WARISAN";
+// Calibration threshold from existing Sabah projection model: WARISAN 1v1 share >= 43%.
+const WARISAN_WIN_SHARE_MIN = 43;
+const OPPOSITION_PARTIES = new Set(["PH", "GRS"]);
+const PM_SIGNAL_SNAPSHOT_DATE = "10 Apr 2026";
+const GOV_SHADES = ["#0f5e48", "#147a5d", "#1f8d6d", "#2aa47f", "#39b28e", "#52c6a2"];
+const OPP_SHADES = ["#7f2a28", "#9b3230", "#b33b39", "#c84a48", "#db5a58", "#e06b69"];
+const PARTY_MAIN_COLORS = {
+  BN: "#d97706",
+  PN: "#16a34a",
+  BERSATU: "#15803d",
+  PH: "#2563eb",
+  WARISAN: "#0d9488",
+  GPS: "#7c3aed",
+  GRS: "#9333ea",
+  MCA: "#f59e0b",
+  MIC: "#fbbf24",
+  PBM: "#ea580c",
+  UPKO: "#34d399",
+  MUDA: "#6ee7b7",
+  BEBAS: "#9ca3af"
+};
+const PM_SIGNAL_BY_PARTY = {
+  BN: {
+    candidate: "Ahmad Zahid Hamidi",
+    mediaScore: 78,
+    summary: "Most explicit PM-viability headlines, broad coalition visibility, and fewer leadership-vacuum stories than PN rivals."
+  },
+  PN: {
+    candidate: "Ahmad Samsuri Mokhtar (Dr Sam)",
+    mediaScore: 72,
+    summary: "Rising fast with repeated future-PM framing, but many headlines still treat him as a developing or conditional choice."
+  },
+  BERSATU: {
+    candidate: "Muhyiddin Yassin",
+    mediaScore: 24,
+    summary: "Headline mix is dominated by leadership pressure, coalition turmoil, and legal narratives rather than PM momentum."
+  }
+};
+
+const SABAH_PARLIMEN_GROUPS = [
+  { name: "P167 Kudat", duns: ["N01", "N02", "N03", "N04"] },
+  { name: "P168 Kota Marudu", duns: ["N05", "N06", "N07"] },
+  { name: "P169 Kota Belud", duns: ["N08", "N09", "N10", "N11"] },
+  { name: "P170 Tuaran", duns: ["N12", "N13", "N14", "N15"] },
+  { name: "P171 Sepanggar", duns: ["N16", "N17", "N18"] },
+  { name: "P172 Kota Kinabalu", duns: ["N19", "N20", "N21"] },
+  { name: "P173 Putatan", duns: ["N22", "N23", "N24"] },
+  { name: "P174 Penampang", duns: ["N25", "N26"] },
+  { name: "P175 Papar", duns: ["N27", "N28", "N29"] },
+  { name: "P176 Kimanis", duns: ["N30", "N31"] },
+  { name: "P177 Beaufort", duns: ["N32", "N33"] },
+  { name: "P178 Sipitang", duns: ["N34", "N35"] },
+  { name: "P179 Ranau", duns: ["N36", "N37", "N38"] },
+  { name: "P180 Keningau", duns: ["N39", "N40", "N41"] },
+  { name: "P181 Tenom", duns: ["N42", "N43"] },
+  { name: "P182 Pensiangan", duns: ["N44", "N45", "N46"] },
+  { name: "P183 Beluran", duns: ["N47", "N48", "N49"] },
+  { name: "P184 Libaran", duns: ["N50", "N51", "N52"] },
+  { name: "P185 Batu Sapi", duns: ["N53", "N54"] },
+  { name: "P186 Sandakan", duns: ["N55", "N56"] },
+  { name: "P187 Kinabatangan", duns: ["N57", "N58", "N59"] },
+  { name: "P188 Lahad Datu", duns: ["N60", "N61", "N62", "N63"] },
+  { name: "P189 Semporna", duns: ["N64", "N65", "N66"] },
+  { name: "P190 Tawau", duns: ["N67", "N68", "N69"] },
+  { name: "P191 Kalabakan", duns: ["N70", "N71", "N72", "N73"] }
+];
+
+// PRU15 seat contested later (Dec 2022) after polling-day postponement.
+const DEFERRED_PRU15_SEATS = [
+  {
+    code: "P017",
+    seat: "PADANG SERAI",
+    state: "KEDAH",
+    winner: { name: "AZMAN NASRUDDIN", party: "PAS", votes: 51456 },
+    runnerUp: { name: "KARUPAIYA MUTUSAMI", party: "PH", votes: 35586 }
+  }
+];
+
+const FULL_MINISTRY_PORTFOLIOS = [
+  "Finance",
+  "Home Affairs",
+  "Foreign Affairs",
+  "Defence",
+  "Education",
+  "Health",
+  "Transport",
+  "Works",
+  "Agriculture",
+  "Investment, Trade and Industry",
+  "Communications",
+  "Environment and Climate",
+  "Housing and Local Government",
+  "Tourism, Arts and Culture",
+  "Youth and Sports",
+  "Women, Family and Community Development",
+  "Plantation and Commodities",
+  "Science, Technology and Innovation",
+  "Law and Institutional Reform",
+  "Religious Affairs",
+  "Rural and Regional Development",
+  "Economy",
+  "Entrepreneur Development and Cooperatives",
+  "Energy Transition and Water",
+  "Natural Resources",
+  "Digital"
+];
+
+const PORTFOLIO_LABEL_MS = {
+  "Finance": "Kewangan",
+  "Home Affairs": "Dalam Negeri",
+  "Foreign Affairs": "Luar Negeri",
+  "Defence": "Pertahanan",
+  "Education": "Pendidikan",
+  "Health": "Kesihatan",
+  "Transport": "Pengangkutan",
+  "Works": "Kerja Raya",
+  "Agriculture": "Pertanian",
+  "Investment, Trade and Industry": "Pelaburan, Perdagangan dan Industri",
+  "Communications": "Komunikasi",
+  "Environment and Climate": "Alam Sekitar dan Iklim",
+  "Housing and Local Government": "Perumahan dan Kerajaan Tempatan",
+  "Tourism, Arts and Culture": "Pelancongan, Seni dan Budaya",
+  "Youth and Sports": "Belia dan Sukan",
+  "Women, Family and Community Development": "Pembangunan Wanita, Keluarga dan Masyarakat",
+  "Plantation and Commodities": "Perladangan dan Komoditi",
+  "Science, Technology and Innovation": "Sains, Teknologi dan Inovasi",
+  "Law and Institutional Reform": "Undang-Undang dan Reformasi Institusi",
+  "Religious Affairs": "Hal Ehwal Agama",
+  "Rural and Regional Development": "Kemajuan Desa dan Wilayah",
+  "Economy": "Ekonomi",
+  "Entrepreneur Development and Cooperatives": "Pembangunan Usahawan dan Koperasi",
+  "Energy Transition and Water": "Peralihan Tenaga dan Air",
+  "Natural Resources": "Sumber Asli",
+  "Digital": "Digital"
+};
+
+const LEADERSHIP_ASSIGNMENT_RULES = {
+  "Ahmad Samsuri Mokhtar (Dr Sam)": {
+    portfolio: "Economy",
+    basis: "Technocrat profile (engineering and university leadership) plus state executive track as Menteri Besar.",
+    source: "https://en.wikipedia.org/wiki/Ahmad_Samsuri_Mokhtar"
+  },
+  "Shafie Apdal": {
+    portfolio: "Finance",
+    basis: "Former Sabah Chief Minister who also held Sabah finance responsibilities and long federal ministerial experience.",
+    source: "https://en.wikipedia.org/wiki/Shafie_Apdal"
+  },
+  "Ahmad Zahid Hamidi": {
+    portfolio: "Rural and Regional Development",
+    basis: "Current and prior federal focus on rural and regional development, aligned with UMNO's rural machinery footprint.",
+    source: "https://en.wikipedia.org/wiki/Ahmad_Zahid_Hamidi"
+  },
+  "Fadillah Yusof": {
+    portfolio: "Energy Transition and Water",
+    basis: "Current federal role in energy transition and water, plus sustained infrastructure and works experience.",
+    source: "https://en.wikipedia.org/wiki/Fadillah_Yusof"
+  },
+  "Muhyiddin Yassin": {
+    portfolio: "Education",
+    basis: "Former Deputy Prime Minister and former Education Minister with wide federal administrative experience.",
+    source: "https://en.wikipedia.org/wiki/Muhyiddin_Yassin"
+  }
+};
+
+const ministerBody = document.getElementById("ministerBody");
+const swingBody = document.getElementById("swingBody");
+const ministerPartyFilter = document.getElementById("ministerPartyFilter");
+const parlimenBody = document.getElementById("parlimenBody");
+const parlimenBlocFilter = document.getElementById("parlimenBlocFilter");
+const shadowBody = document.getElementById("shadowBody");
+const chamberFilterRow = document.getElementById("chamberFilterRow");
+const chamberStats = document.getElementById("chamberStats");
+const parliamentChamber = document.getElementById("parliamentChamber");
+const chamberLegend = document.getElementById("chamberLegend");
+const seatTooltip = document.getElementById("seatTooltip");
+let allMinisters = [];
+let allParlimenRows = [];
+let chamberFilter = "all";
+
+function prettyPartyLabel(party) {
+  return String(party || "N/A").trim();
+}
+
+function pickShade(key, shades) {
+  const text = String(key || "UNKNOWN");
+  let hash = 0;
+  for (let i = 0; i < text.length; i += 1) hash = ((hash << 5) - hash) + text.charCodeAt(i);
+  return shades[Math.abs(hash) % shades.length];
+}
+
+function getPartyColor(party, bloc) {
+  const code = String(party || "").trim().toUpperCase();
+  if (bloc === "opp") {
+    return pickShade(code, OPP_SHADES);
+  }
+
+  const govGreen = pickShade(code, GOV_SHADES);
+  const mainColor = PARTY_MAIN_COLORS[code] || "#147a5d";
+  return `linear-gradient(135deg, ${govGreen} 0%, ${govGreen} 48%, ${mainColor} 52%, ${mainColor} 100%)`;
+}
+
+function getExpectedPM(govByParty, govSeats) {
+  const candidates = govByParty
+    .filter(([party]) => PM_SIGNAL_BY_PARTY[party])
+    .map(([party, seats]) => {
+      const snapshot = PM_SIGNAL_BY_PARTY[party];
+      const seatWeight = govSeats > 0 ? (seats / govSeats) * 100 : 0;
+      const compositeScore = snapshot.mediaScore * 0.7 + seatWeight * 0.3;
+      return {
+        party,
+        seats,
+        seatWeight,
+        candidate: snapshot.candidate,
+        mediaScore: snapshot.mediaScore,
+        compositeScore,
+        summary: snapshot.summary
+      };
+    })
+    .sort((a, b) => b.compositeScore - a.compositeScore || b.mediaScore - a.mediaScore || b.seats - a.seats);
+
+  return {
+    expected: candidates[0] || null,
+    candidates
+  };
+}
+
+function renderPMSignal(signal) {
+  const line = document.getElementById("pmSignalLine");
+  const grid = document.getElementById("pmSignalGrid");
+  if (!line || !grid) return;
+
+  if (!signal.expected) {
+    line.textContent = "No expected-PM signal could be calculated from the current governing parties.";
+    grid.innerHTML = "";
+    return;
+  }
+
+  line.innerHTML = `<strong>Expected PM by recent online signal:</strong> ${signal.expected.candidate} (${prettyPartyLabel(signal.expected.party)}). This snapshot blends <strong>70% recent headline momentum</strong> with <strong>30% simulated governing-seat weight</strong> so the page does not rely only on the largest party rule.`;
+
+  grid.innerHTML = signal.candidates.map((candidate, index) => `
+    <article class="signal-card ${index === 0 ? "top" : ""}">
+      <div class="signal-name">${candidate.candidate}</div>
+      <div class="signal-party">${prettyPartyLabel(candidate.party)} • ${candidate.seats} simulated seats</div>
+      <div class="signal-score">${candidate.compositeScore.toFixed(1)} <span>signal</span></div>
+      <div class="signal-meta">Media momentum ${candidate.mediaScore.toFixed(0)} / 100 • Seat weight ${candidate.seatWeight.toFixed(1)} / 100</div>
+      <div class="signal-reason">${candidate.summary}</div>
+    </article>
+  `).join("");
+}
+
+function renderFullCabinet(ministers) {
+  const line = document.getElementById("cabinetLine");
+  const tree = document.getElementById("cabinetTree");
+  if (!line || !tree) return;
+
+  if (!Array.isArray(ministers) || !ministers.length) {
+    line.textContent = "Unable to build full-ministry cabinet because no governing winners are available.";
+    tree.innerHTML = "";
+    return;
+  }
+
+  const ministryEligible = ministers.filter((m) => String(m.party || "").toUpperCase() !== "GRS");
+  const roster = ministryEligible
+    .slice()
+    .sort((a, b) => b.gapVotes - a.gapVotes || b.votes - a.votes || a.code.localeCompare(b.code));
+
+  const byParty = new Map();
+  roster.forEach((m) => {
+    if (!byParty.has(m.party)) byParty.set(m.party, []);
+    byParty.get(m.party).push(m);
+  });
+
+  function pullPreferred(preferredParty) {
+    if (preferredParty && byParty.get(preferredParty)?.length) {
+      return byParty.get(preferredParty).shift();
+    }
+    let bestParty = null;
+    let bestCount = 0;
+    byParty.forEach((arr, party) => {
+      if (arr.length > bestCount) {
+        bestCount = arr.length;
+        bestParty = party;
+      }
+    });
+    if (!bestParty) return null;
+    return byParty.get(bestParty).shift();
+  }
+
+  function flattenRemaining() {
+    const out = [];
+    byParty.forEach((arr) => out.push(...arr));
+    out.sort((a, b) => b.gapVotes - a.gapVotes || b.votes - a.votes || a.code.localeCompare(b.code));
+    return out;
+  }
+
+  function normName(value) {
+    return String(value || "").toUpperCase().replace(/[^A-Z0-9]/g, "");
+  }
+
+  function pullByName(nameFragment, fallbackParty) {
+    const target = normName(nameFragment);
+    let selectedParty = null;
+    let selectedIndex = -1;
+    byParty.forEach((arr, party) => {
+      if (selectedIndex >= 0) return;
+      const idx = arr.findIndex((person) => {
+        const candidate = normName(person.name);
+        return candidate.includes(target) || target.includes(candidate);
+      });
+      if (idx >= 0) {
+        selectedParty = party;
+        selectedIndex = idx;
+      }
+    });
+
+    if (selectedParty && selectedIndex >= 0) {
+      return byParty.get(selectedParty).splice(selectedIndex, 1)[0] || null;
+    }
+
+    return null;
+  }
+
+  function makeLeaderPerson(name, party, seatLabel = "Majlis Pimpinan") {
+    return {
+      name,
+      party,
+      code: "LEAD",
+      seat: seatLabel,
+      gapVotes: 0,
+      votes: 0,
+      oneVOneShare: 0
+    };
+  }
+
+  const pm = {
+    name: "Ahmad Samsuri Mokhtar (Dr Sam)",
+    party: "PN",
+    code: "PM",
+    seat: "Perdana Menteri",
+    gapVotes: 0,
+    votes: 0,
+    oneVOneShare: 0
+  };
+
+  const deputyLeaders = [
+    { name: "Ahmad Zahid Hamidi", party: "BN", role: "Timbalan Perdana Menteri (Hal Ehwal Ekonomi)" },
+    { name: "Fadillah Yusof", party: "GPS", role: "Timbalan Perdana Menteri (Hal Ehwal Sabah dan Sarawak)" },
+    { name: "Shafie Apdal", party: "WARISAN", role: "Timbalan Perdana Menteri (Hal Ehwal Wilayah)" },
+    { name: "Muhyiddin Yassin", party: "PN", role: "Timbalan Perdana Menteri (Penyelarasan Persekutuan-Negeri)" }
+  ];
+
+  const dpms = deputyLeaders.map((leader) => ({
+    level: "dpm",
+    role: leader.role,
+    person: makeLeaderPerson(leader.name, leader.party),
+    children: []
+  }));
+
+  const hadiEnvoy = {
+    level: "support",
+    role: "Duta Khas Timur Tengah",
+    person: pullByName("HADI AWANG", "PAS") || makeLeaderPerson("Abdul Hadi Awang", "PAS"),
+    children: []
+  };
+
+  const specialPartyByPortfolio = {
+    Finance: "WARISAN",
+    "Home Affairs": "WARISAN"
+  };
+
+  const specialPersonByPortfolio = {
+    "Education": { lookup: "NORAINI", fullName: "Noraini Ahmad", party: "BN" },
+    "Tourism, Arts and Culture": { lookup: "WEE KA SIONG", fullName: "Wee Ka Siong", party: "MCA" },
+    "Law and Institutional Reform": { lookup: "TAKIYUDDIN", fullName: "Takiyuddin Hassan", party: "PN" },
+    "Religious Affairs": { lookup: "AHMAD MARZUK", fullName: "Ahmad Marzuk Shaary", party: "PN" }
+  };
+
+  const ministries = FULL_MINISTRY_PORTFOLIOS.map((portfolio) => {
+    const preferredPerson = specialPersonByPortfolio[portfolio];
+    const namedPick = preferredPerson ? pullByName(preferredPerson.lookup, preferredPerson.party) : null;
+    const preferredParty = specialPartyByPortfolio[portfolio] || null;
+    const minister = namedPick
+      || (preferredPerson ? makeLeaderPerson(preferredPerson.fullName, preferredPerson.party) : null)
+      || pullPreferred(preferredParty)
+      || {
+      name: "Unassigned",
+      party: preferredParty || "GOV",
+      code: "N/A",
+      seat: "Pending",
+      gapVotes: 0,
+      votes: 0,
+      oneVOneShare: 0
+    };
+    return {
+      level: "min",
+      role: `Menteri ${PORTFOLIO_LABEL_MS[portfolio] || portfolio}`,
+      person: minister,
+      portfolio,
+      children: []
+    };
+  });
+
+  ministries.forEach((m, i) => {
+    dpms[i % dpms.length].children.push(m);
+  });
+
+  const supportCycle = [
+    "Timbalan Menteri",
+    "Setiausaha Parlimen",
+    "Timbalan Menteri II",
+    "Setiausaha Politik",
+    "Pegawai Tugas Khas"
+  ];
+
+  const supportPool = flattenRemaining();
+  function pullSupport(preferredParty) {
+    if (!supportPool.length) return null;
+    if (preferredParty) {
+      const idx = supportPool.findIndex((person) => String(person.party || "").toUpperCase() === preferredParty);
+      if (idx >= 0) return supportPool.splice(idx, 1)[0];
+    }
+    return supportPool.shift() || null;
+  }
+
+  const ministrySlots = Math.max(1, ministries.length);
+  for (let i = 0; supportPool.length > 0; i += 1) {
+    const ministry = ministries[i % ministrySlots];
+    const round = Math.floor(i / ministrySlots);
+    const supportRole = supportCycle[round % supportCycle.length];
+    const isLawCluster = ["Law and Institutional Reform", "Religious Affairs"].includes(ministry.portfolio);
+    const person = pullSupport(isLawCluster ? "PN" : null);
+    if (!person) break;
+    ministry.children.push({
+      level: "support",
+      role: `${supportRole} (${PORTFOLIO_LABEL_MS[ministry.portfolio] || ministry.portfolio})`,
+      person,
+      children: []
+    });
+  }
+
+  const root = {
+    level: "pm",
+    role: "Perdana Menteri",
+    person: pm,
+    children: [hadiEnvoy, ...dpms]
+  };
+
+  line.innerHTML = `<strong>Struktur kabinet:</strong> Setiap individu memegang maksimum satu jawatan, dan semua pemenang kerajaan yang layak diberikan peranan. Kementerian Dalam Negeri dan Kewangan kekal di bawah kuota WARISAN. Hadi Awang ditetapkan sebagai Duta Khas Timur Tengah. GRS dikecualikan daripada agihan kementerian. Jumlah jawatan diisi: ${ministryEligible.length}.`;
+  tree.innerHTML = "";
+
+  function levelLabel(level) {
+    if (level === "pm") return "PM";
+    if (level === "dpm") return "DPM";
+    if (level === "min") return "MIN";
+    return "SUPPORT";
+  }
+
+  function renderNode(node, depth) {
+    const wrap = document.createElement("div");
+    wrap.className = "cabinet-row-wrap";
+    wrap.style.setProperty("--cabinet-indent", `${depth * 16}px`);
+
+    const row = document.createElement("div");
+    row.className = "cabinet-row";
+
+    const hasChildren = Array.isArray(node.children) && node.children.length > 0;
+    const toggle = document.createElement("button");
+    toggle.type = "button";
+    toggle.className = `cabinet-toggle${hasChildren ? "" : " empty"}`;
+    toggle.textContent = hasChildren ? "▾" : "";
+    row.appendChild(toggle);
+
+    const content = document.createElement("div");
+    content.className = "cabinet-node";
+    const sourceLink = node.person.source
+      ? `<a href="${node.person.source}" target="_blank" rel="noopener noreferrer" style="font-size:11px;color:#0f5e48;text-decoration:underline">sumber</a>`
+      : "";
+    const basisText = node.person.basis
+      ? `<span class="cabinet-seat" style="flex-basis:100%">Asas: ${node.person.basis}</span>`
+      : "";
+    content.innerHTML = `
+      <span class="cabinet-level ${node.level}">${levelLabel(node.level)}</span>
+      <span class="cabinet-role">${node.role}</span>
+      <span class="cabinet-person">${node.person.name}</span>
+      <span class="badge b-gov">${node.person.party}</span>
+      <span class="cabinet-seat">${node.person.code} ${node.person.seat}</span>
+      ${sourceLink}
+      ${basisText}
+    `;
+    row.appendChild(content);
+    wrap.appendChild(row);
+
+    const childrenBox = document.createElement("div");
+    childrenBox.className = "cabinet-children";
+    childrenBox.style.display = hasChildren ? "block" : "none";
+    wrap.appendChild(childrenBox);
+
+    if (hasChildren) {
+      toggle.addEventListener("click", () => {
+        const collapsed = childrenBox.style.display === "none";
+        childrenBox.style.display = collapsed ? "block" : "none";
+        toggle.textContent = collapsed ? "▾" : "▸";
+      });
+      node.children.forEach((child) => childrenBox.appendChild(renderNode(child, depth + 1)));
+    }
+
+    return wrap;
+  }
+
+  tree.appendChild(renderNode(root, 0));
+}
+
+function cleanNumber(raw) {
+  return Number(String(raw || "").replace(/[^\d.-]/g, "")) || 0;
+}
+
+function seatCodeFromKod(kod) {
+  const num = Number(kod) || 0;
+  return `P${String(num).padStart(3, "0")}`;
+}
+
+function canonicalParty(raw) {
+  const code = String(raw || "BEBAS").trim().toUpperCase();
+  if (code === "DAP") return "PH";
+  if (code === "PAS" || code === "PN") return "PN";
+  return code;
+}
+
+function normalizeParty(candidate) {
+  const raw = candidate?.parti?.NamaSingkatan || candidate?.parti_bebas?.NamaSingkatan || "BEBAS";
+  return canonicalParty(raw);
+}
+
+function normalizeName(candidate) {
+  return String(candidate?.NamaUndiCalon || "Unknown Candidate").trim();
+}
+
+function normalizeSabahParty(raw) {
+  return canonicalParty(String(raw || "").split("\n").pop().trim());
+}
+
+function sabahDunCode(raw) {
+  const match = String(raw || "").match(/N\d+/i);
+  return match ? match[0].toUpperCase() : "N00";
+}
+
+function isPH(partyCode) {
+  return PH_PARTIES.has(canonicalParty(partyCode));
+}
+
+function getBlocForParty(partyCode) {
+  const code = canonicalParty(partyCode);
+  return OPPOSITION_PARTIES.has(code) ? "opp" : "gov";
+}
+
+function getCandidates(item) {
+  const p = item?.keputusanPru?.pilihanraya?.[0];
+  return Array.isArray(p?.penamaan) ? p.penamaan.filter(Boolean) : [];
+}
+
+function getBaselineWinner(item, candidates) {
+  const named = item?.keputusanPru?.penamaanMenang;
+  if (named) {
+    return {
+      name: normalizeName(named),
+      party: normalizeParty(named),
+      votes: cleanNumber(named?.BilUndi)
+    };
+  }
+
+  const best = [...candidates].sort((a, b) => cleanNumber(b?.BilUndi) - cleanNumber(a?.BilUndi))[0];
+  return {
+    name: normalizeName(best),
+    party: normalizeParty(best),
+    votes: cleanNumber(best?.BilUndi)
+  };
+}
+
+function simulateSeat(item) {
+  const candidates = getCandidates(item);
+  if (!candidates.length) return null;
+
+  const baselineWinner = getBaselineWinner(item, candidates);
+
+  const simulatedCandidates = candidates.map((candidate) => {
+    const rawVotes = cleanNumber(candidate?.BilUndi);
+    const party = normalizeParty(candidate);
+    const adjustedVotes = isPH(party) ? Math.floor(rawVotes * (1 - PH_REDUCTION)) : rawVotes;
+    return {
+      name: normalizeName(candidate),
+      party,
+      rawVotes,
+      adjustedVotes
+    };
+  });
+
+  simulatedCandidates.sort((a, b) => {
+    if (b.adjustedVotes !== a.adjustedVotes) return b.adjustedVotes - a.adjustedVotes;
+    if (b.rawVotes !== a.rawVotes) return b.rawVotes - a.rawVotes;
+    return a.name.localeCompare(b.name);
+  });
+
+  const baselineCandidates = [...simulatedCandidates].sort((a, b) => {
+    if (b.rawVotes !== a.rawVotes) return b.rawVotes - a.rawVotes;
+    if (b.adjustedVotes !== a.adjustedVotes) return b.adjustedVotes - a.adjustedVotes;
+    return a.name.localeCompare(b.name);
+  });
+
+  const simulatedWinner = simulatedCandidates[0];
+  const runnerUp = simulatedCandidates[1] || null;
+  const baselineTop = baselineCandidates[0] || null;
+  const baselineRunnerUp = baselineCandidates[1] || null;
+  const winnerVotes = simulatedWinner?.adjustedVotes || 0;
+  const runnerUpVotes = runnerUp?.adjustedVotes || 0;
+  const oneVOneTotal = winnerVotes + runnerUpVotes;
+  const gapVotes = Math.max(0, winnerVotes - runnerUpVotes);
+  const winnerOneVOneShare = oneVOneTotal > 0 ? (winnerVotes / oneVOneTotal) * 100 : 0;
+  const baselineGapVotes = Math.max(0, (baselineTop?.rawVotes || 0) - (baselineRunnerUp?.rawVotes || 0));
+  const phVotesLost = simulatedCandidates.reduce((sum, candidate) => sum + Math.max(0, candidate.rawVotes - candidate.adjustedVotes), 0);
+  const baselineWinnerVoteLoss = Math.max(0, (baselineTop?.rawVotes || 0) - (baselineTop?.adjustedVotes || 0));
+  const simulatedWinnerVoteLoss = Math.max(0, (simulatedWinner?.rawVotes || 0) - (simulatedWinner?.adjustedVotes || 0));
+  return {
+    code: seatCodeFromKod(item?.kodParlimen),
+    seat: String(item?.namaParlimen || "Unknown Seat").toUpperCase(),
+    state: String(item?.stateName || "Unknown State").toUpperCase(),
+    baselineWinner,
+    baselineRunnerUp,
+    simulatedWinner,
+    runnerUp,
+    baselineGapVotes,
+    gapVotes,
+    phVotesLost,
+    baselineWinnerVoteLoss,
+    simulatedWinnerVoteLoss,
+    winnerOneVOneShare,
+    winnerChanged: baselineWinner.party !== simulatedWinner.party || baselineWinner.name !== simulatedWinner.name
+  };
+}
+
+function buildDeferredSeatResult(seed) {
+  const winnerRawVotes = Number(seed?.winner?.votes) || 0;
+  const runnerRawVotes = Number(seed?.runnerUp?.votes) || 0;
+  const winnerParty = canonicalParty(seed?.winner?.party || "BEBAS");
+  const runnerParty = canonicalParty(seed?.runnerUp?.party || "BEBAS");
+  const winnerAdjustedVotes = isPH(winnerParty) ? Math.floor(winnerRawVotes * (1 - PH_REDUCTION)) : winnerRawVotes;
+  const runnerAdjustedVotes = isPH(runnerParty) ? Math.floor(runnerRawVotes * (1 - PH_REDUCTION)) : runnerRawVotes;
+  const oneVOneTotal = winnerAdjustedVotes + runnerAdjustedVotes;
+
+  return {
+    code: String(seed?.code || "P000").toUpperCase(),
+    seat: String(seed?.seat || "UNKNOWN SEAT").toUpperCase(),
+    state: String(seed?.state || "UNKNOWN STATE").toUpperCase(),
+    baselineWinner: {
+      name: String(seed?.winner?.name || "Unknown Candidate"),
+      party: winnerParty,
+      votes: winnerRawVotes
+    },
+    baselineRunnerUp: {
+      name: String(seed?.runnerUp?.name || "Unknown Candidate"),
+      party: runnerParty,
+      votes: runnerRawVotes
+    },
+    simulatedWinner: {
+      name: String(seed?.winner?.name || "Unknown Candidate"),
+      party: winnerParty,
+      rawVotes: winnerRawVotes,
+      adjustedVotes: winnerAdjustedVotes
+    },
+    runnerUp: {
+      name: String(seed?.runnerUp?.name || "Unknown Candidate"),
+      party: runnerParty,
+      rawVotes: runnerRawVotes,
+      adjustedVotes: runnerAdjustedVotes
+    },
+    baselineGapVotes: Math.max(0, winnerRawVotes - runnerRawVotes),
+    gapVotes: Math.max(0, winnerAdjustedVotes - runnerAdjustedVotes),
+    phVotesLost: Math.max(0, winnerRawVotes - winnerAdjustedVotes) + Math.max(0, runnerRawVotes - runnerAdjustedVotes),
+    baselineWinnerVoteLoss: Math.max(0, winnerRawVotes - winnerAdjustedVotes),
+    simulatedWinnerVoteLoss: Math.max(0, winnerRawVotes - winnerAdjustedVotes),
+    winnerOneVOneShare: oneVOneTotal > 0 ? (winnerAdjustedVotes / oneVOneTotal) * 100 : 0,
+    winnerChanged: false
+  };
+}
+
+function gapLabel(gapVotes) {
+  return gapVotes <= 1000 ? "Narrow" : "Huge";
+}
+
+function tallyByParty(rows) {
+  const map = {};
+  rows.forEach((row) => {
+    const key = row.simulatedWinner.party;
+    map[key] = (map[key] || 0) + 1;
+  });
+  return Object.entries(map).sort((a, b) => b[1] - a[1]);
+}
+
+function renderPartyBars(containerId, list, total, cls) {
+  const el = document.getElementById(containerId);
+  if (!el) return;
+
+  if (!list.length) {
+    el.innerHTML = "<div style='font-size:12px;color:#706860'>No seats in this bloc.</div>";
+    return;
+  }
+
+  el.innerHTML = list.map(([party, seats]) => {
+    const pct = total > 0 ? (seats / total) * 100 : 0;
+    const barColor = getPartyColor(party, cls === "opp" ? "opp" : "gov");
+    const shownWidth = seats > 0 ? Math.max(2, pct) : 0;
+    return `
+      <div class="bar-row">
+        <div class="bar-party"><span class="party-dot" style="background:${barColor}"></span><strong>${party}</strong></div>
+        <div class="bar-shell"><span class="bar ${cls}" style="width:${shownWidth.toFixed(1)}%;background:${barColor}"></span></div>
+        <span class="bar-value">${seats}<small>${pct.toFixed(1)}%</small></span>
+      </div>
+    `;
+  }).join("");
+}
+
+function distributeChamberRowTotals(totalSeats) {
+  if (!totalSeats) return [];
+  const weights = totalSeats > 210
+    ? [0.82, 0.88, 0.94, 1, 1.06, 1.12, 1.18, 1.24]
+    : [0.84, 0.9, 0.96, 1.02, 1.08, 1.14, 1.2];
+  const weightTotal = weights.reduce((sum, value) => sum + value, 0);
+  const counts = weights.map((weight) => Math.max(1, Math.floor((weight / weightTotal) * totalSeats)));
+  let remaining = totalSeats - counts.reduce((sum, value) => sum + value, 0);
+  let index = counts.length - 1;
+  while (remaining > 0) {
+    counts[index] += 1;
+    remaining -= 1;
+    index = index === 0 ? counts.length - 1 : index - 1;
+  }
+  return counts;
+}
+
+function buildChamberRows(govSeats, oppSeats) {
+  const totalSeats = govSeats.length + oppSeats.length;
+  const rowTotals = distributeChamberRowTotals(totalSeats);
+  const govRatio = totalSeats > 0 ? govSeats.length / totalSeats : 0;
+  let govIndex = 0;
+  let oppIndex = 0;
+
+  return rowTotals.map((rowTotal, rowIndex) => {
+    let govCount = rowIndex === rowTotals.length - 1
+      ? govSeats.length - govIndex
+      : Math.round(rowTotal * govRatio);
+    let oppCount = rowIndex === rowTotals.length - 1
+      ? oppSeats.length - oppIndex
+      : rowTotal - govCount;
+
+    govCount = Math.max(0, Math.min(govCount, govSeats.length - govIndex));
+    oppCount = Math.max(0, Math.min(oppCount, oppSeats.length - oppIndex));
+
+    let filled = govCount + oppCount;
+    if (filled < rowTotal) {
+      const govSpare = govSeats.length - govIndex - govCount;
+      const oppSpare = oppSeats.length - oppIndex - oppCount;
+      const addGov = Math.min(rowTotal - filled, Math.max(0, govSpare));
+      govCount += addGov;
+      filled += addGov;
+      const addOpp = Math.min(rowTotal - filled, Math.max(0, oppSpare));
+      oppCount += addOpp;
+    }
+
+    const row = {
+      gov: govSeats.slice(govIndex, govIndex + govCount),
+      opp: oppSeats.slice(oppIndex, oppIndex + oppCount)
+    };
+    govIndex += govCount;
+    oppIndex += oppCount;
+    return row;
+  }).filter((row) => row.gov.length || row.opp.length);
+}
+
+function moveTooltip(event) {
+  if (!seatTooltip) return;
+  const width = seatTooltip.offsetWidth || 220;
+  const x = event.clientX > window.innerWidth - width - 24 ? event.clientX - width - 12 : event.clientX + 12;
+  seatTooltip.style.left = `${x}px`;
+  seatTooltip.style.top = `${event.clientY - 8}px`;
+}
+
+function matchesChamberFilter(seat) {
+  return chamberFilter === "all"
+    || chamberFilter === seat.bloc
+    || chamberFilter === seat.party;
+}
+
+function makeChamberSeat(seat, expectedPmName) {
+  const dot = document.createElement("div");
+  dot.className = "seat-dot";
+  if (seat.name === expectedPmName) dot.classList.add("pm-seat");
+  if (!matchesChamberFilter(seat)) dot.classList.add("dimmed");
+  dot.style.background = getPartyColor(seat.party, seat.bloc);
+  dot.title = `${seat.name} - ${seat.code} ${seat.seat}`;
+
+  dot.addEventListener("mouseenter", (event) => {
+    seatTooltip.style.display = "block";
+    seatTooltip.innerHTML = `
+      <strong>${seat.name}</strong>
+      <div class="meta">${seat.code} ${seat.seat}</div>
+      <div class="meta">${seat.party} • ${seat.bloc === "gov" ? "Government bloc" : "Opposition bloc"}</div>
+      <div class="meta">Votes: ${Number(seat.votes || 0).toLocaleString()} • Margin: ${Number(seat.gapVotes || 0).toLocaleString()}</div>
+      <div class="meta">Source: ${seat.source || "PRU model"}</div>
+    `;
+    moveTooltip(event);
+  });
+  dot.addEventListener("mousemove", moveTooltip);
+  dot.addEventListener("mouseleave", () => {
+    seatTooltip.style.display = "none";
+  });
+  return dot;
+}
+
+function renderChamberStats(rows) {
+  const govSeats = rows.filter((row) => row.bloc === "gov").length;
+  const oppSeats = rows.filter((row) => row.bloc === "opp").length;
+  const cards = [
+    { value: rows.length, label: "Seats shown" },
+    { value: govSeats, label: "Government" },
+    { value: oppSeats, label: "Opposition" },
+    { value: 112, label: "Majority mark" }
+  ];
+
+  chamberStats.innerHTML = cards.map((card) => `
+    <div class="chamber-stat">
+      <div class="chamber-stat-value">${card.value}</div>
+      <div class="chamber-stat-label">${card.label}</div>
+    </div>
+  `).join("");
+}
+
+function renderChamberFilters(rows) {
+  const parties = [...new Set(rows.map((row) => row.party))]
+    .sort((a, b) => rows.filter((row) => row.party === b).length - rows.filter((row) => row.party === a).length)
+    .slice(0, 8);
+
+  const buttons = [
+    { value: "all", label: "All seats" },
+    { value: "gov", label: "Government" },
+    { value: "opp", label: "Opposition" },
+    ...parties.map((party) => ({ value: party, label: party }))
+  ];
+
+  chamberFilterRow.innerHTML = buttons.map((button) => `
+    <button class="chamber-filter-btn ${chamberFilter === button.value ? "active" : ""}" data-filter="${button.value}">${button.label}</button>
+  `).join("");
+
+  chamberFilterRow.querySelectorAll(".chamber-filter-btn").forEach((button) => {
+    button.addEventListener("click", () => {
+      chamberFilter = button.dataset.filter || "all";
+      renderParliamentSeatMap(rows);
+    });
+  });
+}
+
+function renderChamberLegend(rows) {
+  const partyCounts = rows.reduce((map, row) => {
+    map[row.party] = (map[row.party] || 0) + 1;
+    return map;
+  }, {});
+
+  chamberLegend.innerHTML = Object.entries(partyCounts)
+    .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+    .map(([party, seats]) => `
+      <div class="legend-pill">
+        <span class="legend-color" style="background:${getPartyColor(party, rows.find((row) => row.party === party)?.bloc)}"></span>
+        <span>${party} ${seats}</span>
+      </div>
+    `)
+    .join("");
+}
+
+function renderParliamentSeatMap(rows, expectedPmName = document.getElementById("mPM")?.textContent || "") {
+  if (!rows.length) {
+    document.getElementById("chamberLine").textContent = "No projected seats available for the chamber map.";
+    parliamentChamber.innerHTML = "";
+    chamberStats.innerHTML = "";
+    chamberLegend.innerHTML = "";
+    chamberFilterRow.innerHTML = "";
+    return;
+  }
+
+  const strength = rows.reduce((map, row) => {
+    map[row.party] = (map[row.party] || 0) + 1;
+    return map;
+  }, {});
+  const orderedGov = rows
+    .filter((row) => row.bloc === "gov")
+    .slice()
+    .sort((a, b) => (strength[b.party] || 0) - (strength[a.party] || 0) || a.party.localeCompare(b.party) || a.code.localeCompare(b.code));
+  const orderedOpp = rows
+    .filter((row) => row.bloc === "opp")
+    .slice()
+    .sort((a, b) => (strength[b.party] || 0) - (strength[a.party] || 0) || a.party.localeCompare(b.party) || a.code.localeCompare(b.code));
+  const chamberRows = buildChamberRows(orderedGov, orderedOpp);
+
+  document.getElementById("chamberLine").innerHTML = `<strong>Projected chamber view:</strong> ${orderedGov.length} governing seats on the left and ${orderedOpp.length} opposition seats on the right. Hover any seat to see the MP and Parlimen name.`;
+  renderChamberStats(rows);
+  renderChamberFilters(rows);
+  renderChamberLegend(rows);
+
+  parliamentChamber.innerHTML = "";
+  const speakerRow = document.createElement("div");
+  speakerRow.className = "speaker-row";
+  speakerRow.textContent = "Speaker / Dewan Rakyat";
+  parliamentChamber.appendChild(speakerRow);
+
+  chamberRows.forEach((row) => {
+    const rowEl = document.createElement("div");
+    rowEl.className = "chamber-row";
+    row.gov.forEach((seat) => rowEl.appendChild(makeChamberSeat(seat, expectedPmName)));
+    const aisle = document.createElement("div");
+    aisle.className = "chamber-aisle";
+    rowEl.appendChild(aisle);
+    row.opp.forEach((seat) => rowEl.appendChild(makeChamberSeat(seat, expectedPmName)));
+    parliamentChamber.appendChild(rowEl);
+  });
+}
+
+function renderSwings(rows) {
+  if (!rows.length) {
+    swingBody.innerHTML = "<tr><td colspan='7'>No seat changed winner under this simulation.</td></tr>";
+    return;
+  }
+
+  swingBody.innerHTML = rows
+    .sort((a, b) => a.code.localeCompare(b.code))
+    .map((row) => `
+      <tr>
+        <td><strong>${row.code} ${row.seat}</strong></td>
+        <td>${row.state}</td>
+        <td>
+          <div style="font-weight:700">${row.baselineWinner.name} (${row.baselineWinner.party})</div>
+          <div style="font-size:11px;color:#777">Votes: ${row.baselineWinner.votes.toLocaleString()}</div>
+          <div style="font-size:11px;color:#777">Original margin: ${row.baselineGapVotes.toLocaleString()}</div>
+        </td>
+        <td>
+          <div style="font-weight:700">${row.simulatedWinner.name} (${row.simulatedWinner.party})</div>
+          <div style="font-size:11px;color:#777">Votes: ${row.simulatedWinner.adjustedVotes.toLocaleString()}</div>
+          <div style="font-size:11px;color:#777">New margin: ${row.gapVotes.toLocaleString()}</div>
+        </td>
+        <td>
+          <div style="font-weight:700">PH votes cut: ${row.phVotesLost.toLocaleString()}</div>
+          <div style="font-size:11px;color:#777">Old winner loss: ${row.baselineWinnerVoteLoss.toLocaleString()}</div>
+          <div style="font-size:11px;color:#777">New winner loss: ${row.simulatedWinnerVoteLoss.toLocaleString()}</div>
+        </td>
+        <td>
+          <div style="font-size:12px;color:#3f3a36">Original winner ${row.baselineWinner.name} led ${row.baselineGapVotes.toLocaleString()} over ${row.baselineRunnerUp ? `${row.baselineRunnerUp.name} (${row.baselineRunnerUp.party})` : "the runner-up"}.</div>
+          <div style="font-size:12px;color:#3f3a36">After the PH 10% cut removed ${row.phVotesLost.toLocaleString()} votes in this seat, ${row.simulatedWinner.name} moved ahead by ${row.gapVotes.toLocaleString()}.</div>
+        </td>
+        <td><span class="badge b-swing">Winner changed</span></td>
+      </tr>
+    `)
+    .join("");
+}
+
+function renderMinisterFilterOptions(ministers) {
+  const parties = [...new Set(ministers.map((m) => m.party))].sort();
+  ministerPartyFilter.innerHTML = [
+    "<option value='all'>All governing parties</option>",
+    ...parties.map((party) => `<option value='${party}'>${party}</option>`)
+  ].join("");
+}
+
+function renderMinisters(filter = "all") {
+  const govOnly = allMinisters.filter((m) => m.bloc === "gov");
+  const rows = (filter === "all" ? govOnly : govOnly.filter((m) => m.party === filter))
+    .slice()
+    .sort((a, b) => b.gapVotes - a.gapVotes || b.votes - a.votes || a.code.localeCompare(b.code));
+  ministerBody.innerHTML = rows.map((m, index) => `
+    <tr>
+      <td>${index + 1}</td>
+      <td>
+        <div style="font-weight:700">${m.name}</div>
+        <div style="font-size:11px;color:#777"><span class="badge b-gov">${m.party}</span></div>
+      </td>
+      <td>
+        <div style="font-weight:700">${m.code} ${m.seat}</div>
+        <div style="font-size:11px;color:#777">${m.state}</div>
+      </td>
+      <td>
+        <div style="font-weight:700;color:#1d9e75">Winner: ${m.votes.toLocaleString()}</div>
+        <div style="font-size:11px;color:#777">Runner-up: ${m.runnerUpName || "-"}</div>
+        <div style="font-size:11px;color:#777">Runner-up votes: ${Number(m.runnerUpVotes || 0).toLocaleString()}</div>
+      </td>
+      <td>
+        <div style="font-weight:700">${m.gapVotes.toLocaleString()} (${m.oneVOneShare.toFixed(2)}%)</div>
+        <div style="font-size:11px;color:#777"><span class="badge ${m.gapType === "Narrow" ? "b-gap-narrow" : "b-gap-huge"}">${m.gapType}</span></div>
+      </td>
+    </tr>
+  `).join("");
+}
+
+function renderParlimenRows(filter = "all") {
+  const rows = filter === "all" ? allParlimenRows : allParlimenRows.filter((r) => r.bloc === filter);
+  parlimenBody.innerHTML = rows.map((r, index) => `
+    <tr>
+      <td>${index + 1}</td>
+      <td>
+        <div><span class="badge ${r.bloc === "gov" ? "b-gov" : "b-opp"}">${r.bloc === "gov" ? "Government" : "Opposition"}</span></div>
+        <div style="font-size:11px;color:#777;margin-top:4px">${r.source || "PRU model"}</div>
+      </td>
+      <td>
+        <div style="font-weight:700">${r.name}</div>
+        <div style="font-size:11px;color:#777">${r.party}</div>
+      </td>
+      <td>
+        <div style="font-weight:700">${r.code} ${r.seat}</div>
+        <div style="font-size:11px;color:#777">${r.state}</div>
+      </td>
+      <td>
+        <div style="font-weight:700;color:#1d9e75">Winner: ${r.votes.toLocaleString()}</div>
+        <div style="font-size:11px;color:#777">Runner-up: ${r.runnerUpName || "-"}</div>
+        <div style="font-size:11px;color:#777">Runner-up votes: ${Number(r.runnerUpVotes || 0).toLocaleString()}</div>
+      </td>
+      <td>
+        <div style="font-weight:700">${r.gapVotes.toLocaleString()} (${r.oneVOneShare.toFixed(2)}%)</div>
+        <div style="font-size:11px;color:#777"><span class="badge ${r.gapType === "Narrow" ? "b-gap-narrow" : "b-gap-huge"}">${r.gapType}</span></div>
+      </td>
+    </tr>
+  `).join("");
+}
+
+function buildSabahProjectedParlimenRows(sabahSeats) {
+  const byDun = new Map((Array.isArray(sabahSeats) ? sabahSeats : []).map((seat) => [sabahDunCode(seat?.seat), seat]));
+
+  const projectionRows = SABAH_PARLIMEN_GROUPS.map((group) => {
+    const mappedSeats = group.duns.map((code) => byDun.get(code)).filter(Boolean);
+    const partyTotals = {};
+
+    mappedSeats.forEach((seat) => {
+      const candidates = Array.isArray(seat?.candidates) ? seat.candidates.filter(Boolean) : [];
+      candidates.forEach((candidate) => {
+        const party = normalizeSabahParty(candidate?.party);
+        const votes = Number(candidate?.votes) || 0;
+        partyTotals[party] = (partyTotals[party] || 0) + votes;
+      });
+    });
+
+    const rankedParties = Object.entries(partyTotals)
+      .sort((a, b) => b[1] - a[1])[0] || ["NONE", 0];
+
+    const pluralityWinnerParty = rankedParties[0];
+    const pluralityWinnerVotes = Number(rankedParties[1]) || 0;
+    const runnerUpEntry = Object.entries(partyTotals)
+      .filter(([party]) => party !== pluralityWinnerParty)
+      .sort((a, b) => b[1] - a[1])[0] || ["NONE", 0];
+    const pluralityRunnerParty = runnerUpEntry[0];
+    const pluralityRunnerVotes = Number(runnerUpEntry[1]) || 0;
+
+    const warisanVotes = Number(partyTotals[WARISAN_PARTY] || 0);
+    const strongestNonWarisan = Object.entries(partyTotals)
+      .filter(([party]) => party !== WARISAN_PARTY)
+      .sort((a, b) => b[1] - a[1])[0] || ["NONE", 0];
+    const strongestNonWarisanParty = strongestNonWarisan[0];
+    const strongestNonWarisanVotes = Number(strongestNonWarisan[1]) || 0;
+    const warisanDenom = warisanVotes + strongestNonWarisanVotes;
+    const warisanShare = warisanDenom > 0 ? (warisanVotes / warisanDenom) * 100 : 0;
+
+    const useWarisanProjection = warisanShare >= WARISAN_WIN_SHARE_MIN;
+    const winnerParty = useWarisanProjection ? WARISAN_PARTY : pluralityWinnerParty;
+    const winnerVotes = useWarisanProjection ? warisanVotes : pluralityWinnerVotes;
+    const runnerParty = useWarisanProjection ? strongestNonWarisanParty : pluralityRunnerParty;
+    const runnerVotes = useWarisanProjection ? strongestNonWarisanVotes : pluralityRunnerVotes;
+    const oneVOneTotal = winnerVotes + runnerVotes;
+    const winnerShare = oneVOneTotal > 0 ? (winnerVotes / oneVOneTotal) * 100 : 0;
+
+    return {
+      group,
+      partyTotals,
+      useWarisanProjection,
+      warisanShare,
+      winnerParty,
+      winnerVotes,
+      runnerParty,
+      runnerVotes,
+      winnerShare
+    };
+  });
+
+  return projectionRows
+    .map((row) => {
+      const parlimenCode = row.group.name.split(" ")[0].toUpperCase();
+      const parlimenName = row.group.name.replace(/^P\d+\s+/i, "").toUpperCase();
+      const winnerParty = row.winnerParty || "NONE";
+      const winnerVotes = Number(row.winnerVotes) || 0;
+      const runnerParty = row.runnerParty || "NONE";
+      const runnerVotes = Number(row.runnerVotes) || 0;
+      const gapVotes = Math.max(0, Math.round(winnerVotes - runnerVotes));
+      return {
+        bloc: getBlocForParty(winnerParty),
+        name: `${winnerParty} (Projected)`,
+        party: winnerParty,
+        code: parlimenCode,
+        seat: parlimenName,
+        state: "SABAH (PROJECTED)",
+        votes: Math.round(winnerVotes),
+        runnerUpName: `Top aggregated runner-up (${runnerParty})`,
+        runnerUpVotes: runnerVotes,
+        gapVotes,
+        oneVOneShare: row.winnerShare,
+        gapType: gapLabel(gapVotes),
+        source: "Sabah projection"
+      };
+    });
+}
+
+function renderShadowGovernment(rows) {
+  const shadowCoalitionRows = rows.filter((row) => !isPH(row.party));
+  if (!shadowCoalitionRows.length) {
+    document.getElementById("shadowLine").textContent = "No non-PH seats available for shadow government simulation.";
+    shadowBody.innerHTML = "<tr><td colspan='6'>No shadow government seats.</td></tr>";
+    return;
+  }
+
+  const byParty = {};
+  shadowCoalitionRows.forEach((row) => {
+    byParty[row.party] = (byParty[row.party] || 0) + 1;
+  });
+
+  const largestShadowParty = Object.entries(byParty).sort((a, b) => b[1] - a[1])[0] || ["N/A", 0];
+  const coalitionLeader = shadowCoalitionRows
+    .filter((row) => row.party === largestShadowParty[0])
+    .sort((a, b) => b.votes - a.votes)[0] || shadowCoalitionRows[0];
+
+  document.getElementById("shadowLine").innerHTML = `<strong>Projected shadow government:</strong> ${shadowCoalitionRows.length} seats from all non-PH parties combined. <strong>Coalition lead:</strong> ${coalitionLeader.name} (${largestShadowParty[0]}). <strong>Rule applied:</strong> all non-PH winners become shadow ministers.`;
+
+  shadowBody.innerHTML = shadowCoalitionRows
+    .slice()
+    .sort((a, b) => a.party.localeCompare(b.party) || a.code.localeCompare(b.code))
+    .map((row, index) => `
+      <tr>
+        <td>${index + 1}</td>
+        <td><strong>${row.name}</strong></td>
+        <td><span class="badge b-opp">${row.party}</span></td>
+        <td>${row.code} ${row.seat}</td>
+        <td>${row.state}</td>
+        <td>${row.source || "PRU model"}</td>
+      </tr>
+    `)
+    .join("");
+}
+
+ministerPartyFilter.addEventListener("change", (event) => {
+  renderMinisters(event.target.value);
+});
+
+parlimenBlocFilter.addEventListener("change", (event) => {
+  renderParlimenRows(event.target.value);
+});
+
+async function init() {
+  try {
+    const [pruResponse, sabahResponse] = await Promise.all([
+      fetch("pru2022_parlimen_except_sabah.json", { cache: "no-store" }),
+      fetch("prn2025result.json", { cache: "no-store" })
+    ]);
+
+    if (!pruResponse.ok) throw new Error("Failed to load PRU source JSON.");
+    if (!sabahResponse.ok) throw new Error("Failed to load Sabah source JSON.");
+
+    const payload = await pruResponse.json();
+    const sabahPayload = await sabahResponse.json();
+    const rawItems = Array.isArray(payload?.data) ? payload.data.filter((item) => item?.keputusanPru) : [];
+    const seats = rawItems.map(simulateSeat).filter(Boolean);
+    const deferredSeats = DEFERRED_PRU15_SEATS.map(buildDeferredSeatResult);
+    seats.push(...deferredSeats);
+    const projectedSabahRows = buildSabahProjectedParlimenRows(sabahPayload);
+
+    const govRows = seats.filter((s) => getBlocForParty(s.simulatedWinner.party) === "gov");
+    const oppRows = seats.filter((s) => getBlocForParty(s.simulatedWinner.party) === "opp");
+    const swings = seats.filter((s) => s.winnerChanged);
+
+    const govByParty = tallyByParty(govRows).map(([party, seatsCount]) => [party, seatsCount]);
+    const oppByParty = tallyByParty(oppRows);
+    const projectedGovRows = projectedSabahRows.filter((row) => row.bloc === "gov");
+    const projectedOppRows = projectedSabahRows.filter((row) => row.bloc === "opp");
+
+    projectedGovRows.forEach((row) => {
+      const existing = govByParty.find(([party]) => party === row.party);
+      if (existing) existing[1] += 1;
+      else govByParty.push([row.party, 1]);
+    });
+    govByParty.sort((a, b) => b[1] - a[1]);
+
+    projectedOppRows.forEach((row) => {
+      const existing = oppByParty.find(([party]) => party === row.party);
+      if (existing) existing[1] += 1;
+      else oppByParty.push([row.party, 1]);
+    });
+    oppByParty.sort((a, b) => b[1] - a[1]);
+
+    const totalSeats = seats.length + projectedSabahRows.length;
+    const govSeats = govRows.length + projectedGovRows.length;
+    const oppSeats = oppRows.length + projectedOppRows.length;
+    const govPct = totalSeats > 0 ? (govSeats / totalSeats) * 100 : 0;
+
+    const largestParty = govByParty[0] || ["N/A", 0];
+    const seatBasedPmCandidate = govRows
+      .filter((row) => row.simulatedWinner.party === largestParty[0])
+      .sort((a, b) => b.simulatedWinner.adjustedVotes - a.simulatedWinner.adjustedVotes)[0];
+
+    const seatBasedPmName = seatBasedPmCandidate?.simulatedWinner?.name || "TBD";
+    const pmSignal = getExpectedPM(govByParty, govSeats);
+    const pmName = pmSignal.expected?.candidate || seatBasedPmName;
+    const pmPartyLabel = pmSignal.expected?.party || largestParty[0];
+    const stabilityTag = govPct >= 66.67 ? "strong and stable" : (govPct >= 55 ? "stable" : "workable");
+
+    document.getElementById("mTotal").textContent = totalSeats;
+    document.getElementById("mGov").textContent = govSeats;
+    document.getElementById("mOpp").textContent = oppSeats;
+    document.getElementById("mLargest").textContent = largestParty[0];
+    document.getElementById("mLargestSeats").textContent = `${largestParty[1]} seats`;
+    document.getElementById("mPM").textContent = pmName;
+    document.getElementById("mPMParty").textContent = pmSignal.expected
+      ? `expected via online signal snapshot (${PM_SIGNAL_SNAPSHOT_DATE})`
+      : `from ${largestParty[0]} (largest governing party fallback)`;
+
+    document.getElementById("summaryLine").textContent = `Simulation completed for ${totalSeats} parliamentary seats: ${seats.length} from PRU source (including deferred P017 Padang Serai) plus ${projectedSabahRows.length} Sabah projected parlimen seats from DUN aggregation model. PH-labeled candidates were reduced by 10% votes.`;
+    document.getElementById("formationLine").innerHTML = `<strong>Projected government:</strong> non-PH coalition holds <strong>${govSeats}/${totalSeats}</strong> seats (${govPct.toFixed(2)}%) and forms a ${stabilityTag} government. <strong>Expected Prime Minister:</strong> ${pmName} from ${pmPartyLabel}, based on recent online media-signal momentum blended with governing-seat weight. <strong>Seat-only fallback:</strong> ${seatBasedPmName} from ${largestParty[0]}. <strong>Cabinet rule in this scenario:</strong> full ministries only (no deputy/small positions in cabinet view).`;
+
+    renderPMSignal(pmSignal);
+
+    renderPartyBars("govBars", govByParty, govSeats, "gov");
+    renderPartyBars("oppBars", oppByParty, oppSeats, "opp");
+    renderSwings(swings);
+
+    allParlimenRows = seats
+      .map((row) => ({
+        bloc: getBlocForParty(row.simulatedWinner.party),
+        name: row.simulatedWinner.name,
+        party: row.simulatedWinner.party,
+        code: row.code,
+        seat: row.seat,
+        state: row.state,
+        votes: row.simulatedWinner.adjustedVotes,
+        runnerUpName: row.runnerUp ? `${row.runnerUp.name} (${row.runnerUp.party})` : "-",
+        runnerUpVotes: row.runnerUp?.adjustedVotes || 0,
+        gapVotes: row.gapVotes,
+        oneVOneShare: row.winnerOneVOneShare,
+        gapType: gapLabel(row.gapVotes),
+        source: "PRU model"
+      }))
+      .concat(projectedSabahRows)
+      .sort((a, b) => {
+        if (a.bloc !== b.bloc) return a.bloc.localeCompare(b.bloc);
+        const partyCmp = a.party.localeCompare(b.party);
+        if (partyCmp !== 0) return partyCmp;
+        return a.code.localeCompare(b.code);
+      });
+
+    renderParliamentSeatMap(allParlimenRows, pmName);
+
+    // Rule: every government winner is a full minister.
+    allMinisters = allParlimenRows
+      .filter((row) => row.bloc === "gov")
+      .map((row) => ({
+        bloc: row.bloc,
+        name: row.name,
+        party: row.party,
+        code: row.code,
+        seat: row.seat,
+        state: row.state,
+        runnerUpName: row.runnerUpName || "-",
+        runnerUpVotes: row.runnerUpVotes || 0,
+        gapVotes: row.gapVotes,
+        oneVOneShare: row.oneVOneShare,
+        gapType: row.gapType,
+        votes: row.votes
+      }))
+      .sort((a, b) => b.gapVotes - a.gapVotes || b.votes - a.votes || a.code.localeCompare(b.code));
+
+    renderMinisterFilterOptions(allMinisters);
+    renderMinisters("all");
+    renderFullCabinet(allMinisters);
+    renderParlimenRows("all");
+    renderShadowGovernment(allParlimenRows);
+  } catch (error) {
+    document.getElementById("summaryLine").textContent = `Error: ${error.message}`;
+    document.getElementById("formationLine").textContent = "Unable to run simulation because source data could not be read.";
+    const chamberLine = document.getElementById("chamberLine");
+    if (chamberLine) chamberLine.textContent = "Unable to build the projected chamber map because source data could not be read.";
+    const pmSignalLine = document.getElementById("pmSignalLine");
+    if (pmSignalLine) pmSignalLine.textContent = "Unable to calculate expected-PM signal because source data could not be read.";
+    const cabinetLine = document.getElementById("cabinetLine");
+    if (cabinetLine) cabinetLine.textContent = "Unable to build full-ministry cabinet because source data could not be read.";
+    const shadowLine = document.getElementById("shadowLine");
+    if (shadowLine) shadowLine.textContent = "Unable to calculate shadow government due to data loading error.";
+  }
+}
+
+init();
+</script>
+</body>
+</html>

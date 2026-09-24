@@ -1,0 +1,691 @@
+﻿@using Asset.Models
+@model CompanyListFormViewModel
+@{
+    string Title = "";
+    bool isKemasKini = false;
+    if (Model.Company == null)
+    {
+        isKemasKini = false;
+        Title = "Tambah Maklumat Pemilikan Syarikat";
+    }
+    else
+    {
+        isKemasKini = true;
+        Title = "Kemaskini Maklumat Pemilikan Syarikat";
+    }
+
+    String EmployeeID = ViewBag.EmployeeID;
+    string Mode = ViewBag.Mode;
+    bool NewRecord = ViewBag.NewRecord;
+
+    bool AllowEdit = ViewBag.AllowEdit;
+    bool AllowDelete = ViewBag.AllowDelete;
+    bool Readonly = false;
+
+    if (Mode == "Read" || Mode == "ReadAndEdit" || Mode == "Discard")
+    {
+        Readonly = true;
+    }
+    else if (AllowEdit && Mode == "Edit")
+    {
+        Readonly = false;
+    }
+}
+
+<style>
+    .CompanyListForm_TableHeaderRow1 {
+        background-color: lawngreen;
+    }
+
+    .CompanyListForm_TableHeaderRow2 {
+        background-color: green;
+        color: white;
+    }
+</style>
+
+<form id="CompanyListForm">
+    <div class="modal fade" id="CompanyList_Modal" tabindex="-1" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                    <h4 id="CompanyListForm_Title" class="modal-title">@Title</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="collapse-portlet portlet box blue">
+                        <div class="portlet-title">
+                            <div class="caption">
+                                <i class="fa fa-reorder"></i>Maklumat Syarikat
+                            </div>
+                        </div>
+                        <div class="portlet-body form">
+                            <input type="hidden" name="Company.CompanyID" value="@(Model.Company == null ? "" : Model.Company.CompanyID)" />
+                            <input type="hidden" name="Company.EmployeeID" value="@(Model.Company == null ? ViewBag.EmployeeID : Model.Company.EmployeeID)" />
+                            <div class="form-horizontal">
+                                <div class="form-body">
+                                    @if (!NewRecord)
+                                    {
+                                        <div class="form-group popup-form-group">
+                                            <label class="control-label col-md-6">
+                                                Status
+                                            </label>
+                                            <div class="col-md-6">
+                                                @if (Mode == "Discard")
+                                                {
+                                                    <select class="bs-select form-control" name="Company.AssetStatusCode"
+                                                            disabled="disabled">
+                                                        <option value="AK">
+                                                            Aktif
+                                                        </option>
+                                                        <option value="LU" selected="selected">
+                                                            Lupus
+                                                        </option>
+                                                    </select>
+                                                }
+                                                else
+                                                {
+                                                    <select class="bs-select form-control" name="Company.AssetStatusCode"
+                                                            @(Readonly ? "readonly" : "" ) @(Readonly ? "disabled" : "" )>
+                                                        <option value="AK" @(Model.Company.AssetStatusCode == "AK" ? "selected" : "" )>
+                                                            Aktif
+                                                        </option>
+                                                        <option value="LU" @(Model.Company.AssetStatusCode == "LU" ? "selected" : "" )>
+                                                            Lupus
+                                                        </option>
+                                                    </select>
+                                                }
+                                            </div>
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <input type="hidden" name="Property.AssetStatusCode" value="AK" />
+                                    }
+
+                                    <div class="form-group" style="margin-bottom: 15px !important;">
+                                        <label class="control-label col-md-6">
+                                            Nama Syarikat/Perniagaan
+                                            <span style="color: red;">*</span>
+                                        </label>
+                                        <div class="col-md-6">
+                                            <input type="text" class="form-control"
+                                                   name="Company.Name" @(Readonly ? "readonly" : "" )
+                                                   value="@(Model.Company == null ? " " : Model.Company.Name)" />
+                                            <span class="help-block" style="display: none;">
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group popup-form-group">
+                                        <label class="control-label col-md-6">
+                                            No. Pendaftaran
+                                            <span style="color: red;">*</span>
+                                        </label>
+                                        <div class="col-md-6">
+                                            <input type="text" class="form-control"
+                                                   name="Company.Registration" @(Readonly ? "readonly" : "" )
+                                                   value="@(Model.Company == null ? " " : Model.Company.Registration)" />
+                                            <span class="help-block" style="display: none;">
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group popup-form-group">
+                                        <label class="control-label col-md-6">
+                                            Alamat
+                                            <span style="color: red;">*</span>
+                                        </label>
+                                        <div class="col-md-6">
+                                            <textarea class="form-control" rows="4" @(Readonly ? "readonly" : "" )
+                                                      name="Company.Address">@(Model.Company == null ? "" : Model.Company.Address)</textarea>
+                                            <span class="help-block" style="display: none;">
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group popup-form-group">
+                                        <label class="control-label col-md-6">
+                                            Jenis Syarikat/Perniagaan
+                                            <span style="color: red;">*</span>
+                                        </label>
+                                        <div class="col-md-6">
+                                            <input type="text" class="form-control"
+                                                   name="Company.Type" @(Readonly ? "readonly" : "" )
+                                                   value="@(Model.Company == null ? " " : Model.Company.Type)" />
+                                            <span class="help-block" style="display: none;">
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group popup-form-group">
+                                        <label class="control-label col-md-6">
+                                            Pulangan Perniagaan Setahun (RM)
+                                            <span style="color: red;">*</span>
+                                        </label>
+                                        <div class="col-md-6">
+                                            <input type="text" class="form-control currency select-all-focus"
+                                                   name="Company.AnnualReturn" @(Readonly ? "readonly" : "" )
+                                                   value="@(Model.Company == null ? " " : Model.Company.AnnualReturn)" />
+                                            <span class="help-block" style="display: none;">
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group popup-form-group">
+                                        <label class="control-label col-md-6">
+                                            Modal Dibenarkan (RM)
+                                        </label>
+                                        <div class="col-md-6">
+                                            <input type="text" class="form-control currency select-all-focus"
+                                                   name="Company.AllowedCapital" @(Readonly ? "readonly" : "" )
+                                                   value="@(Model.Company == null ? " " : Model.Company.AllowedCapital)" />
+                                            <span class="help-block" style="display: none;">
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group popup-form-group">
+                                        <label class="control-label col-md-6">
+                                            Modal Berbayar (RM)
+                                        </label>
+                                        <div class="col-md-6">
+                                            <input type="text" class="form-control currency select-all-focus"
+                                                   name="Company.PaidCapital" @(Readonly ? "readonly" : "" )
+                                                   value="@(Model.Company == null ? " " : Model.Company.PaidCapital)" />
+                                            <span class="help-block" style="display: none;">
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group popup-form-group">
+                                        <label class="control-label col-md-6">
+                                            Punca Kewangan Syarikat
+                                        </label>
+                                        <div class="col-md-6">
+                                            <input type="text" class="form-control"
+                                                   name="Company.FundSource" @(Readonly ? "readonly" : "" )
+                                                   value="@(Model.Company == null ? " " : Model.Company.FundSource)" />
+                                            <span class="help-block" style="display: none;">
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="collapse-portlet portlet box blue">
+                        <div class="portlet-title">
+                            <div class="caption">
+                                <i class="fa fa-reorder"></i>Ahli Keluarga yang Terlibat Dalam Syarikat
+                            </div>
+                        </div>
+                        <div class="portlet-body form">
+                            <div class="form-body">
+                                <div class="form-horizontal">
+                                    <div class="table-toolbar">
+                                        <table id="tblCompanyMembers" class="table table-striped table-bordered table-hover table-full-width">
+                                            <thead>
+                                                <tr>
+                                                    <th scope="col" width="5%"></th>
+                                                    <th scope="col">Name Ahli Keluarga</th>
+                                                    <th scope="col">Hubungan</th>
+                                                    <th scope="col">Jawatan</th>
+                                                    <th scope="col">Jumlah Saham</th>
+                                                    <th scope="col">Nilai Saham (RM)</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @if (Model.Company == null || Model.Company.CompanyMembers == null)
+                                                {
+                                                    <tr>
+                                                        <td>
+                                                            @if (!Readonly)
+                                                            {
+                                                                <input type="checkbox" class="CompanyMemberRemoveCheckbox" />
+                                                            }
+
+                                                            <input type="hidden" class="SequenceNumber" name="Company.CompanyMembers[0].SequenceNumber" value="0" />
+                                                        </td>
+                                                        <td>
+                                                            <input type="text" class="form-control Name" @(Readonly ? "readonly" : "" )
+                                                                   name="Company.CompanyMembers[0].Name" />
+                                                        </td>
+                                                        <td>
+                                                            <input type="text" class="form-control Relationship" @(Readonly ? "readonly" : "" )
+                                                                   name="Company.CompanyMembers[0].Relationship" />
+                                                        </td>
+                                                        <td>
+                                                            <input type="text" class="form-control Position" @(Readonly ? "readonly" : "" )
+                                                                   name="Company.CompanyMembers[0].Position" />
+                                                        </td>
+                                                        <td>
+                                                            <input type="text" class="form-control Share currency select-all-focus" @(Readonly ? "readonly" : "" )
+                                                                   name="Company.CompanyMembers[0].Share" />
+                                                        </td>
+                                                        <td>
+                                                            <input type="text" class="form-control ShareValue currency select-all-focus" @(Readonly ? "readonly" : "" )
+                                                                   name="Company.CompanyMembers[0].ShareValue" />
+                                                        </td>
+                                                    </tr>
+                                                }
+                                                else
+                                                {
+                                                    int count = 0;
+                                                    foreach (CompanyMember member in Model.Company.CompanyMembers)
+                                                    {
+
+                                                        <tr>
+                                                            <td>
+                                                                @if (!Readonly)
+                                                                {
+                                                                    <input type="checkbox" class="CompanyMemberRemoveCheckbox" />
+                                                                }
+                                                                <input type="hidden" class="SequenceNumber"
+                                                                       name="Company.CompanyMembers[@count].SequenceNumber"
+                                                                       value="@member.SequenceNumber" />
+                                                            </td>
+                                                            <td>
+                                                                <input type="text" class="form-control Name" @(Readonly ? "readonly" : "" )
+                                                                       name="Company.CompanyMembers[@count].Name"
+                                                                       value="@member.Name" />
+                                                            </td>
+                                                            <td>
+                                                                <input type="text" class="form-control Relationship" @(Readonly ? "readonly" : "" )
+                                                                       name="Company.CompanyMembers[@count].Relationship"
+                                                                       value="@member.Relationship" />
+                                                            </td>
+                                                            <td>
+                                                                <input type="text" class="form-control Position" @(Readonly ? "readonly" : "" )
+                                                                       name="Company.CompanyMembers[@count].Position"
+                                                                       value="@member.Position" />
+                                                            </td>
+                                                            <td>
+                                                                <input type="text" class="form-control Share currency select-all-focus" @(Readonly ? "readonly" : "" )
+                                                                       name="Company.CompanyMembers[@count].Share"
+                                                                       value="@member.Share" />
+                                                            </td>
+                                                            <td>
+                                                                <input type="text" class="form-control ShareValue currency select-all-focus" @(Readonly ? "readonly" : "" )
+                                                                       name="Company.CompanyMembers[@count].ShareValue"
+                                                                       value="@member.ShareValue" />
+                                                            </td>
+                                                        </tr>
+
+                                                        count++;
+                                                    }
+                                                }
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+
+                                @if (!Readonly)
+                                {
+                                    <div class="form-horizontal">
+                                        <div class="table-toolbar">
+                                            <div class="row">
+                                                <div class="col-md-12">
+                                                    <div class="btn-group">
+                                                        <a class="BtnPlus btn green" href="javascript:CompanyListForm_CompanyMember_addRow();">
+                                                            Add Row
+                                                            <i class="fa fa-plus"></i>
+                                                        </a>
+                                                    </div>
+                                                    <div class="btn-group">
+                                                        <a class="deleteall btn red" href="javascript:CompanyListForm_CompanyMember_removeRow();">
+                                                            Delete Row
+                                                            <i class="fa fa-minus"></i>
+                                                        </a>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+
+                    @if (Readonly)
+                    {
+                        <div class="collapse-portlet portlet box blue">
+                            <div class="portlet-title">
+                                <div class="caption">
+                                    <i class="fa fa-reorder"></i>Ahli Keluarga yang Terlibat Dalam Syarikat
+                                </div>
+                            </div>
+                            <div class="portlet-body form">
+                                <div class="form-body">
+                                    <div class="row">
+                                        <div class="col-md-12">
+                                            <div class="form-horizontal">
+                                                <div class="form-group">
+                                                    <label class="control-label col-md-6">
+                                                        Tarikh Dimasukkan
+                                                    </label>
+                                                    <div class="col-md-6 form-control-static">
+                                                        <label>
+                                                            @Model.Company.DtCreatedDate.Value.ToString("dd/MM/yyyy h:mm:ss tt")
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                                <div class="form-group">
+                                                    <label class="control-label col-md-6">
+                                                        Tarikh Dikemaskini
+                                                    </label>
+                                                    <div class="col-md-6 form-control-static">
+                                                        @Model.Company.DtModifiedDate.Value.ToString("dd/MM/yyyy h:mm:ss tt")
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+
+                    <!-- Attachment -->
+                    @if (Readonly)
+                    {
+                        @Html.Action("AttachmentControl", "Asset", new { EmployeeID = EmployeeID, Mode = "View", SourceType = "Asset", RequestID = Model.Company.CompanyID })
+                    }
+                    else
+                    {
+                        if (NewRecord)
+                        {
+                            @Html.Action("AttachmentControl", "Asset", new { EmployeeID = EmployeeID, Mode = "New", SourceType = "Asset" })
+                        }
+                        else
+                        {
+                            @Html.Action("AttachmentControl", "Asset", new { EmployeeID = EmployeeID, Mode = "Add", SourceType = "Asset", RequestID = Model.Company.CompanyID })
+                        }
+                    }
+                </div>
+
+                <div class="modal-footer">
+                    @if (Mode == "Discard")
+                    {
+                        <button type="button" id="CompanyListForm_btnDiscard" class="btn default blue">
+                            Lupuskan
+                        </button>
+                    }
+                    else
+                    {
+                        if (AllowEdit && !Readonly)
+                        {
+                            <button type="button" id="CompanyListForm_btnSave" class="btn default blue">
+                                Simpan
+                            </button>
+                        }
+
+                        if (AllowEdit && Readonly)
+                        {
+                            <button type="button" id="CompanyListForm_btnActivateEdit" class="btn default blue">
+                                Kemas Kini
+                            </button>
+                        }
+
+                        if (AllowDelete)
+                        {
+                            <button type="button" id="CompanyListForm_btnDelete" class="btn default blue">
+                                Padam
+                            </button>
+                        }
+                    }
+
+                    <button type="button" id="CompanyListForm_btnClose" class="btn default" data-dismiss="modal">
+                        Tutup
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+<script>
+    var isCompanyListFormUpdated = false;
+    $(function () {
+        isCompanyListFormUpdated = false;
+        $('#CompanyList_Modal').on('hidden.bs.modal', function () {
+            CompanyList_RefreshForm(false);
+        });
+        InitializeCommonControls();
+
+        $('#CompanyListForm_btnSave').on('click', function () {
+            CompanyListForm_Save();
+        });
+
+        $('#CompanyListForm_btnActivateEdit').on('click', function () {
+            var id = $('input[name="Company.CompanyID"]').val();
+            CompanyList_OpenForm(id, 'Edit');
+        });
+
+        $('#CompanyListForm_btnDiscard').on('click', function () {
+            CompanyListForm_Discard();
+        });
+
+        $('#CompanyListForm_btnDelete').on('click', function () {
+            CompanyListForm_Delete();
+        });
+    });
+
+    function CompanyListForm_Save() {
+        var validationMessage = CompanyListForm_Validation();
+        if (validationMessage) {
+            alert(validationMessage);
+            return;
+        }
+
+        var successMessage = "";
+        var failMessage = "";
+
+        if ('@isKemasKini' == 'False') {
+            successMessage = "Maklumat Pemilikan Syarikat telah berjaya ditambah.";
+            failMessage = "Tambahan Pemilikan Syarikat telah gagal. <br />";
+        }
+        else {
+            successMessage = "Maklumat Pemilikan Syarikat telah berjaya dikemaskini.";
+            failMessage = "Kemaskini Pemilikan Syarikat telah gagal. <br />";
+         }
+
+    ShowConfirmationDialog({
+        message: 'Tambah maklumat Pemilikan Syarikat?',
+        positiveCallback: function () {
+            var data = $('#CompanyListForm').serializeArray();
+            $.each(data, function (i, val) {
+                if (val.name == "Company.AnnualReturn" ||
+                    val.name == "Company.AllowedCapital" ||
+                    val.name == "Company.PaidCapital" ||
+                    val.name.indexOf("Share") > 0) {
+
+                    val.value = val.value.replace(/,/g, "");
+                }
+             });
+
+            HideConfirmationDialog();
+            ShowLoadingScreen();
+
+    $.post('@Url.Action("_CompanyListForm_Save", "Asset")', data, function (result) {
+        HideLoadingScreen();
+        if (result.IsSuccess) {
+            isCompanyListFormUpdated = true;
+
+            ShowDialog({
+                message: successMessage,
+                okCallback: function () {
+                    $('#CompanyList_Modal').modal('hide');
+                }
+            });
+        }
+        else {
+            ShowDialog({
+                title: "Gagal",
+                message: failMessage + result.ErrorMessage,
+                okCallback: function () {
+                    HideDialog();
+                }
+            });
+        }
+    });
+}
+});
+}
+
+function CompanyListForm_Validation() {
+var validationMessage = "";
+
+var Name = $('input[name="Company.Name"]').val();
+var Registration = $('input[name="Company.Registration"').val();
+var Type = $('input[name="Company.Type"').val();
+var AnnualReturn = $('input[name="Company.AnnualReturn"]').val();
+
+if (Name == null || Name == "") {
+validationMessage += "Nama Syarikat wajib diisi. \r\n";
+}
+
+if (Registration == null || Registration == "") {
+validationMessage + "No. Pendaftaran wajib diisi. \r\n";
+}
+
+if (Type == null || Type == "") {
+validationMessage + "Jenis Syarikat/Perniagaan wajib diisi. \r\n";
+}
+
+if (AnnualReturn == null || AnnualReturn == "") {
+validationMessage + "Pulangan Perniagaan Setahun (RM) wajib diisi. \r\n";
+}
+
+return validationMessage;
+}
+
+function CompanyListForm_Discard() {
+ShowConfirmationDialog({
+message: 'Lupuskan Pemilikan Syarikat ini?',
+positiveCallback: function () {
+    var data = { CompanyID: $('input[name="Company.CompanyID"]').val() };
+    HideConfirmationDialog();
+    ShowLoadingScreen();
+
+    /**/
+    $.post('@Url.Action("_CompanyListForm_Discard", "Asset")', data, function (result) {
+        /**/
+        HideLoadingScreen();
+        if (result.IsSuccess) {
+            isCompanyListFormUpdated = true;
+
+            ShowDialog({
+                message: "Pemilikan Syarikat berjaya dilupuskan.",
+                okCallback: function () {
+                    $('#CompanyList_Modal').modal('hide');
+                }
+            });
+        }
+        else {
+            ShowDialog({
+                title: "Pelupusan Syarikat gagal",
+                message: result.ErrorMessage,
+                okCallback: function () {
+                    HideDialog();
+                }
+            });
+        }
+    });
+}
+});
+}
+
+function CompanyListForm_Delete() {
+ShowConfirmationDialog({
+message: 'Padamkan Pemilikan Syarikat ini?',
+positiveCallback: function () {
+    var data = { CompanyID: $('input[name="Company.CompanyID"]').val() };
+    HideConfirmationDialog();
+    ShowLoadingScreen();
+
+    /**/
+    $.post('@Url.Action("_CompanyListForm_Delete", "Asset")', data, function (result) {
+        /**/
+        HideLoadingScreen();
+        if (result.IsSuccess) {
+            isCompanyListFormUpdated = true;
+
+            ShowDialog({
+                message: "Pemilikan Syarikat berjaya dipadam.",
+                okCallback: function () {
+                    $('#CompanyList_Modal').modal('hide');
+                }
+            });
+        }
+        else {
+            ShowDialog({
+                title: "Pemadaman Syarikat gagal",
+                message: result.ErrorMessage,
+                okCallback: function () {
+                    HideDialog();
+                }
+            });
+        }
+    });
+}
+});
+}
+
+var tblCompanyMembers = $('#tblCompanyMembers').DataTable({
+"bLengthChange": false,
+"bFilter": false,
+"bPaginate": false,
+"bInfo": false,
+"bSort": false
+});
+
+function CompanyListForm_CompanyMember_addRow() {
+tblCompanyMembers.fnAddData([
+'<input type="checkbox" class="CompanyMemberRemoveCheckbox" /><input type="hidden" class="SequenceNumber" name="Company.CompanyMembers[' + tblCompanyMembers.fnSettings().fnRecordsTotal() + '].SequenceNumber" value="' + tblCompanyMembers.fnSettings().fnRecordsTotal() + '" />',
+'<input type="text" class="form-control Name" name="Company.CompanyMembers[' + tblCompanyMembers.fnSettings().fnRecordsTotal() + '].Name" />',
+'<input type="text" class="form-control Relationship" name="Company.CompanyMembers[' + tblCompanyMembers.fnSettings().fnRecordsTotal() + '].Relationship" />',
+'<input type="text" class="form-control Position" name= "Company.CompanyMembers[' + tblCompanyMembers.fnSettings().fnRecordsTotal() + '].Position" />',
+'<input type="text" class="form-control Share currency select-all-focus" name= "Company.CompanyMembers[' + tblCompanyMembers.fnSettings().fnRecordsTotal() + '].Share" />',
+'<input type="text" class="form-control ShareValue currency select-all-focus" name= "Company.CompanyMembers[' + tblCompanyMembers.fnSettings().fnRecordsTotal() + '].ShareValue" />'
+]);
+
+$('input[type="checkbox"]').uniform();
+CompanyListForm_CompanyMember_reindexRow();
+InitializeCommonControls();
+}
+
+function CompanyListForm_CompanyMember_removeRow() {
+$.each($('input[class="CompanyMemberRemoveCheckbox"]:checked'), function (i, val) {
+var currLength = $('#tblCompanyMembers tr').length - 1;
+var row = $(this).closest("tr").get(0);
+tblCompanyMembers.fnDeleteRow(tblCompanyMembers.fnGetPosition(row));
+});
+
+$('input[type="checkbox"]').uniform();
+CompanyListForm_CompanyMember_reindexRow();
+InitializeCommonControls();
+}
+
+function CompanyListForm_CompanyMember_reindexRow() {
+var index = 0;
+$.each($('input[class="CompanyMemberRemoveCheckbox"]'), function (i, val) {
+var row = $(this).closest("tr").get(0);
+
+var SequenceNumber = $(row).find('.SequenceNumber');
+var NameInput = $(row).find('.Name');
+var RelationshipInput = $(row).find('.Relationship');
+var PositionInput = $(row).find('.Position');
+var ShareInput = $(row).find('.Share');
+var ShareValueInput = $(row).find('.ShareValue');
+
+$(SequenceNumber).prop('name', 'Company.CompanyMembers[' + index + '].SequenceNumber');
+$(NameInput).prop('name', 'Company.CompanyMembers[' + index + '].Name');
+$(RelationshipInput).prop('name', 'Company.CompanyMembers[' + index + '].Relationship');
+$(PositionInput).prop('name', 'Company.CompanyMembers[' + index + '].Position');
+$(ShareInput).prop('name', 'Company.CompanyMembers[' + index + '].Share');
+$(ShareValueInput).prop('name', 'Company.CompanyMembers[' + index + '].ShareValue');
+index++;
+});
+}
+</script>

@@ -1,0 +1,133 @@
+﻿@using LTIP.Models
+@model CDSMaintenance
+@{
+    ViewBag.Title = "LTIP CDS Account Maintenance Details";
+    string CurrentEmployeeID = ViewBag.CurrentEmployeeID;
+    ESS.Core.EmployeeDetailsSummary EmployeeDetails = ViewBag.EmployeeDetails;
+    List<SEP.RoutingManagement.Models.GetApprovalAuditLog> AuditLogs = ViewBag.AuditLogs;
+}
+
+@using (Html.BeginForm("CDSMaintenanceDetail", "LTIP", FormMethod.Post))
+{
+    <div class="form-section">
+        <div class="row">
+            <div class="col-md-12">
+                <h1 class="page-title">
+                    @ViewBag.Title
+                    <span style="padding-left:20px;">
+                        <small></small>
+                    </span>
+                </h1>
+            </div>
+        </div>
+    </div>
+
+    @Html.Partial("_EmployeeDetails", EmployeeDetails)
+
+    <div class="row">
+        <div class="col-md-12">
+            <div class="portlet box blue">
+                <div class="mini-triangle"><img src="../Assets/img/menu-red-triangle.png" /></div>
+                <div class="portlet-title">
+                    <div class="caption">
+                        <i class="fa fa-reorder"></i>CDS Maintenance Details
+                    </div>
+                    <div class="tools">
+                        <a title="" data-original-title="" href="javascript:;" class="collapse"> </a>
+                    </div>
+                </div>
+                <div class="portlet-body form">
+                    <div class="form-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <label class="control-label col-md-4">
+                                            Reference No.
+                                        </label>
+                                        <div class="col-md-8 form-control-static">
+                                            <input type="text" class="form-control" name="RequestNo"
+                                                   readonly="readonly" value="@Model.RequestNo" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <label class="control-label col-md-4">
+                                            Status
+                                        </label>
+                                        <div class="col-md-8 form-control-static">
+                                            <input type="text" class="form-control" name="Status"
+                                                   readonly="readonly" value="@Model.Status" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <label class="control-label col-md-4">
+                                            Old Account No.
+                                        </label>
+                                        <div class="col-md-8 form-control-static">
+                                            <input id="OriginalNr1" class="form-control-inline" style="width: 20%" name="OriginalNr1"
+                                                   type="text" maxlength="3" value="@Model.OriginalNr1" readonly="readonly" /> -
+                                            <input id="OriginalNr2" class="form-control-inline" style="width: 20%" name="OriginalNr2"
+                                                   type="text" maxlength="3" value="@Model.OriginalNr2" readonly="readonly" /> -
+                                            <input id="OriginalNr3" class="form-control-inline" style="width: 50%" name="OriginalNr3"
+                                                   type="text" maxlength="9" value="@Model.OriginalNr3" readonly="readonly" />
+                                        </div>
+
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6 form-control-static">
+                                <a href="#" onclick="window.open('CDSMaintenanceHistory');">
+                                    View CDS Account Maintenance History
+                                </a>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <label class="control-label col-md-4">
+                                            New Account No.
+                                        </label>
+                                        <div class="col-md-8 form-control-static">
+                                            <input id="UpdatedNr1" class="form-control-inline" style="width: 20%" name="UpdatedNr1"
+                                                   type="text" maxlength="3" value="@Model.UpdatedNr1" readonly="readonly" /> -
+                                            <input id="UpdatedNr2" class="form-control-inline" style="width: 20%" name="UpdatedNr2"
+                                                   type="text" maxlength="3" value="@Model.UpdatedNr2" readonly="readonly" /> -
+                                            <input id="UpdatedNr3" class="form-control-inline" style="width: 50%" name="UpdatedNr3"
+                                                   type="text" maxlength="9" value="@Model.UpdatedNr3" readonly="readonly" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!--Attachment-->
+    @Html.Action("AttachmentControl", "Attachment", new
+    {
+        EmployeeID = CurrentEmployeeID,
+        Mode = "View",
+        RequestID = Model.CDSMaintenanceID,
+        SourceType = "LTIP"
+    })
+    <!--Audit Logs-->
+    @Html.Partial("__AuditLog", AuditLogs)
+}
+<script>
+</script>
+

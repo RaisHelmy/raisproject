@@ -1,0 +1,823 @@
+﻿@model TemporaryPosition.Models.TemporaryPositionForm
+@{
+    ViewBag.Title = "Temporary Position Form";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+    string color = "green";
+    if (Model.StatusText == "Declined")
+    {
+        color = "red";
+    }
+}
+
+<!-- Loading Gif -->
+<div id="divLoading" style="margin: 0px; padding: 0px; position: fixed; right: 0px; top: 0px; width: 100%; height: 100%; background-color: gainsboro; z-index: 30001; opacity: .8; filter: alpha(opacity=70); display: none; ">
+    <p style="position: absolute; top: 30%; left: 30%; color: black;">
+        Performing action, please wait...<img src="/_layouts/15/TNBESS/Assets/img/ajax-loading.gif">
+    </p>
+</div>
+
+<style>
+    #positionForm .form-group {
+        margin-bottom: 5px;
+    }
+</style>
+
+<div class="form-section">
+    <div class="row">
+        <div class="col-md-12">
+            <h1 class="page-title">
+                Temporary Position Form
+            </h1>
+        </div>
+    </div>
+</div>
+@using (Html.BeginForm("Add", "TemporaryPosition", FormMethod.Post, new { @id = "positionForm" }))
+{
+    <input type="hidden" name="PositionID" value="@Model.PositionID" />
+    if (Model.IsEditable)
+    {
+        <!--Edit Position Details-->
+        @Html.Partial("EditForm", Model)
+    }
+    else
+    {
+        <!--View Position Details-->
+        @Html.Partial("ViewForm", Model)
+    }
+    <div class="row">&nbsp;</div>
+    <div class="row">
+        <div class="col-md-12">
+            @if (Model.IsSubmitter)
+            {
+                if (Model.StatusText == "Withdrawn" || Model.StatusText == "Draft" || Model.StatusText == "Declined")
+                {
+                    <button class="btn btn-primary submit" id="btnSubmit" onclick="javascript: submitPosition(true); return false;">Submit</button>
+                }
+                if (Model.StatusText == "Draft")
+                {
+                    <button class="btn btn-primary submit" id="btnDraft" onclick="javascript: submitPosition(false); return false;">Save</button>
+                }
+                if (Model.StatusText == "Pending")
+                {
+                    <button class="btn btn-primary red withdraw" id="btnWithdraw" onclick="javascript: Withdraw(); return false;">Withdraw</button>
+                }
+                if (Model.StatusText == "Draft")
+                {
+                    <button class="btn btn-primary red delete" id="btnDelete" onclick="javascript: Delete(); return false;">Delete</button>
+                }
+                <button class="btn btn-primary" id="btnBack" onclick="javascript: GoBack(); return false;">Back</button>
+            }
+
+        </div>
+    </div>
+}
+@*</form>*@
+<!--Confirmation Withdraw Message-->
+<div class="modal fade" id="WithdrawPositionModal" tabindex="-1" aria-hidden="true" data-status="">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                <h4 class="modal-title">Confirmation</h4>
+            </div>
+            <div class="modal-body">
+                <div class="well">
+                    Are you sure you want to <p id="modalAction" style="display:inline">withdraw</p> this temporary position request <br />
+                    Press Confirm to proceed, or Close to stay on the current page.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn default blue" id="btnConfirmWithdraw" value="Withdraw">
+                    <i class="fa fa-check"></i>
+                    Confirm
+                </button>
+                <button type="button" id="btnCloseWithdraw" class="btn default" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!--Confirmation Delete Message-->
+<div class="modal fade" id="DeletePositionModal" tabindex="-1" aria-hidden="true" data-status="">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                <h4 class="modal-title">Confirmation</h4>
+            </div>
+            <div class="modal-body">
+                <div class="well">
+                    Are you sure you want to <p id="modalAction" style="display:inline">delete</p> this temporary position request <br />
+                    Press Confirm to proceed, or Close to stay on the current page.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn default blue" id="btnConfirmDelete" value="Delete">
+                    <i class="fa fa-check"></i>
+                    Confirm
+                </button>
+                <button type="button" id="btnCloseDelete" class="btn default" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="withdrawResultModal" tabindex="-1" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header Success-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true" style="display: none;"></button>
+                <h4 class="Success-title">Action Successfully Withdrawn</h4>
+            </div>
+            <div class="modal-body Success-body">
+                <div class="well">
+                    <p id="withdrawResultModalBody">Your temporary position request has been successfully saved.</p>
+                </div>
+            </div>
+            <div class="modal-footer Success-footer">
+                <button type="button" class="btn default blue" id="btnOKWithdraw">
+                    <i class="fa fa-check"></i>
+                    OK
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Success Deleted Message -->
+<div class="modal fade" id="deleteResultModal" tabindex="-1" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header Success-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true" style="display: none;"></button>
+                <h4 class="Success-title">Action Successfully Deleted</h4>
+            </div>
+            <div class="modal-body Success-body">
+                <div class="well">
+                    <p id="deleteResultModalBody">Your temporary position request has been successfully deleted.</p>
+                </div>
+            </div>
+            <div class="modal-footer Success-footer">
+                <button type="button" class="btn default blue" id="btnOKDelete">
+                    <i class="fa fa-check"></i>
+                    OK
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!--Confirmation Submit Message-->
+<div class="modal fade" id="SubmitPositionModal" tabindex="-1" aria-hidden="true" data-status="">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                <h4 class="modal-title">Confirmation</h4>
+            </div>
+            <div class="modal-body">
+                <div class="well">
+                    Are you sure you want to <p id="modalAction" style="display:inline">submit</p> this temporary position request <br />
+                    Press Confirm to proceed, or Close to stay on the current page.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn default blue" id="btnConfirmSubmit" value="Submit">
+                    <i class="fa fa-check"></i>
+                    Confirm
+                </button>
+                <button type="button" id="btnCloseSubmit" class="btn default" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!--Confirmation Save Message-->
+<div class="modal fade" id="SavePositionModal" tabindex="-1" aria-hidden="true" data-status="">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                <h4 class="modal-title">Save as Draft</h4>
+            </div>
+            <div class="modal-body">
+                <div class="well">
+                    Are you sure you want to <p id="modalAction" style="display:inline">save</p> this temporary position request <br />
+                    Press Save to proceed, or Close to stay on the current page.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn default blue" id="btnSave" value="Save">
+                    <i class="fa fa-check"></i>
+                    Save
+                </button>
+                <button type="button" id="btnCloseSave" class="btn default" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Success Message -->
+<div class="modal fade" id="submitResultModal" tabindex="-1" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header Success-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true" style="display: none;"></button>
+                <h4 class="Success-title">Action Successfully Submitted</h4>
+            </div>
+            <div class="modal-body Success-body">
+                <div class="well">
+                    <p id="resultModalBody">Your temporary position request has been successfully submitted.</p>
+                </div>
+            </div>
+            <div class="modal-footer Success-footer">
+                <button type="button" class="btn default blue" id="btnOKSubmit">
+                    <i class="fa fa-check"></i>
+                    OK
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Success Save as Draft Message -->
+<div class="modal fade" id="saveResultModal" tabindex="-1" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header Success-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true" style="display: none;"></button>
+                <h4 class="Success-title">Action Successfully Saved</h4>
+            </div>
+            <div class="modal-body Success-body">
+                <div class="well">
+                    <p id="saveResultModalBody">Your temporary position request has been successfully saved.</p>
+                </div>
+            </div>
+            <div class="modal-footer Success-footer">
+                <button type="button" class="btn default blue" id="btnOKSave">
+                    <i class="fa fa-check"></i>
+                    OK
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+	$(function () {
+		$('.date-picker').datepicker({
+			format: 'dd/mm/yyyy',
+			autoclose: true
+		});
+
+		$('.popovers').popover();
+
+		if ('@Model.IsEditable' == "True") {
+			AppendAttachmentLabel();
+		}
+		$("#txtSupervisorID").val() == " - " ? $("#txtSupervisorID").val('') : "";
+		$("#Position").val() == "-" ? $("#Position").val('') : "";
+		$("#SupervisorID").val('@Model.SupervisorID');
+		var num;
+		$('.portlet-title .caption').length == 4 ? num = 3 : num = 4;
+		var collapse = $('<div class="tools"><a title="" data-original-title="" href="javascript:;" class="collapse"></a></div>');
+		collapse.insertAfter($('.portlet-title .caption').get(num));
+	});
+
+    function GoBack() {
+        history.back();
+    }
+
+    $('#btnConfirmWithdraw').click(function () {
+        $('#btnConfirmWithdraw').addClass('disable');
+    });
+    $('#btnConfirmDelete').click(function () {
+        $('#btnConfirmDelete').addClass('disable');
+    });
+    $('#btnConfirmSubmit').click(function () {
+        $('#btnConfirmSubmit').addClass('disable');
+    });
+    $('#btnSave').click(function () {
+        $('#btnSave').addClass('disable');
+    });
+
+	$('input:radio[name="PositionCategory"]').change(
+		function () {
+			if ($(this).is(':checked')) {
+				$('#note').html($(this).attr("note").replace(/\n/g, "<br />"));
+			}
+	});
+
+	function AppendAttachmentLabel() {
+		var note = $('input:radio[name="PositionCategory"]:checked').attr("note");
+		note = note.replace(/\n/g, "<br />");
+
+		var label = $('<div class="form-group"><label class="control-label col-md-3">Note</label><div class="col-md-5"><label id="note">' + note +'</label></div ></div>');
+		label.insertAfter($('#divAddAttach .form-group').get(0));
+	}
+
+	function IsValid(saveOrSubmit) {
+		var deferred = $.Deferred();
+		var errorMessage = "";
+		var effectiveDate = $("#EffectiveDate").val();
+		var delimitDate = $("#DelimitDate").val();
+        var category = $('input:radio[name=PositionCategory]:checked').attr("category");
+
+		errorMessage += $("#OrgUnitNumber").val() == "" ? "- Org Unit Number (EHRMS) is required. \n" : "";
+		errorMessage += !$('input:radio[name=PositionCategory]:checked').val() ? "- Position Category is required. \n" : "";
+		errorMessage += $("#OrgUnitNumber").val() != "" && $("#OrgUnitNumber").val().length != 8 ? "- Invalid Org Unit Number (EHRMS) length. \n" : "";
+
+		if (effectiveDate != "" && delimitDate != "") {
+			errorMessage += moment(effectiveDate, "DD/MM/YYYY").isAfter(moment(delimitDate, 'DD/MM/YYYY')) ? "- Effective Date must be earlier than Delimit Date \n" : "";
+		}
+
+		if (saveOrSubmit == "Submit") {
+			errorMessage += $("#PositionText").val() == "" ? "- Position Text is required. \n" : "";
+			errorMessage += $("#JobText").val() == "" ? "- Job Text is required. \n" : "";
+			errorMessage += $("#EffectiveDate").val() == "" ? "- Effective Date is required. \n" : "";
+			errorMessage += $("#DelimitDate").val() == "" ? "- Delimit Date is required. \n" : "";
+			errorMessage += $("#Reason").val() == "" ? "- Reason for Creation of Position is required. \n" : "";
+            errorMessage += $("#SupervisorID").val() == "" ? "- IM Details is required. \n" : "";
+
+            if (category != "B" && $('[name=Employee]').serializeArray().length < 1) {
+                errorMessage +=  "- Employee is required. \n";
+            }
+		}
+
+		if (($("#OrgUnitNumber").val() == "" || $("#OrgUnitNumber").val().length != 8) && errorMessage != "") {
+			alert(errorMessage);
+			deferred.reject();
+			return deferred;
+		}
+		else {
+			$.ajax({
+				type: "POST",
+				url: "@Url.Action("CheckOrgUnitDetails", "TemporaryPosition")?OrgUnitNumber=" + $("#OrgUnitNumber").val(),
+				success: function (content) {
+					if (content.orgUnitNo.OrgUnitNumber != null) {
+						$("#OrgUnitNumber").val(content.orgUnitNo.OrgUnitNumber);
+						$("#Division").val(content.orgUnitNo.DivisionCode + " - " + content.orgUnitNo.Division);
+						$("#PersonnelArea").val(content.orgUnitNo.PersonnelAreaCode + " - " + content.orgUnitNo.PersonnelArea);
+						$("#PersonnelSubArea").val(content.orgUnitNo.PersonnelSubAreaCode + " - " + content.orgUnitNo.PersonnelSubArea);
+						$("#DivisionCode").val(content.orgUnitNo.DivisionCode);
+						$("#PersonnelAreaCode").val(content.orgUnitNo.PersonnelAreaCode);
+						$("#PersonnelSubAreaCode").val(content.orgUnitNo.PersonnelSubAreaCode);
+						$("#btnOrgUnitNumber").prop("disabled", false);
+					}
+					else {
+						errorMessage += "- Org Unit Number (EHRMS) is invalid. \n";
+						console.log(errorMessage);
+					}
+
+					if (errorMessage != "") {
+						alert(errorMessage);
+						deferred.reject();
+					}
+					else {
+						deferred.resolve();
+					}
+				},
+				error: function (err) {
+					console.log(err);
+					alert("Error in the ajax call.");
+				}
+			});
+		}
+		return deferred;
+	}
+
+  //  function IsValid(saveOrSubmit) {
+		//var errorMessage = "";
+		//var effectiveDate = $("#EffectiveDate").val();
+		//var delimitDate = $("#DelimitDate").val();
+		//errorMessage += $("#OrgUnitNumber").val() == "" ? "- Org Unit Number (EHRMS) is required. \n" : "";
+		//errorMessage += $("#OrgUnitNumber").val().length != 8 ? "- Org Unit Number (EHRMS) is invalid. \n" : "";
+		//errorMessage += $("#Division").val() == "" ? "- Division is required. \n" : "";
+  //      errorMessage += $("#PersonnelArea").val() == "" ? "- Personnel Area is required. \n" : "";
+  //      errorMessage += $("#PersonnelSubArea").val() == "" ? "- Personnel Sub Area is required. \n" : "";
+  //      errorMessage += !$('input:radio[name=PositionCategory]:checked').val() ? "- Position Category is required. \n" : "";
+
+		//if (effectiveDate != "" && delimitDate != "") {
+		//	errorMessage += moment(effectiveDate, "DD/MM/YYYY").isAfter(moment(delimitDate, 'DD/MM/YYYY')) ? "- Effective Date must be earlier than Delimit Date \n" : "";
+		//}
+
+  //      if (saveOrSubmit == "Submit") {
+  //          errorMessage += $("#PositionText").val() == "" ? "- Position Text is required. \n" : "";
+  //          errorMessage += $("td").hasClass("sorting_1") == false ? "- Employee is required. \n" : "";
+  //          errorMessage += $("#JobText").val() == "" ? "- Job Text is required. \n" : "";
+  //          errorMessage += $("#EffectiveDate").val() == "" ? "- Effective Date is required. \n" : "";
+  //          errorMessage += $("#DelimitDate").val() == "" ? "- Delimit Date is required. \n" : "";
+  //          errorMessage += $("#Reason").val() == "" ? "- Reason for Creation of Position is required. \n" : "";
+  //          errorMessage += $("#SupervisorID").val() == "" ? "- IM Details is required. \n" : "";
+  //      }
+
+  //      if (errorMessage != "") {
+  //          alert(errorMessage);
+  //          return false;
+  //      }
+
+  //      return true;
+  //  }
+
+    function submitPosition(action) {
+        var url = '';
+        var actionPerform = '';
+        if (action) {
+            actionPerform = "Add";
+            url = '@Url.Action("Add", "TemporaryPosition")';
+            var promise = displaySubmitModal(true);
+        } else {
+            actionPerform = "Draft";
+            url = '@Url.Action("Draft", "TemporaryPosition")';
+            var promise = displaySaveModal(true);
+        }
+
+        var btnClicked = $(this);
+        promise.done(function () {
+            btnClicked.attr('disabled', true);
+
+            $("#SubmitPositionModal").modal('hide');
+            $("#SavePositionModal").modal('hide');
+            var form = $('#positionForm');
+			var data = form.serialize();
+
+            $('#divLoading').show();
+            $.ajax({
+                type: "POST",
+                url: url,
+                data: data,
+                success: function (response) {
+                    if (actionPerform == "Add") {
+                        if (response.Success) {
+                            $("#submitResultModal").modal();
+                            $("#submitResultModalBody").html(response.Message);
+                            $("#btnOKSubmit").click(function () {
+                                location.href = '@Url.Action("RequestHistory", "TemporaryPosition")';
+                            });
+                        }
+                        else {
+                            alert(response.TechnicalError);
+                        }
+                    }
+                    else if (actionPerform == "Draft") {
+                        if (response.Success) {
+                            $("#saveResultModal").modal();
+                            $("#saveResultModalBody").html(response.Message);
+                            $("#btnOKSave").click(function () {
+                                location.href = '@Url.Action("RequestHistory", "TemporaryPosition")';
+                            });
+                        }
+                        else {
+                            alert(response.TechnicalError);
+                        }
+                    }
+                },
+                error: function (err) {
+
+                }
+            }).done(function () {
+                $('#divLoading').hide();
+            });
+        });
+    }
+
+    function displaySubmitModal(shouldValidate) {
+        var deferred = $.Deferred();
+
+        if (IsValid == "undefined") {
+            deferred.reject();
+            alert("Validate function for form not found");
+            return deferred;
+        }
+
+        //if (shouldValidate && !IsValid("Submit")) {
+        //    deferred.reject();
+        //    return deferred;
+        //}
+        //$('#SubmitPositionModal').modal();
+
+		if (shouldValidate) {
+			IsValid("Submit").fail(function () { deferred.reject(); }).done(function () { $('#SubmitPositionModal').modal(); });
+		}
+
+        $('#btnConfirmSubmit').click(function () {
+            deferred.resolve();
+        });
+        $('#btnCloseSubmit').click(function () {
+            deferred.reject();
+        });
+        return deferred;
+    }
+
+    function displaySaveModal(shouldValidate) {
+        var deferred = $.Deferred();
+
+        if (IsValid == "undefined") {
+            deferred.reject();
+            alert("Validate function for form not found");
+            return deferred;
+        }
+
+        //if (shouldValidate && !IsValid("Save")) {
+        //    deferred.reject();
+        //    return deferred;
+        //}
+        //$('#SavePositionModal').modal();
+
+		if (shouldValidate) {
+			IsValid("Save").fail(function () { deferred.reject(); }).done(function () { $('#SavePositionModal').modal(); });
+		}
+
+        $('#btnSave').click(function () {
+            deferred.resolve();
+        });
+        $('#btnCloseSave').click(function () {
+            deferred.reject();
+        });
+        return deferred;
+    }
+
+    function Withdraw() {
+        var promise = displayWithdrawModal();
+
+        var btnClicked = $(this);
+        promise.done(function () {
+            btnClicked.attr('disabled', true);
+
+            $("#DeletePositionModal").modal('hide');
+            var url = '@Url.Action("Withdraw", "TemporaryPosition")';
+            $('#divLoading').show();
+            $.ajax({
+                type: "POST",
+                url: url,
+                data: { 'PositionID': '@Model.PositionID', 'statusToBeUpdate': 'WD' },
+                success: function (response) {
+                    if (response.Success) {
+                        $("#withdrawResultModal").modal();
+                        $("#withdrawResultModalBody").html(response.Message);
+                        $("#btnOKWithdraw").click(function () {
+                            location.href = '@Url.Action("RequestHistory", "TemporaryPosition")';
+                        });
+                    }
+                    else {
+                        alert(response.TechnicalError);
+                    }
+                },
+                error: function (err) {
+
+                }
+            }).done(function () {
+                $('#divLoading').hide();
+            });
+        });
+    }
+
+    @*function Edit() {
+        var url = '@Url.Action("Withdraw","TemporaryPosition")';
+        //$('#divLoading').show();
+            $.ajax({
+                type: "POST",
+                url: url,
+                //data: data,
+                success: function (response) {
+                    if (response.Success) {
+                        $("#withdrawResultModal").modal();
+                        $("#withdrawResultModalBody").html(response.Message);
+                        $("#btnOK").click(function () {
+                            location.href = '@Url.Action("RequestHistory", "TemporaryPosition")';
+                        });
+                    }
+                    else {
+                        alert(response.TechnicalError);
+                    }
+                },
+                error: function (err) {
+
+                }
+            })//.done(function () {
+            //    $('#divLoading').hide();
+            //});
+    }*@
+
+    function Delete() {
+        var promise = displayDeleteModal();
+
+        var btnClicked = $(this);
+
+        promise.done(function () {
+            btnClicked.attr('disabled', true);
+
+            $("#DeletePositionModal").modal('hide');
+
+            var url = '@Url.Action("Delete", "TemporaryPosition")';
+            $('#divLoading').show();
+            $.ajax({
+                type: "POST",
+                url: url,
+                data: { 'PositionID': '@Model.PositionID', 'actionTaken': 'Delete' },
+                success: function (response) {
+                    if (response.Success) {
+                        $("#deleteResultModal").modal();
+                        $("#deleteResultModalBody").html(response.Message);
+                        $("#btnOKDelete").click(function () {
+                            location.href = '@Url.Action("RequestHistory", "TemporaryPosition")';
+                        });
+                    }
+                    else {
+                        alert(response.TechnicalError);
+                    }
+                },
+                error: function (err) {
+
+                }
+            }).done(function () {
+                $('#divLoading').hide();
+            });
+        });
+    }
+    function displayDeleteModal() {
+        var deferred = $.Deferred();
+
+        $('#DeletePositionModal').modal();
+
+        $('#btnConfirmDelete').click(function () {
+            deferred.resolve();
+        });
+        $('#btnCloseDelete').click(function () {
+            deferred.reject();
+        });
+        return deferred;
+    }
+    function displayWithdrawModal() {
+        var deferred = $.Deferred();
+
+        $('#WithdrawPositionModal').modal();
+
+        $('#btnConfirmWithdraw').click(function () {
+            deferred.resolve();
+        });
+        $('#btnCloseWithdraw').click(function () {
+            deferred.reject();
+        });
+        return deferred;
+    }
+</script>
+
+<!--Request Details-->
+@*<div class="row">
+        <div class="col-md-12">
+            <div class="portlet box blue">
+                <div class="mini-triangle"><img src="~/Assets/img/menu-red-triangle.png" /></div>
+                <div class="portlet-title">
+                    <div class="caption">
+                        <i class="fa fa-reorder"></i>Application Details
+                    </div>
+                </div>
+                <div class="portlet-body form">
+                    <div class="form-horizontal">
+                        <div class="position-form">
+                            <div class="form-body">
+
+                                <div class="form-group">
+                                    <label class="control-label col-md-2">
+                                        Division
+                                    </label>
+                                    <div class="col-md-4 form-control-static">
+                                        <label>@Model.Company</label>
+                                    </div>
+                                    <label class="control-label col-md-2">
+                                        Reference No.
+                                    </label>
+                                    <div class="col-md-4 form-control-static">
+                                        <label style="color: #0000CC; font-weight:bold">@Model.ReferenceNo</label>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="control-label col-md-2">
+                                        Personnel Area
+                                    </label>
+                                    <div class="col-md-4 form-control-static">
+                                        <label>@Model.Area</label>
+                                    </div>
+                                    <label class="control-label col-md-2">
+                                        Status
+                                    </label>
+                                    <div class="col-md-4 form-control-static">
+                                        <label style="color: @color; font-weight:bold">@Model.StatusText</label>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="control-label col-md-2">
+                                        Personnel Sub Area
+                                    </label>
+                                    <div class="col-md-4 form-control-static">
+                                        <label>@Model.SubArea</label>
+                                    </div>
+                                    <label class="control-label col-md-2">
+                                        Agreer/Approver
+                                    </label>
+                                    <div class="col-md-4 form-control-static">
+                                        <label>@ViewBag.Approver</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>*@
+
+<!--Position Details-->
+@*<div class="row">
+        <div class="col-md-12">
+            <div class="portlet box blue">
+                <div class="mini-triangle"><img src="~/Assets/img/menu-red-triangle.png" /></div>
+                <div class="portlet-title">
+                    <div class="caption">
+                        <i class="fa fa-reorder"></i>Position Details
+                    </div>
+                </div>
+                <div class="portlet-body form">
+                    <div class="form-horizontal">
+                        <div class="position-form">
+                            <div class="form-body">
+                                <div class="form-group">
+                                    <label class="control-label col-md-2">
+                                        Position Text
+                                    </label>
+                                    <div class="col-md-4  form-control-static">
+                                        <label>@Model.PositionText</label>
+                                    </div>
+
+                                    <label class="control-label col-md-2">
+                                        Employee
+                                    </label>
+                                    <div class="col-md-4  form-control-static">
+                                        <label>@Model.EmployeeName</label>
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+
+                                    <label class="control-label col-md-2">
+                                        Job Text
+                                    </label>
+                                    <div class="col-md-4  form-control-static">
+                                        <label>@Model.JobText</label>
+                                    </div>
+
+                                    <label class="control-label col-md-2">
+                                        Employee No.
+                                    </label>
+                                    <div class="col-md-4  form-control-static">
+                                        <label>@Model.EmployeeNo</label>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="control-label col-md-2">
+                                        Job Grade
+                                    </label>
+                                    <div class="col-md-4  form-control-static">
+                                        <label>@Model.JobGrade</label>
+                                    </div>
+
+                                    <label class="control-label col-md-2">
+                                        Effective Date
+                                    </label>
+                                    <div class="col-md-4  form-control-static">
+                                        <label>@Model.EffectiveDate</label>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="control-label col-md-2" style="white-space:nowrap">
+                                        Org Unit Number (EHRMS)
+                                    </label>
+                                    <div class="col-md-4  form-control-static">
+                                        <label>@Model.OrgUnitNumber</label>
+                                    </div>
+                                    <label class="control-label col-md-2" style="white-space:nowrap">
+                                        Delimit Date
+                                    </label>
+                                    <div class="col-md-4  form-control-static">
+                                        <label>@Model.DelimitDate</label>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="control-label col-md-2">
+                                        Position Category
+                                    </label>
+                                    <div class="col-md-4  form-control-static">
+                                        <label>@Model.PositionCategoryText</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>*@
+@*<form id="positionForm">*@

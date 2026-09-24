@@ -1,0 +1,348 @@
+﻿@using UniformApplication.Services
+@using ESS.Core
+@model UniformApplication.Model.UniformApplicationVM
+
+@{
+    Layout = "";
+
+}
+
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="portlet box blue">
+            <div class="mini-triangle"><img src="/_layouts/15/TNBESS/Assets/img/menu-red-triangle.png" /></div>
+            <div class="portlet-title">
+                <div class="caption">
+                    <i class="fa fa-reorder"></i>Application Details
+                </div>
+                <div class="tools">
+                    <a title="" data-original-title="" href="javascript:;" class="collapse"> </a>
+                </div>
+            </div>
+            <div class="portlet-body form">
+                @*Brand new form*@
+                @if (Model.IsNewApplication || Model.IsEditable)
+                {
+                    <div class="form-body">
+                        <div class="row">
+
+                            <div class="col-md-6">
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <label class="control-label col-md-4">Submit For</label>
+                                        <div class="col-md-8 form-control-static">
+                                            @if (!Model.isBSOSubmitFor)
+                                            {
+                                                string SubmitForDisplay = @Model.EmployeeCode + " - " + Model.EmployeeName;
+                                                <input type="hidden" name="SubmitFor" value="@Model.SubmitFor">
+                                                <input type="hidden" name="EmployeeID" value="@Model.EmployeeID">
+                                                <input type="text" class="form-control" readonly name="SubmitForDisplay" value="@SubmitForDisplay">
+                                            }
+                                            else
+                                            {
+                                                <input type="hidden" name="SubmitFor" value="@Model.SubmitFor">
+                                                @Html.Action("_PeoplePickerExt", "PeoplePicker", new { CurrEmpID = Model.Submiter.ID, SearchType = "" })
+                                            }
+
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+
+                            <div class="col-md-6">
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <label class="control-label col-md-4">Category Type</label>
+                                        <div class="col-md-8 form-control-static">
+                                            <input type="hidden" name="Category" value="@Model.Category">
+                                            <input type="text" class="form-control" readonly name="CategoryDesc" value="@Model.CategoryDesc">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <label class="control-label col-md-4">
+                                            State <span style="color:red;"> *</span>
+                                        </label>
+                                        <div class="col-md-8 form-control-static">
+                                            @*@Html.DropDownList("State", new SelectList(Model.StateDDL, "Value", "Text"), null, new { @class = "bs-select form-control", @name = "State", @onchange = "changeState(this)", @value = Model.State })*@
+
+                                            @*@Html.DropDownListFor(i => i.State, new SelectList(Model.StateDDL, "Value", "Text"), new { @class = "bs-select form-control select-assign-value", @name = "State", @onchange = "changeState(this)", @value = Model.State })*@
+                                            @Html.DropDownListFor(i => i.State, new SelectList(Model.StateDDL, "Value", "Text"), new { @class = "bs-select form-control", @onchange = "changeState(this)", @value = Model.State })
+                                            @*<select tabindex="0" id="ddlState" class="form-control" onchange="OnLeaveTypeChanged(); PopulateLeaveSubtype(); TransitionFocus('ddlLeaveSubtype');"></select>*@
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <label class="control-label col-md-4">
+                                            Location <span style="color:red;"> *</span>
+                                        </label>
+                                        <div class="col-md-8 form-control-static">
+                                            <span id="LocationResult">
+                                                @*@Html.DropDownList("Location", new SelectList(Model.LocationDDL, "Value", "Text"), null, new { @class = "bs-select form-control", @name = "Location", @value = Model.Location })*@
+                                                @Html.DropDownListFor(i => i.Location, new SelectList(Model.LocationDDL, "Value", "Text"), new { @class = "bs-select form-control", @value = Model.State })
+                                            </span>
+
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        @if (Model.Category == ((int)Service.Category.YearlyCycle).ToString())
+                        {
+                            <!--Start Date & End Date-->
+                            <div class="row">
+
+                                <div class="col-md-6">
+                                    <div class="form-horizontal">
+                                        <div class="form-group">
+                                            <label class="control-label col-md-4">Request Start Date</label>
+                                            <div class="col-md-8 form-control-static">
+                                                <input type="text" class="form-control" readonly name="CycleStart" value="@Model.CycleStart">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <div class="form-horizontal">
+                                        <div class="form-group">
+                                            <label class="control-label col-md-4">Request End Date</label>
+                                            <div class="col-md-8 form-control-static">
+                                                <input type="text" class="form-control" readonly name="CycleEnd" value="@Model.CycleEnd">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+
+                                <div class="col-md-6">
+                                    <div class="form-horizontal">
+                                        <div class="form-group">
+                                            <label class="control-label col-md-4">Yearly</label>
+                                            <div class="col-md-8 form-control-static">
+                                                <input type="text" class="form-control" readonly name="Year" value="@Model.Year">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+
+                    </div>
+                }
+                @*Opening a draft/ withdrawn or cancelled leave*@
+                //else if (Model.IsEditable && !Model.IsNewApplication)
+                //{
+
+                //}
+                // View Mode
+                else
+                {
+                    <div class="form-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <label class="control-label col-md-4">Reference No.</label>
+                                        <div class="col-md-8 form-control-static">
+                                            <input type="text" class="form-control" readonly name="RequestNo" value="@Model.RequestNo">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <label class="control-label col-md-4">Category Type</label>
+                                        <div class="col-md-8 form-control-static">
+                                            <input type="hidden" name="Category" value="@Model.Category" />
+                                            <input type="text" class="form-control" readonly name="CategoryDesc" value="@Model.CategoryDesc">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <label class="control-label col-md-4">Employee Number</label>
+                                        <div class="col-md-8 form-control-static">
+                                            <input type="hidden" name="EmployeeID" value="@Model.EmployeeID" />
+                                            <input type="text" class="form-control" readonly name="EmployeeCode" value="@Model.EmployeeCode">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <label class="control-label col-md-4">Employee Name</label>
+                                        <div class="col-md-8 form-control-static">
+                                            <input type="text" class="form-control" readonly name="EmployeeName" value="@Model.EmployeeName">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <label class="control-label col-md-4">Submission Date</label>
+                                        <div class="col-md-8 form-control-static">
+                                            <input type="text" class="form-control" readonly name="SubmissionDate" value="@Model.SubmissionDate">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <label class="control-label col-md-4">Status</label>
+                                        <div class="col-md-8 form-control-static">
+                                            <input type="hidden" name="Status" value="@Model.Status" />
+                                            <input type="text" class="form-control" readonly name="StatusDesc" value="@Model.StatusDesc">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <label class="control-label col-md-4">State</label>
+                                        <div class="col-md-8 form-control-static">
+                                            <input type="hidden" name="State" value="@Model.State">
+                                            <input type="text" class="form-control" readonly name="StateDesc" value="@Model.StateDesc">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <label class="control-label col-md-4">Location</label>
+                                        <div class="col-md-8 form-control-static">
+                                            <input type="hidden" name="Location" value="@Model.Location">
+                                            <input type="text" class="form-control" readonly name="LocationDesc" value="@Model.LocationDesc">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        @if (Model.Category == ((int)Service.Category.YearlyCycle).ToString())
+                        {
+                            <!--Start Date & End Date-->
+                            <div class="row">
+
+                                <div class="col-md-6">
+                                    <div class="form-horizontal">
+                                        <div class="form-group">
+                                            <label class="control-label col-md-4">Request Start Date</label>
+                                            <div class="col-md-8 form-control-static">
+                                                <input type="text" class="form-control" readonly name="CycleStart" value="@Model.CycleStart">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <div class="form-horizontal">
+                                        <div class="form-group">
+                                            <label class="control-label col-md-4">Request End Date</label>
+                                            <div class="col-md-8 form-control-static">
+                                                <input type="text" class="form-control" readonly name="CycleEnd" value="@Model.CycleEnd">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+
+                                <div class="col-md-6">
+                                    <div class="form-horizontal">
+                                        <div class="form-group">
+                                            <label class="control-label col-md-4">Yearly</label>
+                                            <div class="col-md-8 form-control-static">
+                                                <input type="text" class="form-control" readonly name="Year" value="@Model.Year">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-horizontal">
+                                        <div class="form-group">
+                                            <label class="control-label col-md-4">Submitted By</label>
+                                            <div class="col-md-8 form-control-static">
+                                                <input type="text" class="form-control" readonly name="SubmittedBy" value="@Model.SubmittedByDisplay">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                        else
+                        {
+
+                            <div class="row">
+
+                                <div class="col-md-6">
+                                    <div class="form-horizontal">
+                                        <div class="form-group">
+                                            <label class="control-label col-md-4">Submitted By</label>
+                                            <div class="col-md-8 form-control-static">
+                                                <input type="text" class="form-control" readonly name="SubmittedBy" value="@Model.SubmittedByDisplay">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    function changeState(e) {
+        $.ajax({
+            type: "GET",
+            url: '@Url.Content("~/UniformApplication/_DDLLocation")',
+            cache: false,
+            dataType: "html",
+            data: { State: e.value },
+            success: function (content) {
+                $("#LocationResult").html(content);
+            },
+            error: function (e) {
+                console.log(e);
+            }
+        });
+    }
+
+
+</script>

@@ -1,0 +1,180 @@
+﻿@model ESS.ETransfer.Models.ETransferVM
+@{
+    Layout = null;
+}
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="portlet box blue">
+            <div class="mini-triangle"><img src="../Assets/img/menu-red-triangle.png" /></div>
+            <div class="portlet-title">
+                <div class="caption">
+                    <i class="fa fa-reorder"></i>Transfer Request Details
+                </div>
+            </div>
+            <div class="portlet-body form">
+                <div class="form-body" >
+                    <div class="row" style="">
+                        <div class="col-md-6">
+                            <div class="form-horizontal">
+                                <div class="form-group">
+                                    <label class="control-label col-md-4">
+                                        Transfer Type
+                                    </label>
+                                    <div class="col-md-8 form-control-static">
+                                        @Html.TextBoxFor(m => m.TransferType, new { @class = "form-control", @readonly = "readonly" })
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <br />
+                    @if (Model.TransferType == "Inter Division")
+                    {
+                        List<SelectListItem> InterDivisionDDL = ViewBag.InterDivisionDDL;
+                        @Html.DropDownList("HiddenInterDivisionDDL", InterDivisionDDL, new { @id = "HiddenInterDivisionDDL", @class = "hidden" })
+
+                       <div class="row" style="">
+                            <div class="col-md-12">
+                                <div class="form-horizontal">
+                                    <div class="table-toolbar">
+                                        <table class="table table-striped table-bordered table-hover table-full-width DetialsTable" id="tblTransferDetails">
+                                            <thead>
+                                                <tr>
+                                                    <th scope="col" width="5%"></th>
+                                                    <th scope="col">Division *</th>
+                                                    <th scope="col">Department *</th>
+                                                    <th scope="col">Unit/Section</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr>
+                                                    <td><input type="checkbox" class="RemoveCheckbox" /></td>
+                                                    <td>
+                                                        @Html.DropDownList("TransferDetails[0].TransferToCompanyCode", InterDivisionDDL,
+                             new { @id = "TransferDetails[0].TransferToCompanyCode", @class = "bs-select form-control TransferToCompanyCode", @style = "min-width:250px", @onchange = "GetInterDepartment(this)" })
+                                                    </td>
+                                                    <td>
+                                                        <select class="bs-select form-control TransferToAreaCode" style="min-width:250px" onchange="GetInterUnitSection(this)"
+                                                                id="TransferDetails[0].TransferToAreaCode" name="TransferDetails[0].TransferToAreaCode">
+                                                            <option value="">- Select One -</option>
+                                                        </select>
+                                                    </td>
+                                                    <td>
+                                                        <select class="bs-select form-control TransferToSubAreaCode" style="min-width:250px" 
+                                                                id="TransferDetails[0].TransferToSubAreaCode" name="TransferDetails[0].TransferToSubAreaCode">
+                                                            <option value="">- Select One -</option>
+                                                        </select>
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                                <div class="form-horizontal">
+                                    <div class="table-toolbar">
+                                        <div class="row">
+                                            <div class="col-md-12">
+                                                <div class="btn-group">
+                                                    <a id="btnInterAddRow" class="btn green" href="javascript:Inter_addRow();">
+                                                        Add Row
+                                                        <i class="fa fa-plus"></i>
+                                                    </a>
+                                                </div>
+                                                <div class="btn-group">
+                                                    <a class="btn red" href="javascript:Inter_removeRow();">
+                                                        Delete Row
+                                                        <i class="fa fa-minus"></i>
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        List<SelectListItem> WithinDepartmentDDL = ViewBag.WithinDepartmentDDL;
+                        @Html.DropDownList("HiddenWithinDepartmentDDL", WithinDepartmentDDL, new { @id = "HiddenWithinDepartmentDDL", @class = "hidden" })
+                                                
+                       <div class="row" style="">
+                            <div class="col-md-12">
+                                <div class="form-horizontal">
+                                    <div class="table-toolbar">
+                                        <table class="table table-striped table-bordered table-hover table-full-width DetialsTable" id="tblTransferDetails">
+                                            <thead>
+                                                <tr>
+                                                    <th scope="col" width="5%"></th>
+                                                    <th scope="col">Division *</th>
+                                                    <th scope="col">Department *</th>
+                                                    <th scope="col">Unit/Section</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr>
+                                                    <td><input type="checkbox" class="RemoveCheckbox" /></td>
+                                                    <td>
+                                                        <input type="text" readonly="readonly" class="form-control TransferToCompanyCode" style="min-width:250px"
+                                                               id="TransferDetails[0].TransferToCompanyCode" name="TransferDetails[0].TransferToCompanyCode"
+                                                               value="@Model.Submiter.CompanyCode - @Model.Submiter.Company" />
+                                                    </td>
+                                                    <td>
+                                                        @Html.DropDownList("TransferDetails[0].TransferToAreaCode", WithinDepartmentDDL,
+                                                        new { @id = "TransferDetails[0].TransferToAreaCode", @class = "bs-select form-control TransferToAreaCode", @style = "min-width:250px", @onchange = "GetWithinUnitSection(this);" })
+                                                    </td>
+                                                    <td>
+                                                        <select class="bs-select form-control TransferToSubAreaCode" style="min-width:250px" 
+                                                                id="TransferDetails[0].TransferToSubAreaCode" name="TransferDetails[0].TransferToSubAreaCode">
+                                                            <option value="">- Select One -</option>
+                                                        </select>
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                                <div class="form-horizontal">
+                                    <div class="table-toolbar">
+                                        <div class="row">
+                                            <div class="col-md-12">
+                                                <div class="btn-group">
+                                                    <a id="btnWithinAddRow" class="btn green" href="javascript:Within_addRow();">
+                                                        Add Row
+                                                        <i class="fa fa-plus"></i>
+                                                    </a>
+                                                </div>
+                                                <div class="btn-group">
+                                                    <a class="btn red" href="javascript:Within_removeRow();">
+                                                        Delete Row
+                                                        <i class="fa fa-minus"></i>
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="form-horizontal">
+                                <div class="form-group">
+                                    <label class="control-label col-md-2">
+                                        Reason for Transfer:<span id="lvCommMan" style="color:red;"> *</span>
+                                    </label>
+                                    <div class="col-md-10 form-control-static">
+                                        @Html.TextAreaFor(m => m.Reason, new { @class = "form-control",@id="txtReason", @rows = 5 })
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

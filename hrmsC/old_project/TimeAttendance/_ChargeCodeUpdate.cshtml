@@ -1,0 +1,130 @@
+﻿@{
+    Layout = null;
+}
+
+<div class="row" id="divChargeCodeUpdate">
+    <div class="col-md-12">
+        <div class="portlet box blue">
+            <div class="mini-triangle"><img src="../Assets/img/menu-red-triangle.png" /></div>
+            <div class="portlet-title">
+                <div class="caption">
+                    <i class="fa fa-reorder"></i>
+                    Charge Code Update
+                </div>
+                <div class="tools">
+                    <a title="" data-original-title="" href="javascript:;" class="collapse"> </a>
+                </div>
+            </div>
+            <div class="portlet-body form">
+                <div class="form-horizontal">
+                    <div class="form-body">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <label class="control-label col-md-2">Charge Code *</label>
+                                        <div class="col-md-6 form-control-static">
+                                            @Html.Partial("TSChargeCodePicker", new Tuple<int?, TimeAttendance.Models.TimesheetAttendanceVM, string>(null, null, "ChargeCodeUpdate"))
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Confirmation Message -->
+<div class="modal fade" id="ConfirmSubmit" tabindex="-1" role="basic" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                <h4 class="modal-title">Confirmation</h4>
+            </div>
+            <div class="modal-body warning-msg">
+                <div class="well" id="ConfirmMessage">
+                    Submit entry(s) with Warning?
+
+                    Press Confirm to proceed, or Close to stay on the current page.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn default blue" id="btnSubmitWarning" onclick="SubmitTS('SubmitWithWarning'); ">
+                    <i class="fa fa-check"></i>
+                    Confirm
+                </button>
+                <button type="button" class="btn default" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+
+    function UpdateChargeCode() {
+        $('#divLoading').show();
+
+        var EntryID = $('#EntryID').val();
+        var ChargeCode = $('input[name="ChargeCodeUpdateChargeCode"]').val();
+        var ChargeType = $('input[name="ChargeCodeUpdateChargeType"]').val();
+        var ChargeCodeDesc = $('input[name="ChargeCodeUpdateChargeCodeDesc"]').val();
+        var EntryType = "";
+        var EntrySource = $('#EntrySource').val()
+
+        if (ChargeCode === '' || ChargeCode === undefined) {
+            alert("Please select Charge Code to proceed.");
+
+            $('#divLoading').hide();
+        }
+        else {
+            $.ajax({
+                url: '../TimeAttendance/PerformChargeCodeUpdate',
+                type: 'POST',
+                data:
+                {
+                    EntryID: EntryID,
+                    ChargeCode: ChargeCode,
+                    ChargeType: ChargeType,
+                    ChargeCodeDesc: ChargeCodeDesc,
+                    EntryType: EntryType
+
+                },
+                success: function (result) {
+                    if (result.result == 'True') {
+
+                        $('#SuccessSubmit').modal();
+                        $('#SuccessMessage').html("Charge Code has been successfully " + "updated.");
+                        if (EntryID != '') {
+                            $('#btnOK').attr('href', '../TimeAttendance/TimesheetDetails?ID=' + EntryID);
+                        }
+                        else if (EntrySource != '') {
+                            $('#btnOK').attr('href', '../TimeAttendance/' + EntrySource);
+                        }
+                        else {
+                            $('#btnOK').attr('href', '../TimeAttendance/TimesheetHistoryGroup');
+                        }
+                    }
+                    else {
+                        if (result.errorMessage != '' && result.errorMessage != undefined) {
+                            alert(result.errorMessage);
+                        }
+                    }
+                },
+                error: function () {
+
+                    $('#divLoading').hide();
+                },
+                complete: function () {
+
+                    $('#divLoading').hide();
+                }
+            });
+        }
+    }
+
+
+</script>

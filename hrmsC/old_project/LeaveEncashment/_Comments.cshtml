@@ -1,0 +1,579 @@
+﻿@model LeaveApplication.Models.LeaveApplicationVM
+@{
+    ViewBag.Title = "Leave Application";
+    string CurrentUserId = ViewBag.CurrentUserID;
+    bool HasApprover = !String.IsNullOrEmpty(Model.Submiter.ManagerID);
+    string CurrentApprovalID = string.IsNullOrEmpty(Model.ApproverID) ? "" : Model.ApproverID;
+    string IsCurrentApproval = CurrentApprovalID.Contains(CurrentUserId) ? "true" : "false";
+}
+@using (Html.BeginForm("Index", "LeaveApplication", FormMethod.Post))
+{
+    <div class="form-section">
+        <div class="row">
+            <div class="col-md-12">
+                <h1 class="page-title">
+                    Leave Application
+                    <span style="padding-left:20px;">
+                        <small></small>
+                    </span>
+                </h1>
+                <input type="hidden" name="LeaveID" value="@Model.LeaveID" />
+                <input type="hidden" name="LeaveQuotaCreated" value="@Model.LeaveQuotaCreated.ToString()" />
+            </div>
+        </div>
+    </div>
+
+    if (!Model.HasApprover && Model.Submiter.ID.ToString() == CurrentUserId && Model.IsEditable)
+    {
+        <div class="row">
+            <div class="col-md-12">
+                <div class="note note-danger">
+                    <h4 class="block">
+                        @*Manager not found, please contact Administrator for assistance.<br />
+                        Leave submission has been disabled.*@
+                        @Html.Raw(ViewBag.NoApproverMessage)
+                    </h4>
+                    @*<p>
+
+                        </p>*@
+                </div>
+            </div>
+        </div>
+    }
+
+    <!-- Employee Details -->
+    @Html.Partial("_LeaveEmployeeInfo", Model.Submiter)
+    @Html.Partial("_LeaveApplicationDetails", Model)
+    @Html.Partial("_NotifyPeers", Model)
+
+    <!-- Attachment -->
+    if ((Model.LeaveStatus == "Draft" || Model.LeaveStatus == "DR")
+         && Model.LeaveID == Guid.Empty)
+    {
+        @Html.Action("LeaveAttachmentControl", "LeaveApplication",
+                new
+                {
+                    EmployeeID = @Model.Submiter.ID,
+                    Mode = "New",
+                    SourceType = "LeaveApplication",
+                    ShowOptionField = "true",
+                    ControlType = "dropdown",
+                    CustomTextLabel1 = "Checklist",
+                    Mandatory = "false"
+                })
+    }
+    else if ((Model.LeaveStatus == "Draft" || Model.LeaveStatus == "DR" ||
+              Model.LeaveStatus == "Cancelled" || Model.LeaveStatus == "CA" ||
+              Model.LeaveStatus == "Withdrawn" || Model.LeaveStatus == "WD")
+              && Model.LeaveID != Guid.Empty)
+    {
+        @Html.Action("LeaveAttachmentControl", "LeaveApplication",
+                new
+                {
+                    EmployeeID = @Model.Submiter.ID,
+                    Mode = "Add",
+                    SourceType = "LeaveApplication",
+                    RequestID = @Model.LeaveID.ToString(),
+                    ShowOptionField = "true",
+                    ControlType = "dropdown",
+                    CustomTextLabel1 = "Checklist",
+                    Mandatory = "false"
+                })
+    }
+    else
+    {
+        @Html.Action("LeaveAttachmentControl", "LeaveApplication",
+                new
+                {
+                    EmployeeID = @Model.Submiter.ID,
+                    Mode = "View",
+                    SourceType = "LeaveApplication",
+                    RequestID = @Model.LeaveID.ToString(),
+                    ShowOptionField = "true",
+                    CustomTextLabel1 = "Checklist",
+                    Mandatory = "true"
+                })
+    }
+
+    if (Model.LeaveStatus != "Draft" && Model.LeaveStatus != "DR")
+    {
+        @Html.Action("_AuditLog", "LeaveApplication", new { SourceID = Model.LeaveID })
+    }
+
+    @Html.Action("_LeaveActionButtons", "LeaveApplication", new { vm = Model, BackUrl = ViewBag.BackUrl })
+}
+
+<!-- Confirmation Message -->
+<div class="modal fade" id="ConfirmationDialog" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                <h4 id="ConfirmationDialog_Title" class="modal-title"></h4>
+            </div>
+            <div class="modal-body">
+                <div id="ConfirmationDialog_Message" class="well">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="ConfirmationDialog_PositiveButton" type="button" class="btn default blue">
+                    <i class="fa fa-check"></i>
+                </button>
+                <button id="ConfirmationDialog_NegativeButton" type="button" class="btn default" data-dismiss="modal">
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Success Message -->
+<div class="modal fade" id="SuccessDialog" tabindex="-1" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header Success-header">
+                <h4 id="SuccessDialog_Title" class="Success-title">
+                    Action Successfully Completed
+                </h4>
+            </div>
+            <div class="modal-body Success-body">
+                <div class="well" id="SuccessDialog_Message">
+                    Claims has been successfully submitted.
+                </div>
+            </div>
+            <div class="modal-footer Success-footer">
+                <a class="btn default blue" id="SuccessDialog_OkButton" data-dismiss="modal">
+                    <i class="fa fa-check"></i>
+                    OK
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="divLoading" style="margin: 0px; padding: 0px; position: fixed;
+    right: 0px; top: 0px; width: 100%; height: 100%; background-color: gainsboro; z-index: 30001; opacity: .8; filter: alpha(opacity=70); display: none; ">
+    <p style="position: absolute; top: 30%; left: 30%; color: black;">
+        Performing action, please wait...<img src="/_layouts/15/TNBESS/Assets/img/ajax-loading.gif">
+    </p>
+</div>
+
+<script>
+    $(function () {
+        InitializeCommonControls();
+        RetrieveLeaveTypeOptions();
+
+
+        if ('@Model.LeaveSubtypeCode' == 'UP02') {
+            if (('@Model.LeaveStatus' == 'Pending' || '@Model.LeaveStatus' == 'Verified' || '@Model.LeaveStatus' == 'Agreed' ||
+                 '@Model.LeaveStatus' == 'PE' || '@Model.LeaveStatus' == 'VE' || '@Model.LeaveStatus' == 'AG')
+                && '@IsCurrentApproval' == "true") {
+                $("#_Disclaimer").removeClass("hide");
+            }
+        }
+        else if ('@Model.LeaveSubtypeCode' == 'UP01') {
+            if (('@Model.LeaveStatus' == 'Pending' || '@Model.LeaveStatus' == 'Verified' ||
+                 '@Model.LeaveStatus' == 'PE' || '@Model.LeaveStatus' == 'VE')
+                && '@IsCurrentApproval' == "true") {
+                $("#_Disclaimer").removeClass("hide");
+            }
+        }
+    });
+
+    function InitializeCommonControls() {
+        $('.date-picker').datepicker({
+            format: 'dd/mm/yyyy',
+            autoclose: true
+        });
+
+        $('.timeinput').inputmask("mask", {
+            "mask": "99:99"
+        });
+
+        $('.timeinput').inputmask("h:s", {
+            "placeholder": "__/__",
+            onincomplete: function () {
+                // replace placeholder with zero
+                $(this).val($(this).val().replace(/_/g, '0'));
+            }
+        });
+
+        $('.number-only').keyup(function () {
+            if (this.value != this.value.replace(/[^0-9\.]/g, '')) {
+                this.value = this.value.replace(/[^0-9\.]/g, '');
+            }
+        });
+    }
+
+    function SubmitApplication(submitStatus) {
+        if (submitStatus == "Draft") {
+            ShowConfirmationDialog({
+                message: "Are you sure you want to save this Leave Application as draft?\n\r Press Confirm to proceed, or Close to stay on the current page.",
+                positiveCallback: PerformSaveAsDraft
+            });
+        }
+        else {
+            var validationMessage = PerformSubmissionValidation();
+
+            if (validationMessage) {
+                alert(validationMessage);
+            }
+            else {
+                ShowConfirmationDialog({
+                    positiveCallback: PerformSubmission
+                });
+            }
+        }
+    }
+
+    function PerformSubmissionValidation() {
+        // Retrieve current seletected subtype and perform validation
+        var validationMessage = "";
+        var subtypObj = GetLeaveSubtypeObj();
+        var _StartDate = "";
+        var _EndDate = "";
+        var _LeaveTypeCode = "";
+        var _LeaveSubtypeCode = "";
+    }
+
+    function PerformSaveAsDraft() {
+        var data = $('form').serializeArray();
+
+        HideConfirmationDialog();
+        ShowLoadingScreen();
+        $.post('@Url.Action("SaveAsDraft", "LeaveApplication")', data, function (result) {
+            HideLoadingScreen();
+
+            if (result.IsSuccess) {
+                ShowDialog({
+                    message: "This leave application was saved as draft successfully.",
+                    okCallback: function () {
+                        window.location.href = '@Url.Action("LeaveHistory", "LeaveApplication")';
+                    }
+                });
+            }
+            else {
+                alert(result.Message);
+            }
+        });
+    }
+
+    function PerformSubmission() {
+        var data = $('form').serializeArray();
+
+        HideConfirmationDialog();
+        ShowLoadingScreen();
+        $.post('@Url.Action("SubmitApplication", "LeaveApplication")', data, function (result) {
+            HideLoadingScreen();
+            if (result.IsSuccess) {
+                ShowDialog({
+                    message: "This leave application was submitted successfully.",
+                    okCallback: function () {
+                        window.location.href = '@Url.Action("LeaveHistory", "LeaveApplication")';
+                    }
+                });
+            }
+            else {
+                alert(result.Message);
+            }
+        });
+    }
+
+    function DeleteApplication() {
+        ShowConfirmationDialog({
+            message: "Are you sure you want to delete this Leave Application?\n\r Press Confirm to proceed, or Close to stay on the current page.",
+            positiveCallback: PerformDeleteApplication
+        });
+    }
+
+    function PerformDeleteApplication() {
+        var data = {
+            LeaveID: '@Model.LeaveID'
+        };
+
+        HideConfirmationDialog();
+        ShowLoadingScreen();
+        $.post('@Url.Action("DeleteApplication", "LeaveApplication")', data, function (result) {
+            HideLoadingScreen();
+            if (result.IsSuccess) {
+                ShowDialog({
+                    message: "This leave application was deleted successfully.",
+                    okCallback: function () {
+                        window.location.href = '@Url.Action("LeaveHistory", "LeaveApplication")';
+                    }
+                });
+            }
+            else {
+                alert(result.Message);
+            }
+        });
+    }
+
+    function ApproverAction(action) {
+        var _ApproverInfo = {};
+        var _ApproverAction = "";
+        var _ApproverComment = $("#txtAppComment").val();
+        var _DeclineReason = "";
+        var _NewStartDate = $('#StartDate').val();
+        var _NewEndDate = $('#EndDate').val();
+
+        if ($("#txtAppComment").length > 0 && !_ApproverComment && (action == "Decline" || action == "Withdraw" || action == "Cancel")) {
+            alert("Comment is mandatory");
+            return;
+        }
+
+        if (action != "Decline" && action != "Withdraw") {
+            if ('@Model.LeaveSubtypeCode' == 'UP01') {
+                if ('@Model.LeaveStatus' == 'Pending' || '@Model.LeaveStatus' == 'Verified' ||
+                    '@Model.LeaveStatus' == 'PE' || '@Model.LeaveStatus' == 'VE') {
+                    if (!$("#disclaimer").is(':checked')) {
+                        alert("Please check no ETK or substitution is allowed to proceed.");
+                        return;
+                    }
+                }
+            }
+            else if ('@Model.LeaveSubtypeCode' == 'UP02') {
+                if ('@Model.LeaveStatus' == 'Pending' || '@Model.LeaveStatus' == 'Verified' || '@Model.LeaveStatus' == 'Agreed' ||
+                    '@Model.LeaveStatus' == 'PE' || '@Model.LeaveStatus' == 'VE' || '@Model.LeaveStatus' == 'AG') {
+                    if (!$("#disclaimer").is(':checked')) {
+                        alert("Please check no ETK or substitution is allowed to proceed.");
+                        return;
+                    }
+
+                }
+            }
+        }
+
+
+        if ('@Model.LeaveSubtypeCode' == 'UP01' || '@Model.LeaveSubtypeCode' == 'UP02' || '@Model.LeaveSubtypeCode' == 'MC01' || '@Model.LeaveSubtypeCode' == 'UP03' ||
+            '@Model.LeaveSubtypeCode' == 'UP04' || '@Model.LeaveSubtypeCode' == 'UP05' || '@Model.LeaveSubtypeCode' == 'UP06' || '@Model.LeaveSubtypeCode' == 'UP07' || '@Model.LeaveSubtypeCode' == 'MC05') {
+            if (('@Model.LeaveStatus' == 'Recommended' || '@Model.LeaveStatus' == 'RC') && action == 'Decline') {
+                if ($("#ddlDeclineReason").val() == "") {
+                    alert('Please select a decline reason');
+                    return;
+                } else {
+                    _DeclineReason = "Reason:" + $("#ddlDeclineReason").val();
+                }
+            }
+        }
+
+        var _RedirectUrl = "";
+
+        switch (action) {
+            case "Verify":
+                _ApproverAction = "Verified";
+                break;
+            case "Acknowledge":
+                _ApproverAction = "Acknowledged";
+                break;
+            case "Agree":
+                _ApproverAction = "Agreed";
+                break;
+            case "Approve":
+                _ApproverAction = "Approved";
+                break;
+            case "Cancel":
+                _ApproverAction = "Cancelled";
+                break;
+            case "Decline":
+                _ApproverAction = "Declined";
+                break;
+            case "Endorse":
+                _ApproverAction = "Endorsed";
+                break;
+            case "Process":
+                _ApproverAction = "Processed";
+                break;
+            case "ProcessMemo":
+                _ApproverAction = "ProcessMemo";
+                break;
+            case "Receive":
+                _ApproverAction = "Received";
+                break;
+            case "Recommend":
+                _ApproverAction = "Recommended";
+                break;
+            case "Withdraw":
+                _ApproverAction = "Withdrawn";
+                _ApproverComment = "";
+                _RedirectUrl = '@Url.Action("LeaveHistory", "LeaveApplication")';
+                break;
+            case "ApproveCancel":
+                _ApproverAction = "ApproveCancel";
+                break;
+            case "Rework":
+                _ApproverAction = "Reworked";
+                break;
+        }
+        var action2 = "";
+        if (action == "ApproveCancel") {
+            action2 = "Approve Cancel";
+        } else {
+            action2 = action;
+        }
+        var promptMessage = "Are you sure you want to " + action2 + " this Leave Application?\n\r Press Confirm to proceed, or Close to stay on the current page.";
+        var notifyMessage = "";
+
+        if (_ApproverAction == "Cancelled") {
+            notifyMessage = "This Leave Application was successfully submitted for cancellation.";
+        } else if (_ApproverAction == "ApproveCancel") {
+            notifyMessage = "This Leave Application was cancelled successfully.";
+        }
+        else {
+            notifyMessage = "This Leave Application was " + _ApproverAction + " successfully.";
+        }
+
+
+        _ApproverInfo = {
+            ID: '@Model.LeaveID',
+            TaskID: '@Model.TaskID',
+            CurrentUserID: '@ViewBag.CurrentUserID',
+            Status: action,
+            ApproverComment: _ApproverComment + "\n " + _DeclineReason,
+            ActivityName: '',
+            OptionalApprover: false
+        };
+
+        // If cancelled by submitter itself, redirect to history
+        if (_ApproverInfo.CurrentUserID == '@Model.EmployeeID') {
+            _RedirectUrl = '@Url.Action("LeaveHistory", "LeaveApplication")';
+        }
+
+        ShowConfirmationDialog({
+            message: promptMessage,
+            positiveCallback: function () {
+                HideConfirmationDialog();
+                ShowLoadingScreen();
+
+                $.post('@Url.Action("PostApproverAction", "LeaveApplication")',
+                    {
+                        info: _ApproverInfo,
+                        ApproverAction: _ApproverAction,
+                        Target: "",
+                        NewStartDate: _NewStartDate,
+                        NewEndDate: _NewEndDate
+                    },
+                    function (result) {
+                        HideLoadingScreen();
+
+                        if (result.Success) {
+                            ShowDialog({
+                                message: notifyMessage,
+                                okCallback: function () {
+                                    if (_RedirectUrl) {
+                                        window.location.href = _RedirectUrl;
+                                    }
+                                    else {
+                                        window.location.href = '@Url.Action("InTray", "LeaveApplication")';
+                                    }
+                                }
+                            });
+                        }
+                        else {
+                            ShowDialog({
+                                title: "Action not completed.",
+                                message: "Error Message : " + result.ErrorMsg,
+                                okCallback: function () {
+                                    HideDialog();
+                                }
+                            });
+                        }
+                    });
+            }
+        });
+    }
+
+    // Show the reason when user click decline
+    function DeclineThisLeave() {
+        if (('@Model.LeaveSubtypeCode' == 'UP01' || '@Model.LeaveSubtypeCode' == 'UP02' || '@Model.LeaveSubtypeCode' == 'MC01' || '@Model.LeaveSubtypeCode' == 'UP03' ||
+            '@Model.LeaveSubtypeCode' == 'UP04' || '@Model.LeaveSubtypeCode' == 'UP05' || '@Model.LeaveSubtypeCode' == 'UP06' || '@Model.LeaveSubtypeCode' == 'UP07')
+            &&
+            ('@Model.LeaveStatus' == 'Recommended' || '@Model.LeaveStatus' == 'RC')
+            &&
+            ($('#DeclineReason').is(':visible') == false)) {
+            $("#DeclineReason").removeClass('hide');
+        }
+        else {
+            ApproverAction('Decline');
+        }
+    }
+
+    // Dialog with Confirm/Close
+    function ShowConfirmationDialog(data) {
+        if (!data) {
+            data = {};
+        }
+
+        var dialog = $('#ConfirmationDialog'),
+            title = data.title || "Confirmation",
+            message = data.message || "Are you sure you want to submit this Leave Application?\n\r Press Confirm to proceed, or Close to stay on the current page.",
+            positiveButtonText = data.positiveButtonText || "Confirm",
+            positiveCallback = data.positiveCallback,
+            negativeButtonText = data.negativeButtonText || "Close",
+            negativeCallback = data.negativeCallback;
+
+        dialog.find("#ConfirmationDialog_Title").html(title);
+        dialog.find("#ConfirmationDialog_Message").html(message);
+        var ePositiveButton = dialog.find("#ConfirmationDialog_PositiveButton");
+        var eNegativeButton = dialog.find("#ConfirmationDialog_NegativeButton");
+
+        ePositiveButton.html(positiveButtonText);
+        ePositiveButton.off('click');
+        ePositiveButton.one('click', function () {
+            if (positiveCallback)
+                positiveCallback(dialog);
+        });
+
+        eNegativeButton.html(negativeButtonText);
+        eNegativeButton.off('click');
+        eNegativeButton.one('click', function () {
+            if (negativeCallback)
+                negativeCallback(dialog);
+        });
+
+        dialog.modal();
+    }
+
+    function HideConfirmationDialog() {
+        var dialog = $('#ConfirmationDialog');
+        dialog.modal("hide");
+    }
+
+    // Dialog with OK
+    function ShowDialog(data) {
+        if (!data) {
+            data = {};
+        }
+
+        var dialog = $('#SuccessDialog'),
+            title = data.title,
+            message = data.message || "The operation was success.",
+            okCallback = data.okCallback;
+
+        var okButton = dialog.find("#SuccessDialog_OkButton");
+
+        dialog.find("#SuccessDialog_Title").html(title);
+        dialog.find("#SuccessDialog_Message").html(message);
+
+        okButton.off('click');
+        okButton.one('click', function () {
+            if (okCallback)
+                okCallback();
+        });
+
+        dialog.modal();
+    }
+
+    function HideDialog() {
+        var dialog = $('#SuccessDialog');
+        dialog.modal("hide");
+    }
+
+    function ShowLoadingScreen() {
+        $("#divLoading").show();
+    }
+
+    function HideLoadingScreen() {
+        $('#divLoading').hide();
+    }
+</script>
+

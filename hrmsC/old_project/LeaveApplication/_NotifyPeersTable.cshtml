@@ -1,0 +1,54 @@
+﻿@{
+    Layout = null;
+    string LeaveStatus = ViewBag.LeaveStatus;
+}
+
+<table id="tblNotifyPeer" class="table table-striped table-bordered table-hover table-full-width">
+    <thead>
+        <tr>
+            <th>
+                @if (LeaveStatus == "Draft" || LeaveStatus == "Cancelled" || LeaveStatus == "Withdrawn" ||
+                     LeaveStatus == "DR"    || LeaveStatus == "CA"        || LeaveStatus == "WD")
+                {
+                    <input id="RemovePeerCheckboxHeader" type="checkbox" onchange="SelectAll(this)" />
+                }
+            </th>
+            <th>Employee Number</th>
+            <th>Employee Name</th>
+            <th>Department</th>
+            <th>Unit/Section</th>
+            <th>Position</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in @Model)
+            {
+            <tr>
+                <td>
+                    @if (LeaveStatus == "Draft" || LeaveStatus == "Cancelled" || LeaveStatus == "Withdrawn" ||
+                         LeaveStatus == "DR" || LeaveStatus == "CA" || LeaveStatus == "WD")
+                    {
+                        <input type="checkbox" class="RemovePeerCheckbox" value="@item.EmployeeID" />
+                    }
+                </td>
+                <td class="EmployeeCode">
+                    <input type="hidden" name="Peers" value="@item.EmployeeID" />
+                    @item.EmployeeCode
+                </td>
+                <td class="EmployeeName">@item.EmployeeName</td>
+                <td class="Department">@item.Department</td>
+                <td class="UnitSection">@item.UnitSection</td>
+                <td class="Position">@item.Position</td>
+            </tr>
+        }
+    </tbody>
+</table>
+@Html.Partial("_includeDataTableScripts")
+<script>
+    //transformTable("#tblNotifyPeer");
+
+    function SelectAll(element) {
+        $('#tblNotifyPeer .RemovePeerCheckbox').prop('checked', element.checked);
+        $.uniform.update();
+    }
+</script>

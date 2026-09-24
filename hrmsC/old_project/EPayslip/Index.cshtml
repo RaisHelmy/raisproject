@@ -1,0 +1,337 @@
+﻿@using System.Configuration
+@using ESS.EPayslip.Models;
+@model Tuple<ESS.EPayslip.Models.EmployeePayslip, List<DocumentDetail>, List<DocumentDetail>, List<DocumentDetail>>
+
+@{
+	Layout = "~/Views/Shared/_Layout.cshtml";
+	ViewBag.Title = "Payslip";
+	List<string> AllYear = ViewBag.Year;
+	String selectedYear = ViewBag.SelectedYear;
+	String selected = "";
+
+	List<DocumentDetail> EAList = Model.Item2;
+	List<DocumentDetail> MedicalList = Model.Item3;
+	List<DocumentDetail> OvertimeList = Model.Item4;
+	var PaySlipModel = Model.Item1;
+
+}
+
+
+<div class="row">
+    <div class="col-md-12">
+        <br />
+        <h1 class="page-title">
+            E-Payslip
+        </h1>
+        <!-- END PAGE TITLE & BREADCRUMB-->
+
+    </div>
+</div>
+<!-- END PAGE HEADER-->
+<br />
+
+<form id="payslipForm">
+    <div class="row">
+        <div class="col-md-12">
+
+            <label class="control-label col-xs-3 col-md-2" style="margin-top: 17px;">Year : </label>
+
+            <div class="col-xs-9 col-md-4" style="margin-top: 10px;">
+                <select class="form-control" name="Year" id="Year">
+                    @foreach (string year in AllYear)
+                    {
+                        if (year == selectedYear)
+                        {
+                            selected = "selected";
+                        }
+                        else
+                        {
+                            selected = "";
+                        }
+
+                        <option @selected>@year</option>
+                    }
+
+                </select>
+            </div>
+            <div class="col-xs-12 col-md-6" style="margin-top: 10px;">
+                <button class="btn green" type="button" id="btnView">View</button>&nbsp;
+                @*<a href="https://ess.tnb.com.my/epayslip/Pages/default2.aspx">
+                        <button class="btn green" type="button" id="btnArchive">Past Payslips</button>
+                    </a>*@
+            </div>
+        </div>
+    </div>
+
+    <br />
+    <div class="row">
+        <div class="col-md-6">
+            <div class="portlet box blue">
+                <div class="mini-triangle"><img src="~/Assets/img/menu-red-triangle.png" /></div>
+                <div class="portlet-title">
+                    <div class="caption">
+                        <i class="fa fa-reorder"></i>View Payslip
+                    </div>
+                </div>
+                <div class="portlet-body form">
+                    <div class="form-body">
+                        <div class="form-horizontal">
+                            <div class="table-toolbar">
+                                <table class="table table-striped table-bordered table-hover table-full-width">
+                                    <thead>
+                                        <tr>
+                                            <th width="10px"></th>
+                                            <th>Payslip</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @if (PaySlipModel.Basic.Count > 0)
+                                        {
+                                            foreach (var item in PaySlipModel.Basic)
+                                            {
+
+                                                <tr>
+                                                    <td>
+                                                        <a href="@Url.Action("DownloadDocument")?ID=@item.ID&FormType=Payslip" class="btn btn-icon-only blue">
+                                                            <i class=" fa fa-download">
+                                                            </i>
+                                                        </a>
+                                                    </td>
+                                                    <td class="">
+                                                        @item.Month @item.Year
+                                                    </td>
+                                                </tr>
+                                            }
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="portlet box blue">
+                <div class="mini-triangle"><img src="~/Assets/img/menu-red-triangle.png" /></div>
+                <div class="portlet-title">
+                    <div class="caption">
+                        <i class="fa fa-reorder"></i>View Special Payslip
+                    </div>
+                </div>
+                <div class="portlet-body form">
+                    <div class="form-body">
+
+                        <div class="form-horizontal">
+                            <div class="table-toolbar">
+                                <table class="table table-striped table-bordered table-hover table-full-width">
+                                    <thead>
+                                        <tr>
+                                            <th width="10px"></th>
+                                            <th class="">Payslip</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+
+                                        @if (PaySlipModel.Special.Count > 0)
+                                        {
+                                            foreach (var item in PaySlipModel.Special)
+                                            {
+                                                <tr>
+                                                    <td>
+                                                        <a href="@Url.Action("DownloadDocument")?ID=@item.ID&FormType=Payslip" class="btn btn-icon-only blue" title="View Profile">
+                                                            <i class=" fa fa-download">
+                                                            </i>
+                                                        </a>
+                                                    </td>
+                                                    <td class="">
+                                                        @item.Month @item.Year
+                                                    </td>
+                                                </tr>
+                                            }
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+	<div class="row">
+		<div class="col-md-6">
+			<div class="portlet box blue">
+				<div class="mini-triangle"><img src="~/Assets/img/menu-red-triangle.png" /></div>
+				<div class="portlet-title">
+					<div class="caption">
+						<i class="fa fa-reorder"></i>View EA Form
+					</div>
+				</div>
+				<div class="portlet-body form">
+					<div class="form-body">
+						<div class="form-horizontal">
+							<table class="table table-striped table-bordered table-hover table-full-width">
+								<thead>
+									<tr>
+										<th width="10px"></th>
+										<th class="">Year</th>
+									</tr>
+								</thead>
+								<tbody>
+									@foreach (var item in EAList)
+									{
+										<tr>
+											<td>
+												<a class="btn blue" href="@Url.Action("DownloadDocument")?ID=@item.ID&FormType=EA">
+													<i class="fa fa-download"></i>
+												</a>
+											</td>
+											<td>
+												@{
+													var name = item.DocumentName;
+													if (!string.IsNullOrEmpty(name))
+													{
+														name = name.Split('.')[0];
+													}
+												}
+												@name
+											</td>
+										</tr>
+									}
+								</tbody>
+							</table>
+
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="col-md-6">
+			<div class="portlet box blue">
+				<div class="mini-triangle"><img src="~/Assets/img/menu-red-triangle.png" /></div>
+				<div class="portlet-title">
+					<div class="caption">
+						<i class="fa fa-reorder"></i>View Overtime Report
+					</div>
+				</div>
+				<div class="portlet-body form">
+					<div class="form-body">
+
+						<div class="form-horizontal">
+							<div class="table-toolbar">
+								<table class="table table-striped table-bordered table-hover table-full-width">
+									<thead>
+										<tr>
+											<th width="10px"></th>
+											<th class="">Overtime Report</th>
+										</tr>
+									</thead>
+									<tbody>
+										@foreach (var item in OvertimeList)
+										{
+											<tr>
+												<td>
+													<a class="btn blue" href="@Url.Action("DownloadDocument")?ID=@item.ID&FormType=Overtime">
+														<i class="fa fa-download"></i>
+													</a>
+												</td>
+												<td>
+													@item.DocumentName
+												</td>
+											</tr>
+										}
+									</tbody>
+								</table>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		@*<div class="col-md-6">
+			<div class="portlet box blue">
+				<div class="mini-triangle"><img src="~/Assets/img/menu-red-triangle.png" /></div>
+				<div class="portlet-title">
+					<div class="caption">
+						<i class="fa fa-reorder"></i>View Medical Statement
+					</div>
+				</div>
+				<div class="portlet-body form">
+					<div class="form-body">
+						<div class="form-horizontal">
+							<table class="table table-striped table-bordered table-hover table-full-width">
+								<thead>
+									<tr>
+										<th width="10px"></th>
+										<th class="">Month / Year</th>
+									</tr>
+								</thead>
+								<tbody>
+									@foreach (var item in MedicalList)
+									{
+										<tr>
+											<td>
+												<a class="btn blue" href="@Url.Action("DownloadDocument")?ID=@item.ID&FormType=Medical">
+													<i class="fa fa-download"></i>
+												</a>
+											</td>
+											<td>
+												@{
+													var name = item.DocumentName;
+													if (!string.IsNullOrEmpty(name))
+													{
+														name = name.Split('.')[0];
+													}
+												}
+												@name
+											</td>
+										</tr>
+									}
+								</tbody>
+							</table>
+
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>*@
+	</div>
+</form>
+<script>
+
+    window.onload = function () {
+        
+        // This code will run after the page has fully loaded.
+        const validateValue = getQueryParam('Validate');
+        if (validateValue === 'unauthorized') {
+            // Do something when Validate is 'unauthorized'.
+            alert('Unable to download unauthorized payslip.');
+        }
+    };
+
+    // Function to get the query parameters from the URL
+    function getQueryParam(name) {
+        const urlParams = new URLSearchParams(window.location.search);
+        return urlParams.get(name);
+    }
+
+    $('.table').dataTable(
+    {
+    "bLengthChange": false,
+    "bFilter": false,
+	"bSort" : false,
+	aaSorting: [],
+"bPaginate": false
+
+        });
+
+    $('#btnView').click(function (evt) {
+        evt.preventDefault();
+        location.href = '@Url.Action("Index", "EPayslip")?Year=' + $("#Year").val();
+    });
+
+</script>

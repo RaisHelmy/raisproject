@@ -1,0 +1,385 @@
+﻿@model ESS.Claim.ViewModels.FBEntitlement
+@{
+    ViewBag.Title = "Flexi Benefits Entitlement";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+    IEnumerable<SelectListItem> selectListItems = ViewBag.YearDDL;
+    var selectListItem = selectListItems.FirstOrDefault(x => x.Value == DateTime.Now.Year.ToString());
+    if (selectListItem != null)
+    {
+        selectListItems.FirstOrDefault(x => x.Value == DateTime.Now.Year.ToString()).Selected = true;
+    }
+}
+
+<div class="form-section">
+    <div class="row">
+        <div class="col-md-12">
+            <h1 class="page-title">
+                Flexi Benefits Entitlement
+                <span style="padding-left:20px;">
+                </span>
+            </h1>
+        </div>
+    </div>
+</div>
+
+<form>
+    <input id="hfEmployeeID" type="hidden" value="@ViewBag.EmployeeID" />
+    <input id="hfRole" type="hidden" value="@ViewBag.Role" />
+    <input id="hfRecord" type="hidden" value="@ViewBag.NoRecord" />
+
+    <div class="form-body">
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-horizontal">
+                    <div class="form-group">
+                        <label class="col-md-4 control-label">Employee</label>
+                        <div class="col-md-8 form-control-static">
+                            <input type="text" value="@Model.EmployeeCode - @Model.EmployeeName" class="form-control" readonly />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-horizontal">
+                    <div class="form-group">
+                        <label class="col-md-4 control-label">Year</label>
+                        <div class="col-md-8 form-control-static">
+                            <input type="hidden" name="UniqueID" id="UniqueID" value="@Model.UniqueID" />
+                            @Html.DropDownListFor(m => m.Year, selectListItems,
+                            new { @id = "Year", @class = "bs-select form-control", @onchange = "GetEntitlement();" })
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <br />
+        <br />
+        <div id="EntitlementDetails">
+            <div class="portlet box blue">
+                <div class="mini-triangle"><img src="../Assets/img/menu-red-triangle.png" /></div>
+                <div class="portlet-title">
+                    <div class="caption">
+                        <i class="fa fa-reorder"></i>Entitlement Details
+                    </div>
+                    <div class="tools">
+                    </div>
+                </div>
+                <div class="portlet-body form">
+                    <div class="form-body">
+                        <div class="form-horizontal">
+                            <div class="table-toolbar">
+                                <div class="form-body">
+                                    <div class="row">
+                                        <div class="col-md-12">
+                                            <div class="form-horizontal">
+                                                <div class="form-group">
+                                                    <label class="col-md-2 control-label">Entitlement</label>
+                                                    <div class="col-md-4 form-control-static">
+                                                        @Html.HiddenFor(m => m.EmployeeID)
+                                                        @Html.HiddenFor(m => m.PayScaleGroup)
+                                                        @Html.TextBoxFor(m => m.Entitlement, new { @class = "form-control text-right", @readonly = "readonly", @onpaste = " return false", @onkeyup = " CalculateEntitlement();" })
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-12">
+                                            <div class="form-horizontal">
+                                                <div class="form-group">
+                                                    <label class="col-md-2 control-label">Adjustment</label>
+                                                    <div class="col-md-4 form-control-static">
+                                                        @Html.TextBoxFor(m => m.Adjustment, new { @class = "form-control text-right", @readonly = "readonly", @onpaste = " return false", @onkeyup = " CalculateEntitlement();", @onfocus = " $(this).val('')" })
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-12">
+                                            <div class="form-horizontal">
+                                                <div class="form-group">
+                                                    <label class="col-md-2 control-label">Entitlement (<label class="control-label" id="lblYear"></label>)</label>
+                                                    <div class="col-md-4 form-control-static">
+                                                        @Html.TextBoxFor(m => m.TotalEntitlement, new { @class = "form-control text-right", @readonly = "readonly" })
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="form-section"></div>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="form-horizontal">
+                                                <div class="form-group">
+                                                    <label class="col-md-4 control-label">Claimed</label>
+                                                    <div class="col-md-8 form-control-static">
+                                                        @Html.TextBoxFor(m => m.Claimed, new { @class = "form-control text-right", @readonly = "readonly" })
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                        </div>
+                                    </div>
+                                    <div class="form-section"></div>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="form-horizontal">
+                                                <div class="form-group">
+                                                    <label class="col-md-4 control-label">In Processing</label>
+                                                    <div class="col-md-8 form-control-static">
+                                                        @Html.TextBoxFor(m => m.InProcessing, new { @class = "form-control text-right", @readonly = "readonly" })
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="form-horizontal">
+                                                <div class="form-group">
+                                                    <label class="col-md-4 control-label">Processed</label>
+                                                    <div class="col-md-8 form-control-static">
+                                                        @Html.TextBoxFor(m => m.Processed, new { @class = "form-control text-right", @readonly = "readonly" })
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                    <div class="form-section"></div>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="form-horizontal">
+                                                <div class="form-group">
+                                                    <label class="col-md-4 control-label">Paid</label>
+                                                    <div class="col-md-8 form-control-static">
+                                                        @Html.TextBoxFor(m => m.Paid, new { @class = "form-control text-right", @readonly = "readonly" })
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="form-horizontal">
+                                                <div class="form-group">
+                                                    <label class="col-md-4 control-label">To Be Paid</label>
+                                                    <div class="col-md-8 form-control-static">
+                                                        @Html.TextBoxFor(m => m.ToBePaid, new { @class = "form-control text-right", @readonly = "readonly" })
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="form-section"></div>
+                                    <div class="row">
+                                        <div class="col-md-12">
+                                            <div class="form-horizontal">
+                                                <div class="form-group">
+                                                    <label class="col-md-2 control-label">Balance</label>
+                                                    <div class="col-md-4 form-control-static">
+                                                        @Html.TextBoxFor(m => m.Balance, new { @class = "form-control text-right", @readonly = "readonly" })
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+
+<div class="row">
+    <div class="col-md-12">
+        <button type="button" class="btn default green" id="btnUpdate" style="display:none" onclick="EntitlementValidation();">
+            Update
+        </button>
+        <a class="btn green" href="@Url.Content("~/Claims/FBEntitlementListing")">
+            Back
+        </a>
+    </div>
+</div>
+
+
+<!-- Confirmation Message -->
+<div class="modal fade" id="ConfirmUpdate" tabindex="-1" role="basic" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                <h4 class="modal-title">Confirmation</h4>
+            </div>
+            <div class="modal-body">
+                <div class="well">
+                    Are you sure you want to update entitlement for this employee? If you want to make changes, click Close.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn default blue" id="btnSubmitForm" onclick="UpdateEntitlement(); return false;">
+                    <i class="fa fa-check"></i>
+                    Confirm
+                </button>
+                <button type="button" class="btn default" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Success Message -->
+<div class="modal fade" id="SuccessSubmit" tabindex="-1" role="basic" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header Success-header">
+                @*<button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>*@
+                <h4 class="Success-title">Action Successfully Completed</h4>
+            </div>
+            <div class="modal-body Success-body">
+                <div class="well">
+                    Entitlement has been successfully updated.
+                </div>
+            </div>
+            <div class="modal-footer Success-footer">
+                <a class="btn default blue" id="btnGotoListing" href="">
+                    <i class="fa fa-check"></i>
+                    Go to Entitlement Listing
+                </a>
+                <a class="btn default blue" id="btnOK">
+                    <i class="fa fa-check"></i>
+                    OK
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<script>
+    jQuery(document).ready(function () {
+        FormConfiguration();
+    });
+
+    function YearDropdown() {
+        var SelectYear = document.getElementById('Year').value;
+        document.getElementById('lblYear').innerHTML = SelectYear;
+    }
+
+    function GetEntitlement() {
+        YearDropdown();
+
+        jQuery.support.cors = true;
+
+        var SelectYear = document.getElementById('Year').value;
+        var EmpID = document.getElementById('hfEmployeeID').value;
+
+        window.location = "@Url.Content("~/Claims/FlexiBenefitsEntitlement")?EmployeeID=" + EmpID + "&Year=" + SelectYear;
+    }
+    function ThousandSeparator(x) {
+        return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    }
+
+    $("#Adjustment").on("blur", function (e) {
+        var myNumeric = parseFloat($(this).val().replace(/,/g, ''));
+        if (!myNumeric) {
+            $(this).val('0.00');
+        }
+    });
+
+
+    // Page Load
+    function FormConfiguration() {
+        YearDropdown();
+
+        var _role = document.getElementById('hfRole').value;
+        var _IsRecordExist = document.getElementById('hfRecord').value;
+
+        if (_IsRecordExist == "") {
+            if (_role == "FBAdmin") {
+                $("#btnUpdate").show();
+                $('#Adjustment').removeAttr('readonly');
+            }
+        }
+        else
+        {
+            alert("No Records");
+        }
+    }
+
+    function EntitlementValidation() {
+        var ValidationMsg = '';
+        var Entitlement = document.getElementById('Entitlement').value;
+        var Adjustment = document.getElementById('Adjustment').value;
+
+        if (Entitlement == null || Entitlement == "")
+            ValidationMsg += '- Entitlement is required.\n';
+
+        if (Adjustment == null || Adjustment == "")
+            ValidationMsg += '- Adjustment is required.\n';
+
+        if (ValidationMsg != null && ValidationMsg != '') {
+            alert(ValidationMsg);
+        }
+        else {
+            $("#ConfirmUpdate").modal();
+        }
+    }
+
+
+    function UpdateEntitlement() {
+        var data = $('form').serializeArray();
+
+        $.ajax({
+            url: '@Url.Content("~/Claims/UpdateEntitlement")',
+            type: 'POST',
+            data: data,
+            success: function (result) {
+                if (result.Success == true) {
+                    $('#SuccessSubmit').modal();
+                    $('#btnGotoListing').attr('href', '../Claims/FBEntitlementListing');
+                    //$('#btnOK').attr('href', '../Claims/FlexiBenefitsEntitlement?UniqueID=' + _UniqueID);
+                    $(document).on('click', '#btnOK', function () {
+                        location.reload();
+                    });
+                }
+                else {
+                    alert(result.ErrorMessage);
+                }
+            },
+            error: function (x, y, z) {
+                alert(x + '\n' + y + '\n' + z);
+            }
+        });
+    }
+
+    function CalculateEntitlement()
+    {
+        var _Entitlement = $('#Entitlement').val();
+        var _Adjustment = $('#Adjustment').val();
+        var _Claimed = $('#Claimed').val();
+        var _Balance = $('#Balance').val();
+        var _TotalEntitlement = $('#TotalEntitlement').val();
+
+        var NewTotalEntitlement = (parseFloat(_Entitlement) + parseFloat(_Adjustment));
+        var NewBalance = (parseFloat(_Entitlement) + parseFloat(_Adjustment)) - (parseFloat(_Claimed));
+
+        $('#TotalEntitlement').val(NewTotalEntitlement.toFixed(2));
+        $('#Balance').val(NewBalance.toFixed(2));
+    }
+
+</script>
+

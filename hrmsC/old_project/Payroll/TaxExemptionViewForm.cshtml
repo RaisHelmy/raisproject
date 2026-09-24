@@ -1,0 +1,152 @@
+﻿@using ESS.Payroll.Models
+@using SEP.RoutingManagement
+@model TaxExemptionVM
+@{
+    ViewBag.Title = "Tax Exemption Record Form";
+    Service.AllowAction AllowActions = ViewBag.AllowActions;
+
+    String CurrentEmployeeID = ViewBag.CurrentEmployeeID;
+    String CurrentApproverID = ViewBag.CurrentApproverID;
+    String TaskID = ViewBag.TaskID;
+
+    bool showApprovalAction = !String.IsNullOrEmpty(TaskID) &&
+                                !String.IsNullOrEmpty(CurrentApproverID) &&
+                                CurrentApproverID.Contains(CurrentEmployeeID);
+
+    bool isCurrentEmployeeRequest = Model.EmployeeID == CurrentEmployeeID;
+}
+
+<style type="text/css">
+    .hidden_1 {
+        display: none;
+    }
+</style>
+
+<div class="form-section">
+    <div class="row">
+        <div class="col-md-12">
+            <h1 class="page-title">
+                @ViewBag.Title
+                <span style="padding-left:20px;">
+                    <small></small>
+                </span>
+            </h1>
+        </div>
+    </div>
+</div>
+
+@using (Html.BeginForm("TaxExemptionViewForm", "Payroll", FormMethod.Post))
+{
+    <input type="hidden" name="EntryID" value="@Model.EntryID" />
+    <input type="hidden" name="EmployeeID" value="@Model.EmployeeID" />
+    <input type="hidden" name="FinancialYear" value="@Model.FinancialYear" />
+
+    @Html.Partial("_RequestDetails", Model)
+    <!-- Employee Details -->
+    @Html.Partial("_PayrollEmployeeDetails", Model.Submiter)
+    @Html.Partial("_IncomeTaxDetails", new Tuple<IncomeTaxDetail, string, bool>(Model.IncomeTaxDetail, Model.EmployeeID, false))
+    @Html.Partial("_OptionalDeductions", Model.TaxExemptionDeductions)
+    @Html.Action("AttachmentControl", "Payroll",
+                                     new { EmployeeID = Model.EmployeeID, Mode = "View", SourceType = "Payroll", RequestID = @Model.EntryID })
+    @Html.Action("_AuditLog", "Payroll", new { RequestID = Model.EntryID })
+
+    if (showApprovalAction)
+    {
+        @Html.Partial("_PayrollApproval")
+    }
+    <br />
+    <div class="row">
+        <div class="col-md-12">
+            <label><b>Note:</b> This Tax Exemption Application will be processed depending on monthly payroll run date. </label>
+        </div>
+    </div>
+    <br />
+    <!-- Buttons -->
+    <div class="row">
+        <div class="col-md-12">
+            @if (showApprovalAction)
+            {
+                if (AllowActions.CanAgree == "1")
+                {
+                    <input type="button" class="btn green" value="Agree" id="btnAgree" onclick="ApproverAction('Agree')" />
+                }
+
+                if (AllowActions.CanApprove == "1")
+                {
+                    <input type="button" class="btn green" value="Approve" id="btnApprove" onclick="ApproverAction('Approve')" />
+                }
+
+                if (AllowActions.CanDecline == "1")
+                {
+                    <input type="button" class="btn red" value="Decline" id="btnDecline" onclick="ApproverAction('Decline')" />
+                }
+            }
+            <input type="button" class="btn green" value="Back" id="btnBack" onclick="window.history.back()" />
+        </div>
+    </div>
+}
+
+@Html.Partial("__Prompt")
+<script>
+    $(function () {
+    });
+
+    function ApproverAction(action) {
+        var comment = $('#txtApprovalComment').val();
+        var promptMessage = "Are you sure you want to " + action +
+            " this Tax Exemption Form? <br />Press Confirm to proceed, or Close to stay on the current page.";
+
+        if (action == "Decline" && comment == "") {
+            alert("Remarks is required.\n");
+            return;
+        }
+
+        ShowConfirmationDialog({
+            message: promptMessage,
+            positiveCallback: function () {
+                PerformApproverAction(action);
+            }
+        });
+    }
+
+    function PerformApproverAction(action) {
+        HideConfirmationDialog();
+        ShowLoadingScreen();
+
+        var _RedirectUrl = "";
+        var ApproverComment = $('#txtApprovalComment').val();
+
+        var _ApproverInfo = {
+            EntryID         : '@Model.EntryID',
+            TaskID          : '@TaskID',
+            Target          : '',
+            CurrentUserID   : '@CurrentEmployeeID',
+            Status          : '@Model.StatusCode',
+            Action          : action,
+            ApproverComment : ApproverComment,
+            RoutingType     : "Tax"
+        };
+
+        $.post('@Url.Action("PostTaxExemptionApproverAction", "Payroll")', _ApproverInfo, function (result) {
+            HideLoadingScreen();
+
+            if (result.IsSuccess) {
+                ShowDialog({
+                    message: result.Message,
+                    okCallback: function () {
+                        window.location.href = '@Url.Action("InTray", "Payroll")';
+                    }
+                });
+            }
+            else {
+                ShowDialog({
+                    title: "Action not completed.",
+                    message: "Error Message : " + result.ErrorMessage,
+                    okCallback: function () {
+                        HideDialog();
+                    }
+                });
+            }
+        });
+    }
+</script>

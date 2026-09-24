@@ -1,0 +1,94 @@
+﻿@model ESS.Mobility.Models.DropdownLists
+@{
+    ViewBag.Title = "Mobility Letter";
+}
+<style>
+    #ExportExcel{
+        display:none !important;
+    }
+</style>
+<div class="row">
+    <div class="col-md-12">
+        <br />
+        <h1 class="page-title">
+            Mobility Letter<span style="padding-left:20px;"><small></small></span>
+        </h1>
+    </div>
+</div>
+<br />
+<input type="hidden" name="EmployeeID" id="EmployeeID" value="@ViewBag.EmployeeID"/>
+
+<div class="form-body">
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-4 control-label">Status</label>
+                    <div class="col-md-8 form-control-static">
+                        @Html.DropDownList("Status", new SelectList(Model.statusList, "Value", "Text"), "- All -", new { @class = "bs-select form-control" })
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 hidden">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-4 control-label">Type</label>
+                    <div class="col-md-8 form-control-static">
+                        @Html.DropDownList("Type", new SelectList(Model.typeList, "Value", "Text"), "- All -", new { @class = "bs-select form-control" })
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="row">&nbsp;</div>
+    <div class="row">
+        <div class="col-md-12">
+            <div class="text-right">
+                <input type="button" id="btn-Search" class="btn green btn-Search" value="Search" onclick="SearchListing();">
+            </div>
+        </div>
+    </div>
+
+    <div class="row">&nbsp;</div>
+    <div class="row">
+        <div class="col-md-12">
+            <div id="SearchResult">
+
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<script type="text/javascript">
+
+    $(document).ready(function () {
+        SearchListing()
+    });
+
+    function SearchListing() {
+        $("#SearchResult").html("LOADING...");
+
+        var _Type = $("#Type").val();
+        var _Status = $("#Status").val();
+        var _EmployeeID = $("#EmployeeID").val();
+
+        $.ajax({
+            type: "GET",
+            url: '@Url.Content("~/Mobility/_MobilityLetterList")',
+            cache: false,
+            dataType: "html",
+            data: { EmployeeID: _EmployeeID, Status:_Status, TemplateName:_Type, IsReport: "No" },
+            success: function (content) {
+                $("#SearchResult").html(content);
+            },
+            error: function (e) {
+                console.log(e);
+            }
+        });
+    }
+</script>

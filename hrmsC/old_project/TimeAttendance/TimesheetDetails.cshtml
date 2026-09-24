@@ -1,0 +1,960 @@
+﻿@using TimeAttendance.Services
+
+@model Tuple<TimeAttendance.Models.TimesheetAttendanceVM, List<SEP.RoutingManagement.Service.AllowAction>>
+
+@{
+    bool DisplayAuditLog = ViewBag.DisplayAuditLog;
+    ViewBag.Title = (!string.IsNullOrEmpty(ViewBag.TaskID) && (Model.Item2[0].CanApprove == "1" || Model.Item2[0].CanVerify == "1")) ?
+                    "Timesheet Approval" :
+                    "Timesheet Detail";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    DateTime FirstMondayOfLastWeek = DateTime.Now;
+    while (FirstMondayOfLastWeek.DayOfWeek != DayOfWeek.Monday)
+    {
+        FirstMondayOfLastWeek = FirstMondayOfLastWeek.AddDays(-1);
+    }
+    FirstMondayOfLastWeek = FirstMondayOfLastWeek.AddDays(-7);
+    DateTime WorkScheduleFromDate = FirstMondayOfLastWeek;
+    DateTime WorkScheduleToDate = DateTime.Now;
+
+    DateTime prevMonth = DateTime.Today.AddMonths(-1);
+    DateTime MinDate = new DateTime(prevMonth.Year, prevMonth.Month, 1);
+    DateTime MaxDate = DateTime.Now;
+
+    string dtStrStart = MinDate.ToString("dd MM yyyy");
+    string dtStrEnd = MaxDate.ToString("dd MM yyyy");
+
+    bool UpdateChargeCode = ViewBag.UpdateChargeCode;
+    bool showUpdateChargeCode = Model.Item1.EntryStatus == "1" && UpdateChargeCode && Model.Item1.AttendanceSubType != "Standby"; //Model.Item1.EntryStatus != "0" && Model.Item1.EntryStatus != "1" && Model.Item1.EntryStatus != "3" && UpdateChargeCode;
+}
+
+<style>
+    .timeinput::-ms-clear {
+        width: 0;
+        height: 0;
+    }
+</style>
+
+<div class="form-section">
+    <div class="row">
+        <div class="col-md-12">
+            <h1 class="page-title">
+                @ViewBag.Title
+                <span style="padding-left:20px;">
+                    <small></small>
+                </span>
+                <input type="hidden" id="showUpdateChargeCode" value="@showUpdateChargeCode" />
+                <input type="hidden" id="EntrySource" value="@ViewBag.Source" />
+            </h1>
+        </div>
+    </div>
+</div>
+
+@using (Html.BeginForm("TimesheetAttendance", "TimesheetDetails", FormMethod.Post))
+{
+    <div id="tab_1" class="tab-pane active">
+
+        @Html.Partial("_EmployeeDetails", Model.Item1.EmployeeDetail)
+        @Html.Action("_SubmissionDetails", "TimeAttendance", new
+        {
+            TSModel = Model.Item1,
+            OTModel = ""
+        })
+        @*new Tuple<string, string, string, string>(Model.Item1.EntryID.ToString(),
+            ((Timesheet.EntryStatus)(Convert.ToInt32(Model.Item1.EntryStatus))).ToString(),
+            "Timesheet",
+            Model.Item1.BatchNo))*@
+        <div class="row text-right form-body" style="padding-top:0px">
+            <div style="margin-right:10px">
+                <a href="javascript:EASyNavigation()" style="padding-top:16px;">EASy Entries</a>
+                <a href="@Url.Action("WorkSchedule", "TimeAttendance", new { EmployeeID = Model.Item1.EmployeeDetail.EmployeeID.ToString()})" target="_blank" style="padding-top:16px;">Show Working Hours</a>
+            </div>
+        </div>
+        @Html.Partial("_TimesheetEntryDetails", Model.Item1)
+
+        @if (Model.Item1.EditMode && !Model.Item1.FailMode)
+        {
+            <!-- Attachment -->
+            @Html.Action("TSAttachmentControl", "TimeAttendance", new { EmployeeID = ViewBag.CurrentUserID, Mode = "Add", SourceType = "Time Attendance", RequestID = Model.Item1.EntryID.ToString(), Type = "" })
+        }
+        else
+        {
+            @Html.Action("TSAttachmentControl", "TimeAttendance", new { EmployeeID = ViewBag.CurrentUserID, Mode = "View", SourceType = "Time Attendance", RequestID = Model.Item1.EntryID.ToString(), Type = "" })
+        }
+
+        @{
+            if (Model.Item1.EntryStatus != "0" || DisplayAuditLog)
+            {
+                @Html.Action("_AuditLog", "TimeAttendance", new { SourceID = Model.Item1.EntryID.ToString() })
+            }
+
+            if (showUpdateChargeCode)
+            {
+                @Html.Action("_ChargeCodeUpdate", "TimeAttendance")
+            }
+        }
+
+
+        <input type="hidden" name="TimesheetSubAction" id="TimesheetSubAction" value="" />
+
+
+        @Html.Action("TSPeoplePickerIndex", "TimeAttendance", new { CurrEmpID = ViewBag.EmployeeID, SearchType = "" })
+        @Html.Action("TSChargeCodeIndex", "TimeAttendance", new { CurrEmpID = ViewBag.EmployeeID, SearchType = "" })
+        @Html.Partial("TCSSearchIndex")
+        @Html.Partial("OTPlanningCodeSearchIndex")
+        @Html.Partial("IFMSBookingNoSearchIndex")
+        @Html.Partial("TCSView")
+        @Html.Partial("IFMSBookingNoViewDetail")
+        @Html.Partial("OriOTPlanningView")
+
+
+    </div>
+
+    if (!string.IsNullOrEmpty(ViewBag.TaskID) && (Model.Item2[0].CanApprove == "1" || Model.Item2[0].CanVerify == "1"))
+    {
+        <div class="row">
+            <div class="col-md-12">
+                <div class="portlet box blue">
+                    <div class="mini-triangle"><img src="../Assets/img/menu-red-triangle.png" /></div>
+                    <div class="portlet-title">
+                        <div class="caption">
+                            <i class="fa fa-reorder"></i>Approval Comments
+                        </div>
+                    </div>
+                    <div class="portlet-body form">
+                        <div class="form-body">
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="form-horizontal">
+                                        <div class="form-group">
+                                            <label class="control-label col-md-2">Comments</label>
+                                            <div class="col-md-10 form-control-static">
+                                                <textarea class="form-control" id="txtAppComment" rows="5" cols="60"
+                                                          maxlength="1000"></textarea>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+    <div id="TimesheetActionDiv">
+        <div class="row">
+            <div class="col-md-12">
+                @if (Model.Item1.CanEdit)
+                {
+                    <input type="button" class="btn green" value="Edit" id="btnEdit" onclick="SubmitTS('ConvertToDraft');" />
+                }
+                @if (Model.Item1.CanSave)
+                {
+                    <input type="button" class="btn green" value="Save as Draft" id="btnDraft" onclick="SubmitTS('Draft'); " />
+                }
+                @if (Model.Item1.CanSubmit)
+                {
+                    <input type="button" class="btn green" value="Submit" id="btnSubmit" onclick="SubmitTS('PerformActionOnSubmit'); " />
+                }
+                @if (Model.Item1.CanDelete)
+                {
+                    <input type="button" class="btn green" value="Delete" id="btnDelete" onclick="SubmitTS('Delete');" />
+                }
+                @if (Model.Item1.CanWithdraw)
+                {
+                    <input type="button" class="btn green" value="Withdraw" id="btnWithdraw" onclick="WithdrawTS();" />
+                }
+                @if (Model.Item2[0].CanCancel == "1")
+                {
+                    <input type="button" class="btn green" value="Cancel" id="btnCancel" onclick="CancelTS();" />
+                }
+                @{
+                    if (!string.IsNullOrEmpty(ViewBag.TaskID))
+                    {
+                        @*if (Model.Item2[0].CanSubmit == "1")
+                            {
+                                <input type="button" class="btn green" value="Submit" id="btnSubmit" onclick="PostApproverAction('Submit'); " />
+                            }*@
+                        if (Model.Item2[0].CanApprove == "1")
+                        {
+                            <input type="button" class="btn green" value="Approve" id="btnApprove" onclick="PostApproverAction('Approve');" />
+                        }
+                        if (Model.Item2[0].CanVerify == "1")
+                        {
+                            <input type="button" class="btn green" value="Verify" id="btnVerify" onclick="PostApproverAction('Verify');" />
+                        }
+                        if (Model.Item2[0].CanDecline == "1")
+                        {
+                            <input type="button" class="btn green" value="Decline" id="btnDecline" onclick="PostApproverAction('Decline');" />
+                        }
+                        @*if (Model.Item2[0].CanRework == "1")
+                            {
+                                <input type="button" class="btn yellow" value="Rework" id="btnRework" onclick="PostApproverAction('Rework');" />
+                            }*@
+                    }
+
+                }
+                @if (showUpdateChargeCode)
+                {
+                    <input type="button" class="btn green" value="Update Charge Code" id="btnUpdateChargeCode" onclick="UpdateChargeCode();" />
+                }
+
+                <input type="button" class="btn green" value="Exit" id="btnExit" onclick="history.back()" />
+            </div>
+        </div>
+    </div>
+
+    <!-- Success Message -->
+    <div class="modal fade" id="SuccessSubmit" tabindex="-1" role="basic" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header Success-header">
+                    @*<button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>*@
+                    <h4 class="Success-title">Action Successfully Completed</h4>
+                </div>
+                <div class="modal-body Success-body">
+                    <div class="well" id="SuccessMessage">
+                        Timesheet has been successfully submitted.
+                    </div>
+                </div>
+                <div class="modal-footer Success-footer">
+                    <a class="btn default blue" id="btnOK">
+                        <i class="fa fa-check"></i>
+                        OK
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Confirmation Message -->
+    <div class="modal fade" id="ConfirmSubmit" tabindex="-1" role="basic" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                    <h4 class="modal-title">Confirmation</h4>
+                </div>
+                <div class="modal-body warning-msg">
+                    <div class="well" id="ConfirmMessage">
+                        Submit entry(s) with Warning?
+
+                        Press Confirm to proceed, or Close to stay on the current page.
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn default blue" id="btnSubmitWarning" onclick="SubmitTS('SubmitWithWarning'); ">
+                        <i class="fa fa-check"></i>
+                        Confirm
+                    </button>
+                    <button type="button" class="btn default" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Loading Gif -->
+    <div id="divLoading" style="margin: 0px; padding: 0px; position: fixed; right: 0px;
+        top: 0px; width: 100%; height: 100%; background-color:gainsboro; z-index: 30001;
+        opacity: .8; filter: alpha(opacity=70);display:none">
+        <p style="position: absolute; top: 30%; left: 30%; color: black;">
+            Loading, please wait...<img src="../Assets/img/ajax-loading.gif" />
+
+        </p>
+    </div>
+
+}
+<script>
+    var Path = '/_layouts/15/ESSV2'; //local
+    //var Path = '/_layouts/15/TNBESS'; //STG & PRD
+
+    var TimesheetAttendanceTable = $('#tblTimesheetEntry').dataTable({
+        "bPaginate": false,
+        "bFilter": false,
+        "bInfo": false
+    });
+
+    function ConfirmSubmitWithWarning(WarningMsg) {
+        $('#ConfirmSubmit').modal('show');
+    }
+
+    function SubmitTS(Type) {
+        $('#ConfirmSubmit').modal('hide');
+        DisableActionButton();
+        //$('#TimesheetActionDiv').children().children().children('.btn').attr('disabled', true);
+        //$('#divLoading').show();
+        var disabled = $('form').find(':input:disabled').removeAttr('disabled');
+        var data = $('form').serializeArray();
+        disabled.attr('disabled', 'disabled')
+        data.push(
+            { name: 'SubmitType', value: Type }
+        );
+
+        //var _EndDate = $('input[name="EndDate"]').val();
+        //var _StartTime = $('input[name="StartTime"]').val();
+
+        //if (_EndDate >= _StartDate) {
+            PerformTSSubmission(data, Type);
+        //}
+        //else {
+        //    alert('Please select end date after the date of start date');
+        //}
+    }
+
+    function PerformTSSubmission(data, Type) {
+        var Action = Type;
+        var SubmitWithWarning = false;
+        switch (Type) {
+            case 'PerformActionOnSubmit':
+                Action = 'Submitted';
+                break;
+            case 'SubmitWithWarning':
+                Action = 'Submitted';
+                SubmitWithWarning = true;
+            case 'Cancel':
+                Action = 'Cancelled';
+                break;
+            case 'Submit':
+                Action = 'Submitted';
+                break;
+            case 'Delete':
+                Action = 'Deleted';
+                break;
+            case 'Draft':
+                Action = 'Saved as Draft';
+                break;
+            case 'ConvertToDraft':
+                Action = 'convert to Draft';
+                break;
+            default:
+        }
+        $.ajax({
+            url: '../TimeAttendance/SubmitTimesheetAction',
+            type: 'POST',
+            data: data,
+            success: function (result) {
+
+                $('#divLoading').hide();
+                if (result.result == true) {
+
+                    EnableActionButton();
+                    if (!SubmitWithWarning && CheckEmptyKeyValueMessage(result.EntryWarningMessage)) {
+                        ShowErrorWarningMessage(result.EntryErrorMessage);
+                        ConfirmSubmitWithWarning();
+                    }
+                    else {
+                        $('#SuccessSubmit').modal();
+                        $('#SuccessMessage').html("Timesheet has been successfully " + Action);
+                        if (Action == 'convert to Draft') {
+                            $('#btnOK').attr('href', '../TimeAttendance/TimesheetHistoryBulk');
+                        }
+                        else if ('@ViewBag.Source' != '') {
+                            $('#btnOK').attr('href', '../TimeAttendance/' + '@ViewBag.Source');
+                        }
+                        else {
+                            $('#btnOK').attr('href', '../TimeAttendance/TimesheetHistoryBulk');
+                        }
+                    }
+                }
+                else if (!result.result) {
+
+                    if (CheckEmptyKeyValueMessage(result.EntryErrorMessage)) {
+                        //alert('error routing');
+                        ShowErrorWarningMessage(result.EntryErrorMessage);
+
+                    } else if (CheckEmptyKeyValueMessage(result.EntryWarningMessage)) {
+                        //alert('error routing');
+                        ShowErrorWarningMessage(result.EntryWarningMessage);
+                    }
+                    else if (result.ErrorMessage != '' && result.ErrorMessage != undefined) {
+
+                        alert(result.ErrorMessage);
+                    }
+
+                    EnableActionButton();
+                }
+                // ... Process the result ...
+            }
+        });
+
+    }
+
+    function PostApproverAction(Action) {
+
+        @*var EditMode = "@Model.Item1.EditMode.ToString()";
+
+        if (EditMode.toLowerCase() === "true") {
+            var _StartDate = $('input[name="StartDate"]').val();
+            var _EndDate = $('input[name="EndDate"]').val();
+            var _StartTime = $('input[name="StartTime"]').val();
+            var _EndTime = $('input[name="EndTime"]').val();
+            var _durationInHours = $('input[name="TotalHours"]').val();
+            var _subType = '@Model.Item1.AttendanceSubType';
+
+            if (_EndDate >= _StartDate) {
+
+                if (_subType == 'Overtime') {
+                    if (_durationInHours <= 24) {
+                        _PostApproverAction(Action);
+                    } else {
+                        alert('The duration should not exceed 24 hours');
+                    }
+                }
+                else {
+                    _PostApproverAction(Action);
+                }
+            } else {
+                alert('Please ensure end date must be greater than or equal to start date');
+            }
+        }
+        else {
+            _PostApproverAction(Action);
+        }
+
+    }
+    function _PostApproverAction(Action) {*@
+        DisableActionButton();
+            var _TaskIDs = '@ViewBag.TaskID' + ',';
+            var _ApproverAction = Action;
+            var _ApproverComment = $('#txtAppComment').val();
+            var MatchApproverAction = true;
+
+			//field to update during approval
+			//var _StartDate = $('input[name="StartDate"]').val();
+			//var _EndDate = $('input[name="EndDate"]').val();
+			var _StartTime = $('input[name="StartTime"]').val();
+			var _EndTime = $('input[name="EndTime"]').val();
+			var _ChargeCode = $('input[name="ChargeCode"]').val();
+			var _ChargeType = $('input[name="ChargeType"]').val();
+			var _ChargeCodeDesc = $('input[name="ChargeCodeDesc"]').val();
+			var _Description = $('textarea[name="Description"]').val();
+			var _TotalHours = $('input[name="TotalHours"]').val();
+			var _NoOfMeal = $('select[name="NoOfMeal"]').val();
+
+            //if (Action == 'Submit') {
+            //    var JsonObjectParam = {
+            //        "StartDate": _StartDate,
+            //        "EndDate": _EndDate,
+            //        "StartTime": _StartTime,
+            //        "EndTime": _EndTime,
+            //        "ChargeCode": _ChargeCode,
+            //        "ChargeType": _ChargeType,
+            //        "ChargeCodeDesc": _ChargeCodeDesc,
+            //        "Description": _Description,
+            //        "TotalHours": _TotalHours,
+            //        "NoOfMeal": _NoOfMeal
+            //    }
+            //}
+            //else {
+                var JsonObjectParam = {
+                    "StartTime": _StartTime,
+                    "EndTime": _EndTime,
+                    "ChargeCode": _ChargeCode,
+                    "ChargeType": _ChargeType,
+                    "ChargeCodeDesc": _ChargeCodeDesc,
+                    "Description": _Description,
+                    "TotalHours": _TotalHours,
+                    "NoOfMeal": _NoOfMeal
+                }
+            //}
+
+            var Param = JSON.stringify(JsonObjectParam);
+
+            //if (Action == 'Rework')
+            //    Param = '';
+
+            //if (!(_ApproverComment === '' && (Action === 'Decline' || Action === 'Rework'))) {
+            if (!(_ApproverComment === '' && Action === 'Decline')) {
+                if (_TaskIDs != "") {
+                    if (MatchApproverAction) {
+                        $.ajax({
+                            type: "POST",
+                            url: '@Url.Content("~/TimeAttendance/TSPostApproverAction")',
+                            data: {
+                                TaskIDs: _TaskIDs,
+                                ApproverAction: _ApproverAction,
+                                ApproverComment: _ApproverComment,
+                                UpdateFields: Param
+                            },
+                            success: function (result) {
+                                EnableActionButton();
+                                if (result.result == true) {
+
+                                    EnableActionButton();
+                                    $('#SuccessSubmit').modal();
+                                    var ActionMessage = Action;
+                                    if (Action === "Approve") ActionMessage = "Approved";
+                                    if (Action === "Decline") ActionMessage = "Declined";
+                                    if (Action === "Verify") ActionMessage = "Verified";
+                                    //if (Action === "Submit") ActionMessage = "Submitted";
+                                    //if (Action === "Rework") ActionMessage = "Reworked";
+                                    $('#SuccessMessage').html("Time and Attendance has been successfully " + ActionMessage);
+                                    $('#btnOK').attr('href', '../TimeAttendance/TimeAttendanceInTray');
+                                } else {
+                                    //alert(result.EntryErrorMessage);
+                                    ShowErrorWarningMessage(result.EntryErrorMessage);
+                                    EnableActionButton();
+                                }
+                            },
+                            error: function (e) {
+                                console.log(e);
+                                EnableActionButton();
+                            }
+                        });
+                    }
+                    else {
+                        alert('Approval action is not allow.');
+                        EnableActionButton();
+                    }
+                }
+                else {
+                    alert('Workflow not found. Please contact your system administrator.');
+                    EnableActionButton();
+                }
+            }
+            else {
+                alert('Please fill in the comments.');
+                EnableActionButton();
+            }
+    }
+
+    function WithdrawTS() {
+        DisableActionButton();
+        var _EntryIDs = $('#EntryID').val();
+        if (_EntryIDs != "") {
+            _EntryIDs = _EntryIDs + ',';
+        }
+
+        if (_EntryIDs != "") {
+            $.ajax({
+                type: "POST",
+                url: '@Url.Content("~/TimeAttendance/WithdrawTS")',
+                data: {
+                    EntryIDs: _EntryIDs
+                },
+                success: function (result) {
+                    if (result.result == true) {
+
+                        EnableActionButton();
+                        $('#SuccessSubmit').modal();
+                        $('#SuccessMessage').html("Timesheet has been successfully " + "Withdrawn.");
+
+                        if ('@ViewBag.Source' != '') {
+                            $('#btnOK').attr('href', '../TimeAttendance/' + '@ViewBag.Source');
+                        }
+                        else {
+                            $('#btnOK').attr('href', '../TimeAttendance/TimesheetHistoryBulk');
+                        }
+
+
+                    } else {
+                        if (CheckEmptyKeyValueMessage(result.EntryErrorMessage)) {
+                            ShowErrorWarningMessage(result.EntryErrorMessage);
+                        } else {
+                            alert('Request action failed.');
+                        }
+                        EnableActionButton();
+                    }
+                },
+                error: function (e) {
+                    console.log(e);
+                    EnableActionButton();
+                }
+            });
+        }
+        else {
+            alert('Please select entry to proceed.');
+            EnableActionButton();
+        }
+    }
+
+    function CancelTS() {
+        DisableActionButton();
+        var _EntryIDs = $('#EntryID').val();
+        if (_EntryIDs != "") {
+            _EntryIDs = _EntryIDs + ',';
+        }
+
+        if (_EntryIDs != "") {
+            $.ajax({
+                type: "POST",
+                url: '@Url.Content("~/TimeAttendance/CancelTS")',
+                data: {
+                    EntryIDs: _EntryIDs
+                },
+                success: function (result) {
+                    if (result.result == true) {
+
+                        EnableActionButton();
+                        $('#SuccessSubmit').modal();
+                        $('#SuccessMessage').html("Timesheet has been successfully " + "Cancelled.");
+                        if ('@ViewBag.Source' != '') {
+                            $('#btnOK').attr('href', '../TimeAttendance/' + '@ViewBag.Source');
+                        }
+                        else {
+                            $('#btnOK').attr('href', '../TimeAttendance/TimesheetHistoryBulk');
+                        }
+
+                    } else {
+                        if (CheckEmptyKeyValueMessage(result.EntryErrorMessage)) {
+                            ShowErrorWarningMessage(result.EntryErrorMessage);
+                        } else {
+                            alert('Request action failed.');
+                        }
+                        EnableActionButton();
+                    }
+                },
+                error: function (e) {
+                    console.log(e);
+                    EnableActionButton();
+                }
+            });
+        }
+        else {
+            alert('Please select entry to proceed.');
+            EnableActionButton();
+        }
+    }
+
+
+    function GetApprover() {
+        var _EmployeeID = $('input[name="EmployeeID"]').val();
+        var _StartDate = $('input[name="StartDate"]').val();
+        var _ChargeTypeCode = $('input[name="ChargeType"]').val();
+        var _Approver = $('input[name="ApproverID"]').val();
+        var _Subtype = $('select[name="AttendanceSubType"]').val();
+
+
+        if ((_EmployeeID != '' && _EmployeeID != undefined &&
+            _StartDate != '' && _StartDate != undefined &&
+            _ChargeTypeCode != '' && _ChargeTypeCode != undefined) &&
+            '@Model.Item1.EntryStatus' == '0') {
+
+            $(".ApproverPeoplePicker.TSPeoplePickerDisplay").siblings('.input-group-btn').css("pointer-events", "auto");
+            $('.TSPeoplePickerDisplay.ApproverPeoplePicker').val('');
+            $('.TSPeoplePickerID.ApproverPeoplePicker').val('');
+            $('.TSPeoplePickerCode.ApproverPeoplePicker').val('');
+            $('.TSPeoplePickerName.ApproverPeoplePicker').val('');
+
+            $.ajax({
+                url: '../TimeAttendance/GetApprover',
+                type: 'POST',
+                data: {
+                    EmployeeID: _EmployeeID,
+                    StartDate: _StartDate,
+                    ChargeTypeCode: _ChargeTypeCode,
+                    Subtype: _Subtype,
+                    EntryType: "ACTUAL"
+                },
+                success: function (result) {
+                    if (result != undefined) {
+                        if (result != '') {
+                            if (result.ErrorMessage != '' && result.ErrorMessage != undefined) {
+                                $('input[name="ApproverDisplayText"]').val('');
+                                $('input[name="ApproverID"]').val('');
+                                $('input[name="ApproverCode"]').val('');
+                                $('input[name="ApproverName"]').val('');
+                                $('input[name="ApproverDisplayText"]').siblings('.input-group-btn').css("pointer-events", "auto");
+                                alert(result.ErrorMessage);
+                            } else {
+
+                                var ApproverID = result.ApproverID;
+                                var ApproverCode = result.ApproverCode;
+                                var ApproverName = result.ApproverName;
+                                if (ApproverID != '' && ApproverID != undefined &&
+                                    ApproverCode != '' && ApproverCode != undefined &&
+                                    ApproverName != '' && ApproverName != undefined) {
+                                    $('input[name="ApproverDisplayText"]').val(ApproverCode + ' - ' + ApproverName);
+                                    $('input[name="ApproverID"]').val(ApproverID);
+                                    $('input[name="ApproverCode"]').val(ApproverCode);
+                                    $('input[name="ApproverName"]').val(ApproverName);
+                                }
+                                $('input[name="ApproverDisplayText"]').siblings('.input-group-btn').css("pointer-events", "none");
+                            }
+                        }
+                    }
+                    else {
+
+                    }
+                }
+            });
+        }
+
+    }
+
+    function PopulateSubtype() {
+        //follow up - get AttendanceSubType from sharepoint
+        var ddlTarget = $('.AttendanceSubType');
+        ddlTarget.append('<option value="Normal Hour" selected="selected">Normal Hour</option>');
+        ddlTarget.append('<option value="Overtime">Overtime</option>');
+
+
+
+    }
+
+
+
+    function CalculateDateTime() {
+
+        var EmployeeID = $('input[name="EmployeeID"]').val();
+        var Subtype = $('select[name="AttendanceSubType"]').val();
+        var StartDate = $('input[name="StartDate"]').val();
+        var EndDate = $('input[name="EndDate"]').val();
+        var StartTime = $('input[name="StartTime"]').val();
+        var EndTime = $('input[name="EndTime"]').val();
+
+        if (StartDate != '' && EndDate != '' && StartTime != '' && EndTime != '') {
+
+            //if (StartDate > EndDate) {
+            //    alert("Please select end date after the date of start date");
+            //    $('input[name="TotalHours"]').val('0.00');
+            //} else {
+                var workingHours = GetWorkingHours(EmployeeID, StartDate, EndDate, StartTime, EndTime, Subtype);
+            //}
+        }
+        else {
+            $('input[name="TotalHours"]').val('0.00');
+        }
+
+    }
+
+    function GetWorkingHours(EmployeeID, StartDate, EndDate, StartTime, EndTime, Subtype) {
+        var totalHours = 0;
+
+        $.ajax({
+            url: '../TimeAttendance/GetTimesheetTotalHours',
+            type: 'POST',
+            data: {
+                EmployeeID: EmployeeID,
+                StartDate: StartDate,
+                EndDate: EndDate,
+                StartTime: StartTime,
+                EndTime: EndTime,
+                Subtype: Subtype
+            },
+            success: function (result) {
+                if (result != undefined && result != '') {
+                    totalHours = parseFloat(result);
+                    var Hour = parseFloat(Math.round(totalHours * 100) / 100).toFixed(2);
+                    $('input[name="TotalHours"]').val(Hour);
+                }
+                else {
+                    var StartDateTime = moment(StartDate + ' ' + StartTime, 'DD/MM/YYYY HH:mm');
+                    var EndDateTime = moment(EndDate + ' ' + EndTime, 'DD/MM/YYYY HH:mm');
+
+                    var duration = moment.duration(EndDateTime.diff(StartDateTime));
+                    var diffHours = duration.asHours();
+                    var Hour = parseFloat(Math.round(diffHours * 100) / 100).toFixed(2);
+                    $('input[name="TotalHours"]').val(Hour);
+                    //the calculation above doesnt matter, just display 0 if no result from JSON
+                    $('input[name="TotalHours"]').val('0.00');
+                }
+            },
+            error: function () {
+                var StartDateTime = moment(StartDate + ' ' + StartTime, 'DD/MM/YYYY HH:mm');
+                var EndDateTime = moment(EndDate + ' ' + EndTime, 'DD/MM/YYYY HH:mm');
+
+                var duration = moment.duration(EndDateTime.diff(StartDateTime));
+                var diffHours = duration.asHours();
+                var Hour = parseFloat(Math.round(diffHours * 100) / 100).toFixed(2);
+                $('input[name="TotalHours"]').val(Hour);
+            }
+        });
+
+    }
+    function ClearBulkEntrySearch() {
+        var fromDate = $('#WorkScheduleFromDate').val();
+        var toDate = $('#WorkScheduleToDate').val();
+
+        $('input[name="BulkStartDate"]').val(fromDate);
+        $('input[name="BulkEndDate"]').val(toDate);
+
+        $('input[name="BulkStartTime"]').val('');
+        $('input[name="BulkEndTime"]').val('');
+        $('.BulkChargeCodePicker').val('');
+        $('textarea[name="BulkDescription"]').val('');
+
+
+        //$('.nhDate').datepicker('setStartDate', fromDate);
+        //$('.nhDate').datepicker('setEndDate', toDate);
+    }
+
+    function ClearNHSearch() {
+        var fromDate = $('#WorkScheduleFromDate').val();
+        var toDate = $('#WorkScheduleToDate').val();
+
+        $('input[name="wsSearchStartDate"]').val(fromDate);
+        $('input[name="wsSearchEndDate"]').val(toDate);
+
+        $('.wsChargeCodePicker').val('');
+        $('textarea[name="wsDescription"]').val('');
+
+
+    }
+
+    function CheckEmptyKeyValueMessage(Message) {
+        var count = 0;
+        for (var key in Message) {
+            count++;
+            break;
+        }
+        if (count == 0) {
+            return false;
+        } else {
+            return true;
+        }
+    }
+
+    function ShowErrorWarningMessage(Message) {
+
+        for (var k in Message) {
+            if (Message.hasOwnProperty(k)) {
+                //console.log("Key is " + k + ", value is" + Message[k]);
+                if (Message[k] != '' && Message[k] != undefined) {
+                    alert(Message[k]);
+                }
+            }
+        }
+
+    }
+
+    function InitiateDateTimeSetting() {
+        $('.date-picker').datepicker({
+            format: 'dd/mm/yyyy',
+            autoclose: true,
+            minDate: new Date(2017, 8, 1),
+            maxDate: new Date(2017, 9, 6)
+        });
+        $('.date-picker').datepicker('setStartDate', '@ViewBag.dtStrStart');
+        $('.date-picker').datepicker('setEndDate', '@ViewBag.dtStrEnd');
+        //$('.date-picker').datepicker();
+
+        $('.timepicker-24').timepicker({
+            autoclose: true,
+            minuteStep: 5,
+            showSeconds: false,
+            showMeridian: false,
+            defaultTime: 0000
+        });
+
+        $('.timeinput').inputmask("mask", {
+            "mask": "99:99"
+        });
+
+        //$('.timeinput').inputmask("h:s", {
+        //    "placeholder": "__/__",
+        //    onincomplete: function () {
+        //        // replace placeholder with zero
+        //        $(this).val($(this).val().replace(/_/g, '0'));
+        //    }
+        //});
+    }
+
+    function GetDDLInputValues() {
+
+        var hfAttendanceSubType = $('#hfAttendanceSubtype');
+        var AttendanceSubType = $('select[name="AttendanceSubType"]');
+        if (hfAttendanceSubType.val() != '' && hfAttendanceSubType.val() != undefined) {
+            AttendanceSubType.val(hfAttendanceSubType.val());
+        }
+
+        var hfPremiumNo = $('#hfPremiumNo');
+        var NoOfMeal = $('select[name="NoOfMeal"]');
+        if (hfPremiumNo.val() != '' && hfPremiumNo.val() != undefined) {
+            NoOfMeal.val(hfPremiumNo.val());
+        }
+    }
+
+    function ToggleOvertimeEntryControl() {
+        var AttendanceSubtype = $('select[name="AttendanceSubType"]').val();
+
+        if (AttendanceSubtype == "@Timesheet.AttendanceSubtype.Overtime.ToString()") {
+            $(".TCSNoDisplayText").siblings('.input-group-btn').css("pointer-events", "auto");
+            $(".OTCodeDisplayText").siblings('.input-group-btn').css("pointer-events", "auto");
+            $(".NoOfMeal").removeAttr('disabled');
+        }
+        else {
+            $(".TCSNoDisplayText").siblings('.input-group-btn').css("pointer-events", "none");
+            $(".TCSNoDisplayText").val('');
+            $(".TCSNoPickerValue").val('');
+            $(".OTCodeDisplayText").siblings('.input-group-btn').css("pointer-events", "none");
+            $(".OTCodeDisplayText").val('');
+            $(".OTCodePickerValue").val('');
+            $(".NoOfMeal").attr('disabled', 'disabled');
+            $(".NoOfMeal").val('');
+        }
+    }
+
+    function EASyNavigation() {
+        var StartDate = $('input[name="StartDate"]').val();
+        var EndDate = $('input[name="EndDate"]').val();
+        if ((StartDate == '' || StartDate == undefined)) {
+            StartDate = $('input[name="hfStartDate"]').val();
+        }
+        if ((EndDate == '' || EndDate == newEndDate)) {
+            EndDate = $('input[name="hfEndDate"]').val();
+        }
+        var EmployeeCode = '@Model.Item1.EmployeeDetail.EmployeeCode';
+
+        var DateTimeStartDate = moment(StartDate, "DD/MM/YYYY").add(-1, 'days');
+        var DateTimeEndDate = moment(EndDate, "DD/MM/YYYY").add(+1, 'days');
+        var newStartDate = DateTimeStartDate.format('YYYY-MM-DD');
+        var newEndDate = DateTimeEndDate.format('YYYY-MM-DD');
+
+        if ((newStartDate != '' && newStartDate != undefined) &&
+            (newEndDate != '' && newEndDate != undefined) &&
+            (EmployeeCode != '' && EmployeeCode != undefined)) {
+            var EAsyPath = '../TimeAttendance/EASyDoorAccess' + '?employeeCode=' + EmployeeCode + '&StartDate=' + newStartDate + '&EndDate=' + newEndDate;
+            window.open(EAsyPath);
+        }
+    }
+
+
+    function DisableActionButton() {
+        $('#TimesheetActionDiv').children().children().children('.btn').attr('disabled', true);
+        $('#divLoading').show();
+    }
+
+    function EnableActionButton() {
+        $('#divLoading').hide();
+        $('#TimesheetActionDiv').children().children().children('.btn').attr('disabled', false);
+    }
+
+    function DisableControl() {
+
+        if ('@Model.Item1.EntryStatus' != '0') {
+            $(".OTCodeDisplayText").siblings('.input-group-btn').css("pointer-events", "none");
+            $(".TCSNoDisplayText").siblings('.input-group-btn').css("pointer-events", "none");
+            $(".TSPeoplePickerDisplay").siblings('.input-group-btn').css("pointer-events", "none");
+            if ('@Model.Item1.AttendanceSubType' == 'Overtime') {
+                $(".NoOfMeal").removeAttr('disabled');
+            }
+            else {
+                $(".NoOfMeal").attr('disabled', 'disabled');
+            }
+        }
+    }
+
+    $(document).ready(function () {
+
+        @*var approver = $(".ApproverPeoplePicker.TSPeoplePickerDisplay").val();
+        if (approver != '' && '@Model.Item1.EditMode' == 'true') {
+            $(".ApproverPeoplePicker.TSPeoplePickerDisplay").siblings('.input-group-btn').css("pointer-events", "none");
+        }*@
+        $('.TSChargeCodePickerName.ChargeCodePicker').on('change', GetApprover);
+
+        InitiateDateTimeSetting();
+        PopulateSubtype();
+        GetDDLInputValues();
+        ToggleOvertimeEntryControl();
+        DisableControl();
+        //CalculateAllDateTime();
+
+        @if (Model.Item1.FailMode)
+        {
+        <text>
+        $(".NoOfMeal").attr('disabled', 'disabled');
+        </text>
+        }
+    });
+</script>

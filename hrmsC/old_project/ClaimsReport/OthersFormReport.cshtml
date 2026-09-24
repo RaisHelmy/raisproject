@@ -1,0 +1,201 @@
+﻿@model List<ESS.Core.DropDownObject>
+
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewBag.Title = "Others Form Report";
+    DateTime d1 = DateTime.Now.AddYears(-20);
+    DateTime d2 = DateTime.Now.AddYears(20);
+    string dtStrStart = d1.ToString("dd MMM yyyy");
+    string dtStrEnd = d2.ToString("dd MMM yyyy");
+}
+
+<div class="row">
+    <div class="col-md-12">
+        <br />
+        <h1 class="page-title">
+            Others Form Report<span style="padding-left:20px;"><small></small></span>
+        </h1>
+    </div>
+</div>
+<br />
+<div class="form-body">
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-4 control-label">Travel Start Date</label>
+                    <div class="col-md-8 form-control-static">
+                        <div class="input-group date date-picker" data-date-format="dd MM yyyy">
+                            <input type="text" class="form-control" id="StartDate" name="StartDate" />
+                            <span class="input-group-btn">
+                                <button type="button" class="btn default"><i class="fa fa-calendar"></i></button>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-4 control-label">Travel End Date</label>
+                    <div class="col-md-8 form-control-static">
+                        <div class="input-group date date-picker" data-date-format="dd MM yyyy">
+                            <input type="text" class="form-control" id="EndDate" name="EndDate" />
+                            <span class="input-group-btn">
+                                <button type="button" class="btn default"><i class="fa fa-calendar"></i></button>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-4 control-label">Mode of Transport</label>
+                    <div class="col-md-8 form-control-static">
+                        @Html.DropDownList("ModeOfTransport", new SelectList(Model, "Value", "Text"), "- All -", new { @class = "bs-select form-control" })
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-4 control-label">Status</label>
+                    <div class="col-md-8 form-control-static">
+                        <select class="form-control" id="Status">
+                            <option value="">- All -</option>
+                            <option value="Pending">Pending</option>
+                            <option value="Approved">Approved</option>
+                            <option value="Returned">Returned</option>
+                            <option value="Withdrawn">Withdrawn</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">&nbsp;</div>
+    <div class="row">
+        <div class="col-md-12">
+            <div class="text-right">
+                <input type="button" id="btn-Search" class="btn green btn-Search" value="Search" onclick="SearchListing();">
+            </div>
+        </div>
+    </div>
+    <div class="row">&nbsp;</div>
+    <div class="row">
+        <div class="col-md-12">
+            <div id="SearchResult">
+
+            </div>
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+    function SearchListing() {
+        var _StartDate = $('#StartDate').val();
+        var _EndDate = $('#EndDate').val();
+        var _ModeOfTransport = $('#ModeOfTransport').val();
+        var _Status = $('#Status').val();
+
+        $("#SearchResult").html("LOADING...");
+
+        $.ajax({
+            type: "GET",
+            url: '@Url.Content("~/ClaimsReport/_OthersFormReportResult")',
+            cache: false,
+            dataType: "html",
+            data: { StartDate: _StartDate, EndDate: _EndDate, ModeOfTransport: _ModeOfTransport, Status: _Status },
+            success: function (content) {
+                $("#SearchResult").html(content);
+
+                BindExport();
+            },
+            error: function (e) {
+                console.log(e);
+            }
+        });
+    }
+
+    function BindExport() {
+        // EXPORT TO EXCEL
+        var ua = window.navigator.userAgent;
+        var msie = ua.indexOf("MSIE ");
+
+        // Internet Explorer
+        if (msie > 0 || !!navigator.userAgent.match(/Trident.*rv\:11\./)) {
+            var _btn = document.getElementById('btn-Export');
+            _btn.onclick = ExportToExcel;
+        }
+        else {
+            $("#btn-Export").click(function (e) {
+                //getting values of current time for generating the file name
+                var dt = new Date();
+                var day = dt.getDate();
+                var month = dt.getMonth() + 1;
+                var year = dt.getFullYear();
+                var hour = dt.getHours();
+                var mins = dt.getMinutes();
+                var postfix = day + "." + month + "." + year + "_" + hour + "." + mins;
+                //creating a temporary HTML link element (they support setting file names)
+                var a = document.createElement('a');
+                //getting data from our div that contains the HTML table
+                var data_type = 'data:application/vnd.ms-excel';
+                var table_div = document.getElementById('tblResult');
+                var table_html = table_div.outerHTML.replace(/ /g, '%20');
+                a.href = data_type + ', ' + table_html;
+                //setting the file name
+                a.download = 'OthersForm_Report_' + postfix + '.xls';
+                //triggering the function
+                a.click();
+                //just in case, prevent default behaviour
+                e.preventDefault();
+            });
+        }
+    }
+
+    function ExportToExcel() {
+        var dt = new Date();
+        var day = dt.getDate();
+        var month = dt.getMonth() + 1;
+        var year = dt.getFullYear();
+        var hour = dt.getHours();
+        var mins = dt.getMinutes();
+        var postfix = day + "." + month + "." + year + "_" + hour + "." + mins;
+        var _fileName = 'OthersForm_Report_' + postfix + '.xls';
+
+        var tab_text = "<table border='2px'><tr bgcolor='#87AFC6'>";
+        var textRange; var j = 0;
+        tab = document.getElementById('tblResult'); // id of table
+
+        for (j = 0 ; j < tab.rows.length ; j++) {
+            tab_text = tab_text + tab.rows[j].innerHTML + "</tr>";
+        }
+
+        tab_text = tab_text + "</table>";
+
+        txtArea1.document.open("txt/html", "replace");
+        txtArea1.document.write(tab_text);
+        txtArea1.document.close();
+        txtArea1.focus();
+        sa = txtArea1.document.execCommand("SaveAs", true, _fileName);
+
+        return (sa);
+    }
+
+    jQuery(document).ready(function () {
+        $('.date-picker').datepicker({
+            format: 'dd/mm/yyyy',
+            autoclose: true,
+        });
+        $('.date-picker').datepicker('setStartDate', '@dtStrStart');
+        $('.date-picker').datepicker('setEndDate', '@dtStrEnd');
+
+        SearchListing();
+    });
+</script>

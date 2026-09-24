@@ -1,0 +1,90 @@
+﻿@model List<ESS.Core.TrainingSummaryTracking>
+
+@{
+    Layout = null;
+}
+
+<div class="portlet box blue">
+    <div class="mini-triangle"><img src="../Assets/img/menu-red-triangle.png" /></div>
+    <div class="portlet-title">
+        <div class="caption">
+            <i class="fa fa-reorder"></i>Course Listing
+        </div>
+        <div class="tools">
+        </div>
+    </div>
+    <div class="portlet-body form">
+        <div class="form-body">
+            <div class="form-horizontal">
+                <div class="table-toolbar">
+                    <table id="tblResult" class="table table-striped table-bordered table-hover table-full-width">
+                        <thead>
+                            <tr>
+                                <th></th>
+                                <th>No</th>
+                                <th>BE Number</th>
+                                <th>No of Application Applied</th>
+                                <th>Max Capacity</th>
+                                <th>Category</th>
+                                <th>Type</th>
+                                <th>Course</th>
+                                <th>Provider</th>
+                                <th>Venue</th>
+                                <th>Start Date</th>
+                                <th>End Date</th>
+                                <th>Integration Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @{ 
+                                var No = 1;
+                            }
+                            @foreach (var item in Model)
+                            {
+                                <tr>
+
+                                    <td>
+                                        @{ 
+                                            var CourseSessionID = item.BENumber.Substring(2, item.BENumber.Length - 2);
+                                        }
+                                        <a class="btn blue btn-sm" target="_blank" href="@Url.Content("~/Training/CourseParticipants")?CourseSessionID=@CourseSessionID">
+                                            <i class="fa fa-search"></i>
+                                        </a>
+                                    </td>
+                                    <td>@No</td>
+                                    <td>@item.BENumber</td>
+                                    <td>@item.NoApplied</td>
+                                    <td>@item.MaxCapacity</td>
+                                    <td>@item.Category</td>
+                                    <td>@item.Type</td>
+                                    <td>@item.Course</td>
+                                    <td>@item.Provider</td>
+                                    <td>@item.Venue</td>
+                                    <td>@item.StartDate</td>
+                                    <td>@item.EndDate</td>
+                                    <td>@item.IntegrationStatus</td>
+                                </tr>
+
+                                No++;
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+    //transformTable("#tblResult");
+    $('#tblResult').dataTable({
+        "aLengthMenu": [[10, 25, 50, 100, 1000], [10, 25, 50, 100, 1000]]
+    });
+
+    var tableWrapper = "#tblResult_wrapper";
+
+    jQuery(tableWrapper + ' .dataTables_filter input').addClass("form-control input-medium input-inline"); // modify table search input
+    jQuery(tableWrapper + ' .dataTables_length select').addClass("form-control input-small"); // modify table per page dropdown
+    jQuery(tableWrapper + ' .dataTables_length select').select2({
+        showSearchInput: false //hide search box with special css class
+    });
+</script>

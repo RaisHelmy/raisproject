@@ -1,0 +1,166 @@
+﻿@model ESS.Employee.Models.RetirementLetterDetails
+@{
+    /**/
+
+    ViewBag.Title = "Retirement Letter Details";
+
+    var Path = string.Format("{0}://{1}{2}", Request.Url.Scheme, Request.Url.Authority, Url.Content("~"));
+
+    string currentID = ESS.Core.Common.GetEmployeeID();
+
+    Dictionary<string, object> htmlAttributes2 = new Dictionary<string, object>();
+    htmlAttributes2.Add("class", "form-control");
+    htmlAttributes2.Add("rows", "5");
+}
+
+<style>
+    .form-group {
+        margin-bottom: 5px;
+    }
+</style>
+<!-- Loading Gif -->
+<div id="divLoading" style="margin: 0px; padding: 0px; position: fixed; right: 0px; top: 0px; width: 100%; height: 100%; background-color: gainsboro; z-index: 30001; opacity: .8; filter: alpha(opacity=70); display: none; ">
+    <p style="position: absolute; top: 30%; left: 30%; color: black;">
+        Performing action, please wait...<img src="/_layouts/15/TNBESS/Assets/img/ajax-loading.gif">
+    </p>
+</div>
+<div class="form-section">
+    <div class="row">
+        <div class="col-md-12">
+            <h1 class="page-title">
+                Retirement Letter
+            </h1>
+        </div>
+    </div>
+</div>
+
+
+@Html.Action("_RetirementLetterDetailsRequestor", "Employee", new { EmployeeID = Model.EmployeeID })
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="portlet box blue">
+            <div class="mini-triangle"><img src="~/Assets/img/menu-red-triangle.png" /></div>
+            <div class="portlet-title">
+                <div class="caption">
+                    <i class="fa fa-reorder"></i>Letter Details
+                </div>
+                <div class="tools">
+                    <a href="javascript:;" class="collapse" id="hidePersonalInfo"></a>
+                </div>
+            </div>
+            <div class="portlet-body form">
+                <div class="form-horizontal">
+                    <form id="verificationform">
+                        <div class="form-body">
+                            <div class="form-group">
+                                <label class="col-md-2 control-label">Status</label>
+                                <div class="col-md-6">
+                                    <input class="form-control" id="Status" name="Status" value="@Model.Status" readonly />
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+@Html.Action("_RetirementLetterDetailsAuditLog", "Employee", new { UniqueID = Model.UniqueID })
+
+<div class="row">
+    <div class="col-md-12">
+        <button class="btn green" type="button" onclick="Download();">Download Letter</button>
+    </div>
+</div>
+
+<!-- Success Message -->
+<div class="modal fade" id="SuccessDialog" tabindex="-1" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header Success-header">
+                <h4 id="SuccessDialog_Title" class="Success-title">
+                    Action Successfully Completed.
+                </h4>
+            </div>
+            <div class="modal-body Success-body">
+                <div class="well" id="SuccessDialog_Message">
+                    Application has been successfully submitted.
+                </div>
+            </div>
+            <div class="modal-footer Success-footer">
+                <a class="btn default blue" id="SuccessDialog_OkButton" data-dismiss="modal">
+                    <i class="fa fa-check"></i>
+                    OK
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="divLoading" style="margin: 0px; padding: 0px; position: fixed;
+    right: 0px; top: 0px; width: 100%; height: 100%; background-color: gainsboro; z-index: 30001; opacity: .8; filter: alpha(opacity=70); display: none; ">
+    <p style="position: absolute; top: 30%; left: 30%; color: black;">
+        Performing action, please wait...<img src="/_layouts/15/TNBESS/Assets/img/ajax-loading.gif">
+    </p>
+</div>
+
+<script>
+
+    function Download() {
+        PerformDownload();
+    }
+
+    function PerformDownload() {
+        var request_id = '@Model.UniqueID';
+        var currentUser = '@currentID';
+        var employee_id = '@Model.EmployeeID';
+        var current_status = '@Model.Status';
+
+        $.ajax({
+            url: '@Url.Action("RetirementLetter_DownloadActions", "Employee")',
+            data: { UniqueID: request_id, ActionBy: currentUser, EmployeeID: employee_id, CurrentStatus: current_status },
+            success: function () {
+                window.open("@Url.Action("RetirementLetterDownloadPDF", "Employee")?UniqueID=" + request_id);
+                location.reload();
+            },
+            error: function (err) {
+                alert('Error while checking/updating download action.');
+            }
+        });
+    }
+
+	function ShowLoadingScreen() {
+		$("#divLoading").show();
+	}
+
+	function HideLoadingScreen() {
+		$('#divLoading').hide();
+	}
+
+	function ShowDialog(data) {
+		if (!data) {
+			data = {};
+		}
+
+		var dialog = $('#SuccessDialog'),
+			title = data.title,
+			message = data.message || "The operation was success.",
+			okCallback = data.okCallback;
+
+		var okButton = dialog.find("#SuccessDialog_OkButton");
+
+		dialog.find("#SuccessDialog_Title").html(title);
+		dialog.find("#SuccessDialog_Message").html(message);
+
+		okButton.off('click');
+		okButton.one('click', function () {
+			if (okCallback)
+				okCallback();
+		});
+
+		dialog.modal();
+	}
+</script>

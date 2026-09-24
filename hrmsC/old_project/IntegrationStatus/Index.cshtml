@@ -1,0 +1,266 @@
+﻿@{
+    ViewBag.Title = "Integration Status";
+}
+
+<div class="row">
+    <div class="col-md-12">
+        <br />
+        <h1 class="page-title">
+            Integration Status<span style="padding-left:20px;"><small></small></span>
+        </h1>
+    </div>
+</div>
+
+<div class="form-body">
+    <form action="#" id="intStatusForm" name="intStatusForm">
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-horizontal">
+                    <div class="form-group">
+                        <label class="control-label col-md-4">Module</label>
+                        <div class="col-md-8">
+                            @Html.DropDownList("Module", (IEnumerable<SelectListItem>)ViewBag.Module, new { @class = "form-control", @id = "Module" })
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-horizontal">
+                    <div class="form-group">
+                        <label class="col-md-4 control-label">Integration Status</label>
+                        <div class="col-md-8 form-control-static">
+                            <select class="bs-select form-control" id="Status" name="Status">
+                                <option value="ALL">ALL</option>
+                                <option value="SENT">SENT</option>
+                                <option value="FAILED" selected="selected">FAILED</option>
+                                <option value="RECEIVED">RECEIVED</option>
+                                <option value="ERROR">ERROR</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-horizontal">
+                    <div class="form-group">
+                        <label class="col-md-4 control-label">Start Date</label>
+                        <div class="col-md-8 form-control-static">
+                            <div class="input-group date date-picker" id="divStartDateFrom" data-date-format="dd/mm/yyyy">
+                                <input type="text" class="form-control" id="StartDate" name="StartDate" />
+                                <span class="input-group-btn">
+                                    <button type="button" class="btn default"><i class="fa fa-calendar"></i></button>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-horizontal">
+                    <div class="form-group">
+                        <label class="col-md-4 control-label">End Date</label>
+                        <div class="col-md-8 form-control-static">
+                            <div class="input-group date date-picker" id="divEndDate" data-date-format="dd/mm/yyyy">
+                                <input type="text" class="form-control" id="EndDate" name="EndDate" />
+                                <span class="input-group-btn">
+                                    <button type="button" class="btn default"><i class="fa fa-calendar"></i></button>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-horizontal">
+                    <div class="form-group">
+                        <label class="col-md-4 control-label">Request Status</label>
+                        <div class="col-md-8 form-control-static">
+                            <select class="bs-select form-control" id="RequestStatus" name="RequestStatus">
+                                <option value="">- ALL -</option>
+                                <option value="Draft">Draft</option>
+                                <option value="Pending">Pending</option>
+                                <option value="Approved">Approved</option>
+                                <option value="Acknowledged">Acknowledged</option>
+                                <option value="Verified">Verified</option>
+                                <option value="Processing">Processing</option>
+                                <option value="Processing Memo">Processing Memo</option>
+                                <option value="Recommended">Recommended</option>
+                                <option value="Withdrawn">Withdrawn</option>
+                                <option value="Paid">Paid</option>
+                                <option value="PendingAdmin">PendingAdmin</option>
+                                <option value="PendingSystem">PendingSystem</option>
+                                <option value="Declined">Declined</option>
+                                <option value="Returned">Returned</option>
+                                <option value="Cancelled">Cancelled</option>
+                                <option value="Pending Cancellation">Pending Cancellation</option>
+                                <option value="Failed">Failed</option>
+                                <option value="Failed (Leave Application)">Failed (Leave Application)</option>
+                                <option value="Failed (Leave Cancellation)">Failed (Leave Cancellation)</option>
+                                <option value="PendingVoid">PendingVoid</option>
+                                <option value="Void">Void</option>
+                                <option value="Error">Error</option>
+                                <option value="SystemError">SystemError</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+
+    <div class="row">&nbsp;</div>
+    <div class="row">&nbsp;</div>
+    <div class="row">
+        <div class="col-md-12">
+            <div class="text-right">
+                <input type="button" id="btn-Search" class="btn green btn-Search" value="Search" onclick="SearchIntegrationStatus();">
+                <input type="button" id="btn-Clear" class="btn default" value="Clear" onclick="ClearSearch();" />
+            </div>
+        </div>
+    </div>
+    <div class="row">&nbsp;</div>
+    <div class="row">
+        <div class="col-md-12">
+            <div id="IntegrationStatusResult">
+
+            </div>
+        </div>
+    </div>
+    <div class="row">&nbsp;</div>
+    <div class="row">&nbsp;</div>
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <input type="button" id="btnRetrigger" class="btn blue" value="Retrigger" onclick="Validate();" />
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="RetriggerModel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                <h4 class="modal-title" id="title">Retrigger Integration Status</h4>
+            </div>
+            <div class="modal-body">
+                <div class="well">
+                    <p>The selected modules will be retriggered. If you dont want to retrigger, click the Close button.</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <a class="btn default blue" id="btnRetriggerStatus" onclick="Retrigger();">Retrigger</a>
+                <button type="button" class="btn default" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="ResultModal" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                <h4 class="modal-title" id="result">Retrigger Integration Status</h4>
+            </div>
+            <div class="modal-body">
+                <div class="well">
+                    <p>Successfully retriggered Integration Status.</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn default" data-dismiss="modal" onclick="location.reload()">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+	$(function () {
+        $('.date-picker').datepicker({
+            format: 'dd/mm/yyyy',
+            autoclose: true
+		});
+
+		$("#btnRetrigger").hide();
+    });
+
+	function SearchIntegrationStatus() {
+		var form = $("#intStatusForm").serialize();
+
+		$("#IntegrationStatusResult").html("LOADING...");
+
+		$.ajax({
+            type: "POST",
+            dataTye: "html",
+            cache: false,
+            url: '@Url.Action("_IntegrationStatusResult", "IntegrationStatus")',
+            data: form,
+			success: function (content) {
+				$("#IntegrationStatusResult").html(content);
+				$('input[type="checkbox"]').uniform();
+				$("#btnRetrigger").show();
+            },
+            error: function (err) {
+                console.log("Error occurred in getting integration status list: " + err);
+            }
+		});
+    }
+
+    function ClearSearch() {
+        $("#Module").val("ALL");
+        $("#StartDate").val("");
+        $("#EndDate").val("");
+        $("#Status").val("FAILED");
+	}
+
+	function Validate() {
+		if (!$(".StatusCheckBox").is(':checked')) {
+			alert("- Please select a module for retrigger.");
+			return false;
+		}
+		else {
+			$("#RetriggerModel").modal();
+		}
+	}
+
+	function Retrigger() {
+		$("#btnRetriggerStatus").addClass('disable');
+		var JoinedData = "";
+		$(".StatusCheckBox:checked").each(function () {
+			JoinedData += $(this).val() + "," + $(this).attr("module") + "/";
+		});
+
+		JoinedData = JoinedData.substring(0, JoinedData.length - 1);
+
+		$.ajax({
+			type: "POST",
+			url: "@Url.Action("RetriggerIntegrationStatus","IntegrationStatus")",
+			data: { data : JoinedData },
+			success: function (response) {
+				console.log(response);
+				if (!response) {
+					alert("- Error in retrigger status.");
+				}
+				else {
+					$("#RetriggerModel").modal("hide");
+					$("#ResultModal").modal();
+				}
+
+				$("#btnRetriggerStatus").removeClass('disable');
+            },
+            error: function (err) {
+				alert("Error in the ajax call.");
+				$("#btnRetriggerStatus").removeClass('disable');
+            }
+		})
+	}
+</script>
+
+@Html.Partial("_ExcelExport")

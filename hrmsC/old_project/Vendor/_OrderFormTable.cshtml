@@ -1,0 +1,183 @@
+﻿@model List<Vendor.Models.Product>
+
+<table id="tblProductList" class="table table-striped table-bordered table-hover table-full-width">
+    <thead>
+        <tr>
+            <th class="text-center" style="width:5%;">No.</th>
+            <th class="text-center" style="width:25%;">Product Name</th>
+            <th class="text-center" style="width:15%;">Presentation / Pack</th>
+            <th class="text-center" style="width:15%;">Pack Size</th>
+            <th class="text-center" style="width:10%;">Price Per Unit</th>
+            <th class="text-center" style="width:10%;">Quantity Required</th>
+            <th class="text-center" style="width:10%;">Quantity Approved</th>
+            <th class="text-center" style="width:10%;">Total Cost (RM)</th>
+        </tr>
+    </thead>
+    <tbody>
+        @for (int i = 0; i < Model.Count; i++)
+        {
+            var product = Model[i];
+
+            <tr>
+                <td class="text-center">
+                    <input type="hidden" name="Products[@i].ProductID" value="@product.ProductID" />
+                    <input type="hidden" name="Products[@i].ProductNo" value="@product.ProductNo" />
+                    @product.ProductNo
+                </td>
+                <td>
+                    <input type="hidden" name="Products[@i].ProductName" value="@product.ProductName" />
+                    @product.ProductName
+                </td>
+                <td class="text-center">
+                    <input type="hidden" name="Products[@i].Presentation" value="@product.Presentation" />
+                    @product.Presentation
+                </td>
+                <td class="text-center">
+                    <input type="hidden" name="Products[@i].PackSize" value="@product.PackSize">
+                    @product.PackSize
+                </td>
+                <td class="text-right">
+                    <input type="hidden" name="Products[@i].PricePerUnit" value="@product.PricePerUnit">
+                    @product.PricePerUnit
+                </td>
+                <td class="text-center">
+                    <input type="text" class="form-control text-right" name="Products[@i].QuantityRequired" 
+                           value="@product.QuantityRequired"
+                           onkeypress="NumberOnly(event);" 
+                           onPaste="return false" />
+                </td>
+                <td class="text-center">
+                    <input type="text" class="form-control text-right" name="Products[@i].QuantityApproved" 
+                           value="@product.QuantityApproved"
+                           onkeypress="NumberOnly(event);" 
+                           onPaste="return false" 
+                           readonly />
+                </td>
+                <td class="text-center">
+                    <input type="text" class="form-control text-right" name="Products[@i].TotalCost"
+                           value="@product.TotalCost"
+                           readonly />
+                </td>
+            </tr>;
+        }
+    </tbody>
+    <tfoot>
+        <tr>
+            <td class="text-right" colspan="5"><b>Grand Total: </b></td>
+            <td class="text-center"><input type="text" class="form-control text-right" id="ct_TotalQuaReq" name="TotalQuantityRequired" readonly /></td>
+            <td class="text-center"><input type="text" class="form-control text-right" id="ct_TotalQuaApp" name="TotalQuantityApproved" readonly /></td>
+            <td class="text-center"><input type="text" class="form-control text-right" id="ct_GrandTotalCost" name="GrandTotalCost" readonly /></td>
+        </tr>
+    </tfoot>
+</table>
+
+<script>
+    $(function () {
+        ValueCalculation();
+        InitialCalculation();
+    });
+
+    function ValueCalculation() {
+        $('#tblProductList tbody tr').each(function () {
+            var _PricePerUnit = $(this).children('td:eq(4)');
+            var _QuantityRequired = $(this).children('td:eq(5)').children('input[type=text]');
+            var _QuantityRequiredHidden = $(this).children('td:eq(5)').children('input[type=hidden]');
+            var _QuantityApproved = $(this).children('td:eq(6)').children('input[type=text]');
+            var _QuantityApprovedHidden = $(this).children('td:eq(6)').children('input[type=hidden]');
+            var _TotalCost = $(this).children('td:eq(7)').children('input[type=text]');
+            var _TotalCostHidden = $(this).children('td:eq(7)').children('input[type=hidden]');
+
+            _QuantityRequired.change(function () {
+                _QuantityRequiredHidden.val(_QuantityRequired.val());
+
+                if (_QuantityRequired.val() != null && _QuantityRequired.val() != '') {
+                    var _cost = (_PricePerUnit.text() * _QuantityRequired.val()).toFixed(2);
+
+                    _TotalCost.val(ThousandSeparator(_cost));
+                    _TotalCostHidden.val(_cost);
+                }
+                else {
+                    _TotalCost.val('0.00');
+                    _TotalCostHidden.val('0.00');
+                }
+
+                var _CountQuaReq = 0;
+                var _CountQuaApp = 0;
+                var _CountTotalCost = 0;
+
+                $('#tblProductList tbody tr').each(function () {
+                    var _QuantityRequiredValue = parseFloat($(this).children('td:eq(5)').children('input[type=text]').val()) || 0;
+                    var _QuantityApprovedValue = parseFloat($(this).children('td:eq(6)').children('input[type=text]').val()) || 0;
+                    var _TotalCostValue = parseFloat($(this).children('td:eq(7)').children('input[type=text]').val()) || 0;
+
+                    _CountQuaReq += _QuantityRequiredValue;
+                    _CountQuaApp += _QuantityApprovedValue;
+                    _CountTotalCost += _TotalCostValue;
+                });
+
+                document.getElementById('ct_TotalQuaReq').value = _CountQuaReq;
+                document.getElementById('ct_TotalQuaApp').value = _CountQuaApp;
+                document.getElementById('ct_GrandTotalCost').value = ThousandSeparator(_CountTotalCost.toFixed(2));
+            });
+
+            _QuantityApproved.change(function () {
+                _QuantityApprovedHidden.val(_QuantityApproved.val());
+
+                if (_QuantityApproved.val() != null && _QuantityApproved.val() != '') {
+                    var _cost = (_PricePerUnit.text() * _QuantityApproved.val()).toFixed(2);
+
+                    _TotalCost.val(ThousandSeparator(_cost));
+                    _TotalCostHidden.val(_cost);
+                }
+                else if (_QuantityRequired.val() != null && _QuantityRequired.val() != '') {
+                    var _cost = (_PricePerUnit.text() * _QuantityRequired.val()).toFixed(2);
+
+                    _TotalCost.val(ThousandSeparator(_cost));
+                    _TotalCostHidden.val(_cost);
+                }
+                else {
+                    _TotalCost.val('0.00');
+                    _TotalCostHidden.val('0.00');
+                }
+
+                var _CountQuaReq = 0;
+                var _CountQuaApp = 0;
+                var _CountTotalCost = 0;
+
+                $('#tblProductList tbody tr').each(function () {
+                    var _QuantityRequiredValue = parseFloat($(this).children('td:eq(5)').children('input[type=text]').val()) || 0;
+                    var _QuantityApprovedValue = parseFloat($(this).children('td:eq(6)').children('input[type=text]').val()) || 0;
+                    var _TotalCostValue = parseFloat($(this).children('td:eq(7)').children('input[type=text]').val()) || 0;
+
+                    _CountQuaReq += _QuantityRequiredValue;
+                    _CountQuaApp += _QuantityApprovedValue;
+                    _CountTotalCost += _TotalCostValue;
+                });
+
+                document.getElementById('ct_TotalQuaReq').value = _CountQuaReq;
+                document.getElementById('ct_TotalQuaApp').value = _CountQuaApp;
+                document.getElementById('ct_GrandTotalCost').value = ThousandSeparator(_CountTotalCost.toFixed(2));
+            });
+        });
+    }
+
+    function InitialCalculation() {
+        var _CountQuaReq = 0;
+        var _CountQuaApp = 0;
+        var _CountTotalCost = 0;
+
+        $('#tblProductList tbody tr').each(function () {
+            var _QuantityRequiredValue = parseFloat($(this).children('td:eq(5)').children('input[type=text]').val()) || 0;
+            var _QuantityApprovedValue = parseFloat($(this).children('td:eq(6)').children('input[type=text]').val()) || 0;
+            var _TotalCostValue = parseFloat($(this).children('td:eq(7)').children('input[type=text]').val()) || 0;
+
+            _CountQuaReq += _QuantityRequiredValue;
+            _CountQuaApp += _QuantityApprovedValue;
+            _CountTotalCost += _TotalCostValue;
+        });
+
+        document.getElementById('ct_TotalQuaReq').value = _CountQuaReq;
+        document.getElementById('ct_TotalQuaApp').value = _CountQuaApp;
+        document.getElementById('ct_GrandTotalCost').value = ThousandSeparator(_CountTotalCost.toFixed(2));
+    }
+</script>

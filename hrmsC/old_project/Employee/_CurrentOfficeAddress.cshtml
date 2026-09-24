@@ -1,0 +1,767 @@
+﻿@model Tuple<ESS.Employee.Models.OfficeAddressInfo, ESS.Employee.Models.Setting>
+@using ESS.Employee;
+@{
+    #region
+    string module = "OfficeAddress";
+
+    Layout = null;
+    bool ReadOnly = false;
+    bool EditReadOnly = false;
+    bool Create = false;
+
+    string classViewReadOnly = "";
+    string EmployeeCategory_OfficeAddress = ViewBag.EmployeeCategory_OfficeAddress + "";
+
+    string Mode = ViewBag.Mode + "";
+    string divMode = "";
+    if (String.Equals(Mode, "View", StringComparison.OrdinalIgnoreCase))
+    {
+        ReadOnly = true;
+        classViewReadOnly = "disabled = 'disabled' ";
+        divMode = "";
+    }
+    else if (String.Equals(Mode, "Edit", StringComparison.OrdinalIgnoreCase))
+    {
+        ReadOnly = false;
+        EditReadOnly = true;
+        classViewReadOnly = "";
+        divMode = "Edit";
+    }
+    else
+    {
+        Create = true;
+        divMode = "Insert";
+    }
+
+    bool runFieldVisible = false;
+    if (Model.Item2 != null)
+    {
+        runFieldVisible = true;
+    }
+    #endregion
+}
+
+<div id="_CurrentOfficeAddressInfo" class="row">
+    <div class="col-md-12">
+        <div class="portlet box blue">
+            <div class="mini-triangle"><img src="../Assets/img/menu-red-triangle.png" /></div>
+            <div class="portlet-title">
+                <div class="caption">
+                    <i class="fa fa-reorder"></i>Office Address (Your actual work address / base)
+                </div>
+            </div>
+            <div class="portlet-body form" id="">
+                <div class="form-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-horizontal">
+
+                                <div class="form-group">
+                                    <label class="control-label col-md-4">
+                                        Building Code
+                                    </label>
+                                    <div class="col-md-8 form-control-static" id="divBuildingCode">
+                                        <label style="padding-left: 13px;">@(string.IsNullOrEmpty(Model.Item1.BuildingCode) ? "-" : Model.Item1.BuildingCode)</label>
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="control-label col-md-4">
+                                        Level
+                                    </label>
+                                    <div class="col-md-8 form-control-static">
+                                        <select class="form-control" id="Level" name="Level"
+                                                def-val="@Model.Item1.Level">
+                                            <option value=""> - Empty - </option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="control-label col-md-4">
+                                        Building Name
+                                    </label>
+                                    <div class="col-md-8 form-control-static">
+                                        <select class="form-control" id="BuildingName" name="BuildingName"
+                                                def-val="@Model.Item1.BuildingName">
+                                            <option value=""> - Empty - </option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="control-label col-md-4">
+                                        No/ Street
+                                    </label>
+                                    <div class="col-md-8 form-control-static" id="divStreetName">
+                                        <label style="padding-left: 13px;">@(string.IsNullOrEmpty(Model.Item1.StreetName)? "-" : Model.Item1.StreetName)</label>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-horizontal">
+
+                                <div class="form-group">
+                                    <label class="control-label col-md-4">
+                                        City
+                                    </label>
+                                    <div class="col-md-8 form-control-static">
+                                        <select class="form-control" id="City" name="City"
+                                                def-val="@Model.Item1.City">
+                                            <option value=""> - Empty - </option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="control-label col-md-4">
+                                        Postcode
+                                    </label>
+                                    <div class="col-md-8 form-control-static" id="divPostcode">
+                                        <label style="padding-left: 13px;">@(string.IsNullOrEmpty(Model.Item1.Postcode) ? "-" : Model.Item1.Postcode)</label>
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="control-label col-md-4">
+                                        State
+                                    </label>
+                                    <div class="col-md-8 form-control-static">
+                                        <select class="form-control" id="State" name="State"
+                                                def-val="@Model.Item1.State">
+                                            <option value=""> - Empty - </option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="control-label col-md-4">
+                                        Country
+                                    </label>
+                                    <div class="col-md-8 form-control-static">
+                                        <select class="form-control" id="Country" name="Country"
+                                                def-val="@(string.IsNullOrEmpty(Model.Item1.Country) ? "Malaysia" : Model.Item1.Country)">
+                                            <option value=""> - Empty - </option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+                    <hr />
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div style="float: left; width: 20px;">
+                                *
+                            </div>
+                            <div style="display:inline-block">
+                                <p>
+                                    Langkah 1: Pilih Country (default: Malaysia)<br>
+                                    Langkah 2: Pilih State<br>
+                                    Langkah 3: Pilih City<br>
+                                    Langkah 4: Pilih Building Name<br>
+                                    Langkah 5: Pilih Level
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div style="float: left; width : 20px;">
+                                **
+                            </div>
+                            <div style="display:inline-block">
+                                <p>
+                                    Sekiranya pilihan alamat pejabat tiada dalam senarai pilihan,<br>
+                                    mohon salurkan ke <a target="_blank" href="http://myssc.tnb.com.my">http://myssc.tnb.com.my</a> di bawah kategori
+                                    <i>Get Help from HR -> Helpdesk</i>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="CurrentOfficeAddressSecretInformation" class="hidden">
+                        <div class="row">
+                            <input id="BuildingCode" value="" hidden />
+                            <input id="PostCode" value="" hidden />
+                            <input id="StreetNo" value="" hidden />
+                            <input id="HiddenBuildingCode" value="@Model.Item1.BuildingCode" hidden />
+                            <input id="HiddenLevel" value="@Model.Item1.Level" hidden />
+                            <input id="HiddenBuildingName" value="@Model.Item1.BuildingName" hidden />
+                            <input id="HiddenStreetName" value="@Model.Item1.StreetName" hidden />
+                            <input id="HiddenCity" value="@Model.Item1.City" hidden />
+                            <input id="HiddenPostcode" value="@Model.Item1.Postcode" hidden />
+                            <input id="HiddenState" value="@Model.Item1.State" hidden />
+                            <input id="HiddenCountry" value="@Model.Item1.Country" hidden />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@* Populate Select *@
+<script>
+    var Country = null;
+    var States = null;
+    var Cities = null;
+    var BuildingName = null;
+    var Levels = null;
+
+    //Retrieval
+    function RetrieveCountryList() {
+        $.get('@Url.Action("GetCountryList", "Employee")', function (result) {
+            Country = result;
+            PopulateCountries();
+        });
+    }
+
+    function RetrieveStatesList(CountryCode) {
+        if (CountryCode === "") return false;
+        var param = { CountryCode: CountryCode };
+        $.get('@Url.Action("GetStatesList", "Employee")', $.param(param), function (result) {
+            States = result;
+            PopulateStates();
+        });
+    }
+
+    function RetrieveCitiesList(StateCode, CountryCode) {
+        if (StateCode === "" || CountryCode === "") return false;
+        var param = { StateCode: StateCode, CountryCode: CountryCode };
+        $.get('@Url.Action("GetCitiesList", "Employee")', $.param(param), function (result) {
+            Cities = result;
+            PopulateCities();
+        });
+    }
+
+    function RetrieveBuildingName(City, StateCode, CountryCode) {
+        if (City === "") return false;
+        var param = { City: City, StateCode: StateCode, CountryCode: CountryCode };
+        $.get('@Url.Action("GetBuildingName", "Employee")', $.param(param), function (result) {
+            BuildingName = result;
+            PopulateBuildingName();
+        });
+    }
+
+    function RetrieveLevel(PostCode, Street, BuildingName, StateCode, CountryCode) {
+        if (PostCode === "" || Street === "" || BuildingName === "" || StateCode === "" || CountryCode === "") return false;
+        var param = {
+            PostCode: PostCode,
+            Street: encodeURI(Street),
+            BuildingName: encodeURI(BuildingName),
+            StateCode: StateCode,
+            CountryCode: CountryCode
+        };
+        $.get('@Url.Action("GetBuildingLevel", "Employee")', $.param(param), function (result) {
+            Levels = result;
+            PopulateBuildingLevel();
+        });
+    }
+
+    function multiLevelReset(level) {
+        var i = 0;
+        while (i < level) {
+            //clear other fields upon reselect upper level
+            if (i == 6) {
+                $('#State').empty().append('<option> - Empty - </option>').select2();
+                $('#State').val('');
+            } else if (i == 5) {
+                $('#divPostcode').find('label').text('-');
+                $('#PostCode').val('');
+            } else if (i == 4) {
+                $('#City').empty().append('<option> - Empty - </option>').select2();
+                $('#City').val('');
+            } else if (i == 3) {
+                $('#divStreetName').find('label').text('-');
+                $('#StreetNo').val('');
+            } else if (i == 2) {
+                $('#BuildingName').empty().append('<option> - Empty - </option>').select2();
+                $('#BuildingName').val('');
+            } else if (i == 1) {
+                $('#Level').empty().append('<option> - Empty - </option>').select2();
+                $('#Level').val('');
+
+                //extra for buildingName change
+                $('#divStreetName').find('label').text('-');
+                $('#StreetNo').val('');
+                $('#divPostcode').find('label').text('-');
+                $('#PostCode').val('');
+            } else if (i == 0) {
+                $('#divBuildingCode').find('label').text('-');
+                $('#BuildingCode').val('');
+            }
+
+            //iterate
+            i++;
+        }
+    }
+
+    //populate
+    function PopulateCountries() {
+        var countryElem = $('#Country');
+
+        countryElem.empty();
+        for (var i = 0; i < Country.length; i++) {
+            if (Country.length > 1 && i == 0) {
+                countryElem.append('<option value="" selected="selected"> - Please Select One - </option>');
+            }
+            countryElem.append('<option value="' + Country[i].Country + '">' + Country[i].Country + '</option>');
+        }
+
+        countryElem.select2({
+            showSearchInput: false,
+            minimumResultsForSearch: -1
+        });
+
+        //add listener on change to populate cities
+        countryElem.select2('open');
+        countryElem.unbind();
+        countryElem.change(function () {
+            //reset selection
+            multiLevelReset(7);
+
+            var countryCode = $(this).val();
+            RetrieveStatesList(countryCode)
+        });
+
+
+        //auto select if selection only 1 item
+        if (Country != null) {
+            if (Country.length == 1) {
+                countryElem.select2('close');
+                countryElem.select2('val', Country[0].Country).change();
+            } else {
+                var defValue = countryElem.attr('def-val')
+                if (Country.findIndex(x => x.Country === defValue) !== -1) {
+                    countryElem.select2('close');
+                    countryElem.select2('val', defValue).change();
+                }
+            }
+        }
+    }
+
+    function PopulateStates() {
+        var stateElem = $('#State');
+
+        stateElem.empty();
+        for (var i = 0; i < States.length; i++) {
+            if (States.length > 1 && i == 0) {
+                stateElem.append('<option value="" selected="selected"> - Please Select One - </option>');
+            }
+            stateElem.append('<option value="' + States[i].State + '">' + States[i].State + '</option>');
+        }
+
+        stateElem.select2({
+            showSearchInput: false,
+            minimumResultsForSearch: -1
+        });
+
+        //add listener on change to populate cities
+        stateElem.select2('open');
+        stateElem.unbind();
+
+        //clear other fields upon reselect upper level
+        //$('#divPostcode').find('label').text('-');
+        //$('#divStreetName').find('label').text('-');
+        //$('#divBuildingCode').find('label').text('-');
+        //$('#PostCode').val('');
+        //$('#StreetNo').val('');
+        //$('#BuildingCode').val('');
+
+        stateElem.change(function () {
+            //reset selection
+            multiLevelReset(6);
+
+            var stateCode = $(this).val();
+            var countryCode = $('#Country').val();
+            RetrieveCitiesList(stateCode, countryCode);
+        });
+
+        //auto select if selection only 1 item
+        if (States != null) {
+            if (States.length == 1) {
+                stateElem.select2('close');
+                stateElem.select2('val', States[0].State).change();
+            } else {
+                var defValue = stateElem.attr('def-val');
+                if (States.findIndex(x => x.State === defValue) !== -1) {
+                    stateElem.select2('close');
+                    stateElem.select2('val', defValue).change();
+                }
+            }
+        }
+    }
+
+    function PopulateCities() {
+        var cityElem = $('#City');
+
+        cityElem.empty();
+        if (Cities.length) {
+            for (var i = 0; i < Cities.length; i++) {
+                if (Cities.length > 1 && i == 0) {
+                    cityElem.append('<option value="" selected="selected"> - Please Select One - </option>');
+                }
+                cityElem.append('<option value="' + Cities[i].City + '">' + Cities[i].City + '</option>');
+            }
+        }
+
+        cityElem.select2({
+            showSearchInput: false,
+            minimumResultsForSearch: -1
+        });
+
+        //add listener onchange to populate postcode and streetname
+        cityElem.select2('open');
+        cityElem.unbind();
+
+        //clear other fields upon reselect upper level
+        //$('#divPostcode').find('label').text('-');
+        //$('#divStreetName').find('label').text('-');
+        //$('#divBuildingCode').find('label').text('-');
+        //$('#PostCode').val('');
+        //$('#StreetNo').val('');
+        //$('#BuildingCode').val('');
+
+
+        cityElem.change(function () {
+            //reset selection
+            multiLevelReset(4);
+
+            var city = $(this).val();
+            var state = $('#State').val();
+            var country = $('#Country').val();
+
+            RetrieveBuildingName(city, state, country);
+        });
+
+        //auto select if selection only 1 item
+        if (Cities != null) {
+            if (Cities.length == 1) {
+                cityElem.select2('close');
+                cityElem.select2('val', Cities[0].City).change();
+            } else {
+                var defValue = cityElem.attr('def-val')
+                if (Cities.findIndex(x => x.City === defValue) !== -1) {
+                    cityElem.select2('close');
+                    cityElem.select2('val', defValue).change();
+                }
+            }
+        }
+    }
+
+    function PopulateBuildingName() {
+        var buildName = $('#BuildingName');
+
+        buildName.empty();
+        if (BuildingName.length) {
+            for (var i = 0; i < BuildingName.length; i++) {
+                if (BuildingName.length > 1 && i == 0) {
+                    buildName.append('<option value="" selected="selected"> - Please Select One - </option>');
+                }
+                var selOpt = '<option value="' + BuildingName[i].BuildingName + '" ' +
+                    'value2="' + BuildingName[i].StreetNo + '" ' +
+                    'value3="' + BuildingName[i].PostCode + '" ' +
+                    '>' + BuildingName[i].BuildingName +
+                    '</option>';
+                buildName.append(selOpt);
+            }
+        }
+
+        buildName.select2({
+            showSearchInput: false,
+            minimumResultsForSearch: -1
+        });
+
+        //add listener onchange to populate postcode and streetname
+        buildName.select2('open');
+        buildName.unbind();
+        $('#divBuildingCode').find('label').text('-');
+        $('#BuildingCode').val('');
+        buildName.change(function () {
+            //reset selection
+            multiLevelReset(2);
+
+            var stateCode = $('#State').val();
+            var countryCode = $('#Country').val();
+            var streetNo = $('#BuildingName option:selected').attr('value2');
+            var postCode = $('#BuildingName option:selected').attr('value3');
+            var buildingName = $(this).val();
+
+            $('#divPostcode').find('label').text(postCode);
+            $('#divStreetName').find('label').text(streetNo);
+            $('#PostCode').val(postCode);
+            $('#StreetNo').val(streetNo);
+
+            RetrieveLevel(postCode, streetNo, buildingName, stateCode, countryCode)
+        });
+
+
+        //auto select if selection only 1 item
+        if (BuildingName != null) {
+            if (BuildingName.length == 1) {
+                buildName.select2('close');
+                buildName.select2('val', BuildingName[0].BuildingName).change();
+            } else {
+                var defValue = buildName.attr('def-val')
+                if (BuildingName.findIndex(x => x.BuildingName === defValue) !== -1) {
+                    buildName.select2('close');
+                    buildName.select2('val', defValue).change();
+                }
+            }
+        }
+    }
+
+    function PopulateBuildingLevel() {
+        var levelName = $('#Level');
+
+        levelName.empty();
+        if (Levels.length) {
+            for (var i = 0; i < Levels.length; i++) {
+                if (Levels.length > 1 && i == 0) {
+                    levelName.append('<option value="" selected="selected"> - Please Select One - </option>');
+                }
+                levelName.append('<option value="' + Levels[i].Level + '" value2="' + Levels[i].BuildCode +
+                    '">' + Levels[i].Level + '</option>');
+            }
+        }
+
+        levelName.select2({
+            showSearchInput: false,
+            minimumResultsForSearch: -1
+        });
+
+        //add listener onchange to populate postcode and streetname
+        levelName.select2('open');
+        levelName.unbind();
+        levelName.change(function () {
+            //reset selection
+            multiLevelReset(1);
+
+            var buildCode = $('#Level option:selected').attr('value2');
+            $('#divBuildingCode').find('label').text(buildCode);
+            $('#BuildingCode').val(buildCode);
+        });
+
+
+        //auto select if selection only 1 item
+        if (Levels != null) {
+            if (Levels.length == 1) {
+                levelName.select2('close');
+                levelName.select2('val', Levels[0].Level).change();
+            } else {
+                var defValue = levelName.attr('def-val')
+                if (Levels.findIndex(x => x.Level === defValue) !== -1) {
+                    levelName.select2('close');
+                    levelName.select2('val', defValue).change();
+                }
+            }
+        }
+    }
+</script>
+
+@*script Submission Activity *@
+<script type="text/javascript">
+
+    function FormValidation(btn) {
+        btn.disabled = true;
+
+        var _ValidationMsg = '';
+
+        //var CurrentEmploymentAttachMandatory = $("#divEPM_Modal #CurrentEmploymentAttachMandatory").val() + "";
+
+        var CreateONLY = "@Create";
+
+        //checking if buildingCode is selected as the last step
+        if ($('#_CurrentOfficeAddressInfo #BuildingCode').val() === '' ||
+            $('#_CurrentOfficeAddressInfo #Level').val() === '' ||
+            $('#_CurrentOfficeAddressInfo #BuildingName').val() === '' ||
+            $('#_CurrentOfficeAddressInfo #StreetNo').val() === '' ||
+            $('#_CurrentOfficeAddressInfo #City').val() === '' ||
+            $('#_CurrentOfficeAddressInfo #PostCode').val() === '' ||
+            $('#_CurrentOfficeAddressInfo #State').val() === '' ||
+            $('#_CurrentOfficeAddressInfo #Country').val() === ''
+            ) {
+            _ValidationMsg += 'Office Address Incomplete:\n';
+
+            if ($('#_CurrentOfficeAddressInfo #Country').val() === '' || $('#_CurrentOfficeAddressInfo #Country').val() === null) _ValidationMsg += ' - Country\n';
+            if ($('#_CurrentOfficeAddressInfo #State').val() === '' || $('#_CurrentOfficeAddressInfo #State').val() === null) _ValidationMsg += ' - State\n';
+            if ($('#_CurrentOfficeAddressInfo #City').val() === '' || $('#_CurrentOfficeAddressInfo #City').val() === null) _ValidationMsg += ' - City\n';
+            if ($('#_CurrentOfficeAddressInfo #BuildingName').val() === '' || $('#_CurrentOfficeAddressInfo #BuildingName').val() === null) _ValidationMsg += ' - Building Name\n';
+            if ($('#_CurrentOfficeAddressInfo #Level').val() === '' || $('#_CurrentOfficeAddressInfo #Level').val() === null) _ValidationMsg += ' - Level (Room Number)\n';
+        }
+
+        if (_ValidationMsg != null && _ValidationMsg != '') {
+            alert(_ValidationMsg);
+        }
+        else {
+            $("#ConfirmUpdate .modal-body .well").html('Clicking Confirm will submit this application. If you want to make changes, click Close.');
+            $("#divLoading2").show();
+            $("#ConfirmUpdate").modal('show');
+
+        }
+        btn.disabled = false;
+    }
+
+    function ConfirmAction_OfficeAddress(btn, FormAction) {
+
+        //at index page
+        var _EmployeeID = $("#divEPM_Modal #EmployeeID").val() + "";
+        var _BuildingCode = $("#divEPM_Modal #BuildingCode").val() + "";
+        var _Level = $("#divEPM_Modal #Level").val() + "";
+        var _BuildingName= $("#divEPM_Modal #BuildingName").val() + "";
+        var _Street = $("#divEPM_Modal #StreetNo").val() + "";
+        var _PostCode= $("#divEPM_Modal #PostCode").val() + "";
+        var _State= $("#divEPM_Modal #State").val() + "";
+        var _City = $("#divEPM_Modal #City").val() + "";
+        var _Country = $("#divEPM_Modal #Country").val() + "";
+
+        var _HiddenBuildingCode = $("#divEPM_Modal #HiddenBuildingCode").val() + "";
+        var _HiddenLevel = $("#divEPM_Modal #HiddenLevel").val() + "";
+        var _HiddenBuildingName = $("#divEPM_Modal #HiddenBuildingName").val() + "";
+        var _HiddenStreet = $("#divEPM_Modal #HiddenStreetName").val() + "";
+        var _HiddenCity = $("#divEPM_Modal #HiddenCity").val() + "";
+        var _HiddenPostcode = $("#divEPM_Modal #HiddenPostcode").val() + "";
+        var _HiddenState = $("#divEPM_Modal #HiddenState").val() + "";
+        var _HiddenCountry = $("#divEPM_Modal #HiddenCountry").val() + "";
+
+        var Url = "";
+
+        if (FormAction.toUpperCase() == "EDIT") {
+            var form = {
+                EmployeeID: _EmployeeID,
+                BuildingCode: _BuildingCode,
+                Level: _Level,
+                BuildingName: _BuildingName,
+                Street: _Street,
+                City: _City,
+                PostCode: _PostCode,
+                State: _State,
+                Country: _Country,
+                HiddenBuildingCode: _HiddenBuildingCode,
+                HiddenLevel: _HiddenLevel,
+                HiddenBuildingName: _HiddenBuildingName,
+                HiddenStreet: _HiddenStreet,
+                HiddenCity: _HiddenCity,
+                HiddenPostcode: _HiddenPostcode,
+                HiddenState: _HiddenState,
+                HiddenCountry: _HiddenCountry
+            };
+
+            ResultMsg = "The request (Edit Office Address Information) has been successfully submitted.";
+            Url = '@Url.Content("~/Employee/UpdateOfficeAddressForm")';
+        }
+
+        if ($('#divLoading').is(':visible')) {
+
+            $.ajax({
+                type: "POST",
+                url: Url,
+                cache: false,
+                async: false,
+                dataType: "json",
+                data: form,
+                success: function (result) {
+                    if (result.Success) {
+                        $("#ConfirmUpdate").modal('toggle');
+                        $("#divLoading").hide();
+                        $("#divLoading2").show();
+
+                        ResultMsg += "<br/><br/>Request No: <label class='refno'>" + result.RequestNo + "</label>";
+                        $(".Success-body .well").html(ResultMsg);
+                        $("#SuccessSubmit").modal();
+
+                        $("#btnOK").click(function () { RedirectTo(FormAction.toUpperCase()); });
+                    }
+                    else {
+                        $("#ConfirmUpdate").modal('toggle');
+                        $("#divLoading").hide();
+                        $("#divLoading2").hide();
+                        btn.disabled = false;
+
+                        alert(result.ErrorMsg);
+
+                    }
+                },
+                error: function (e) {
+
+                }
+            });
+        }
+    }
+
+    function RedirectTo(_Action) {
+        switch (_Action) {
+            case "INSERT":
+                location.reload();
+                break;
+            case "EDIT":
+                location.reload();
+                break;
+            default:
+                window.location.href = '/Pages/default.aspx';
+        }
+    }
+</script>
+
+@*Script Load Form Function*@
+<script type="text/javascript">
+    function ReformatDate(edate, Type) {
+        try {
+            if (edate.length > 0) {
+                var myDate = $.datepicker.parseDate("dd/mm/yy", edate);
+                var d = myDate.getDate();
+                var m = myDate.getMonth();
+                m += 1;
+                var y = myDate.getFullYear();
+
+                var newdate = (y + "-" + m + "-" + d);
+                return newdate;
+            }
+            return "";
+        }
+
+        catch (e) {
+            var Error = "ERROR";
+            //alert('Invalid Date Format ('+Type+')' + e);
+            //alert(e);
+            return Error;
+        }
+
+    }
+
+</script>
+
+@*script Load Form *@
+<script type="text/javascript">
+
+    $(document).ready(function () {
+        App.initAjax();
+
+        var divMode = "@divMode";
+        var runFieldVisible = "@runFieldVisible";
+
+        if (runFieldVisible.toUpperCase() == "TRUE") {
+            Setting_FieldVisible = JSON.parse('@Html.Raw(Json.Encode(Model.Item2.FieldVisible))');
+            Setting_FieldEnable = JSON.parse('@Html.Raw(Json.Encode(Model.Item2.FieldEnable))');
+            Setting_FieldChecked = JSON.parse('@Html.Raw(Json.Encode(Model.Item2.FieldChecked))');
+            Setting_FieldValue = JSON.parse('@Html.Raw(Json.Encode(Model.Item2.FieldValue))');
+
+            PopulateSetting(divMode, "#divEPM_Modal", "#SettingFormLoad", Setting_FieldVisible, Setting_FieldEnable, Setting_FieldChecked, Setting_FieldValue);
+            //PopulateSetting(divMode, divMain, LogDiv, Setting_FieldVisible, Setting_FieldEnable, Setting_FieldChecked, Setting_FieldValue)
+
+        }
+
+        $('#divEPM_Modal select').select2({
+            showSearchInput: false,
+            minimumResultsForSearch: -1
+        });
+
+        RetrieveCountryList();
+    });
+
+</script>
+
+

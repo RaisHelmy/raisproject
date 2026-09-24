@@ -1,0 +1,177 @@
+﻿@model List<OJA.Models.Reference>
+@{
+    Layout = null;
+}
+<div class="portlet box blue">
+    <div class="mini-triangle"><img src="../Assets/img/menu-red-triangle.png" /></div>
+    <div class="portlet-title">
+        <div class="caption">
+            <i class="fa fa-reorder"></i> References
+        </div>
+        <div class="tools">
+            <a style="margin-left:10px" href="javascript:;" class="expand arrow-down">
+            </a>
+        </div>
+    </div>
+
+    <div class="portlet-body form" style="display:none">
+        <div class="form-body">
+            <div class="form-horizontal">
+                <table id="tblReferences" class="table table-striped table-bordered table-hover table-full-width">
+                    <thead>
+                        <tr>
+                            <th>No</th>
+                            <th>Employee Name</th>  
+                            <th>Relationship</th>
+                            <th>Position</th>
+                            <th>Pay Scale Group</th>
+                            <th>Email</th>
+                            <th>Phone No.</th>
+                            <th>HP No.</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        
+                            @for (int i = 0; i < Model.Count; i++)
+                            {
+                                var item = Model[i];
+                                if(string.IsNullOrEmpty(item.EmployeeName))
+                                {
+                                    continue;
+                                }
+                                <tr>
+                                    
+                                    <td>@(i + 1)</td>
+                                    <td>@item.EmployeeName</td>
+                                    <td>@item.Relationship</td>
+                                    <td>@item.Position</td>
+                                    <td>@item.PayScaleGroup</td>
+                                    <td>@item.Email</td>
+                                    <td>@item.PhoneNo</td>
+                                    <td>@item.HPNo</td>
+                                </tr>
+                            }
+                               
+                    </tbody>
+                </table>
+            </div>
+
+            @if (ViewBag.CanEdit)
+            {
+                <div class="row">
+                    <div class="col-md-12">
+                        <a class="btn btn-primary" onclick="EditReference()">Edit <i class="fa fa-pencil"></i></a>
+                    </div>
+                </div>
+            }
+           
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="ReferencesModal" role="dialog">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal"></button>
+                <h4 class="modal-title">References</h4>
+            </div>
+            <div class="modal-body">
+                <div class="form-horizontal">
+                    <div class="row">
+                        <div class="form-body" id="ReferencesModalBody">
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn blue" id="btnSaveReferences">Save</button> 
+                <button type="button" class="btn default" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+
+    $(document).ready(function () {
+        $('#tblReferences').dataTable({
+            "aLengthMenu": [[10, 25, 50, 100, 1000], [10, 25, 50, 100, 1000]],
+            "bPaginate": false
+        });
+
+        var tableWrapper = "#tblReferences_wrapper";
+
+        jQuery(tableWrapper + ' .dataTables_filter input').addClass("form-control input-medium input-inline"); // modify table search input
+        jQuery(tableWrapper + ' .dataTables_length select').addClass("form-control input-small"); // modify table per page dropdown
+        jQuery(tableWrapper + ' .dataTables_length select').select2({
+            showSearchInput: false //hide search box with special css class
+        });
+    });
+
+    function EditReference() {
+       
+        ShowLoading();
+        $.ajax({
+            url: '@Url.Action("EditReferences")',
+            success: function (content) {
+                $('#ReferencesModalBody').html(content);
+                $('#ReferencesModal').modal();
+            },
+            error: function (err) {
+                alert('Error in displaying references');
+            }
+        });
+    }
+
+    $(document).on('click', '#btnSaveReferences', function () {
+        var data = $("#referencesForm").serialize();
+        ShowLoading();
+        $.ajax({
+            url: '@Url.Action("UpdateReferences")',
+            data: data,
+            success: function (response) {
+                alert(response.Message);
+                if (response.Success) {
+                    location.reload();
+                }
+            }
+        });
+    });
+
+    function clearReference(Id) {
+        $("#txtReferEmployeeID" + Id).val('');
+        $("input[name='[" + Id + "].ReferEmployeeID'").val(''); 
+        $("input[name='[" + Id + "].PhoneNo'").val('');
+        $("input[name='[" + Id + "].HPNo'").val('');
+    }
+      
+    $(document).on('change', '#txtReferEmployeeID0', function () {
+        console.log($(this).val());
+        $("input[name='[0].ReferEmployeeID'").val($('#ReferEmployeeID0').val());
+    });
+
+    $(document).on('change', '#txtReferEmployeeID1', function () {
+        console.log($(this).val());
+        $("input[name='[1].ReferEmployeeID'").val($('#ReferEmployeeID1').val());
+    });
+
+    $(document).on('change', '#txtReferEmployeeID2', function () {
+        console.log($(this).val());
+        $("input[name='[2].ReferEmployeeID'").val($('#ReferEmployeeID2').val());
+    });
+
+    $(document).on('change', '#txtReferEmployeeID3', function () {
+        console.log($(this).val());
+        $("input[name='[3].ReferEmployeeID'").val($('#ReferEmployeeID3').val());
+    });
+
+    $(document).on('change', '#txtReferEmployeeID4', function () {
+        console.log($(this).val());
+        $("input[name='[4].ReferEmployeeID'").val($('#ReferEmployeeID4').val());
+    });
+      
+
+</script>

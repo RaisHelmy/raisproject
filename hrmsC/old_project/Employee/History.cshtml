@@ -1,0 +1,351 @@
+﻿@using ESS.Employee;
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewBag.Title = "Employee Profile Maintenance History";
+    DateTime d1 = DateTime.Now.AddYears(-20);
+    DateTime d2 = DateTime.Now.AddYears(20);
+    string dtStrStart = d1.ToString("dd MMM yyyy");
+    string dtStrEnd = d2.ToString("dd MMM yyyy");
+
+    List<ESS.Core.DropDownObject> RequestCategoryDDL = ViewBag.RequestCategoryDDL;
+    List<ESS.Core.DropDownObject> RequestTypeDDL = ViewBag.RequestTypeDDL;
+    List<ESS.Core.DropDownObject> RequestStatusDDL = ViewBag.RequestStatusDDL;
+
+    DateTime checkStartDateTime = DateTime.Now.AddMonths(-2);
+    DateTime checkEndDateTime = DateTime.Now;
+    //new DateTime(value.Year, value.Month, 1);
+    DateTime presetDateFrom = new DateTime(checkStartDateTime.Year, checkStartDateTime.Month, 1);
+    int EndDay = DateTime.DaysInMonth(checkEndDateTime.Year, checkEndDateTime.Month);
+    DateTime presetDateTo = new DateTime(checkEndDateTime.Year, checkEndDateTime.Month, EndDay);
+}
+
+<div class="row">
+    <div class="col-md-12">
+        <br />
+        <h1 class="page-title">
+            My Profile Maintenance History<span style="padding-left:20px;"><small></small></span>
+        </h1>
+    </div>
+</div>
+<br />
+<div class="form-body">
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-4 control-label">Start Date</label>
+                    <div class="col-md-8 form-control-static">
+                        <div class="input-group date date-picker" id="divStartDateFrom" data-date-format="dd/mm/yyyy">
+                            <input type="text" class="form-control" id="StartDate" name="StartDate" value="@Service.FormatDateInNumber(presetDateFrom, "dd/MM/yyyy")"/>
+                            <span class="input-group-btn">
+                                <button type="button" class="btn default"><i class="fa fa-calendar"></i></button>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-4 control-label">End Date</label>
+                    <div class="col-md-8 form-control-static">
+                        <div class="input-group date date-picker" id="divEndDate" data-date-format="dd/mm/yyyy">
+                            <input type="text" class="form-control" id="EndDate" name="EndDate" value="@Service.FormatDateInNumber(presetDateTo, "dd/MM/yyyy")"/>
+                            <span class="input-group-btn">
+                                <button type="button" class="btn default"><i class="fa fa-calendar"></i></button>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-4 control-label">Category</label>
+                    <div class="col-md-8 form-control-static">
+                        <input type="hidden" name="CategoryCode" id="CategoryCode" value="" />
+                        <input type="hidden" name="CategoryName" id="CategoryName" value="" />
+                        @Html.DropDownList("ddlCategory", new SelectList(RequestCategoryDDL, "Value", "Text"), new { @id = "ddlCategory", @class = "bs-select form-control" })
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-4 control-label">Type</label>
+                    <div class="col-md-8 form-control-static">
+                        <input type="hidden" name="TypeCode" id="TypeCode" value="" />
+                        <input type="hidden" name="TypeName" id="TypeName" value="" />
+                        @Html.DropDownList("ddlType", new SelectList(RequestTypeDDL, "Value", "Text"), new { @id = "ddlType", @class = "bs-select form-control" })
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-4 control-label">Status</label>
+                    <div class="col-md-8 form-control-static">
+                        <input type="hidden" name="StatusCode" id="StatusCode" value="" />
+                        <input type="hidden" name="StatusName" id="StatusName" value="" />
+                        @Html.DropDownList("ddlStatus", new SelectList(RequestStatusDDL, "Value", "Text"), new { @id = "ddlStatus", @class = "bs-select form-control" })
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">&nbsp;</div>
+    <div class="row">
+        <div class="col-md-12">
+            <div class="text-right">
+                <input type="button" id="btn-Search" class="btn green btn-Search" value="Search" onclick="SearchListing();">
+                <input id="btn-Clear" type="button" class="btn default " value="Clear" onclick="ClearFilter();">
+            </div>
+        </div>
+    </div>
+    <div class="row">&nbsp;</div>
+    <div class="row">
+        <div class="col-md-12">
+            <div id="SearchResult">
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Loading Gif -->
+<div id="divLoading" style="margin: 0px; padding: 0px; position: fixed; right: 0px;
+    top: 0px; width: 100%; height: 100%; background-color:gainsboro; z-index: 30001;
+    opacity: .8; filter: alpha(opacity=70); display:none;">
+    <p style="position: absolute; top: 30%; left: 30%; color: black;">
+        Loading, please wait...<img src="../Assets/img/ajax-loading.gif" />
+
+    </p>
+</div>
+
+@*script Main Function *@
+<script type="text/javascript">
+    function LoadFormConfiguration() {
+
+        $('#divStartDateFrom').datepicker('setStartDate', '@dtStrStart');
+        $('#divStartDateFrom').datepicker('setEndDate', '@dtStrEnd');
+
+        $('#divEndDate').datepicker('setStartDate', '@dtStrStart');
+        $('#divEndDate').datepicker('setEndDate', '@dtStrEnd');
+
+        $("#divStartDateFrom").datepicker({
+            format: 'dd/mm/yyyy',
+            autoclose: true,
+        }).on("input", function (e) {
+            try {
+                var dateParse = $.datepicker.parseDate("dd/mm/yy", $("#StartDate").val());
+            }
+            catch (e) { }
+            if (dateParse) {
+                Checking('');
+            }
+        }).on('changeDate', function (selected) {
+            var minDate = new Date(selected.date.valueOf());
+
+            minDate.setDate(minDate.getDate() + 1);
+            $('#divEndDate').datepicker('setStartDate', minDate);
+        });
+
+        $("#divEndDate").datepicker({
+            autoclose: true,
+        })
+            .on('changeDate', function (selected) {
+                var minDate = new Date(selected.date.valueOf());
+                minDate.setDate(minDate.getDate() - 1);
+                $('#divStartDateFrom').datepicker('setEndDate', minDate);
+            });
+
+        $("#StartDate").on("blur", function (e) {
+            if ($('#StartDate').val() == "") {
+                $('#divEndDate').datepicker('setStartDate', '@dtStrStart');
+            }
+
+        });
+
+        $("#EndDate").on("blur", function (e) {
+            if ($('#EndDate').val() == "") {
+                $('#divStartDateFrom').datepicker('setEndDate', '@dtStrEnd');
+            }
+
+        });
+
+        //$('#ddlCategory').select2({
+        //    showSearchInput: false,
+        //    minimumResultsForSearch: -1
+        //});
+
+        //$('#ddlType').select2({
+        //    showSearchInput: false,
+        //    minimumResultsForSearch: -1
+        //});
+
+        //$('#ddlStatus').select2({
+        //    showSearchInput: false,
+        //    minimumResultsForSearch: -1
+        //});
+
+    }
+    function LoadFormOnChange() {
+
+        //Category change Type change
+        $('#ddlCategory').change(function () {
+            // if changed to, for example, the last option, then
+            // $(this).find('option:selected').text() == D
+            // $(this).val() == 4
+            // get whatever value you want into a variable
+            var HiddenCategoryValue = $("#ddlCategory option:selected").val() + "";
+            var HiddenCategoryText = $("#ddlCategory option:selected").text() + "";
+
+            // and update the hidden input's value
+            $('#CategoryName').val(HiddenCategoryText);
+            $('#CategoryCode').val(HiddenCategoryValue);
+
+        });
+
+        $('#ddlType').change(function () {
+            // if changed to, for example, the last option, then
+            // $(this).find('option:selected').text() == D
+            // $(this).val() == 4
+            // get whatever value you want into a variable
+            var HiddenTypeValue = $("#ddlType option:selected").val() + "";
+            var HiddenTypeText = $("#ddlType option:selected").text() + "";
+
+            // and update the hidden input's value
+            $('#TypeName').val(HiddenTypeText);
+            $('#TypeCode').val(HiddenTypeValue);
+
+        });
+
+        $('#ddlStatus').change(function () {
+            // if changed to, for example, the last option, then
+            // $(this).find('option:selected').text() == D
+            // $(this).val() == 4
+            // get whatever value you want into a variable
+            var HiddenStatusValue = $("#ddlStatus option:selected").val() + "";
+            var HiddenStatusText = $("#ddlStatus option:selected").text() + "";
+
+            // and update the hidden input's value
+            $('#StatusName').val(HiddenStatusText);
+            $('#StatusCode').val(HiddenStatusValue);
+        });
+    }
+</script>
+
+@*script Retrieve DDL AJAX *@
+<script type="text/javascript">
+
+    function RetrieveDepartmentOptions() {
+        var CompanyCode = $("#DivisionCode").val() + "";
+        var url = '@Url.Action("GetDepartmentOptions", "Employee")?CompanyCode=' + CompanyCode;
+        $.get(url, function (result) {
+            Department = result;
+            PopulateDepartment();
+        });
+    }
+
+    function RetrieveUnitSectionOptions() {
+        var DepartmentCode = $("#DepartmentCode").val() + "";
+        var url = '@Url.Action("GetUnitSectionOptions", "Employee")?DepartmentCode=' + DepartmentCode;
+        $.get(url, function (result) {
+            UnitSection = result;
+            PopulateUnitSection();
+        });
+    }
+
+</script>
+
+@*script Clear Filter and get listing *@
+<script type="text/javascript">
+    function ReformatDate(edate, Type) {
+        try {
+            if (edate.length > 0) {
+                var myDate = $.datepicker.parseDate("dd/mm/yy", edate);
+                var d = myDate.getDate();
+                var m = myDate.getMonth();
+                m += 1;
+                var y = myDate.getFullYear();
+
+                var newdate = (y + "-" + m + "-" + d);
+                return newdate;
+            }
+            return "";
+        }
+
+        catch (e) {
+            var Error = "ERROR";
+            //alert('Invalid Date Format ('+Type+')' + e);
+            //alert(e);
+            return Error;
+        }
+
+    }
+
+    function SearchListing() {
+
+        var _RequestCategory = $('#CategoryCode').val();
+        var _RequestType = $('#TypeCode').val();
+        var _RequestStatus = $('#StatusCode').val();
+        var _StartDate = $('#StartDate').val();
+        var _EndDate = $('#EndDate').val();
+
+        var form = {
+            RequestCategory: _RequestCategory,
+            RequestType: _RequestType,
+            RequestStatus: _RequestStatus,
+            DateFrom: _StartDate,
+            DateTo: _EndDate
+        };
+
+        $("#divLoading").show();
+
+        $.ajax({
+            type: "GET",
+            url: '@Url.Content("~/Employee/_HistoryResult")',
+            cache: false,
+            dataType: "html",
+            data: form ,
+            success: function (content) {
+                $("#divLoading").hide();
+                $("#SearchResult").html(content);
+            },
+            error: function (e) {
+                console.log(e);
+                $("#divLoading").hide();
+            }
+        });
+    }
+
+    function ClearFilter() {
+        $('#ddlCategory').val("").change();
+        $('#ddlType').val("").change();
+        $('#ddlStatus').val("").change();
+        $('#StartDate').val("");
+        $('#EndDate').val("");
+        SearchListing();
+    }
+</script>
+
+@*script Load Form *@
+<script type="text/javascript">
+    jQuery(document).ready(function () {
+
+        LoadFormConfiguration();
+        LoadFormOnChange();
+
+        SearchListing();
+    });
+
+</script>

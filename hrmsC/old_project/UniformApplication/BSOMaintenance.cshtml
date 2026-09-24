@@ -1,0 +1,410 @@
+﻿@using UniformApplication.Services
+@using ESS.Core
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewBag.Title = "BSO Maintenance";
+
+
+    List<DropDownObject> StateDDL = Service.DDL_GetState();
+    List<DropDownObject> LocationDDL = Service.DDL_GetLocation("");
+}
+
+<div class="row">
+    <div class="col-md-12">
+        <br />
+        <h1 class="page-title">
+            @ViewBag.Title <span style="padding-left:20px;"><small></small></span>
+        </h1>
+    </div>
+</div>
+<br />
+<div class="form-body">
+    @*<div class="row">
+            <div class="col-md-6">
+                <div class="form-horizontal">
+                    <div class="form-group">
+                        <label class="col-md-4 control-label">Start Date</label>
+                        <div class="col-md-8 form-control-static">
+                            <div class="input-group date date-picker" data-date-format="dd MM yyyy">
+                                <input type="text" class="form-control" id="StartDate" name="StartDate" value="@ViewBag.FromDate" />
+                                <span class="input-group-btn">
+                                    <button type="button" class="btn default"><i class="fa fa-calendar"></i></button>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-horizontal">
+                    <div class="form-group">
+                        <label class="col-md-4 control-label">End Date</label>
+                        <div class="col-md-8 form-control-static">
+                            <div class="input-group date date-picker" data-date-format="dd MM yyyy">
+                                <input type="text" class="form-control" id="EndDate" name="EndDate" value="@ViewBag.ToDate" />
+                                <span class="input-group-btn">
+                                    <button type="button" class="btn default"><i class="fa fa-calendar"></i></button>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-horizontal">
+                    <div class="form-group">
+                        <label class="col-md-4 control-label">State</label>
+                        <div class="col-md-8 form-control-static">
+                            <span id="LocationResult">
+                                @Html.DropDownList("State", new SelectList(StateDDL, "Value", "Text"), null, new { @class = "bs-select form-control", @name = "State" })
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-horizontal">
+                    <div class="form-group">
+                        <label class="col-md-4 control-label">Location</label>
+                        <div class="col-md-8 form-control-static">
+                            <span id="LocationResult">
+                                @Html.DropDownList("Location", new SelectList(LocationDDL, "Value", "Text"), null, new { @class = "bs-select form-control", @name = "Location" })
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-horizontal">
+                    <div class="form-group">
+                        <label class="col-md-4 control-label">Category Type</label>
+                        <div class="col-md-8 form-control-static">
+                            <select class="form-control" id="Category">
+                                <option selected value="">- All -</option>
+                                <option value="0">Yearly Cycle</option>
+                                <option value="1">Special Requirement</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-horizontal">
+                    <div class="form-group">
+                        <label class="col-md-4 control-label">Show Submission</label>
+                        <div class="col-md-8 form-control-static">
+                            <select class="form-control" id="Show">
+                                <option selected value="">- All -</option>
+                                <option value="0">Submitted</option>
+                                <option value="1">Not Submmitted</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-horizontal">
+                    <div class="form-group">
+                        <label class="col-md-4 control-label">Reference No</label>
+                        <div class="col-md-8 form-control-static">
+                            <input class="form-control" type="text" id="ReferenceNo" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-horizontal">
+                    <div class="form-group">
+                        <label class="col-md-4 control-label">Employee</label>
+                        <div class="col-md-8 form-control-static">
+                            <input class="form-control" type="text" id="Employee" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <div class="row">&nbsp;</div>
+        <div class="row">
+            <div class="col-md-12">
+                <div class="text-right">
+                    <input type="button" id="btn-Search" class="btn green btn-Search" value="Search" onclick="SearchListing();">
+                    <input id="btn-Clear" type="button" class="btn default " value="Clear" onclick="ClearFilter();">
+                </div>
+            </div>
+        </div>
+        <div class="row">&nbsp;</div>*@
+
+    <div class="row">
+        <div class="col-md-12">
+            <div id="SearchResult">
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Confirmation Message -->
+<div class="modal fade" id="ConfirmationDialog" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                <h4 id="ConfirmationDialog_Title" class="modal-title"></h4>
+            </div>
+            <div class="modal-body">
+                <div id="ConfirmationDialog_Message" class="well">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="ConfirmationDialog_PositiveButton" type="button" class="btn default blue">
+                    <i class="fa fa-check"></i>
+                </button>
+                <button id="ConfirmationDialog_NegativeButton" type="button" class="btn default" data-dismiss="modal">
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Success Message -->
+<div class="modal fade" id="SuccessDialog" tabindex="-1" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header Success-header">
+                <h4 id="SuccessDialog_Title" class="Success-title">
+                    Action Successfully Completed
+                </h4>
+            </div>
+            <div class="modal-body Success-body">
+                <div class="well" id="SuccessDialog_Message">
+                    Request has been successfully submitted.
+                </div>
+            </div>
+            <div class="modal-footer Success-footer">
+                <a class="btn default blue" id="SuccessDialog_OkButton" data-dismiss="modal">
+                    <i class="fa fa-check"></i>
+                    OK
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- Loading Gif -->
+<div id="divLoading" style="margin: 0px; padding: 0px; position: fixed; right: 0px;
+        top: 0px; width: 100%; height: 100%; background-color:gainsboro; z-index: 30001;
+        opacity: .8; filter: alpha(opacity=70);display:none">
+    <p style="position: absolute; top: 30%; left: 30%; color: black;">
+        Loading, please wait...<img src="../Assets/img/ajax-loading.gif" />
+
+    </p>
+</div>
+
+<script type="text/javascript">
+
+    function SearchListing() {
+        //var _StartDate =    $('#StartDate').val();
+        //var _EndDate =      $('#EndDate').val();
+        //var _State =        $('#State').val();
+        //var _Location =     $('#Location').val();
+        //var _Category =     $('#Category').val();
+        //var _Show =         $('#Show').val();
+        //var _ReferenceNo =  $('#ReferenceNo').val();
+        //var _Employee =     $('#Employee').val();
+
+        $("#SearchResult").html("LOADING...");
+
+        $.ajax({
+            type: "GET",
+            url: '@Url.Content("~/UniformApplication/_BSOMaintenanceResult")',
+            cache: false,
+            dataType: "html",
+            data: {
+                //StartDate: _StartDate,
+                //EndDate: _EndDate,
+                //State: _State,
+                //Location: _Location,
+                //Category: _Category,
+                //Show: _Show,
+                //ReferenceNo: _ReferenceNo,
+                //Employee: _Employee
+            },
+            success: function (content) {
+                $("#SearchResult").html(content);
+                //ExportToExcel();
+            },
+            error: function (e) {
+                console.log(e);
+            }
+        });
+    }
+
+
+    function DeleteBSORole(ID) {
+        ShowConfirmationDialog({
+            message: "Are you sure you want to delete this BSO Role?\n\r Press Confirm to proceed, or Close to stay on the current page.",
+            positiveCallback: PerformDeleteBSORole,
+            id: ID
+        });
+    }
+
+    function PerformDeleteBSORole(_ID)
+    {
+        $('#ConfirmationDialog').hide();
+        ShowLoadingScreen();
+        notifyMessage = "The BSO role was successfully deleted.";
+        _RedirectUrl = "";
+        //var _ID = $('#ID').val();
+
+        $.post('@Url.Action("DeleteBSOEmployee", "UniformApplication")',
+            {
+                ID: _ID,
+            },
+            function (result) {
+                HideLoadingScreen();
+
+                if (result.Success) {
+                    ShowDialog({
+                        message: notifyMessage,
+                        okCallback: function () {
+                            if (_RedirectUrl) {
+                                window.location.href = _RedirectUrl;
+                            }
+                            else {
+                                window.location.href = '@Url.Action("BSOMaintenance", "UniformApplication")';
+                            }
+                        }
+                    });
+                }
+                else {
+                    ShowDialog({
+                        title: "Action not completed.",
+                        message: "Error Message : " + result.ErrorMsg,
+                        okCallback: function () {
+                            HideDialog();
+                        }
+                    });
+                }
+            });
+    }
+    // Dialog with Confirm/Close
+    function ShowConfirmationDialog(data) {
+        if (!data) {
+            data = {};
+        }
+
+        var dialog = $('#ConfirmationDialog'),
+            title = data.title || "Confirmation",
+            message = data.message || "Are you sure you want to submit this Uniform Application?\n\r Press Confirm to proceed, or Close to stay on the current page.",
+            positiveButtonText = data.positiveButtonText || "Confirm",
+            positiveCallback = data.positiveCallback,
+            negativeButtonText = data.negativeButtonText || "Close",
+            negativeCallback = data.negativeCallback;
+
+        dialog.find("#ConfirmationDialog_Title").html(title);
+        dialog.find("#ConfirmationDialog_Message").html(message);
+        var ePositiveButton = dialog.find("#ConfirmationDialog_PositiveButton");
+        var eNegativeButton = dialog.find("#ConfirmationDialog_NegativeButton");
+
+        ePositiveButton.html(positiveButtonText);
+        ePositiveButton.off('click');
+        ePositiveButton.one('click', function () {
+            if (positiveCallback)
+                positiveCallback(data.id);
+        });
+
+        eNegativeButton.html(negativeButtonText);
+        eNegativeButton.off('click');
+        eNegativeButton.one('click', function () {
+            if (negativeCallback)
+                negativeCallback(dialog);
+        });
+
+        dialog.modal();
+    }
+
+    function ShowDialog(data) {
+        if (!data) {
+            data = {};
+        }
+
+        var dialog = $('#SuccessDialog'),
+            title = data.title,
+            message = data.message || "The operation was success.",
+            okCallback = data.okCallback;
+
+        var okButton = dialog.find("#SuccessDialog_OkButton");
+
+        dialog.find("#SuccessDialog_Title").html(title);
+        dialog.find("#SuccessDialog_Message").html(message);
+
+        okButton.off('click');
+        okButton.one('click', function () {
+            if (okCallback)
+                okCallback();
+        });
+
+        dialog.modal();
+    }
+
+    function HideDialog() {
+        var dialog = $('#SuccessDialog');
+        dialog.modal("hide");
+    }
+
+    function ShowLoadingScreen() {
+        $("#divLoading").show();
+    }
+
+    function HideLoadingScreen() {
+        $('#divLoading').hide();
+    }
+
+    function ClearFilter() {
+        $('#StartDate').val('');
+        $('#EndDate').val('');
+        $('#State').val('');
+        $('#Location').val('');
+        $('#Category').val('');
+        $('#Show').val('');
+        $('#ReferenceNo').val('');
+        $('#Employee').val('');
+
+    }
+
+    function ClearFilter() {
+        $('#StartDate').val('');
+        $('#EndDate').val('');
+        $('#State').val('');
+        $('#Location').val('');
+        $('#Category').val('');
+        $('#Show').val('');
+        $('#ReferenceNo').val('');
+        $('#Employee').val('');
+
+    }
+
+
+    jQuery(document).ready(function () {
+        $('.date-picker').datepicker({
+            format: 'dd/mm/yyyy',
+            autoclose: true
+        });
+
+        SearchListing();
+    });
+    
+
+
+</script>
+

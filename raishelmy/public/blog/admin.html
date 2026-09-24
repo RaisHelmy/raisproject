@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blog Admin - Rais Helmy</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: #111;
+            color: #fff;
+            line-height: 1.6;
+        }
+        
+        .admin-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 60px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        h1 { font-size: 32px; font-weight: 900; }
+
+        .logout-btn {
+            background: #e4dfd5;
+            color: #111;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 50px;
+            font-weight: 700;
+            cursor: pointer;
+            font-family: 'Outfit', sans-serif;
+        }
+        .logout-btn:hover { opacity: 0.8; }
+
+        /* ─── TABS ─── */
+        .tabs {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 40px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .tab-btn {
+            background: none;
+            border: none;
+            color: #999;
+            padding: 12px 0;
+            font-size: 14px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: all 0.3s;
+        }
+        .tab-btn.active {
+            color: #fff;
+            border-bottom-color: #e4dfd5;
+        }
+        .tab-btn:hover { color: #e4dfd5; }
+
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+
+        /* ─── FORM LAYOUT ─── */
+        .form-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 40px;
+            margin-bottom: 40px;
+        }
+
+        .form-group {
+            margin-bottom: 24px;
+        }
+
+        label {
+            display: block;
+            font-weight: 700;
+            margin-bottom: 8px;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #e4dfd5;
+        }
+
+        input, textarea, select {
+            width: 100%;
+            padding: 12px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 8px;
+            color: #fff;
+            font-family: 'Outfit', sans-serif;
+            font-size: 14px;
+        }
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: #e4dfd5;
+            background: rgba(255,255,255,0.08);
+        }
+        input::placeholder, textarea::placeholder {
+            color: #666;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 300px;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        /* ─── BUTTONS ─── */
+        .btn-group {
+            display: flex;
+            gap: 12px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 14px;
+            cursor: pointer;
+            font-family: 'Outfit', sans-serif;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: #e4dfd5;
+            color: #111;
+        }
+        .btn-primary:hover { background: #f5f2ed; }
+
+        .btn-secondary {
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        .btn-secondary:hover { background: rgba(255,255,255,0.15); }
+
+        .btn-danger {
+            background: #cc4444;
+            color: #fff;
+        }
+        .btn-danger:hover { background: #dd5555; }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* ─── UPLOAD AREA ─── */
+        .upload-area {
+            border: 2px dashed rgba(255,255,255,0.2);
+            border-radius: 12px;
+            padding: 40px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .upload-area:hover, .upload-area.dragover {
+            border-color: #e4dfd5;
+            background: rgba(228,223,213,0.05);
+        }
+        .upload-area p {
+            color: #999;
+            font-size: 14px;
+        }
+
+        .upload-preview {
+            margin-top: 16px;
+            max-height: 250px;
+            border-radius: 8px;
+            object-fit: cover;
+        }
+
+        /* ─── POSTS LIST ─── */
+        .posts-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .posts-table th {
+            text-align: left;
+            padding: 16px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 12px;
+            color: #e4dfd5;
+        }
+        .posts-table td {
+            padding: 16px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        .posts-table tr:hover {
+            background: rgba(255,255,255,0.02);
+        }
+
+        .action-btns {
+            display: flex;
+            gap: 8px;
+        }
+        .action-btns button {
+            padding: 6px 12px;
+            font-size: 12px;
+        }
+
+        /* ─── UPLOAD RESULTS ─── */
+        .upload-item {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+        }
+
+        .upload-item-info {
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .upload-item-url {
+            font-size: 12px;
+            color: #e4dfd5;
+            word-break: break-all;
+            font-family: monospace;
+            margin-bottom: 4px;
+        }
+
+        .upload-item-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .copy-btn {
+            background: #4caf50;
+            border: none;
+            color: #fff;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+        .copy-btn:hover { background: #66bb6a; }
+        .copy-btn.copied {
+            background: #2196f3;
+        }
+
+        .use-btn {
+            background: #2196f3;
+            border: none;
+            color: #fff;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        .use-btn:hover { background: #42a5f5; }
+
+        /* ─── MESSAGES ─── */
+        .message {
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+        }
+        .message.active { display: block; }
+        .message.success {
+            background: rgba(76, 175, 80, 0.2);
+            color: #4caf50;
+            border: 1px solid rgba(76, 175, 80, 0.3);
+        }
+        .message.error {
+            background: rgba(244, 67, 54, 0.2);
+            color: #f44336;
+            border: 1px solid rgba(244, 67, 54, 0.3);
+        }
+
+        @media (max-width: 900px) {
+            .form-grid { grid-template-columns: 1fr; }
+            .tabs { flex-wrap: wrap; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="admin-container">
+    <header>
+        <h1>Blog Admin</h1>
+        <button class="logout-btn" onclick="logout()">Logout</button>
+    </header>
+
+    <div class="tabs">
+        <button class="tab-btn active" onclick="switchTab('new-post')">New Post</button>
+        <button class="tab-btn" onclick="switchTab('all-posts')">All Posts</button>
+    </div>
+
+    <!-- ─── NEW POST TAB ─── -->
+    <div id="new-post" class="tab-content active">
+        <div id="message" class="message"></div>
+
+        <div class="form-grid">
+            <div>
+                <div class="form-group">
+                    <label>Post Title</label>
+                    <input type="text" id="title" placeholder="Enter post title">
+                </div>
+
+                <div class="form-group">
+                    <label>Excerpt</label>
+                    <textarea id="excerpt" placeholder="Brief summary of the post"></textarea>
+                </div>
+
+                <input type="hidden" id="content_url">
+
+                <div class="form-group">
+                    <label>Featured Image URL</label>
+                    <input type="text" id="featured_image" placeholder="https://example.com/image.jpg">
+                    <p style="font-size: 12px; color: #999; margin-top: 8px;">Or upload one using the image upload area on the right</p>
+                </div>
+
+                <div class="btn-group">
+                    <button class="btn btn-primary" onclick="savePost()">Publish Post</button>
+                    <button class="btn btn-secondary" onclick="resetForm()">Clear</button>
+                </div>
+            </div>
+
+            <div>
+                <div class="form-group">
+                    <label>Upload HTML Content</label>
+                    <div class="upload-area" id="htmlUploadArea">
+                        <p>Drag HTML file here or click to select</p>
+                    </div>
+                    <div id="htmlUploadList" style="margin-top: 16px;"></div>
+                </div>
+
+                <div class="form-group">
+                    <label>Upload Featured Image</label>
+                    <div class="upload-area" id="uploadArea">
+                        <p>Drag image here or click to select</p>
+                    </div>
+                    <div id="uploadPreviewList" style="margin-top: 16px;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ─── ALL POSTS TAB ─── -->
+    <div id="all-posts" class="tab-content">
+        <div style="margin-bottom: 20px;">
+            <p style="color: #999; font-size: 14px;">Total posts: <span id="post-count">0</span></p>
+        </div>
+        <table class="posts-table">
+            <thead>
+                <tr>
+                    <th>Title</th>
+                    <th>Date</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="posts-list">
+                <tr><td colspan="3" style="text-align: center; color: #999; padding: 40px;">Loading posts...</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<input type="file" id="fileInput" accept="image/*" style="display: none;">
+<input type="file" id="htmlFileInput" accept=".html" style="display: none;">
+
+<script>
+    const adminToken = localStorage.getItem('blog_admin_token');
+    const uploadArea = document.getElementById('uploadArea');
+    const htmlUploadArea = document.getElementById('htmlUploadArea');
+    const fileInput = document.getElementById('fileInput');
+    const htmlFileInput = document.getElementById('htmlFileInput');
+
+    // Check auth
+    if (!adminToken) {
+        showLoginPrompt();
+    }
+
+    // ═══ IMAGE UPLOAD ═══
+    uploadArea.addEventListener('click', () => fileInput.click());
+    uploadArea.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        uploadArea.classList.add('dragover');
+    });
+    uploadArea.addEventListener('dragleave', () => uploadArea.classList.remove('dragover'));
+    uploadArea.addEventListener('drop', (e) => {
+        e.preventDefault();
+        uploadArea.classList.remove('dragover');
+        const files = e.dataTransfer.files;
+        if (files.length && files[0].type.startsWith('image/')) handleImageSelect(files[0]);
+    });
+
+    fileInput.addEventListener('change', (e) => {
+        if (e.target.files.length && e.target.files[0].type.startsWith('image/')) {
+            handleImageSelect(e.target.files[0]);
+        }
+    });
+
+    async function handleImageSelect(file) {
+        const formData = new FormData();
+        formData.append('file', file);
+
+        try {
+            const response = await fetch('/api/blog/upload/image', {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${adminToken}` },
+                body: formData
+            });
+
+            if (!response.ok) throw new Error('Upload failed');
+            
+            const data = await response.json();
+            addUploadedImage(data.url);
+            showMessage('Image uploaded!', 'success');
+        } catch (error) {
+            showMessage('Error uploading image: ' + error.message, 'error');
+        }
+    }
+
+    function addUploadedImage(url) {
+        const container = document.getElementById('uploadPreviewList');
+        const item = document.createElement('div');
+        item.className = 'upload-item';
+        item.innerHTML = `
+            <img src="${url}" style="max-width: 150px; max-height: 150px; border-radius: 4px; margin-bottom: 10px; display: block;">
+            <div class="upload-item-info">
+                <div class="upload-item-url">${url}</div>
+            </div>
+            <div class="upload-item-actions">
+                <button class="copy-btn" onclick="copyToClipboard('${url}', this)">Copy</button>
+                <button class="use-btn" onclick="useFeaturedImage('${url}')">Use</button>
+            </div>
+        `;
+        container.insertBefore(item, container.firstChild);
+    }
+
+    function useFeaturedImage(url) {
+        document.getElementById('featured_image').value = url;
+        showMessage('URL copied to featured image field!', 'success');
+    }
+
+    function copyToClipboard(text, btn) {
+        navigator.clipboard.writeText(text).then(() => {
+            const originalText = btn.textContent;
+            btn.textContent = 'Copied!';
+            btn.classList.add('copied');
+            setTimeout(() => {
+                btn.textContent = originalText;
+                btn.classList.remove('copied');
+            }, 2000);
+        });
+    }
+
+    // ═══ HTML UPLOAD ═══
+    htmlUploadArea.addEventListener('click', () => htmlFileInput.click());
+    htmlUploadArea.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        htmlUploadArea.classList.add('dragover');
+    });
+    htmlUploadArea.addEventListener('dragleave', () => htmlUploadArea.classList.remove('dragover'));
+    htmlUploadArea.addEventListener('drop', (e) => {
+        e.preventDefault();
+        htmlUploadArea.classList.remove('dragover');
+        const files = e.dataTransfer.files;
+        if (files.length && (files[0].type === 'text/html' || files[0].name.endsWith('.html'))) {
+            handleHTMLSelect(files[0]);
+        } else {
+            showMessage('Please drop an HTML file', 'error');
+        }
+    });
+
+    htmlFileInput.addEventListener('change', (e) => {
+        if (e.target.files.length) {
+            handleHTMLSelect(e.target.files[0]);
+        }
+    });
+
+    async function handleHTMLSelect(file) {
+        const formData = new FormData();
+        formData.append('file', file);
+
+        try {
+            const response = await fetch('/api/blog/upload/html', {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${adminToken}` },
+                body: formData
+            });
+
+            if (!response.ok) throw new Error('Upload failed');
+            
+            const data = await response.json();
+            addUploadedHTML(data.url);
+            showMessage('HTML file uploaded!', 'success');
+        } catch (error) {
+            showMessage('Error uploading HTML: ' + error.message, 'error');
+        }
+    }
+
+    function addUploadedHTML(url) {
+        const container = document.getElementById('htmlUploadList');
+        const item = document.createElement('div');
+        item.className = 'upload-item';
+        item.innerHTML = `
+            <div class="upload-item-info">
+                <div class="upload-item-url">${url}</div>
+            </div>
+            <div class="upload-item-actions">
+                <button class="copy-btn" onclick="copyToClipboard('${url}', this)">Copy</button>
+                <button class="use-btn" onclick="useContentURL('${url}')">Use</button>
+            </div>
+        `;
+        container.insertBefore(item, container.firstChild);
+    }
+
+    function useContentURL(url) {
+        document.getElementById('content_url').value = url;
+        showMessage('Content URL set!', 'success');
+    }
+
+    function switchTab(tabName) {
+        document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+        document.getElementById(tabName).classList.add('active');
+        event.target.classList.add('active');
+
+        if (tabName === 'all-posts') {
+            loadPosts();
+        }
+    }
+
+    let currentEditingPostId = null;
+
+    async function savePost() {
+        const title = document.getElementById('title').value;
+        const excerpt = document.getElementById('excerpt').value;
+        const content_url = document.getElementById('content_url').value;
+        const featured_image = document.getElementById('featured_image').value;
+
+        if (!title || !excerpt || !content_url || !featured_image) {
+            showMessage('All fields are required!', 'error');
+            return;
+        }
+
+        try {
+            const method = currentEditingPostId ? 'PUT' : 'POST';
+            const endpoint = currentEditingPostId ? `/api/blog/posts/${currentEditingPostId}` : '/api/blog/posts';
+
+            const response = await fetch(endpoint, {
+                method: method,
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${adminToken}`
+                },
+                body: JSON.stringify({ title, excerpt, content_url, featured_image })
+            });
+
+            if (!response.ok) throw new Error('Failed to save post');
+
+            showMessage(currentEditingPostId ? 'Post updated successfully!' : 'Post published successfully!', 'success');
+            resetForm();
+            currentEditingPostId = null;
+            setTimeout(() => {
+                switchTab('all-posts');
+            }, 1500);
+        } catch (error) {
+            showMessage('Error: ' + error.message, 'error');
+        }
+    }
+
+    async function loadPosts() {
+        try {
+            const response = await fetch('/api/blog/posts', {
+                headers: { 'Authorization': `Bearer ${adminToken}` }
+            });
+            const data = await response.json();
+            const posts = data.posts || [];
+
+            document.getElementById('post-count').textContent = posts.length;
+
+            const tbody = document.getElementById('posts-list');
+            tbody.innerHTML = posts.map(post => `
+                <tr>
+                    <td style="font-weight: 600;">${post.title}</td>
+                    <td style="color: #999; font-size: 14px;">${new Date(post.created_at).toLocaleDateString()}</td>
+                    <td>
+                        <div class="action-btns">
+                            <button class="btn btn-primary" onclick="window.open('/blog/${post.slug}', '_blank')">View</button>
+                            <button class="btn btn-secondary" onclick="editPost(${post.id})">Edit</button>
+                            <button class="btn btn-danger" onclick="deletePost(${post.id})">Delete</button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+        } catch (error) {
+            console.error('Error loading posts:', error);
+        }
+    }
+
+    async function editPost(id) {
+        try {
+            const response = await fetch(`/api/blog/posts/${id}`, {
+                headers: { 'Authorization': `Bearer ${adminToken}` }
+            });
+
+            if (!response.ok) throw new Error('Failed to load post');
+
+            const data = await response.json();
+            const post = data.post;
+
+            // Set editing mode
+            currentEditingPostId = post.id;
+
+            // Populate form
+            document.getElementById('title').value = post.title;
+            document.getElementById('excerpt').value = post.excerpt;
+            document.getElementById('content_url').value = post.content_url;
+            document.getElementById('featured_image').value = post.featured_image;
+
+            // Display featured image preview if exists
+            if (post.featured_image) {
+                const container = document.getElementById('uploadPreviewList');
+                container.innerHTML = `
+                    <div class="upload-item">
+                        <img src="${post.featured_image}" style="max-width: 150px; max-height: 150px; border-radius: 4px; margin-bottom: 10px; display: block;">
+                        <div class="upload-item-info">
+                            <div class="upload-item-url">${post.featured_image}</div>
+                        </div>
+                        <div class="upload-item-actions">
+                            <button class="copy-btn" onclick="copyToClipboard('${post.featured_image}', this)">Copy</button>
+                        </div>
+                    </div>
+                `;
+            }
+
+            // Display HTML content URL if exists
+            if (post.content_url) {
+                const htmlContainer = document.getElementById('htmlUploadList');
+                htmlContainer.innerHTML = `
+                    <div class="upload-item">
+                        <div class="upload-item-info">
+                            <div class="upload-item-url">${post.content_url}</div>
+                        </div>
+                        <div class="upload-item-actions">
+                            <button class="copy-btn" onclick="copyToClipboard('${post.content_url}', this)">Copy</button>
+                        </div>
+                    </div>
+                `;
+            }
+
+            // Switch to create tab and scroll to form
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            document.querySelector('.tab-btn').classList.add('active');
+            document.getElementById('create-post').classList.add('active');
+            window.scrollTo(0, 0);
+
+            showMessage('Post loaded for editing!', 'success');
+        } catch (error) {
+            showMessage('Error loading post: ' + error.message, 'error');
+        }
+    }
+
+    async function deletePost(id) {
+        if (!confirm('Are you sure you want to delete this post?')) return;
+
+        try {
+            const response = await fetch(`/api/blog/posts/${id}`, {
+                method: 'DELETE',
+                headers: { 'Authorization': `Bearer ${adminToken}` }
+            });
+
+            if (!response.ok) throw new Error('Failed to delete post');
+
+            showMessage('Post deleted successfully!', 'success');
+            loadPosts();
+        } catch (error) {
+            showMessage('Error: ' + error.message, 'error');
+        }
+    }
+
+    function resetForm() {
+        document.getElementById('title').value = '';
+        document.getElementById('excerpt').value = '';
+        document.getElementById('content_url').value = '';
+        document.getElementById('featured_image').value = '';
+        document.getElementById('uploadPreviewList').innerHTML = '';
+        document.getElementById('htmlUploadList').innerHTML = '';
+        currentEditingPostId = null;
+    }
+
+    function showMessage(msg, type) {
+        const messageEl = document.getElementById('message');
+        messageEl.textContent = msg;
+        messageEl.className = `message active ${type}`;
+        setTimeout(() => messageEl.classList.remove('active'), 4000);
+    }
+
+    function logout() {
+        localStorage.removeItem('blog_admin_token');
+        showLoginPrompt();
+    }
+
+    function showLoginPrompt() {
+        const token = prompt('Enter admin token to access blog admin:');
+        if (token) {
+            localStorage.setItem('blog_admin_token', token);
+            location.reload();
+        } else {
+            window.location.href = '/';
+        }
+    }
+</script>
+
+</body>
+</html>

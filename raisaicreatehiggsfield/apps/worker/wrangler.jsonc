@@ -1,0 +1,49 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "raisai-create",
+  "main": "src/index.ts",
+  "compatibility_date": "2025-09-01",
+  "compatibility_flags": ["nodejs_compat"],
+  "observability": { "enabled": true },
+  "assets": { "directory": "../web/dist", "binding": "WEB", "not_found_handling": "single-page-application" },
+  "routes": [
+    { "pattern": "create.raishelmy.uk", "custom_domain": true }
+  ],
+  "ai": { "binding": "AI" },
+  // Cloudflare Images: powers the image.transform workflow node (resize,
+  // crop, reframe, re-encode) and asset thumbnails without spending on a model.
+  "images": { "binding": "IMAGES" },
+  "hyperdrive": [
+    {
+      "binding": "HYPERDRIVE",
+      "id": "7a7777560d434c2b91ff37c52ab1b2c9",
+      // Local dev / vitest-pool-workers connect through the SSH tunnel opened
+      // per README.md, so `wrangler dev` and tests hit the same Postgres the
+      // migrations below were applied to instead of needing a second local DB.
+      // Shared database `raishelmy`; this app is isolated in schema
+      // `raisaicreatehiggsfield` via search_path (set in src/db/client.ts).
+      "localConnectionString": "postgresql://postgres:postgres@localhost:15432/raishelmy?sslmode=require"
+    }
+  ],
+  "r2_buckets": [{ "binding": "ASSETS", "bucket_name": "raisai-assets" }],
+  "queues": {
+    "producers": [
+      { "binding": "GENERATION_JOBS", "queue": "raisai-generation-jobs" },
+      { "binding": "EVENTS", "queue": "raisai-events" }
+    ],
+    "consumers": [
+      { "queue": "raisai-generation-jobs", "max_batch_size": 5, "max_retries": 3 },
+      { "queue": "raisai-events", "max_batch_size": 10, "max_retries": 5 }
+    ]
+  },
+  "workflows": [{ "name": "raisai-workflow-run", "binding": "RAIS_WORKFLOW_RUN", "class_name": "RaisWorkflowRun" }],
+  // Cron moved off Cloudflare Workers Cron Triggers to Ubuntu cron, hitting
+  // POST /internal/cron nightly with the X-Cron-Secret header (CRON_SECRET,
+  // set via `wrangler secret put`).
+  // AI_GATEWAY_ID must name a gateway that exists in the account (created
+  // 2026-09-07 via the API: AI → AI Gateway → "raisai"). A name that does not
+  // exist makes every model call fail with Cloudflare error 2001; an empty
+  // value skips the gateway, which Workers AI tolerates but third-party
+  // (Unified Billing) models do not.
+  "vars": { "APP_ENV": "development", "AI_GATEWAY_ID": "raisai" }
+}

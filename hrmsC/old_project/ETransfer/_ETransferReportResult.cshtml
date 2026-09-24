@@ -1,0 +1,85 @@
+﻿@model List<ESS.ETransfer.Models.ETransferReport>
+@{
+    Layout = null;
+}
+
+<div class="portlet box blue">
+    <div class="mini-triangle"><img src="../Assets/img/menu-red-triangle.png" /></div>
+    <div class="portlet-title">
+        <div class="caption">
+            <i class="fa fa-reorder"></i>E-Transfer Report
+        </div>
+        <input type="button" id="ExportExcel" class="btn btn-xs green pull-right" value="Export To Excel" onclick="ExportExcel()" />
+        @*<div class="tools">
+        </div>*@
+    </div>
+    <div class="portlet-body form">
+        <div class="form-body">
+            <div class="form-horizontal">
+                <div class="table-toolbar">
+                    <table id="tblResult" class="table table-striped table-bordered table-hover table-full-width">
+                        <thead>
+                            <tr>
+                                <th></th>
+                                <th>Reference No.</th>
+                                <th>Applicant</th>
+                                <th>Type</th>
+                                <th>Grade</th>
+                                <th>Status</th>
+                                <th>Current In-Tray</th>
+                                <th>Sub. Date</th>
+                                <th>KIV</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            @foreach (var item in Model)
+                            {
+                                <tr>
+                                    <td>
+                                        <a class="btn blue btn-sm" href="@Url.Content("~/ETransfer/ETransferViewForm")?RequestID=@item.SourceID&Source=History">
+                                            <i class="fa fa-search"></i>
+                                        </a>
+                                    </td>
+                                    <td>@item.ReferenceNo</td>
+                                    <td>@item.EmployeeName</td>
+                                    <td>@item.TransferType</td>
+                                    <td>@item.PayScaleGroup</td>
+                                    <td>@item.StatusName</td>
+
+                                    @if (item.StatusName == "Declined" || item.StatusName == "Approved")
+                                    {
+                                        <td>-</td>
+
+                                    }
+                                    else
+                                    {
+                                        <td>
+                                            <ul>
+                                                @{
+                                                    string[] dep = item.Approvers.Split(',');
+                                                }
+                                                @foreach (string a in dep)
+                                                {
+                                                    <li>@System.Web.HttpUtility.HtmlDecode(a) </li>
+                                                }
+
+                                            </ul>
+                                        </td>
+                                    }
+                                    
+
+                                    <td>@item.CreatedDate.ToString("dd/MM/yyyy")</td>
+                                    <td>@item.KIV</td>                                     
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+    transformTable("#tblResult");
+</script>

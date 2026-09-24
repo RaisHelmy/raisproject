@@ -1,0 +1,331 @@
+﻿@model Tuple<ESS.EPop.Models.EPopVM, SEP.RoutingManagement.Models.RoutingRule>
+@{
+    Layout = null;
+    string TaskID = (string)ViewData["TaskID"];
+    string RequestID = (string)ViewData["RequestID"];
+    string ApprovalLevel = (string)ViewData["ApprovalLevel"];
+    string Source = (string)ViewData["Source"];
+    int applvl = String.IsNullOrEmpty(ApprovalLevel) ? 0 : Convert.ToInt32(ApprovalLevel);
+    string OnlineAssessmentDefinitionURL = (string)ViewData["OnlineAssessmentDefinitionURL"];
+
+    string Checked2_1 = "";
+    string Checked2_2 = "";
+    string Checked2_3 = "";
+    string Checked2_4 = "";
+
+    //No checked Recommendation ratiobutton
+    if (Model.Item1.Category == "Non-Executive" && Model.Item1.CurrentApprovalLevel == 3 && Model.Item1.Acknowledgement.Length > 0)
+    {
+        switch (Model.Item1.Acknowledgement)
+        {
+            case "R":
+                Checked2_1 = "checked";
+                break;
+            case "NR":
+                Checked2_2 = "checked";
+                break;
+            case "E6":
+                Checked2_3 = "checked";
+                break;
+            case "E12":
+                Checked2_4 = "checked";
+                break;
+
+        }
+    }
+}
+<style>
+    .padding-left-20{
+        padding-left:20px;
+    }
+    .padding-left-5px{
+        padding-left:5px;
+    }
+</style>
+<div class="row">
+    <div class="col-md-12">
+        <div class="portlet box blue">
+            <div class="mini-triangle"><img src="../Assets/img/menu-red-triangle.png" /></div>
+            <div class="portlet-title">
+                <div class="caption">
+                    <i class="fa fa-reorder"></i>Assessment Details
+                </div>
+            </div>
+            <div class="portlet-body form">
+                <div class="form-body" id="ct01_CustomFieldFormView">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="form-horizontal">
+                                <div class="form-group">
+                                    <label class="control-label col-md-12">
+                                        Please rate staff according to these criteria <span class="required">*</span>
+                                    </label>
+
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="form-horizontal">
+                                <div class="form-group">
+                                    <div class="col-md-12 form-control-static">
+                                        Note: For recommendation, all assessment criteria must be rated objectively with strong justifications and achievements that have been proven.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="form-horizontal">
+                                <div class="form-group">
+                                    <div class="col-md-12 form-control-static text-right">
+                                        <a href="/SiteAssets/Lists/LandingPageContentConfig/AllItems/20230524%20GARIS%20PANDUAN%20PENILAIAN%20EPOP%20EKSEKUTIF%202023%20IM_HOD.pdf" target="_blank"> <u>View Assessment Guideline for Executive</u></a> | 
+                                        <a href="@OnlineAssessmentDefinitionURL" target="_blank"> <u>View Assessment Criteria Definition</u></a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <input class="hidden" value="SameForm_DetailList" />
+                    @Html.Action("_OnlineAssessmentFormDetailsListTable", "EPOP", new { RequestID = Model.Item1.hdfRequestID, Category = Model.Item1.Category })
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="form-horizontal">
+                                <div class="form-group">
+                                    <div class="col-md-12 form-control-static">
+                                        Need Improvement (<b>1</b>), Partially Meeting Expectation (<b>2</b>), Meet Expectation (<b>3</b>), Exceed Expectation (<b>4</b>), Significant Exceed Expectation (<b>5</b>)
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="EdittableContent">
+                        <br />
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <label class="control-label col-md-12 ">
+                                            <b>Recommendation <span class="required">*</span></b>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row" id="radio_RecommendedDiv">
+                            <div class="col-md-12">
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <div class="radio-list padding-left-20">
+                                            <label class="radio-inline">
+                                                <span class="Divradio_Recommended"><input type="radio" name="rblAcknowledgement" @Checked2_1 class="reqAcknowledge" id="radio_Recommended" value="R"></span> Recommended
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row" id="radio_NotRecommendedDiv">
+                            <div class="col-md-12">
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <div class="radio-list padding-left-20">
+                                            <label class="radio-inline">
+                                                <span class="radio_NotRecommended"><input type="radio" @Checked2_2 class="reqAcknowledge" name="rblAcknowledgement" id="radio_NotRecommended" value="NR"></span> Not Recommended
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row" id="radio_Extend6Div">
+                            <div class="col-md-12">
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <div class="radio-list padding-left-20">
+                                            <label class="radio-inline">
+                                                <span class="Divradio_Extend6"><input type="radio" name="rblAcknowledgement" @Checked2_3 class="reqAcknowledge" id="radio_Extend6" value="E6"></span> Extend for 6 months
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row" id="radio_Extend12Div">
+                            <div class="col-md-12">
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <div class="radio-list padding-left-20">
+                                            <label class="radio-inline">
+                                                <span class="Divradio_Extend12"><input type="radio" name="rblAcknowledgement" @Checked2_4 class="reqAcknowledge" id="radio_Extend12" value="E12"></span> Extend for 12 months
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        @*<br />
+
+        <div class="row">
+            <div class="col-md-12">
+                <div class="form-horizontal">
+                    <div class="form-group">
+                        <label class="control-label col-md-2">
+                            <b>Remarks</b>
+                        </label>
+                        <div class="col-md-10">
+                            <textarea name="txtRemarks" onkeydown="return CheckMaxLength(this, event, '1000');" style="width:100%;" rows="4" id="txtRemarks">@Html.Raw(@Model.Item1.Remarks)</textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>*@
+
+                        @*<div class="row" id="txtKnowledgeDiv">
+            <div class="col-md-12">
+                <div class="form-horizontal">
+                    <div class="form-group">
+                        <label class="control-label col-md-2">
+                            <b>Knowledge Possesed</b>
+                        </label>
+                        <div class="col-md-10">
+                            <textarea name="txtKnowledge" onkeydown="return CheckMaxLength(this, event, '1000');" style="width:100%;" rows="4" id="txtKnowledge">@Html.Raw(@Model.Item1.KnowledgePossessed)</textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row" id="txtSpecializationDiv">
+            <div class="col-md-12">
+                <div class="form-horizontal">
+                    <div class="form-group">
+                        <label class="control-label col-md-2">
+                            <b>Specialization</b>
+                        </label>
+                        <div class="col-md-10">
+                            <textarea name="txtSpecialization" onkeydown="return CheckMaxLength(this, event, '1000');" style="width:100%;" rows="4" id="txtSpecialization">@Html.Raw(@Model.Item1.Specialization)</textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>*@
+                    </div>
+
+                    <div class="SpecialistEdittableContent">
+                        <br />
+                        <div class="row" id="txtKnowledgeDiv">
+                            <div class="col-md-12">
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <label class="control-label col-md-2">
+                                            <b>Knowledge Possesed</b>
+                                        </label>
+                                        <div class="col-md-10">
+                                            <textarea name="txtKnowledge" onkeydown="return CheckMaxLength(this, event, '1000');" style="width:100%;" rows="4" id="txtKnowledge">@Html.Raw(@Model.Item1.KnowledgePossessed)</textarea>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row" id="txtSpecializationDiv">
+                            <div class="col-md-12">
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <label class="control-label col-md-2">
+                                            <b>Specialization</b>
+                                        </label>
+                                        <div class="col-md-10">
+                                            <textarea name="txtSpecialization" onkeydown="return CheckMaxLength(this, event, '1000');" style="width:100%;" rows="4" id="txtSpecialization">@Html.Raw(@Model.Item1.Specialization)</textarea>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@if (Model.Item1.Category == "Specialist" || Model.Item1.Category == "Executive")
+    {
+        <script>
+            $("#radio_RecommendedDiv").removeClass("hidden");
+            $("#radio_NotRecommendedDiv").removeClass("hidden");
+            $("#radio_Extend6Div").addClass("hidden");
+            $("#radio_Extend12Div").addClass("hidden");
+        </script>
+    }
+    else
+    {
+        <script>
+            $("#radio_RecommendedDiv").removeClass("hidden");
+            $("#radio_NotRecommendedDiv").addClass("hidden");
+            $("#radio_Extend6Div").removeClass("hidden");
+            $("#radio_Extend12Div").removeClass("hidden");
+        </script>
+    }
+
+    @if (Model.Item1.divKnowledgePossessed == false)
+    {
+        <script>
+            $("#txtSpecializationDiv").addClass("hidden");
+        </script>
+    }
+    else
+    {
+        <script>
+            $("#txtSpecializationDiv").removeClass("hidden");
+        </script>
+    }
+
+    @if (Model.Item1.divSpecialization == false)
+    {
+        <script>
+            $("#txtKnowledgeDiv").addClass("hidden");
+        </script>
+    }
+    else
+    {
+        <script>
+            $("#txtKnowledgeDiv").removeClass("hidden");
+        </script>
+    }
+
+<script>
+    function CheckMaxLength(textBox, e, length) {
+        var mLen = textBox["MaxLength"];
+        if (null == mLen)
+            mLen = length;
+
+        var maxLength = parseInt(mLen);
+        if (!checkSpecialKeys(e)) {
+            if (textBox.value.length > maxLength - 1) {
+                if (window.event)//IE
+                {
+                    e.returnValue = false;
+                    return false;
+                }
+                else//Firefox
+                    e.preventDefault();
+            }
+        }
+    }
+  
+   
+
+    function checkSpecialKeys(e) {
+        if (e.keyCode != 8 && e.keyCode != 46 && e.keyCode != 35 && e.keyCode != 36 && e.keyCode != 37 && e.keyCode != 38 && e.keyCode != 39 && e.keyCode != 40)
+            return false;
+        else
+            return true;
+    }
+
+
+</script>

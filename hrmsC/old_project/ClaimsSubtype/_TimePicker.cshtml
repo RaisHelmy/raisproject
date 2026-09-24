@@ -1,0 +1,27 @@
+﻿@using ESS.Claim.ClaimSubtype
+@using ESS.Claim.ViewModels
+@model Tuple<ColumnTemplate, ClaimsSubtype>
+
+@{
+    ColumnTemplate col = Model.Item1;
+    ClaimsSubtype subtype = Model.Item2;
+}
+
+@if (subtype.setReadOnly)
+{
+    <input type="text"
+            class="form-control @col.ColumnClass"
+            style="min-width:130px;max-width:130px;@col.ColumnStyle"
+            value="@col.ColumnValue"
+            readonly="readonly" />
+}
+else
+{
+    <input type="text" value="@col.ColumnValue"
+           class="form-control timeinput @col.ColumnName @col.ColumnClass"
+           style="min-width:130px;max-width:130px;@col.ColumnStyle"
+           placeholder="HH:MM"
+           name="ClaimsSubtypeCategory[@subtype.categoryIndex].ClaimSubtype[@subtype.subtypeIndex].SubTypeDetails[0].@col.ColumnName"
+           onchange="@col.OnChange"
+           @(col.IsReadOnly ? "readonly=\"readonly\"" : "")>
+}

@@ -1,0 +1,77 @@
+﻿@{
+    ViewBag.Title = "Medical Board List";
+}
+
+<div class="row">
+    <div class="col-md-12">
+        <br />
+        <h1 class="page-title">
+            Medical Board List<span style="padding-left:20px;"><small></small></span>
+        </h1>
+    </div>
+</div>
+<br />
+<div class="form-body">
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-4 control-label">Status</label>
+                    <div class="col-md-8 form-control-static">
+                        <select class="form-control" id="Status">
+                            @*<option value="">- All -</option>
+                            <option value="Fit To Work">Fit To Work</option>
+                            <option value="Unfit To Work">Unfit To Work</option>
+                            <option value="Admin Verified">Admin Verified</option>
+                            <option value="Returned">Returned</option>
+                            <option value="Admin Agreed">Admin Agreed</option>
+                            <option value="Admin Disagreed">Admin Disagreed</option>
+                            <option value="Admin Approved">Admin Approved</option>
+                            <option value="Admin Reworked">Admin Reworked</option>*@
+                            <option value="Admin Approved">Approved – Unfit to Work</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">&nbsp;</div>
+    <div class="row">
+        <div class="col-md-12">
+            <div class="text-right">
+                <input type="button" id="btn-Search" class="btn green btn-Search" value="Search" onclick="SearchListing();">
+            </div>
+        </div>
+    </div>
+    <div class="row">&nbsp;</div>
+    <div class="row">
+        <div class="col-md-12">
+            <div id="SearchResult">
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+    function SearchListing() {
+        var _Status = $('#Status').val();
+
+        $("#SearchResult").html("LOADING...");
+
+        $.ajax({
+            type: "GET",
+            url: '@Url.Content("~/MedicalBoard/_MedicalBoardListResult")',
+            cache: false,
+            dataType: "html",
+            data: { Status: _Status },
+            success: function (content) {
+                $("#SearchResult").html(content);
+            },
+            error: function (e) {
+                console.log(e);
+            }
+        });
+    }
+</script>
+

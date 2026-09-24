@@ -1,0 +1,199 @@
+﻿@model SEP.RoutingManagement.Models.RoutingRule
+@{
+    ViewBag.Title = "Approval Routing";
+}
+
+<div class="form-section">
+    <div class="row">
+        <div class="col-md-12">
+            <h1 class="page-title">
+                Activity: @Model.ApprovalTitle
+                <span style="padding-left:20px;">
+                    <small></small>
+                </span>
+            </h1>
+        </div>
+    </div>
+</div>
+<!-- /.modal -->
+
+<div class="WorkOder_Edit">
+    @Html.HiddenFor(m => m.ID)
+    @Html.Partial("_FormRules")
+
+
+    <div class="row">
+        <div class="col-md-12">
+            <input type="button" class="btn green" value="Submit" id="btnSubmit" onclick="RoutingApprovalValidation();" />
+            @*<input type="button" class="btn green" value="Back" id="btnBack" onclick="location.href= '@Url.Action("IndexRules", "Routing")'" />*@
+            <input type="button" class="btn green" value="Back" id="btnBack" onclick="window.history.back()" />
+        </div>
+    </div>
+    <div id="divLoading" style="margin: 0px; padding: 0px; position: fixed; right: 0px;
+        top: 0px; width: 100%; height: 100%; background-color:gainsboro; z-index: 30001;
+        opacity: .8; filter: alpha(opacity=70);display:none">
+                <p style="position: absolute; top: 30%; left: 30%; color: black;">
+                    Loading, please wait...<img src="../Assets/img/ajax-loading.gif" />
+
+                </p>
+    </div>
+    <div class="modal fade" id="ConfirmUpdate" tabindex="-1" role="basic" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                    <h4 class="modal-title">Confirmation</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="well">
+                        Are you sure you want to Submit this Approval Routing application?\n\rPress Confirm to proceed, or Close to stay on the current page.
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn default blue" id="btnSubmitForm" onclick="javascript: SubmitForm()">
+                        <i class="fa fa-check"></i>
+                        Confirm
+                    </button>
+                    <button type="button" class="btn default" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="SuccessSubmit" tabindex="-1" role="basic" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header Success-header">
+                    @*<button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>*@
+                    <h4 class="Success-title">Action Successfully Completed</h4>
+                </div>
+                <div class="modal-body Success-body">
+                    <div class="well">
+                        Your Medical Board application has been successfully submitted.
+                    </div>
+                </div>
+                <div class="modal-footer Success-footer">
+                    <button type="submit" class="btn default blue" id="btnOK">
+                        <i class="fa fa-check"></i>
+                        OK
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    //var Path = '/_layouts/15/essv2';
+    //var Path = 'http://localhost:49773';
+    var Path = '/_layouts/15/tnbess';
+    function RoutingApprovalValidation() {
+        var ValidationMsg = '';
+
+        // Consolidate Message
+        if (ValidationMsg != null && ValidationMsg != '') {
+            alert(ValidationMsg);
+        }
+        else {
+            $(".modal-body .well").html('Clicking Confirm will submit this application. If you want to make changes, click Close.');
+            $("#btnOK").click(function () { RedirectTo('Submit'); });
+            $("#ConfirmUpdate").modal();
+        }
+    }
+    
+    function SubmitForm() {
+        btnSubmitForm.disabled = true;
+        $("#divLoading").css("display", "block");
+        var myVar = setTimeout(SubmitFormAction, 3000);
+    }
+
+    function RedirectTo(_Action) {
+        switch (_Action) {
+            case "Submit":
+                window.location.href = Path + '/Routing/IndexRules';
+                break;
+            default:
+                window.location.href = '/Pages/default.aspx';
+        }
+    }
+    function SubmitFormAction() {
+        jQuery.support.cors = true;
+
+        var _ID = document.getElementById('ID').value;
+        var _ApprovalTitle = document.getElementById('ApprovalTitle').value;
+        var _ApprovalLevel = document.getElementById('ApprovalLevel').value;
+        var _ApprovalRole = document.getElementById('ApprovalRole').value;
+        var _CurrentStatus = document.getElementById('CurrentStatus').value;
+        var _YesLabel = document.getElementById('YesLabel').value;
+        var _YesActionLogLabel = document.getElementById('YesActionLogLabel').value;
+        var _YesStatus = document.getElementById('YesStatus').value;
+        var _NoLabel = document.getElementById('NoLabel').value;
+        var _NoActionLogLabel = document.getElementById('NoActionLogLabel').value;
+        var _NoStatus = document.getElementById('NoStatus').value;
+        var _ReworkLabel = document.getElementById('ReworkLabel').value;
+        var _ReworkActionLogLabel = document.getElementById('ReworkActionLogLabel').value;
+        var _ReworkStatus = document.getElementById('ReworkStatus').value;
+        var _EscalateAfter = document.getElementById('EscalateAfter').value;
+        var _EscalateTo = document.getElementById('EscalateTo').value;
+        var _ChangeProcessAfter = document.getElementById('ChangeProcessAfter').value;
+        var _PayScaleGroupList = '';
+        var _EndProcessStatus = document.getElementById('EndProcessStatus').value;
+        var _OptionalApproval = document.getElementById('OptionalApproval').checked;
+        var _RequiredEveryOneAction = document.getElementById('RequiredEveryOneAction').checked;
+        var _SkipSameApprover = document.getElementById('SkipSameApprover').checked;
+
+        var form = {
+            ID: _ID,
+            ApprovalTitle: _ApprovalTitle,
+            ApprovalLevel: _ApprovalLevel,
+            ApprovalRole: _ApprovalRole,
+            CurrentStatus: _CurrentStatus,
+            YesLabel: _YesLabel,
+            YesActionLogLabel: _YesActionLogLabel,
+            YesStatus: _YesStatus,
+            NoLabel: _NoLabel,
+            NoActionLogLabel: _NoActionLogLabel,
+            NoStatus: _NoStatus,
+            ReworkLabel: _ReworkLabel,
+            ReworkActionLogLabel: _ReworkActionLogLabel,
+            ReworkStatus: _ReworkStatus,
+            EscalateAfter: _EscalateAfter,
+            EscalateTo: _EscalateTo,
+            ChangeProcessAfter: _ChangeProcessAfter,
+            PayScaleGroupList: _PayScaleGroupList,
+            EndProcessStatus: _EndProcessStatus,
+            OptionalApproval: _OptionalApproval,
+            RequiredEveryOneAction: _RequiredEveryOneAction,
+            SkipSameApprover: _SkipSameApprover,
+        };
+        $.ajax({
+            type: "POST",
+            url: '@Url.Content("~/Routing/PerformEditRules")',
+            cache: false,
+            async: false,
+            dataType: "json",
+            data: form,
+            success: function (result) {
+                if (result.Success) {
+                    $("#ConfirmUpdate").modal('toggle');
+                    $("#divLoading").hide();
+                    $(".Success-body .well").html('Your Approval Routing Application has been successfully submitted.');
+                    $("#SuccessSubmit").modal();
+
+                }
+                else {
+                    $("#ConfirmUpdate").modal('toggle');
+                    $("#divLoading").hide();
+                    btnSubmitForm.disabled = false;
+                    alert(result.ErrorMsg);
+                }
+            },
+            error: function (e) {
+
+            }
+        });
+
+    }
+</script>
+

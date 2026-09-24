@@ -1,0 +1,94 @@
+﻿@model List<ESS.ETransfer.Models.MultiPeoplePicker>
+@{
+    Layout = null;
+}
+<style>
+    /*.btnDelete{
+        width:50px;
+    }*/
+</style>
+<div class="table-toolbar">
+    <table id="tblResult2" class="table table-striped table-bordered table-hover table-full-width">
+        <thead>
+            <tr>
+                <th style="width:5%;">
+                    <input class="DestroyUniform" type="checkbox" ID="chkSelectAllQuestion" name="chkSelectAllQuestion" value="" onclick="javascript: SelectMultiPplCheckboxes(this)">
+                </th>
+                <th>Accepting Head</th>
+                <th style="width:10%;">Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>
+                        <input type="checkbox" class="DestroyUniform" ID="chkSelect" name="chkSelect" value="@item.EmployeeID" onclick="javascript: SelectIndividualCheckbox(this)" checked>
+                    </td>
+                    <td>@item.Employee</td>
+                    <td><a class="btn red btn-sm btnDelete" id="btnRemove">Remove</a></td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+<script>
+    function SelectMultiPplCheckboxes(headerchk) {
+        var gvcheck = $("#tblResult2");
+        var i;
+        var EmpId="";
+
+        //Condition to check header checkbox selected or not if that is true checked all checkboxes
+        if (headerchk.checked) {
+            $.each(gvcheck.find('tbody tr'), function (index, value) {
+                $(this).find('input').attr("checked","checked");
+            });
+
+            $('input[name=chkSelect]:checkbox:checked').each(function () {
+                EmpId += $(this).val() + ",";
+            });
+
+            EmpId = EmpId.slice(0, -1);
+            
+            $("#hfEmpID").val(EmpId);
+        }
+            //if condition fails uncheck all checkboxes in gridview
+        else {
+            $("#hfEmpID").val("");
+            $.each(gvcheck.find('tbody tr'), function (index, value) {
+                $(this).find('input').removeAttr("checked");
+            });
+        }
+
+    }
+
+    $("#tblResult2").on('click', '.btnDelete', function () {
+        $("#DisplayEmployee").val("");
+
+
+        $(this).closest('tr').remove();
+
+        
+        var EmpId = "";
+        $('input[name=chkSelect]:checkbox:checked').each(function () {
+            EmpId += $(this).val() + ",";
+        });
+
+        EmpId = EmpId.slice(0, -1);
+
+        $("#hfEmpID").val(EmpId);
+        $("#hfTempEmpID").val(EmpId);
+    });
+
+    function SelectIndividualCheckbox(e) {
+        var EmpId = "";
+        $('input[name=chkSelect]:checkbox:checked').each(function () {
+            EmpId += $(this).val() + ",";
+        });
+
+        EmpId = EmpId.slice(0, -1);
+
+        $("#hfEmpID").val(EmpId);
+    }
+</script>

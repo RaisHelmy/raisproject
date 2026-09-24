@@ -1,0 +1,52 @@
+﻿
+@{
+    Layout = null;
+    string SearchType = ViewData["SearchType"] + "";
+}
+
+<div>
+    <div class=" input-group ">
+        <input type="text" class="form-control" id="txtEmpName" readonly />
+        <span class="input-group-btn" style="">
+            <a data-toggle="modal" href="#PeoplePicker" class="btn default"><i class="fa fa-user"></i></a>
+        </span>
+        <input type="hidden" id="hfEmpID" name="hfEmpID" />
+    </div>
+</div>
+
+
+<div class="modal fade" id="PeoplePicker" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                <h4 class="modal-title">People Picker - Select By Employee Number or Name</h4>
+            </div>
+            <div class="modal-body">
+                <div>
+                    @Html.Action("Index", "PeoplePicker", new { SearchType=@SearchType })
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn default green" onclick="SetSelectedEmployee()">Select</button>
+                <button type="button" class="btn default" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script type="text/javascript">
+    function SetSelectedEmployee() {
+        $("#tblPeoplePicker td input[type=radio]").each(function () {
+            var _selected = $(this).prop("checked");
+
+            if (_selected) {
+                $("#txtEmpName").val($(this).attr("empcode") + ' - ' + $(this).attr("empName"));
+                $("#hfEmpID").val($(this).val());
+
+                $('#PeoplePicker').modal('toggle');
+            }
+        });
+    }
+</script>

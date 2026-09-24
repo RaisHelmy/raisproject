@@ -1,0 +1,30 @@
+name = "super-mcp"
+main = "src/worker/index.ts"
+compatibility_date = "2024-09-23"
+compatibility_flags = ["nodejs_compat"]
+
+routes = [
+  { pattern = "mcp.raishelmy.uk", custom_domain = true }
+]
+
+# Static frontend (Vite build). Single-page-app fallback so React Router works.
+[assets]
+directory = "./dist"
+not_found_handling = "single-page-application"
+binding = "ASSETS"
+
+[[hyperdrive]]
+binding = "HYPERDRIVE"
+id = "7a7777560d434c2b91ff37c52ab1b2c9"
+
+[[r2_buckets]]
+binding = "EVIDENCE"
+bucket_name = "super-mcp-evidence"
+
+[vars]
+APP_NAME = "Super MCP"
+# Hyperdrive-backed Postgres is bound and migrated; switched off demo mode
+# so real accounts (incl. the seeded super admin) persist to Postgres.
+DEMO_MODE = "false"
+# Secrets (set via `wrangler secret put`): SESSION_SECRET, AI_PROVIDER_KEY,
+# SAAS_SSO_SECRET (shared HMAC secret for the suite super-admin SSO at /api/auth/sso)

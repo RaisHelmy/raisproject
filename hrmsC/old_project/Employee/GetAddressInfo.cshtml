@@ -1,0 +1,213 @@
+﻿@model Tuple<List<ESS.Employee.Models.AddressInfo>, ESS.Employee.Models.Setting>
+
+@{
+    string ID = "";
+    string module = "Address";
+
+    string divMode = "";
+
+    bool runFieldVisible = false;
+    if (Model.Item2 != null)
+    {
+        runFieldVisible = true;
+    }
+}
+
+@if (Model.Item1 != null)
+{
+<div class="form-body">
+    <div class="form-horizontal">
+        <div class="table-toolbar">
+
+            <table id="tblResultAddressInfo" class="table table-striped table-bordered table-hover table-full-width">
+                <thead>
+                    <tr>
+                        <th class="hidden">
+                            <input id="RemoveAddressCheckboxHeader" type="checkbox" onchange="SelectAllAddress(this)" />
+                        </th>
+                        <th>Address Type</th>
+                        <th>Address 1</th>
+                        <th>Postcode</th>
+                        <th>City</th>
+                        <th>State</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in @Model.Item1)
+                    {
+                        <tr>
+                            <td class="hidden">
+                                @{
+                                    ID = "RemoveAddressCheckbox_" + item.AddressType.Replace(" ", "");
+                                }
+                                <input type="checkbox" id="@ID" class="RemoveAddressCheckbox" value="@item.AddressType" />
+                            </td>
+                            <td><a href="#ProfileAddress" class="ViewAddress" data-AddressType="@item.AddressType" data-AddressTypeCode="@item.AddressTypeCode">@item.AddressType</a></td>
+                            <td>@((string.IsNullOrEmpty(item.AddressLine1)) ? "-" : item.AddressLine1)</td>
+                            <td>@((string.IsNullOrEmpty(item.Postcode)) ? "-" : item.Postcode)</td>
+                            <td>@((string.IsNullOrEmpty(item.City)) ? "-" : item.City)</td>
+                            <td>@((string.IsNullOrEmpty(item.State)) ? "-" : item.State)</td>
+                        </tr>
+                     }
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="form-horizontal">
+        <div class="table-toolbar">
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="btn-group addAddressDiv hidden">
+                        <a class="btn green" id="btnAddAddress" onclick="OpenNewPanel('Add New Address Info', '@module', 'INSERT');">
+                            Add
+                            <i class="fa fa-plus"></i>
+                        </a>
+                    </div>
+                    <div class="btn-group hidden">
+                        <a class="btn red" id="btnRemoveAddress" onclick="RemoveAddress();">
+                            Delete
+                            <i class="fa fa-minus"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<input type="hidden" id="CountClick" value="0" />
+
+<script type="text/javascript">
+    transformTable("#tblResultAddressInfo");
+    function SelectAllAddress(element) {
+        $('#tblResultAddressInfo .RemoveAddressCheckbox').attr('checked', element.checked);
+    }
+
+    $(document).ready(function () {
+
+        App.initAjax();
+
+        var divMode = "@divMode";
+        var runFieldVisible = "@runFieldVisible";
+
+        if (runFieldVisible.toUpperCase() == "TRUE") {
+            Setting_FieldVisible = JSON.parse('@Html.Raw(Json.Encode(Model.Item2.FieldVisible))');
+            Setting_FieldEnable = JSON.parse('@Html.Raw(Json.Encode(Model.Item2.FieldEnable))');
+            Setting_FieldChecked = JSON.parse('@Html.Raw(Json.Encode(Model.Item2.FieldChecked))');
+            Setting_FieldValue = JSON.parse('@Html.Raw(Json.Encode(Model.Item2.FieldValue))');
+
+            PopulateSetting(divMode, "#SearchGetAddressInfo", "#SettingSection", Setting_FieldVisible, Setting_FieldEnable, Setting_FieldChecked, Setting_FieldValue);
+            //PopulateSetting(divMode, divMain, LogDiv, Setting_FieldVisible, Setting_FieldEnable, Setting_FieldChecked, Setting_FieldValue)
+        }
+
+
+        $('#uniform-RemoveAddressCheckboxHeader').click(function (e)
+        {
+            var CountClick = $("#CountClick").val();
+            CountClick++;
+            var divBoxes = $("div[id^='uniform-RemoveAddressCheckbox_']"); //checkbox items
+
+            if (CountClick % 2 === 0)
+            {
+                /* we are even */
+                if ($("#uniform-RemoveAddressCheckboxHeader span").hasClass("checked")) {
+                    $("#uniform-RemoveAddressCheckboxHeader span").removeClass("checked")
+                }
+                for (i = 0; i < divBoxes.length; i++) {
+
+                    var A = divBoxes[i].id;
+                    if ($("#" + A + " span").hasClass("checked")) {
+                        $("#" + A + " span").removeClass("checked");
+                    }
+                }
+            }
+            else {
+                /* we are odd */
+
+                if (!$("#uniform-RemoveAddressCheckboxHeader span").hasClass("checked")) {
+                    $("#uniform-RemoveAddressCheckboxHeader span").addClass("checked")
+                }
+
+                for (i = 0; i < divBoxes.length; i++) {
+
+                    var A = divBoxes[i].id;
+                    if (!$("#" + A + " span").hasClass("checked")) {
+                        $("#" + A + " span").addClass("checked");
+                    }
+                }
+            }
+
+
+            $("#CountClick").val(CountClick);
+        });
+
+        $('.RemoveAddressCheckbox').click(function (e)
+        {
+            var CountClick = $("#CountClick").val();
+            var id = this.id;
+            //uniform-id
+
+            if (!$("#uniform-" + id +" span").hasClass("checked"))
+            {
+                //uncheck "select all", if one of the listed checkbox item is unchecked
+                if ($("#uniform-RemoveAddressCheckboxHeader span").hasClass("checked"))
+                {
+                    CountClick++;
+                    $("#uniform-RemoveAddressCheckboxHeader span").removeClass("checked");
+                }
+
+            }
+
+            var divBoxes = $("div[id^='uniform-RemoveAddressCheckbox_']"); //checkbox items
+            var Count = 0;
+            for (i = 0; i < divBoxes.length; i++)
+            {
+                var A = divBoxes[i].id;
+                if ($("#" + A + " span").hasClass("checked"))
+                {
+                    Count++;
+                }
+            }
+
+            if(Count == divBoxes.length)
+            {
+                if (!$("#uniform-RemoveAddressCheckboxHeader span").hasClass("checked"))
+                {
+                    CountClick++;
+                    $("#uniform-RemoveAddressCheckboxHeader span").addClass("checked");
+                }
+            }
+            $("#CountClick").val(CountClick);
+        });
+    });
+
+    $('.ViewAddress').click(function (e) {
+        e.preventDefault();
+        var AddressType = $(this).attr('data-AddressType');
+        var AddressTypeCode = $(this).attr('data-AddressTypeCode');
+
+        console.log('Address Type=' + AddressType);
+        console.log('Address Type Code=' + AddressTypeCode);
+
+        //var EmployeeCode = $(this).attr('data-EmployeeCode');
+        var EmployeeCode = $("#EmployeeCode").val();
+        var EmployeeID = $("#EmployeeID").val();
+
+        var Action = 'VIEW';
+
+        $("#FormCategory").val("@module");
+        $("#FormAction").val(Action);
+        var url="@Url.Content("~/Employee/_AddressForm")";
+        var data = {
+            EmployeeCode: EmployeeCode,
+            EmployeeID: EmployeeID,
+            AddressType: AddressTypeCode,
+            Mode: Action
+        };
+        OpenEditPanel('View Address Info', Action, url, data)
+    });
+
+
+
+</script>
+}
+

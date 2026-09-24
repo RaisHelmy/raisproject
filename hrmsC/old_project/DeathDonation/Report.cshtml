@@ -1,0 +1,285 @@
+﻿@model List<ESS.Core.DropDownObject>
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewBag.Title = "Death Donation Report";
+
+    string defaultStartDate = DateTime.Today.AddDays(-7).ToString("dd/MM/yyyy");
+    string defaultEndDate = DateTime.Today.ToString("dd/MM/yyyy");
+
+}
+<style>
+    .text-style {
+        text-align: left !important;
+        height: 34px;
+    }
+</style>
+
+<div class="form-section">
+    <div class="row">
+        <div class="col-md-12">
+            <h1 class="page-title">
+                Death Donation Report
+            </h1>
+        </div>
+    </div>
+</div>
+
+<div class="form-body">
+
+    <div class="row">
+        <div class="input-daterange" id="datepicker">
+            <div class="col-md-6">
+                <div class="form-horizontal">
+                    <div class="form-group">
+                        <label class="col-md-5 control-label">Submission Date (From)</label>
+                        <div class="col-md-7 form-control-static">
+                            <div class="input-group date date-picker startDate" data-date-format="dd/MM/yyyy">
+                                <input type="text" class="input-sm form-control text-style" name="StartDate" id="StartDate" autocomplete="off" />
+                                <span class="input-group-btn">
+                                    <button type="button" class="btn default"><i class="fa fa-calendar"></i></button>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-horizontal">
+                    <div class="form-group">
+                        <label class="col-md-5 control-label">Submission Date (To)</label>
+                        <div class="col-md-7 form-control-static">
+                            <div class="input-group date date-picker endDate" data-date-format="dd/MM/yyyy">
+                                <input type="text" class="input-sm form-control text-style" name="EndDate" id="EndDate" autocomplete="off" />
+                                <span class="input-group-btn">
+                                    <button type="button" class="btn default"><i class="fa fa-calendar"></i></button>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-5 control-label">Company</label>
+                    <div class="col-md-7 form-control-static">
+                        @Html.DropDownList("Company", new SelectList(Model, "Value", "Text"), "- All -", new { @class = "bs-select form-control", @onchange = "changeCompany(this)" })
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-5 control-label">Department</label>
+                    <div class="col-md-7 form-control-static">
+                        @Html.Action("_DDLDepartment", "DeathDonation", new { })
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-5 control-label">Unit / Section</label>
+                    <div class="col-md-7 form-control-static">
+                        @Html.Action("_DDLUnitSection", "DeathDonation", new { })
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-5 control-label">Status</label>
+                    <div class="col-md-7 form-control-static">
+                        <select class="form-control" id="ddlStatus">
+                            <option value="">- All -</option>
+                            <option value="Pending">Pending</option>
+                            <option value="Approved">Approved</option>
+                            <option value="Declined">Declined</option>
+                            <option value="Completed">Completed</option>
+                            <option value="Withdraw">Withdraw</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+    </div>
+    <div class="row">
+
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-5 control-label">Employee</label>
+                    <div class="col-md-7 form-control-static">
+                        @Html.Partial("_PeoplePicker")
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-5 control-label">Reference No</label>
+                    <div class="col-md-7 form-control-static">
+                        <input type="text" id="ReferenceNo" name="ReferenceNo" class="form-control" />
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-5 control-label">Date of Death</label>
+                    <div class="col-md-7 form-control-static">
+                        <div class="input-group date date-picker" data-date-format="dd MM yyyy">
+                            <input type="text" class="form-control" id="DateOfDeath" name="DateOfDeath" />
+                            <span class="input-group-btn">
+                                <button type="button" class="btn default"><i class="fa fa-calendar"></i></button>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-5 control-label">Death Cert</label>
+                    <div class="col-md-7 form-control-static">
+                        <select class="form-control" id="DeathCert">
+                            <option value="">- All -</option>
+                            <option value="Yes">Yes</option>
+                            <option value="No">No</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">&nbsp;</div>
+    <div class="row">
+        <div class="col-md-12">
+            <div class="text-right">
+                <input type="button" id="btn-Search" class="btn green btn-Search" value="Search" onclick="SearchListing();">
+                <input id="btn-Clear" type="button" class="btn default " value="Clear" onclick="ClearFilter();">
+            </div>
+        </div>
+    </div>
+    <div class="row">&nbsp;</div>
+    <div class="row">
+        <div class="col-md-12">
+            <div id="SearchResult">
+
+            </div>
+        </div>
+    </div>
+</div>
+@Html.Partial("_ExcelExport")
+<script type="text/javascript">
+    $(document).ready(function () {
+
+        $('.input-daterange').datepicker({
+            format: "dd/mm/yyyy",
+            autoclose: true,
+            orientation: "auto"
+        });
+
+        $("#DateOfDeath").datepicker({
+            format: "dd/mm/yyyy",
+            autoclose: true,
+            orientation: "auto"
+        });
+
+        $('#StartDate').datepicker("setDate", "@defaultStartDate");
+        $('#EndDate').datepicker("setDate", "@defaultEndDate");
+
+        SearchListing();
+    });
+
+    function SearchListing() {
+        var _DateFrom = $('#StartDate').val();
+        var _DateTo = $('#EndDate').val();
+        var _SearchEmployeeID = $('#hfEmpID').val();
+        var _Status = $('#ddlStatus').val();
+        var _CompanyCode = $('#Company option:selected').val();
+        var _DepartmentCode = $('#Department option:selected').val();
+        var _UnitSectionCode = $('#UnitSection option:selected').val();
+        var _ReferenceNo = $('#ReferenceNo').val();
+        var _DeathOfDeath = $('#DateOfDeath').val();
+        var _DeathCert = $('#DeathCert').val();
+
+        $("#SearchResult").html("LOADING...");
+
+        $.ajax({
+            type: "GET",
+            url: '@Url.Content("~/DeathDonation/_ReportResult")',
+            cache: false,
+            dataType: "html",
+            data: {
+                dateFrom: _DateFrom, dateTo: _DateTo, company: _CompanyCode, department: _DepartmentCode,
+                unitSection: _UnitSectionCode, status: _Status, employeeID: _SearchEmployeeID, referenceNo: _ReferenceNo,
+                deathOfDeath: _DeathOfDeath, deathCert: _DeathCert
+            },
+            success: function (content) {
+                $("#SearchResult").html(content);
+            },
+            error: function (e) {
+                console.log(e);
+            }
+        });
+    }
+
+    function ClearFilter() {
+        location.reload();
+    }
+
+
+    function changeCompany(e) {
+        $.ajax({
+            type: "GET",
+            url: '@Url.Content("~/DeathDonation/_DDLDepartment")',
+            cache: false,
+            dataType: "html",
+            data: { CompanyCode: e.value },
+            success: function (content) {
+                $("#DepartmentResult").html(content);
+            },
+            error: function (e) {
+                console.log(e);
+            }
+        });
+    }
+
+    function changeDepartment(e) {
+        $.ajax({
+            type: "GET",
+            url: '@Url.Content("~/DeathDonation/_DDLUnitSection")',
+            cache: false,
+            dataType: "html",
+            data: { DepartmentCode: e.value },
+            success: function (content) {
+                $("#UnitSectionResult").html(content);
+            },
+            error: function (e) {
+                console.log(e);
+            }
+        });
+    }
+</script>
+

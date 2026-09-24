@@ -1,0 +1,102 @@
+﻿@model IEnumerable<OJA.Models.SpecializationObject>
+@{
+    Layout = null;
+}
+
+
+<div class="portlet box blue">
+    <div class="mini-triangle"><img src="../Assets/img/menu-red-triangle.png" /></div>
+    <div class="portlet-title">
+        <div class="caption">
+            <i class="fa fa-reorder"></i>Add New Additional Education Info
+        </div>
+    </div>
+
+    <div class="portlet-body form">
+        <div class="form-body">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="control-label col-md-2">
+                        Start Date
+                        <span style="color: red">*</span>
+                    </label>
+                    <div class="col-md-4 form-control-static">
+                        <div class="input-group date date-picker" data-date-format="dd MM yyyy">
+                            <input type="text" class="form-control" id="StartDate" name="StartDate" />
+                            <span class="input-group-btn">
+                                <button type="button" class="btn default"><i class="fa fa-calendar"></i></button>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="control-label col-md-2">
+                        End Date
+                    </label>
+                    <div class="col-md-4 form-control-static">
+                        <div class="input-group date date-picker" data-date-format="dd MM yyyy">
+                            <input type="text" class="form-control" id="EndDate" name="EndDate" />
+                            <span class="input-group-btn">
+                                <button type="button" class="btn default"><i class="fa fa-calendar"></i></button>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                <br />
+                <table id="tblAdditionalEducationList" class="table table-striped table-bordered table-hover table-full-width">
+                    <thead>
+                        <tr>
+                            <th>
+                                <input type="checkbox" class="checkAllEducation" />
+                            </th>
+                            <th>Education</th>
+                            <th>Subject</th>
+                            <th>Grade</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+
+                            <tr>
+                               <td>
+                                   <input type="checkbox" class="checkboxEducation" />
+                                   <input type="hidden" class="objectId" value="@item.ObjectID" />
+                                   <input type="hidden" class="startDate" value="@item.StartDate" />
+                                   <input type="hidden" class="endDate" value="@item.EndDate" />
+                               </td>
+                                <td class="education">@item.ParentObjectName</td>
+                                <td class="subject">@item.ObjectName</td>
+                                <td class="grade">
+                                    @Html.DropDownListFor(m => item.ProficiencyList, item.ProficiencyList, "- Please Select -", new { @class = "form-control"})
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+
+            </div>
+            <div class="row">
+                <div class="col-md-12">
+                    <a class="btn btn-primary" id="btnSubmitEducationInfo">Submit <i class="fa fa-check"></i></a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+
+    var oTableEducation = null;
+    $(document).ready(function () {
+        $('.date-picker').datepicker({
+            format: 'dd/mm/yyyy',
+            autoclose: true
+        });
+
+        oTableEducation = makeDataTable('tblAdditionalEducationList');
+    });
+
+    
+    
+</script>

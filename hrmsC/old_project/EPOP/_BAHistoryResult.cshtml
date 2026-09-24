@@ -1,0 +1,118 @@
+﻿@model List<ESS.EPop.Models.EPopPendingAssessment>
+
+@{
+    Layout = null;
+    int CountRow = 0;
+
+}
+
+<div class="portlet box blue">
+    <div class="mini-triangle"><img src="../Assets/img/menu-red-triangle.png" /></div>
+    <div class="portlet-title">
+        <div class="caption">
+            <i class="fa fa-reorder"></i>Business Partner's History (HR)
+        </div>
+        <input type="button" id="btn-Export" class="btn btn-xs green pull-right" value="Export To Excel" onclick="ExportExcel()" />
+    </div>
+    <div class="portlet-body form">
+        <div class="form-body">
+            <div class="form-horizontal">
+                <div class="table-toolbar">
+                    <table id="tblResult" class="table table-striped table-bordered table-hover table-full-width">
+                        <thead>
+                            <tr>
+                                <th class="DivBAUserOnly"><input type="checkbox" id="checkAll"></th>
+                                <th class="hidden">AssessmentID</th>
+                                <th></th>
+                                <th>Request Reference No</th>
+                                <th>Employee Code</th>
+                                <th>IM</th>
+                                <th>HOD</th>
+                                <th>VP</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model)
+                            {
+                                <tr>
+                                    <td class="DivBAUserOnly">
+                                        <span class="DivcheckItem" id="DivchkSelectAssessment_@CountRow"><input type="checkbox" id="chkSelectAssessment_@CountRow" class="checkItem" name="chkSelectAssessment" value="@item.ID"></span>
+                                    </td>
+                                    <td class="hidden">
+                                        <label id="LabelchkSelectAssessment_@CountRow">@item.AssessmentID</label>
+                                    </td>
+                                    <td>
+                                        <a class="btn blue btn-sm" href="@Url.Content("~/EPOP/OnlineAssessmentForm")?AssessmentID=@item.AssessmentID.Trim()&RequestID=@item.ID.Trim()">
+                                            <i class="fa fa-search"></i>
+                                        </a>
+                                    </td>
+                                    <td>@item.ReferenceNo</td>
+                                    <td>@item.EmployeeCode @item.EmployeeName</td>
+                                    <td>@item.CurrentApproverCode @item.CurrentEmployeeName</td>
+                                    <td>@item.ApproverCode2 @item.ApproverName2</td>
+                                    <td>@item.ApproverCode3 @item.ApproverName3</td>
+                                </tr>
+                                CountRow++;
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+    //transformTable("#tblResult");
+    $('#tblResult').dataTable({
+        "aLengthMenu": [[10, 25, 50, 100, 1000], [10, 25, 50, 100, 1000]]
+    });
+
+    var tableWrapper = "#tblResult_wrapper";
+
+    jQuery(tableWrapper + ' .dataTables_filter input').addClass("form-control input-medium input-inline"); // modify table search input
+    jQuery(tableWrapper + ' .dataTables_length select').addClass("form-control input-small"); // modify table per page dropdown
+    jQuery(tableWrapper + ' .dataTables_length select').select2({
+        showSearchInput: false //hide search box with special css class
+    });
+
+    jQuery(document).ready(function () {
+        $(".DivBAUserOnly").addClass("hidden");
+
+        $('#checkAll').click(function () {
+            $(':checkbox.checkItem').prop('checked', this.checked);
+
+            var _Disclaimer = document.getElementById('checkAll');
+
+            if (!_Disclaimer.checked) {
+                $(".DivcheckItem").addClass('checked');
+            }
+            else {
+                $(".DivcheckItem").removeClass('checked');
+            }
+
+
+        });
+
+        $('.checkItem').click(function () {
+            var name = $(this).attr('id');
+
+            var _Chk = $('#Div' + name).hasClass('checked');
+
+            if (_Chk) {
+                $("#Div" + name).addClass('checked');
+            }
+            else {
+                $("#Div" + name).removeClass('checked');
+            }
+        });
+    });
+</script>
+
+@if (Model.Count > 0)
+{
+    <script type="text/javascript">
+        jQuery(document).ready(function () {
+            $(".DivBAUserOnly").removeClass("hidden");
+        });
+    </script>
+}

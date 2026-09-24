@@ -1,0 +1,108 @@
+﻿@using ESS.Claim.ClaimSubtype
+@using ESS.Claim.ViewModels
+@model ClaimsSubtype
+
+@{
+    Layout = null;
+    string TableID = "tbl" + Model.FormInterface + "_" + Model.categoryIndex + "_" + Model.subtypeIndex;
+    string Status = ViewBag.ClaimStatus;
+
+    List<ESS.Claim.Service.ReliefDriverClaim> PastClaims = ViewBag.PastClaims;
+    int MinimumHours = ViewBag.MinimumHours;
+    double DailyRate = ViewBag.DailyRate;
+    double MaxClaimable = ViewBag.MaxClaimable;
+
+    Model.Template = new Template(Model);
+    Model.Template.TableID = TableID;
+    Model.Template.IsReadonly = !(Status == "Draft" || Status == "Withdrawn" || Status == "Declined" || Status == "Returned");
+
+    Model.Template.Columns.Add(ColumnTemplate.CheckboxWithLabel("", "").SetColumnClass("RemoveCheckbox"));
+
+    Model.Template.Columns.Add(ColumnTemplate.ChargeCodeDropdown("Charge Code", "SubTypeColumn0").SetIsMandatory(true));
+
+    Model.Template.Columns.Add(ColumnTemplate.DatePickerWithLabel("Date", "Date").SetIsMandatory(true).SetOnChange(TableID + "_subtype.onDateChange(this);"));
+
+    Model.Template.Columns.Add(ColumnTemplate.TextBoxWithLabel("Month", "Month").SetReadonly(true).SetIsMandatory(true));
+
+    Model.Template.Columns.Add(ColumnTemplate.NumberTextBoxWithLabel("No. of Hours", "NoOfHours").SetIsMandatory(true)
+                                             .SetOnBlur(TableID + "_subtype.calculateAmount(this);"));
+
+    Model.Template.Columns.Add(ColumnTemplate.TextBoxWithLabel("Description", "Description"));
+
+    Model.Template.Columns.Add(ColumnTemplate.TextBoxForAmount(Model.Template, "Amount (RM)", "Amount").SetReadonly(true).SetDefaultValue(DailyRate.ToString("0.00")));
+    Model.Template.Columns.Add(ColumnTemplate.TextBoxForTaxAmount(Model.Template, "Tax Amount (RM)", "GSTAmount"));
+    Model.Template.Columns.Add(ColumnTemplate.TextBoxForTotalAmount(Model.Template, "Total Amount (RM)", "TotalAmount"));
+}
+
+@Html.Partial("~/Views/ClaimsSubtype/SubtypeView.cshtml", Model)
+
+<script>
+    @(TableID)_subtype.pastClaims = @Html.Raw(Json.Encode(PastClaims.Select(x => x.Month).ToArray()));
+
+    @(TableID)_subtype.onDateChange = function (row) {
+        var $row = $(row).closest("tr");
+        var dpkDate = $row.find('.Date').parent();
+        var _Month = $row.find('.Month');
+
+        var date = moment(dpkDate.datepicker('getDate'));
+
+        _Month.val(date.format("MMMM YYYY"));
+    };
+
+    @(TableID)_subtype.calculateAmount = function (row) {
+        var $row = $(row).closest("tr");
+        var _NoOfHours = $row.find('.NoOfHours');
+        var _Amount = $row.find(".Amount");
+
+        @*var noOfHours = parseInt(_NoOfHours.val());
+        var dailyRate = @DailyRate.ToString("0.00");
+        //var hourRate = dailyRate / 24;
+
+        var amount = dailyRate;
+
+        _Amount.val(amount.toFixed(2));*@
+
+        @(TableID)_subtype.calculateTax($row);
+        @(TableID)_subtype.calculateSubtotal($row);
+    };
+
+    @(TableID)_subtype.subInitialize = function () {
+    };
+
+    @(TableID)_subtype.subValidation = function () {
+        var _ValidationMsg = "";
+        var SubtypeReference = this;
+
+        var maxClaimable = @MaxClaimable.ToString("0.00");
+        var minimumHours = @MinimumHours;
+        var grandTotalAmount = parseFloat(this.table.find(".GrandAmount").val());
+
+        var firstClaimedMonth = "";
+        $.each(this.table.fnGetNodes(), function (i, v) {
+            var month = $(v).find('.Month').val();
+            var noOfHours = parseInt($(v).find('.NoOfHours').val());
+
+            if (noOfHours < minimumHours) {
+                _ValidationMsg += '- ' + SubtypeReference.subtype.ClaimsSubtypeName + ' (Minimum ' + minimumHours + ' hours is required.). \n';
+            }
+
+            if (i == 0) {
+                firstClaimedMonth = month;
+            }
+
+            if (firstClaimedMonth != month) {
+                _ValidationMsg += '- ' + SubtypeReference.subtype.ClaimsSubtypeName + ' (Multiple month claim is not allowed in single submission.). \n';
+            }
+
+            if (SubtypeReference.pastClaims.indexOf(month) >= 0) {
+                _ValidationMsg += '- ' + SubtypeReference.subtype.ClaimsSubtypeName + ' (' + month + ' already claimed in another Claims Form). \n';
+            }
+        });
+
+        if (grandTotalAmount > maxClaimable) {
+            _ValidationMsg += '- ' + SubtypeReference.subtype.ClaimsSubtypeName + ' (Total claim exceeded max claimable amount). \n';
+        }
+
+        return _ValidationMsg;
+    };
+</script>

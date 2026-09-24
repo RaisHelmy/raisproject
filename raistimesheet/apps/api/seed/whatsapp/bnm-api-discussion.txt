@@ -1,0 +1,43 @@
+01/09/2026, 08:55 - Messages and calls are end-to-end encrypted. No one outside of this chat, not even WhatsApp, can read or listen to them.
+01/09/2026, 09:02 - Farid: Morning all. Rais, the monthly settlement report totals don't match the source file again. Can you check?
+01/09/2026, 09:05 - Rais: Morning. Noted, checking now.
+01/09/2026, 09:41 - Rais: Compared the report output with the settlement tables. The mismatch is from rounding on the MYR/USD conversion step.
+01/09/2026, 10:12 - Rais: Applied the fix (round after summing instead of per row). Re-ran the report for August, totals now tally.
+01/09/2026, 10:15 - Farid: Great, thanks. Please also raise it in Jira.
+01/09/2026, 10:16 - Rais: Will do, this is BNM-1005.
+01/09/2026, 11:30 - Nadia: Rais, can you build the SIT deployment package v2.3 today? Need it for testing tomorrow.
+01/09/2026, 11:32 - Rais: Ok, on it.
+01/09/2026, 13:45 - Rais: Package v2.3 built. Deploying to SIT now.
+01/09/2026, 14:20 - Rais: Deployed to SIT and smoke tested. Login, batch upload and report download ok.
+01/09/2026, 14:22 - Nadia: 👍
+01/09/2026, 16:05 - Aiman: I fixed the date picker bug on the UAT portal, will push tonight.
+01/09/2026, 16:07 - Nadia: Thanks Aiman.
+02/09/2026, 09:10 - Farid: Reporting queries are very slow on SIT since yesterday. Some take more than 2 minutes.
+02/09/2026, 09:14 - Rais: Checking the slow query log.
+02/09/2026, 10:40 - Rais: Found two queries doing full table scans on settlement_lines. Adding indexes on (batch_id, status) and rewriting the join.
+02/09/2026, 12:05 - Rais: Indexes added and queries rewritten. Report now returns in under 5 seconds. Took about 3 hours in total.
+02/09/2026, 12:08 - Farid: Excellent 🙏
+02/09/2026, 15:00 - Nadia: Please tolong prepare the UAT sign-off checklist for Farid's team.
+02/09/2026, 15:02 - Rais: Boleh. Will send draft by 4pm.
+02/09/2026, 15:58 - Rais: Draft checklist sent to your email.
+02/09/2026, 16:00 - Nadia: Received, thanks.
+03/09/2026, 08:50 - Farid: Batch reconciliation job failed last night with a null pointer error. Log attached.
+03/09/2026, 08:50 - Farid: <Media omitted>
+03/09/2026, 08:55 - Rais: Looking into it.
+03/09/2026, 09:30 - Rais: Root cause: the settlement file from 2 Sep was empty and the job doesn't handle an empty file. Adding a null check and an alert.
+03/09/2026, 10:10 - Rais: Fixed and re-ran the job manually, completed successfully.
+03/09/2026, 10:12 - Farid: Thanks Rais.
+03/09/2026, 11:00 - Nadia: API on SIT is timing out for the mobile team since 10:30.
+03/09/2026, 11:03 - Rais: Checking logs.
+03/09/2026, 11:25 - Rais: DB connection pool is exhausted, connections waiting more than 30s. Increasing pool size and lowering the idle timeout.
+03/09/2026, 11:50 - Rais: Restarted the API with the new config. Mobile team confirmed it's back to normal.
+03/09/2026, 11:52 - Nadia: Good. Is there a Jira for this?
+03/09/2026, 11:53 - Rais: Yes, BNM-1008.
+03/09/2026, 14:30 - Rais: Also updated the API documentation for the v2.3 endpoints while I was at it. About 1 hour.
+03/09/2026, 14:35 - Farid: Noted.
+04/09/2026, 09:05 - Nadia: Reminder: SSL cert on SIT expires on 20 Sep.
+04/09/2026, 09:08 - Rais: Semalam I already requested the new cert from the CA, waiting for them to issue it.
+04/09/2026, 09:10 - Nadia: Ok noted.
+04/09/2026, 10:00 - Farid: Can you check whether the reporting job ran fine after yesterday's deployment?
+04/09/2026, 10:05 - Rais: Checked, ran fine at 02:00, no errors.
+04/09/2026, 10:06 - Farid: 👍

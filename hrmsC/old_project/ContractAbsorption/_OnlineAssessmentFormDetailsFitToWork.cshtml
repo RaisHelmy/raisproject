@@ -1,0 +1,198 @@
+﻿@model Tuple<ESS.ContractAbsorption.Models.EContractAbsorptionVM, SEP.RoutingManagement.Models.RoutingRule>
+
+@using ESS.Core
+
+@{
+	Layout = null;
+
+	string TaskID = (string)ViewData["TaskID"];
+	string RequestID = (string)ViewData["RequestID"];
+	string ApprovalLevel = (string)ViewData["ApprovalLevel"];
+	string Source = (string)ViewData["Source"];
+	string EmployeeID = (string)ViewData["EmployeeID"];
+
+	int applvl = String.IsNullOrEmpty(ApprovalLevel) ? 0 : Convert.ToInt32(ApprovalLevel);
+
+	string Checked2_1 = "";
+	string Checked2_2 = "";
+
+	switch (Model.Item1.FitToWork)
+	{
+		case "F":
+			Checked2_1 = "checked";
+			break;
+		case "NF":
+			Checked2_2 = "checked";
+			break;
+	}
+
+	string Checked2_3 = "";
+	string Checked2_4 = "";
+
+	switch (Model.Item1.Smoking)
+	{
+		case "S":
+			Checked2_3 = "checked";
+			break;
+		case "NS":
+			Checked2_4 = "checked";
+			break;
+	}
+
+	if (Model.Item1.btnSubmit == true && (applvl == 7 || applvl == 8))
+	{
+		<style>
+			.EdittableFitToWorkContent {
+				display: block;
+			}
+
+			.NonEdittableFitToWorkContent {
+				display: none;
+			}
+		</style>
+	}
+	else
+	{
+		<style>
+			.EdittableFitToWorkContent {
+				display: none;
+			}
+
+			.NonEdittableFitToWorkContent {
+				display: block;
+			}
+		</style>
+	}
+}
+
+@if (applvl >= 7 && new Guid(Common.GetEmployeeID()) != Model.Item1.Submiter.EmployeeID)
+{
+	<div class="row">
+		<div class="col-md-12">
+			<div class="portlet box blue">
+				<div class="mini-triangle"><img src="../Assets/img/menu-red-triangle.png" /></div>
+				<div class="portlet-title">
+					<div class="caption">
+						<i class="fa fa-reorder"></i>Suitable for Work
+					</div>
+				</div>
+				<div class="portlet-body form">
+					<div class="form-body" id="ct01_CustomFieldFormView">
+						<div class="EdittableFitToWorkContent">
+							<div class="row">
+								<div class="col-md-6">
+									<div class="form-horizontal">
+										<div class="form-group">
+											<label class="control-label col-md-12 ">
+												<b>Suitable for Work <span class="required">*</span></b>
+											</label>
+										</div>
+									</div>
+								</div>
+								<div class="col-md-6">
+									<div class="form-horizontal">
+										<div class="form-group">
+											<label class="control-label col-md-12 ">
+												<b>Smoking <span class="required">*</span></b>
+											</label>
+										</div>
+									</div>
+								</div>
+							</div>
+							<div class="row" id="radio_RecommendedDiv">
+								<div class="col-md-6">
+									<div class="form-horizontal">
+										<div class="form-group">
+											<div class="radio-list padding-left-20">
+												<label class="radio-inline">
+													<span class="Divradio_Recommended"><input type="radio" @Checked2_1 class="reqFitToWork" name="rblFitToWork" id="radio_FitToWork" value="F"></span> Yes
+												</label>
+											</div>
+										</div>
+									</div>
+								</div>
+								<div class="col-md-6">
+									<div class="form-horizontal">
+										<div class="form-group">
+											<div class="radio-list padding-left-20">
+												<label class="radio-inline">
+													<span class="Divradio_Smoking"><input type="radio" @Checked2_3 class="reqFitToWork" name="rblSmoking" id="radio_Smoking" value="S"></span> Yes
+												</label>
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+							<div class="row" id="radio_NotRecommendedDiv">
+								<div class="col-md-6">
+									<div class="form-horizontal">
+										<div class="form-group">
+											<div class="radio-list padding-left-20">
+												<label class="radio-inline">
+													<span class="radio_NotRecommended"><input type="radio" @Checked2_2 class="reqFitToWork" name="rblFitToWork" id="radio_FitToWork" value="NF"></span> No
+												</label>
+											</div>
+										</div>
+									</div>
+								</div>
+								<div class="col-md-6">
+									<div class="form-horizontal">
+										<div class="form-group">
+											<div class="radio-list padding-left-20">
+												<label class="radio-inline">
+													<span class="radio_Smoking"><input type="radio" @Checked2_4 class="reqFitToWork" name="rblSmoking" id="radio_Smoking" value="NS"></span> No
+												</label>
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="NonEdittableFitToWorkContent">
+							<div class="row">
+								<div class="col-md-6">
+									<div class="form-horizontal">
+										<div class="form-group">
+											<label class="control-label col-md-12 ">
+												Suitable for Work <span class="required">*</span>
+											</label>
+										</div>
+									</div>
+								</div>
+								<div class="col-md-6">
+									<div class="form-horizontal">
+										<div class="form-group">
+											<label class="control-label col-md-12 ">
+												Smoking <span class="required">*</span>
+											</label>
+										</div>
+									</div>
+								</div>
+							</div>
+							<div class="row">
+								<div class="col-md-6">
+									<div class="form-horizontal">
+										<div class="form-group">
+											<label class="col-md-12 ">
+												@(Model.Item1.FitToWork == "F" ? "Yes" : (Model.Item1.FitToWork == "NF" ? "No" : ""))
+											</label>
+										</div>
+									</div>
+								</div>
+								<div class="col-md-6">
+									<div class="form-horizontal">
+										<div class="form-group">
+											<label class="col-md-12 ">
+												@(Model.Item1.Smoking == "S" ? "Yes" : (Model.Item1.Smoking == "NS" ? "No" : ""))
+											</label>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+}

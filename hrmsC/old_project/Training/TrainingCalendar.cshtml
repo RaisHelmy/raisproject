@@ -1,0 +1,186 @@
+﻿@model List<ESS.Core.DropDownObject>
+@{
+    ViewBag.Title = "Training Course Application";
+}
+
+<script src="~/assets/plugins/fullcalendar/fullcalendar/fullcalendar.js"></script>
+<script src="~/Assets/plugins/fullcalendar/fullcalendar/fullcalendar.min.js"></script>
+<link rel="stylesheet" type="text/css" href="~/assets/plugins/fullcalendar/fullcalendar/fullcalendar.css" />
+
+<style>
+
+    .fullcalendar-eventitem
+    {
+        padding:5px;
+        text-align:center;
+    }
+
+    .Pending
+    {
+      background-color: #e3efff;	
+      color: #003399;
+      border: #6f9dd9 1px solid; 
+    }
+
+    .Pending A
+    {
+      color: #003399;
+    }
+
+    .Draft
+    {
+      background-color: #FFB2B2;
+      color: #E02100;
+      border: solid 1px #E02100;
+    }
+
+    .Draft A
+    {
+      color: #E02100;
+    }
+
+    .Approved
+    {
+      background-color: #CCFFCC;
+      color: #47AD47;
+      border: solid 1px #35B735;
+    }
+
+    .Approved A
+    {
+      color: #35B735;
+    }
+
+</style>
+
+<div class="form-section">
+    <div class="row">
+        <div class="col-md-12">
+            <h1 class="page-title">
+                Unit's Training Calendar
+                <span style="padding-left:20px;">
+                    <small></small>
+                </span>
+            </h1>
+        </div>
+    </div>
+</div>
+
+
+@using (Html.BeginForm("", "Training", FormMethod.Post, new { @class = "form-horizontal", @id = "MainForm" }))
+{
+    <input id="hfEmployeeID" type="hidden" value="@ViewBag.EmployeeID" />
+    @*<input id="hfTaskID" type="hidden" value="@ViewBag.TaskID" />
+    <input id="hfCourseApplicationID" type="hidden" value="@ViewBag.SourceID" />*@
+
+    <div class="form-body">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="form-horizontal">
+                    <div class="form-group">
+                        <label class="col-md-4 control-label">Display Subordinates' Training Calendar</label>
+                        <div class="col-md-8 form-control-static">
+                            <div class="input-group date date-picker" data-date-format="dd MM yyyy">
+                                @if (Model == null)
+                                {
+                                    <select class="form-control" id="ddlSubordinate">
+                                        <option value="">- Show All Subordinate Training Schedule -</option>
+                                    </select>
+                                    
+                                }
+                                else
+                                {
+                                    @Html.DropDownList("ddlSubordinate", new SelectList(Model, "Value", "Text"), "- Show All Subordinate Training Schedule -", new { @class = "bs -select form-control" })
+                                }
+                                
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-9">
+
+            </div>
+            <div class="col-md-3">
+                <table style="display:table;border-collapse:separate;border-spacing:2px">
+                    <tbody>
+                        <tr>
+                            <td width="20" class="Draft"><img src="/_layouts/15/images/blank.gif" width="20" height="15"></td>
+                            <td width="50" align="left">Draft</td>
+                            <td width="20" class="Pending"><img src="/_layouts/15/images/blank.gif" width="20" height="15"></td>
+                            <td width="50" align="left">Pending</td>
+                            <td width="20" class="Approved"><img src="/_layouts/15/images/blank.gif" width="20" height="15"></td>
+                            <td width="50" align="left">Approved</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+
+
+    <div id="calendarList"></div>
+
+
+    <!-- Loading Gif -->
+    <div id="divLoading" style="margin: 0px; padding: 0px; position: fixed; right: 0px; top: 0px; width: 100%; height: 100%; background-color: gainsboro; z-index: 30001; opacity: .8; filter: alpha(opacity=70); display: none; ">
+        <p style="position: absolute; top: 30%; left: 30%; color: black;">
+            Performing action, please wait...<img src="/_layouts/15/TNBESS/Assets/img/ajax-loading.gif">
+        </p>
+    </div>
+
+
+
+}
+<script type="text/javascript">
+    $(document).ready(function () {
+
+        var empID = $("#hfEmployeeID").val();
+        generateCalendar(empID, '');
+
+        $("#ddlSubordinate").on("change", function () {
+
+            $('#divLoading').css("display", "block");
+            var subordinateID = $(this).val();
+            generateCalendar(empID, subordinateID);
+            $('#divLoading').css("display", "none");
+        });
+    });
+
+    function generateCalendar(employeeID, subordinateID)
+    {
+        $('#calendarList').fullCalendar('destroy');
+        $('#calendarList').fullCalendar({
+            header: {
+                left: 'prev,next today',
+                center: 'title',
+                right: 'month,basicWeek,basicDay'
+            },
+            eventLimit: true,            
+            eventSources: [
+
+                // your event source
+                {
+                    url: '@Url.Content("~/Training/JsonCalendar")',
+                    type: 'POST',
+                    data: {
+                        id: employeeID,
+                        subID: subordinateID
+                    },
+                    error: function () {
+                        console.log('there was an error while fetching events!');
+                    }
+
+                }
+
+            ]
+        });
+
+    }
+
+</script>
+
+

@@ -1,0 +1,418 @@
+﻿@model ESS.Claim.ViewModels.ClaimsSubtype
+
+@{
+    Layout = null;
+    string GSTEnabled = (@ViewBag.AdvanceOutstation_GSTEnabled + "").ToLower();
+    string Status = @ViewBag.AdvanceOutstation_Status;
+    string dtStrStart = @ViewBag.AdvanceOutstation_StartDate;
+    string dtStrEnd = @ViewBag.AdvanceOutstation_EndDate;
+    string AdvRate = ViewBag.AdvanceOutstation_AdvRate;
+    string HotelAdvRate = ViewBag.AdvanceOutstation_HotelAdvRate;
+    string HotelRate = ViewBag.AdvanceOutstation_HotelRate;
+    string noOfDays = ViewBag.AdvanceOutstation_noOfDays;
+    string subsistenceRate=ViewBag.AdvanceOutstation_subsistenceRate ;
+    string ClaimsSubtypeName= ViewBag.AdvanceOutstation_ClaimsSubtypeName;
+    string totalSubsistence = ViewBag.AdvanceOutstation_totalSubsistence;
+    string totalHotel = ViewBag.AdvanceOutstation_totalHotel;
+    string Amount = ViewBag.AdvanceOutstation_Amount;
+    string GSTAmount = ViewBag.AdvanceOutstation_GSTAmount;
+    string TotalAmount = ViewBag.AdvanceOutstation_TotalAmount;
+}
+<div class="portlet box blue subtypeportlet" id="dTable_AdvanceOutstation">
+    <div class="portlet-title">
+        <div class="caption">
+            <i class="fa fa-reorder"></i>@ClaimsSubtypeName
+        </div>
+        <div class="tools">
+        </div>
+    </div>
+    <div class="portlet-body form">
+        <div class="form-body">
+            <div class="form-horizontal">
+                <div class="table-toolbar">
+                    <table class="table table-striped table-bordered table-hover table-full-width" id="tblAdvanceOutstation">
+                        <thead>
+                            <tr>
+                                <th scope="col"></th>
+                                <th scope="col">No. Of Days</th>
+                                <th scope="col">Destination</th>
+                                <th scope="col">Approval Letter Ref. No. *</th>
+                                <th scope="col">Adv Rate</th>
+                                <th scope="col">Subsistence Rate (RM)</th>
+                                <th scope="col">Total Subsistence (RM)</th>
+                                <th scope="col">Hotel Adv Rate</th>
+                                <th scope="col">Hotel Rate (RM)</th>
+                                <th scope="col">Total Hotel (RM)</th>
+                                <th scope="col">Total Advance Allowance (RM)*</th>
+                                <th scope="col">GST Amount (RM)</th>
+                                <th scope="col">Total Amount (RM)</th>
+                            </tr>
+                        </thead>
+                        @if (Status == "Draft" || Status == "Withdrawn" || Status == "Declined" || Status =="Returned")
+                        {
+                            if (Model.SubTypeDetails == null)
+                            {
+                                <tbody>
+                                    <tr>
+                                        <td><input type="checkbox" class="AdvanceOutstationRemoveCheckbox" /></td>
+                                        <td><input type="text" class="form-control SubTypeColumn1" name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[0].SubTypeColumn1" /></td>
+                                        <td><input type="text" class="form-control SubTypeColumn2" name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[0].SubTypeColumn2" /></td>
+                                        <td><input type="text" class="form-control SubTypeColumn3" name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[0].SubTypeColumn3" /></td>
+                                        <td><input type="text" class="form-control SubTypeColumn4" name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[0].SubTypeColumn4" /></td>
+                                        <td><input type="text" class="form-control SubTypeColumn5" name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[0].SubTypeColumn5" /></td>
+                                        <td><input type="text" class="form-control SubTypeColumn6" name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[0].SubTypeColumn6" /></td>
+                                        <td><input type="text" class="form-control SubTypeColumn7" name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[0].SubTypeColumn7" /></td>
+                                        <td><input type="text" class="form-control SubTypeColumn8" name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[0].SubTypeColumn8" /></td>
+                                        <td><input type="text" class="form-control SubTypeColumn9" name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[0].SubTypeColumn9" /></td>
+                                        <td><input type="text" class="form-control Amount" name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[0].Amount" onkeypress="NumberOnly(event);" /></td>
+                                        <td><input type="text" class="form-control text-right GSTAmount" name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[0].GSTAmount" readonly /></td>
+                                        <td><input type="text" class="form-control text-right SubTotalAmount" name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[0].TotalAmount" readonly /></td>
+                                    </tr>
+                                </tbody>
+                                <tfoot>
+                                    <tr>
+                                        <td colspan="10"></td>
+                                        <td><input type="text" class="form-control text-right GrandAmount" readonly /></td>
+                                        <td><input type="text" class="form-control text-right GrandGSTAmount" readonly /></td>
+                                        <td><input type="text" class="form-control text-right GrandTotalAmount" readonly /></td>
+                                    </tr>
+                                </tfoot>
+                            }
+                            else
+                            {
+                                int count = 0;
+
+                                <tbody>
+                                    @foreach (var thisDetail in Model.SubTypeDetails)
+                                    {
+                                        <tr>
+                                            <td><input type="checkbox" class="AdvanceOutstationRemoveCheckbox" /></td>
+                                            <td>
+                                                <input type="text" class="form-control SubTypeColumn1" value="@thisDetail.SubTypeColumn1"
+                                                       name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[count].SubTypeColumn1" />
+                                            </td>
+                                            <td>
+                                                <input type="text" class="form-control SubTypeColumn2" value="@thisDetail.SubTypeColumn2"
+                                                       name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[count].SubTypeColumn2" />
+                                            </td>
+                                            <td>
+                                                <input type="text" class="form-control SubTypeColumn3" value="@thisDetail.SubTypeColumn3"
+                                                       name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[count].SubTypeColumn3" />
+                                            </td>
+                                            <td>
+                                                <input type="text" class="form-control SubTypeColumn4" value="@thisDetail.SubTypeColumn4"
+                                                       name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[count].SubTypeColumn4" />
+                                            </td>
+                                            <td>
+                                                <input type="text" class="form-control SubTypeColumn5" value="@thisDetail.SubTypeColumn5"
+                                                       name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[count].SubTypeColumn5" />
+                                            </td>
+                                            <td>
+                                                <input type="text" class="form-control SubTypeColumn6" value="@thisDetail.SubTypeColumn6"
+                                                       name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[count].SubTypeColumn6" />
+                                            </td>
+                                            <td>
+                                                <input type="text" class="form-control SubTypeColumn7" value="@thisDetail.SubTypeColumn7"
+                                                       name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[count].SubTypeColumn7" />
+                                            </td>
+                                            <td>
+                                                <input type="text" class="form-control SubTypeColumn8" value="@thisDetail.SubTypeColumn8"
+                                                       name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[count].SubTypeColumn8" />
+                                            </td>
+                                            <td>
+                                                <input type="text" class="form-control SubTypeColumn9" value="@thisDetail.SubTypeColumn9"
+                                                       name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[count].SubTypeColumn9" />
+                                            </td>
+
+                                            <td>
+                                                <input type="text" class="form-control Amount" value="@thisDetail.Amount"
+                                                       name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[count].Amount" onkeypress="NumberOnly(event);" />
+                                            </td>
+                                            <td>
+                                                <input type="text" class="form-control text-right GSTAmount" value="@thisDetail.GSTAmount"
+                                                       name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[count].GSTAmount" readonly />
+                                            </td>
+                                            <td>
+                                                <input type="text" class="form-control text-right SubTotalAmount" value="@thisDetail.TotalAmount"
+                                                       name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[count].TotalAmount" readonly />
+                                            </td>
+                                        </tr>
+
+                                        count++;
+                                    }
+                                </tbody>
+                                <tfoot>
+                                    <tr>
+                                        <td colspan="10"></td>
+                                        <td><input type="text" class="form-control text-right GrandAmount" value="@Model.SubTypeDetails.Sum(m => Convert.ToDecimal(m.Amount))" readonly /></td>
+                                        <td><input type="text" class="form-control text-right GrandGSTAmount" value="@Model.SubTypeDetails.Sum(m => Convert.ToDecimal(m.GSTAmount))" readonly /></td>
+                                        <td><input type="text" class="form-control text-right GrandTotalAmount" value="@Model.SubTypeDetails.Sum(m => Convert.ToDecimal(m.TotalAmount))" readonly /></td>
+                                    </tr>
+                                </tfoot>
+                            }
+                        }
+                        else
+                        {
+                            int count = 0;
+
+                            <tbody>
+                                @foreach (var thisDetail in Model.SubTypeDetails)
+                                {
+                                    <tr>
+                                        <td>
+                                            <input type="text" class="form-control SubTypeColumn1" value="@thisDetail.SubTypeColumn1" readonly
+                                                   name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[count].SubTypeColumn1" />
+                                        </td>
+                                        <td>
+                                            <input type="text" class="form-control SubTypeColumn2" value="@thisDetail.SubTypeColumn2" readonly
+                                                   name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[count].SubTypeColumn2" />
+                                        </td>
+                                        <td>
+                                            <input type="text" class="form-control SubTypeColumn3" value="@thisDetail.SubTypeColumn3" readonly
+                                                   name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[count].SubTypeColumn3" />
+                                        </td>
+                                        <td>
+                                            <input type="text" class="form-control SubTypeColumn4" value="@thisDetail.SubTypeColumn4" readonly
+                                                   name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[count].SubTypeColumn4" />
+                                        </td>
+                                        <td>
+                                            <input type="text" class="form-control SubTypeColumn5" value="@thisDetail.SubTypeColumn5" readonly
+                                                   name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[count].SubTypeColumn5" />
+                                        </td>
+                                        <td>
+                                            <input type="text" class="form-control SubTypeColumn6" value="@thisDetail.SubTypeColumn6" readonly
+                                                   name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[count].SubTypeColumn6" />
+                                        </td>
+                                        <td>
+                                            <input type="text" class="form-control SubTypeColumn7" value="@thisDetail.SubTypeColumn7" readonly
+                                                   name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[count].SubTypeColumn7" />
+                                        </td>
+                                        <td>
+                                            <input type="text" class="form-control SubTypeColumn8" value="@thisDetail.SubTypeColumn8" readonly
+                                                   name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[count].SubTypeColumn8" />
+                                        </td>
+                                        <td>
+                                            <input type="text" class="form-control SubTypeColumn9" value="@thisDetail.SubTypeColumn9" readonly
+                                                   name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[count].SubTypeColumn9" />
+                                        </td>
+
+                                        <td>
+                                            <input type="text" class="form-control Amount" value="@thisDetail.Amount" readonly
+                                                   name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[count].Amount" onkeypress="NumberOnly(event);" />
+                                        </td>
+                                        <td>
+                                            <input type="text" class="form-control text-right GSTAmount" value="@thisDetail.GSTAmount" readonly
+                                                   name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[count].GSTAmount" readonly />
+                                        </td>
+                                        <td>
+                                            <input type="text" class="form-control text-right SubTotalAmount" value="@thisDetail.TotalAmount" readonly
+                                                   name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[count].TotalAmount" readonly />
+                                        </td>
+                                    </tr>
+
+                                    count++;
+                                }
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <td colspan="9"></td>
+                                    <td><input type="text" class="form-control text-right GrandAmount" value="@Model.SubTypeDetails.Sum(m => Convert.ToDecimal(m.Amount))" readonly /></td>
+                                    <td><input type="text" class="form-control text-right GrandGSTAmount" value="@Model.SubTypeDetails.Sum(m => Convert.ToDecimal(m.GSTAmount))" readonly /></td>
+                                    <td><input type="text" class="form-control text-right GrandTotalAmount" value="@Model.SubTypeDetails.Sum(m => Convert.ToDecimal(m.TotalAmount))" readonly /></td>
+                                </tr>
+                            </tfoot>
+                        }
+                    </table>
+                </div>
+            </div>
+            <div class="form-horizontal hidden">
+                <div class="table-toolbar">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="btn-group">
+                                <a class="BtnPlus btn green" title="dTable_AdvanceOutstation" href="javascript:AdvanceOutstation_addRow();">
+                                    Add Row
+                                    <i class="fa fa-plus"></i>
+                                </a>
+                            </div>
+                            <div class="btn-group">
+                                <a class="BtnPlus5 btn green" title="dTable_AdvanceOutstation" href="javascript:AdvanceOutstation_add5Row();">
+                                    Add 5 Rows
+                                    <i class="fa fa-plus"></i>
+                                </a>
+                            </div>
+                            <div class="btn-group">
+                                <a class="deleteall btn red" title="dTable_AdvanceOutstation" href="javascript:AdvanceOutstation_removeRow();">
+                                    Delete Row
+                                    <i class="fa fa-minus"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+    var _AdvanceOutstationTable = $('#tblAdvanceOutstation').DataTable({
+        "bLengthChange": false,
+        "bFilter": false,
+        "bPaginate": false,
+        "bInfo": false,
+        "bSort": false
+    });
+
+    function dTable_AdvanceOutstationValidation() { // AdvanceOutstationValidation
+        var _ValidationMsg = '';
+
+        var thisTable = $('#tblAdvanceOutstation');
+        thisTable.find(".Amount").each(function () {
+            var $row = $(this).closest("tr");
+            var _Amount = $row.find(".Amount").val();
+            var _RefNo = $row.find(".SubTypeColumn3").val();
+
+            if (_Amount == null || _Amount == '0' || _Amount == '') {
+                _ValidationMsg += '- @ClaimsSubtypeName (Total Advance Allowance) is required.\n'
+            }
+
+            if (_RefNo == null || _RefNo == '') {
+                _ValidationMsg += '- @ClaimsSubtypeName (Approval Letter Ref. No.) is required.\n'
+            }
+
+        });
+
+        return _ValidationMsg;
+    }
+
+    function AdvanceOutstation_removeRow() {
+        $.each($('input[class="AdvanceOutstationRemoveCheckbox"]:checked'), function (i, val) {
+            var row = $(this).closest("tr").get(0);
+            var id = $(this).attr("id");
+            _AdvanceOutstationTable.fnDeleteRow(mytable.fnGetPosition(row));
+        });
+
+        reorderTable('#tblAdvanceOutstation');
+    }
+
+    function AdvanceOutstation_add5Row() {
+        AdvanceOutstation_addRow();
+        AdvanceOutstation_addRow();
+        AdvanceOutstation_addRow();
+        AdvanceOutstation_addRow();
+        AdvanceOutstation_addRow();
+    }
+
+    function AdvanceOutstation_addRow() {
+        _AdvanceOutstationTable.fnAddData([
+            '<input type="checkbox" class="AdvanceRemoveCheckbox" />',
+            '<input type="text" name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[' + _AdvanceOutstationTable.fnSettings().fnRecordsTotal() + '].SubTypeColumn1" class="form-control" maxlength="200" />',
+            '<input type="text" name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[' + _AdvanceOutstationTable.fnSettings().fnRecordsTotal() + '].SubTypeColumn2" class="form-control" maxlength="200" />',
+            '<input type="text" name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[' + _AdvanceOutstationTable.fnSettings().fnRecordsTotal() + '].SubTypeColumn3" class="form-control" maxlength="200" />',
+            '<input type="text" name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[' + _AdvanceOutstationTable.fnSettings().fnRecordsTotal() + '].SubTypeColumn4" class="form-control" maxlength="200" />',
+            '<input type="text" name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[' + _AdvanceOutstationTable.fnSettings().fnRecordsTotal() + '].SubTypeColumn5" class="form-control" maxlength="200" />',
+            '<input type="text" name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[' + _AdvanceOutstationTable.fnSettings().fnRecordsTotal() + '].SubTypeColumn6" class="form-control" maxlength="200" />',
+            '<input type="text" name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[' + _AdvanceOutstationTable.fnSettings().fnRecordsTotal() + '].SubTypeColumn7" class="form-control" maxlength="200" />',
+            '<input type="text" name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[' + _AdvanceOutstationTable.fnSettings().fnRecordsTotal() + '].SubTypeColumn8" class="form-control" maxlength="200" />',
+            '<input type="text" name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[' + _AdvanceOutstationTable.fnSettings().fnRecordsTotal() + '].SubTypeColumn9" class="form-control" maxlength="200" />',
+            '<input type="text" name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[' + _AdvanceOutstationTable.fnSettings().fnRecordsTotal() + '].SubTypeColumn10" class="form-control" maxlength="200" />',
+            '<input type="text" name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[' + _AdvanceOutstationTable.fnSettings().fnRecordsTotal() + '].Amount" value="" class="form-control text-right Amount" />',
+            '<input type="text" name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[' + _AdvanceOutstationTable.fnSettings().fnRecordsTotal() + '].GSTAmount" value="" class="form-control text-right GSTAmount" readonly />',
+            '<input type="text" name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[' + _AdvanceOutstationTable.fnSettings().fnRecordsTotal() + '].TotalAmount" value="" class="form-control text-right SubTotalAmount" readonly />'
+        ]);
+
+        AdvanceOutstation_Initialize();
+    }
+
+    function AdvanceOutstation_Initialize() {
+        $('#tblAdvanceOutstation .date-picker').datepicker({
+            format: 'dd/mm/yyyy',
+            autoclose: true,
+        });
+        $('#tblAdvanceOutstation .date-picker').datepicker('setStartDate', '@dtStrStart');
+        $('#tblAdvanceOutstation .date-picker').datepicker('setEndDate', '@dtStrEnd');
+
+        if ('@GSTEnabled' == 'false') {
+            $('#tblAdvanceOutstation tbody tr').each(function () {
+                var _GSTAmount = $(this).children('td:eq(11)').children('input[type=text]');
+
+                _GSTAmount.prop('readonly', true);
+                _GSTAmount.val('0.00');
+            });
+        }
+        else {
+            $('#tblAdvanceOutstation tbody tr').each(function () {
+                var _GSTAmount = $(this).children('td:eq(11)').children('input[type=text]');
+
+                _GSTAmount.prop('readonly', true);
+                _GSTAmount.val('@GSTAmount');
+            });
+        }
+
+        $('#tblAdvanceOutstation tbody tr').each(function () {
+            var _noOfDays = $(this).children('td:eq(1)').children('input[type=text]');
+
+            _noOfDays.prop('readonly', true);
+            _noOfDays.val('@noOfDays');
+        });
+
+        $('#tblAdvanceOutstation tbody tr').each(function () {
+            var _AdvRate = $(this).children('td:eq(4)').children('input[type=text]');
+
+            _AdvRate.prop('readonly', true);
+            _AdvRate.val('@AdvRate');
+        });
+
+        $('#tblAdvanceOutstation tbody tr').each(function () {
+            var _subsistenceRate = $(this).children('td:eq(5)').children('input[type=text]');
+
+            _subsistenceRate.prop('readonly', true);
+            _subsistenceRate.val('@subsistenceRate');
+        });
+
+        $('#tblAdvanceOutstation tbody tr').each(function () {
+            var _totalSubsistence = $(this).children('td:eq(6)').children('input[type=text]');
+
+            _totalSubsistence.prop('readonly', true);
+            _totalSubsistence.val('@totalSubsistence');
+        });
+
+        $('#tblAdvanceOutstation tbody tr').each(function () {
+            var _HotelAdvRate = $(this).children('td:eq(7)').children('input[type=text]');
+
+            _HotelAdvRate.prop('readonly', true);
+            _HotelAdvRate.val('@HotelAdvRate');
+        });
+
+        $('#tblAdvanceOutstation tbody tr').each(function () {
+            var _HotelRate = $(this).children('td:eq(8)').children('input[type=text]');
+
+            _HotelRate.prop('readonly', true);
+            _HotelRate.val('@HotelRate');
+        });
+
+        $('#tblAdvanceOutstation tbody tr').each(function () {
+            var _totalHotel = $(this).children('td:eq(9)').children('input[type=text]');
+
+            _totalHotel.prop('readonly', true);
+            _totalHotel.val('@totalHotel');
+        });
+        $('#tblAdvanceOutstation tbody tr').each(function () {
+            var _Amount = $(this).children('td:eq(10)').children('input[type=text]');
+
+            _Amount.prop('readonly', true);
+            _Amount.val('@Amount');
+        });
+
+        $('#tblAdvanceOutstation tbody tr').each(function () {
+            var _TotalAmount = $(this).children('td:eq(12)').children('input[type=text]');
+
+            _TotalAmount.prop('readonly', true);
+            _TotalAmount.val('@TotalAmount');
+        });
+    }
+
+    $(document).ready(function () {
+        AdvanceOutstation_Initialize();
+    });
+</script>

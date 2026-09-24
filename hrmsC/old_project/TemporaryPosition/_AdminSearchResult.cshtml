@@ -1,0 +1,108 @@
+﻿@model IEnumerable<TemporaryPosition.Models.AdminSearchModel>
+
+@{
+	Layout = null;
+}
+
+<div class="portlet box blue">
+	<div class="mini-triangle"><img src="~/Assets/img/menu-red-triangle.png" /></div>
+	<div class="portlet-title">
+		<div class="caption">
+			<i class="fa fa-reorder"></i>Temporary Position Search
+		</div>
+		<input type="button" id="btn-Export" class="btn btn-xs green pull-right" value="Export To Excel" onclick="ExportToExcel();">
+		<div class="tools">
+		</div>
+	</div>
+
+	<div class="portlet-body form">
+		<div class="form-body">
+			<div class="form-horizontal">
+				<table id="tblResult" class="table table-striped table-bordered table-hover table-full-width">
+					<thead>
+						<tr>
+							<th></th>
+							<th>Reference No.</th>
+							<th>Applicant</th>
+							<th>Position Category</th>
+							@*<th>Grade</th>*@
+							<th>Status</th>
+							<th>Current In-Tray</th>
+							<th>Sub. Date</th>
+						</tr>
+					</thead>
+					<tbody>
+						@foreach (var item in Model)
+						{
+							string color = "green";
+							if (item.Status == "Declined" || item.Status == "Withdrawn")
+							{
+								color = "red";
+							}
+							<tr>
+								<td>
+									<a class="btn btn-primary" href="@Url.Action("Edit", "TemporaryPosition")?ID=@item.ID">
+										<i class="fa fa-edit"></i>
+									</a>
+								</td>
+								<td>
+									@*<a href="@Url.Action("Edit", "TemporaryPosition")?ID=@item.ID" target="_blank">@item.ReferenceNo</a>*@
+									@item.ReferenceNo
+								</td>
+								<td>
+									@if (!string.IsNullOrEmpty(item.Employee))
+									{
+										var employeeList = item.Employee.Split(',');
+										foreach (var emp in employeeList)
+										{
+											var Employee = emp.Split('/');
+											item.EmployeeID = Employee[0].Trim();
+											item.EmployeeNo = Employee[1].Trim();
+											item.EmployeeName = Employee[2].Trim();
+
+											<a href="@Url.Action("Index", "Employee")?EmployeeID=@item.EmployeeID" target="_blank">@item.EmployeeNo</a> <label> - </label> @item.EmployeeName <br />
+										}
+									}
+								</td>
+								<td>@item.PositionCategoryText (@item.PositionCategory)</td>
+								@*<td>@item.Grade</td>*@
+								<td style="color: @color; font-weight: bold">@item.Status</td>
+								<td>
+									@if (!string.IsNullOrEmpty(item.CurrentApprovers))
+									{
+										<ul style="padding-left:12px;">
+											@{
+												var approverList = item.CurrentApprovers.Split(',');
+												foreach (var approver in approverList)
+												{
+													@:
+													<li>@approver</li>
+												}
+											}
+										</ul>
+									}
+								</td>
+								<td>@item.SubmissionDate</td>
+							</tr>
+						}
+					</tbody>
+				</table>
+
+			</div>
+		</div>
+	</div>
+</div>
+
+	<script>
+		$('#tblResult').dataTable({
+			"aLengthMenu": [[10, 25, 50, 100, 1000], [10, 25, 50, 100, 1000]]
+		});
+
+		var tableWrapper = "#tblResult_wrapper";
+
+		jQuery(tableWrapper + ' .dataTables_filter input').addClass("form-control input-medium input-inline"); // modify table search input
+		jQuery(tableWrapper + ' .dataTables_length select').addClass("form-control input-small"); // modify table per page dropdown
+		jQuery(tableWrapper + ' .dataTables_length select').select2({
+			showSearchInput: false //hide search box with special css class
+		});
+	</script>

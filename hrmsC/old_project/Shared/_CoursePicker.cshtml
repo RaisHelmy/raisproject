@@ -1,0 +1,313 @@
+﻿
+@{
+    Layout = null;
+
+    string CategoryCode = ViewData["CategoryCode"] + "";
+    string CategoryDesc = ViewData["CategoryDesc"] + "";
+    string PickMode = ViewData["Mode"] + "";
+    string TrainingType = ViewData["Type"] + "";
+    string paramCategoryTypeCode = ViewData["paramCategoryTypeCode"] + "";
+}
+@if (string.IsNullOrEmpty(PickMode) || PickMode == "Draft")
+{
+    if (paramCategoryTypeCode != "I")
+    {
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-horizontal">
+                    <div class="form-group">
+                        <label class="control-label col-md-4 ">
+                            Course Title <span id="lvTypeMan" style="color:red;"> *</span>
+                        </label>
+                        <div class="col-md-8 form-control-static">
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="txtCourseSessionID" placeholder="BE Number" title="BE Number" />
+                                <span class="input-group-btn" id="btnSearch" style="">
+                                    <btn data-toggle="modal" class="btn default" onclick="GetCourseDetailByCourseSessionID()"><i class="fa fa-search"></i></btn>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-horizontal">
+                    <div class="form-group">
+                        <div class="col-md-12 form-control-static">
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="CPCourseTitle" readonly />
+                                <span class="input-group-btn" id="btnLookUp" style="">
+                                    <btn data-toggle="modal" class="btn default" onclick="clearCoursePickerResult()"><i class="fa fa-search"></i></btn>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-horizontal">
+                    <div class="form-group">
+                        <label class="control-label col-md-4 ">
+                            Course Title <span id="lvTypeMan" style="color:red;"> *</span>
+                        </label>
+                        <div class="col-md-8 form-control-static">
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="CPCourseTitle" readonly />
+                                <span class="input-group-btn" id="btnLookUp" style="">
+                                    <btn data-toggle="modal" class="btn default" onclick="clearCoursePickerResult()"><i class="fa fa-search"></i></btn>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+}
+else
+{
+    <div class="row">
+        <div class="col-md-12">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="control-label col-md-2">
+                        Course Title <span id="lvTypeMan" style="color:red;"> *</span>
+                    </label>
+                    <div class="col-md-10 form-control-static">
+                        <input type="text" class="form-control" id="CPCourseTitle" readonly />
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+
+<input type="hidden" id="hfCourseID" name="hfCourseID" />
+<input type="hidden" id="hfCourseSessionID" name="hfCourseSessionID" />
+
+@*<div>
+    <div class="col-md-12" style="padding-left:0px">
+        @if (string.IsNullOrEmpty(PickMode) || PickMode == "Draft")
+        {
+            <div class="col-md-6" style="padding-left:0px">
+                <div class="input-group">
+                    <input type="text" class="form-control" id="txtCourseSessionID" style="width:100%;float:left;" />
+                    <span class="input-group-btn" id="btnSearch" style="">
+                        <btn data-toggle="modal" class="btn default" onclick="GetCourseDetailByCourseSessionID()"><i class="fa fa-search"></i></btn>
+                    </span>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="input-group">
+                    <input type="text" class="form-control" id="CPCourseTitle" style="width:100%;float:left;" readonly />
+                    <span class="input-group-btn" id="btnLookUp" style="">
+                        <btn data-toggle="modal" class="btn default" onclick="clearCoursePickerResult()"><i class="fa fa-files-o"></i></btn>
+                    </span>
+                </div>
+            </div>
+        }
+        else
+        {
+            <input type="text" class="form-control" id="CPCourseTitle" style="width:100%;" readonly/>
+        }
+
+        <input type="hidden" id="hfCourseID" name="hfCourseID" />
+        <input type="hidden" id="hfCourseSessionID" name="hfCourseSessionID" />
+    </div>
+</div>*@
+
+
+<div class="modal fade" id="CoursePicker" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                <h4 class="modal-title">Course Picker</h4>
+            </div>
+            <div class="modal-body">
+                <div>
+                    @Html.Action("Index", "CoursePicker", new { CategoryCode = CategoryCode, CategoryDesc = CategoryDesc, TrainingTypeCode = TrainingType })
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn default green hide loadingbtn" disabled>Loading</button>
+                <button type="button" class="btn default green selectbtn" onclick="SetSelectedCourse()" >Select</button>
+                <button type="button" class="btn default" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script type="text/javascript">
+    function SetSelectedCourse() {
+        
+
+        $("#tblCoursePicker td input[type=radio]").each(function () {
+
+            var _selected = $(this).prop("checked");
+
+            if (_selected) {
+                $("#CPCourseTitle").val($(this).attr("CourseTitle"));
+                $("#hfCourseID").val($(this).val());
+                $("#hfCourseSessionID").val($(this).attr("CourseSessionID"));
+
+                
+                $("#divLoading").css("display", "block");
+                //SetDetails();
+                var myVar = setTimeout(SetDetails, 1000); //
+            
+                
+            }
+        });
+        
+    }
+
+    function SetDetails() {
+        var _CourseID = $("#hfCourseID").val();
+        var _CourseSessionID = $("#hfCourseSessionID").val();
+
+        
+
+        $.ajax({
+            url: '@Url.Content("~/CoursePicker/GetCourseDetails")',
+            type: 'POST',
+            cache: false,
+            async: false,
+            dataType: "json",
+            data: { 'CourseID': _CourseID, 'CourseSessionID': _CourseSessionID },
+            success: function (result) {
+                //console.log(result);
+
+                $('#CoursePicker').modal('toggle');
+
+                //$("#StartDate").val(result.StrStartDate);
+                //$("#EndDate").val(result.StrEndDate);
+                $("input[id=StartDate]").val(result.StrStartDate);
+                $("input[id=EndDate]").val(result.StrEndDate);
+                $("#CourseVenue").val(result.Venue);
+                $("#CourseProvider").val(result.Provider);
+                $("#Division").val(result.Division);
+                $("#Grade").val(result.Grade);
+                //$("#TrainingCost").val(result.Cost);
+                $("#TrainingFee").val(result.TrainingFee);
+                $("#hfTypeCode").val(result.TypeCode);
+                $("#hfTypeDesc").val(result.Type);
+                $("#TrainingCurrency").val(result.CurrencyCode);
+                $('input[id=TrainingCost]').val(result.Cost);
+                $('#TrainingCost').val(result.Cost);
+                //$("#TrainingType").val(result.TypeCode);
+                $("#MaxCapacity").val(result.MaxCapacity);
+
+                var CostItemDesc = "";
+
+                if (result.CostItemCode == "FEE.BE") {
+                    CostItemDesc = " (Course Fee per Event)";
+                }
+                else if (result.CostItemCode == "FEE.ATT") {
+                    CostItemDesc = " (Course Fee per Attendee)";
+                }
+
+                if ('@ViewBag.CategoryCode' == '01') {
+                    $("#DisplayTrainingFee").val(result.CurrencyCode + " " + parseFloat(result.TrainingFee).toFixed(2).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") + CostItemDesc);
+                } else if ('@ViewBag.CategoryCode' == '02') {
+                    $("#DisplayTrainingFee").val(parseFloat(result.TrainingFee).toFixed(2).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") + CostItemDesc);
+                }
+
+                //.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+                GetCourseCapacity(result.CourseID, result.CourseSessionID);
+
+                $("#divLoading").css("display", "none");
+
+            },
+            error: function (x, y, z) {
+                //alert('asdas');
+                $("#ConfirmUpdate").modal('toggle');
+                $("#divLoading").css("display", "none");
+                console.log(x + '\n' + y + '\n' + z);
+            }
+        });
+
+    }
+
+    function GetCourseDetailByCourseSessionID() {
+        var _CourseSessionID = $("#txtCourseSessionID").val();
+        var _TrainingTypeCode = $("#TrainingType").val();
+
+        if (_CourseSessionID == "") {
+            alert("Course Session ID is required.");
+            return false;
+        }
+        $.ajax({
+            url: '@Url.Content("~/CoursePicker/GetCourseDetailByCourseSessionID")',
+            type: 'POST',
+            cache: false,
+            async: false,
+            dataType: "json",
+            data: { 'CourseSessionID': _CourseSessionID, 'TrainingTypeCode': _TrainingTypeCode },
+            success: function (result) {
+                //console.log(result);
+
+                if (result.Success) {
+                    $("#hfCourseID").val(result.CourseDetails.CourseID);
+                    $("#hfCourseSessionID").val(result.CourseDetails.CourseSessionID);
+                    $("#CPCourseTitle").val(result.CourseDetails.CourseTitle);
+                    $("input[id=StartDate]").val(result.CourseDetails.StrStartDate);
+                    $("input[id=EndDate]").val(result.CourseDetails.StrEndDate);
+                    $("#CourseVenue").val(result.CourseDetails.Venue);
+                    $("#CourseProvider").val(result.CourseDetails.Provider);
+                    $("#Division").val(result.CourseDetails.Division);
+                    $("#Grade").val(result.CourseDetails.Grade);
+                    $("#TrainingFee").val(result.CourseDetails.TrainingFee);
+                    $("#hfTypeCode").val(result.CourseDetails.TypeCode);
+                    $("#hfTypeDesc").val(result.CourseDetails.Type);
+                    $("#TrainingCurrency").val(result.CourseDetails.CurrencyCode);
+                    $('input[id=TrainingCost]').val(result.CourseDetails.Cost);
+                    $('#TrainingCost').val(result.CourseDetails.Cost);
+                    $("#MaxCapacity").val(result.CourseDetails.MaxCapacity);
+                    //$("#TrainingType").val(result.CourseDetails.TypeCode);
+
+                    var CostItemDesc = "";
+
+                    if (result.CourseDetails.CostItemCode == "FEE.BE") {
+                        CostItemDesc = " (Course Fee per Event)";
+                    }
+                    else if (result.CourseDetails.CostItemCode == "FEE.ATT") {
+                        CostItemDesc = " (Course Fee per Attendee)";
+                    }
+                  
+                    if ('@ViewBag.CategoryCode' == '01') {
+                        $("#DisplayTrainingFee").val(result.CourseDetails.CurrencyCode + " " + parseFloat(result.CourseDetails.TrainingFee).toFixed(2).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") + CostItemDesc);
+                    } else if ('@ViewBag.CategoryCode' == '02') {
+                        $("#DisplayTrainingFee").val(parseFloat(result.CourseDetails.TrainingFee).toFixed(2).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") + CostItemDesc);
+                    }
+                    
+              
+                    GetCourseCapacity(result.CourseDetails.CourseID, result.CourseDetails.CourseSessionID);
+                } else {
+                    alert(result.ErrorMessage);
+                }
+                
+            },
+            error: function (x, y, z) {
+                //alert('asdas');
+                $("#ConfirmUpdate").modal('toggle');
+                $("#divLoading").css("display", "none");
+                console.log(x + '\n' + y + '\n' + z);
+            }
+        });
+    }
+
+    function clearCoursePickerResult() {
+        $("#CourseTitleResult").empty();
+        $('#CoursePicker').modal();
+    }
+
+</script>

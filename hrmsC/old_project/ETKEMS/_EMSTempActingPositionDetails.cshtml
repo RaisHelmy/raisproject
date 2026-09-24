@@ -1,0 +1,111 @@
+﻿@model ETKEMS.Models.ETKEMSViewModel
+@{
+    Layout = "";
+}
+
+<input type="hidden" name="PositionID" value="@Model.PositionID" />
+<input type="hidden" name="PositionNo" value="@Model.PositionNo" />
+
+<div class="portlet box blue">
+    <div class="mini-triangle"><img src="/_layouts/15/TNBESS/Assets/img/menu-red-triangle.png" /></div>
+    <div class="portlet-title">
+        <div class="caption">
+            <i class="fa fa-reorder"></i>Temporary Acting Position Details
+        </div>
+        <div class="tools">
+            <a title="" data-original-title="" href="javascript:;" class="collapse"> </a>
+        </div>
+    </div>
+    <div class="portlet-body form">
+        @if (Model.EStatus == ETKEMS.Status.Draft || Model.EStatus == ETKEMS.Status.Declined)
+        {
+            <div class="form-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-horizontal">
+                            <div class="form-group">
+                                <label class="control-label col-md-4">
+                                    Position <span style="color:red;"> *</span>
+                                </label>
+                                <div class="col-md-8 form-control-static">
+                                    <div class=" input-group ">
+                                        <input type="text" class="form-control PositionNo_PositionName" 
+                                               value="@Model.PositionNo - @Model.Position" readonly="readonly" />
+                                        <span class="input-group-btn">
+                                            <a data-toggle="modal" class="btn default" 
+                                               onclick="OpenCodPositionPicker(onPositionSelected)">
+                                                <i class="fa fa-user"></i>
+                                            </a>
+                                        </span>
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="form-horizontal">
+                            <div class="form-group">
+                                <label class="control-label col-md-4">Position Grade</label>
+                                <div class="col-md-8 form-control-static">
+                                    <input type="text" class="form-control CODPositionPositionGrade" 
+                                           value="@Model.JobGrade" readonly="readonly" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="form-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-horizontal">
+                            <div class="form-group">
+                                <label class="control-label col-md-4">Position</label>
+                                <div class="col-md-8 form-control-static">
+                                    <input type="text" class="form-control CODPositionPositionGrade" 
+                                           readonly="readonly" value="@Model.Position" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="form-horizontal">
+                            <div class="form-group">
+                                <label class="control-label col-md-4">Position Grade</label>
+                                <div class="col-md-8 form-control-static">
+                                    <input type="text" class="form-control CODPositionPositionGrade" 
+                                           readonly="readonly" value="@Model.JobGrade" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+@Html.Action("__CodPositionPicker", "ETKEMS", new { Selection = "single", PositionOnly = true })
+
+<script>
+    function onPositionSelected(selectedPosition) {
+        $('input[name="EmployeeID"]').val(selectedPosition.EmployeeID);
+        $('input[name="PositionID"]').val(selectedPosition.PositionID);
+        $('input[name="PositionNo"]').val(selectedPosition.PositionCode);
+
+        $('.PositionNo_PositionName').val(selectedPosition.Position);
+        $('.CODPositionEmpName').val(selectedPosition.EmployeeName);
+        $('.CODPositionEmpCode').val(selectedPosition.EmployeeCode);
+        $('.CODPositionSalaryGrade').val(selectedPosition.SalaryGrade);
+        $('.CODPositionJob').val(selectedPosition.Job);
+        $('.CODPositionPositionGrade').val(selectedPosition.PositionGrade);
+
+        return true;
+    }
+</script>

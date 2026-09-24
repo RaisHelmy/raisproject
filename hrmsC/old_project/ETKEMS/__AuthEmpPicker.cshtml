@@ -1,0 +1,142 @@
+﻿@model ETKEMS.Models.AuthEmpPickerConfig
+@{ 
+    List<string> PositionOptions = ViewBag.PositionOptions;
+}
+
+<div class="modal fade" id="AuthEmpsPicker" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                <h4 id="ConfirmationDialog_Title" class="modal-title">Employee Picker</h4>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="form-horizontal">
+                            <div class="form-body">
+                                <div class="form-group">
+                                    <label class="control-label col-md-2 ">
+                                        Search Type
+                                    </label>
+                                    <div class="col-md-4 form-control-static">
+                                        <select id="txtPositionNameSearch" class="form-control">
+                                            <option value="">- All -</option>
+                                            <option value="1">Subordinates</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="control-label col-md-2 ">
+                                        Employee Name
+                                    </label>
+                                    <div class="col-md-4 form-control-static">
+                                        <input type="text" class="form-control" name="txtEmpNameSearch" id="txtEmpNameSearch" />
+                                    </div>
+                                    <label class="control-label col-md-2 ">
+                                        Employee Number
+                                    </label>
+                                    <div class="col-md-4  form-control-static">
+                                        <input type="text" class="form-control" name="txtEmpCodeSearch" id="txtEmpCodeSearch" />
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="control-label col-md-2 ">
+                                        Position Name
+                                    </label>
+                                    <div class="col-md-4 form-control-static">
+                                        <select id="txtPositionNameSearch" class="form-control">
+                                            <option value="">-  All -</option>
+                                            @foreach (var opt in PositionOptions)
+                                            {
+                                                <option value="@opt">@opt</option>
+                                            }
+                                        </select>
+                                    </div>
+                                    <label class="control-label col-md-2 ">
+                                        Position Code
+                                    </label>
+                                    <div class="col-md-4  form-control-static">
+                                        <input type="text" class="form-control" name="txtPositionCodeSearch" id="txtPositionCodeSearch" />
+                                    </div>
+                                </div>
+                                <br />
+                                <div class="form-group ">
+                                    <div class="text-right">
+                                        <input id="btn-Search" type="button" value="Search" class="btn green btn-Search" onclick="SearchAuthEmpsPicker();">
+                                    </div>
+                                </div>
+                            </div>
+                            <br />
+                            <div id="AuthEmpsPickerResult">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" id="btnAuthEmpPickerAddEmployee" class="btn default blue">
+                    Add
+                </button>
+                <button type="button" id="btnAuthEmpPickerClose" class="btn default" data-dismiss="modal">
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function OpenAuthEmpsPickerPanel(onEmployeeSelectedCallback) {
+        $("#btnAuthEmpPickerAddEmployee").on("click", function () {
+            var _Selected = $('.AuthEmpPickerSelection:checked');
+            var selectedEmployees = [];
+
+            _Selected.each(function (i, v) {
+                selectedEmployees.push({
+                    EmployeeID: $(v).val(),
+                    AuthEmp: $(v).attr("AuthEmp"),
+                    AuthPosition: $(v).attr("AuthPosition"),
+                    AuthPositionNo: $(v).attr("AuthPositionNo"),
+                    AuthSalaryGrade: $(v).attr("AuthSalaryGrade"),
+                    AuthDuty: $(v).attr("AuthDuty"),
+                    AuthJobGrade: $(v).attr("AuthJobGrade"),
+                    AuthEmpID: $(v).attr("AuthEmpID")
+                });
+            });
+
+            var shouldClose = onEmployeeSelectedCallback(selectedEmployees);
+
+            if (shouldClose) {
+                $('#AuthEmpsPicker').modal("hide");
+                $("#btnAuthEmpPickerAddEmployee").off('click');
+            }
+        });
+
+        $('#AuthEmpsPicker').modal();
+    }
+
+    function SearchAuthEmpsPicker() {
+        var _EmpCode = $('#txtEmpCodeSearch').val();
+        var _EmpName = $('#txtEmpNameSearch').val();
+        var _PositionCode = $('#txtPositionCodeSearch').val();
+        var _PositionName = $('#txtPositionNameSearch').val();
+        var _SearchType = '';
+        var _CurrEmpID = '';
+        var _Selection = '@Model.Selection';
+
+        var data = {
+            EmployeeNo: _EmpCode,
+            EmployeeName: _EmpName,
+            PositionCode: _PositionCode,
+            PositionName: _PositionName,
+            SearchType: _SearchType,
+            Selection: _Selection
+        };
+
+        $("#AuthEmpsPickerResult").html("LOADING...");
+        $.post('@Url.Action("__AuthEmpPickerResult", "ETKEMS")', data, function (content) {
+            $("#AuthEmpsPickerResult").html(content);
+        });
+    }
+</script>

@@ -1,0 +1,226 @@
+﻿@model ESS.EPop.Models.EPopPendingAssessment
+@{
+    ViewBag.Title = "EPOP Assessment";
+    ViewBag.Description = "Update Routing Application";
+}
+
+<div class="form-section">
+    <div class="row">
+        <div class="col-md-12">
+            <h1 class="page-title">
+                Update Routing
+                <span style="padding-left:20px;">
+                    <small></small>
+                </span>
+            </h1>
+        </div>
+    </div>
+</div>
+
+    <div class="WorkOder_Edit">
+        <div class="">
+            @Html.HiddenFor(m => m.ID)
+            @Html.Partial("_Form")
+            <div class="form-actions right">
+                <button type="button" class="btn default" onclick="location.href= '@Url.Action("BAForm", "EPop")' ">
+                    Back
+                </button>
+                <a class="btn blue" data-toggle="modal" href="#ConfirmUpdate">
+                    <i class="fa fa-check"></i>
+                    Update
+                </a>
+            </div>
+            <div id="ConfirmUpdate" class="modal fade PopUpModal" tabindex="-1" data-focus-on="input:first">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal" data-number="" aria-hidden="true"></button>
+                            <h4 class="modal-title">Confirmation - Update This Record</h4>
+                        </div>
+                        <div class="modal-body">
+                            <div class="well">
+                                Clicking Update will update this record into the database with the latest information. If you want to discard the changes, click Close.
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" data-dismiss="modal" data-number="5" class="btn default">Close</button>
+                            <button type="submit" class="btn default blue" id="btnSubmitForm" onclick="javascript: ApproverAction(this)">
+                                <i class="fa fa-check"></i>
+                                Update
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+  <!-- Success Message -->
+<div class="modal fade" id="SuccessSubmit" tabindex="-1" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header Success-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true" style="display: none;"></button>
+                <h4 class="Success-title">Action Successfully Completed</h4>
+            </div>
+            <div class="modal-body Success-body">
+                <div class="well">
+                    The EPOP Assessment has been successfully updated.
+                </div>
+            </div>
+            <div class="modal-footer Success-footer">
+                <button type="submit" class="btn default blue" id="btnOK">
+                    <i class="fa fa-check"></i>
+                    OK
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<input type="hidden" id="hiddenTextID" />
+<div class="modal fade" id="PeoplePicker" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                <h4 class="modal-title">People Picker - Select By Employee Code or Name</h4>
+            </div>
+            <div class="modal-body">
+                <div class="well">
+                    @Html.Action("Index", "PeoplePicker")
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn default green" onclick="SetSelectedEmployee()">Select</button>
+                <button type="button" class="btn default" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Loading Gif -->
+<div id="divLoading" style="margin: 0px; padding: 0px; position: fixed; right: 0px;
+    top: 0px; width: 100%; height: 100%; background-color:gainsboro; z-index: 30001;
+    opacity: .8; filter: alpha(opacity=70);display:none">
+    <p style="position: absolute; top: 30%; left: 30%; color: black;">
+        Loading, please wait...<img src="../Assets/img/ajax-loading.gif" />
+
+    </p>
+</div>
+<script>
+    function editUrl(element) {
+        validation(element, "ConfirmUpdate");
+    }
+    function GetActiveLink(textID) {
+        $("#hiddenTextID").val(textID);
+
+        if (SearchPP !== undefined) {
+            $('#txtEmpCodeSearch').val("");
+            $('#txtEmpNameSearch').val("");
+            SearchPP();
+        }
+
+        $("#tblPeoplePicker td input[type=radio]").each(function () {
+            $(this).removeAttr('checked');
+        });
+        if ($("#" + textID + "EmpID").val() != "") {
+            var a = $("#" + textID + "EmpID").val();
+            $("#tblPeoplePicker td input[type=radio][value='" + a + "']").prop("checked", true);
+        }
+    }
+    function SetSelectedEmployee() {
+        var a = $("#hiddenTextID").val();
+        $("#tblPeoplePicker td input[type=radio]").each(function () {
+            var _selected = $(this).prop("checked");
+            var getEmpCode = $(this).attr("empCode");
+            var getEmpName = $(this).attr("empName")
+            var getEmpID = $(this).val();
+
+            if (_selected) {
+                var empNameElement = $("#txt" + a + "Code"),
+                    empIDElement = $("#" + a + "EmpCode");
+
+                if (empNameElement.val() !== undefined) {
+                    empNameElement.val(getEmpCode + ' ' + getEmpName);
+                    empIDElement.val(getEmpCode);
+                    
+                    $('.' + a + 'Code').each(function (index, element) {
+                        $(this).val(getEmpName);
+                    });
+
+                    $('.' + a + 'EmpCode').each(function (index, element) {
+                        $(this).val(getEmpCode);
+                    });
+                }
+                else {
+                    //var matches = a.match(/\d+/g);
+                    //if (matches > 0) {
+                    //    // the id attribute contains a digit
+                    //    $('#ChecklistUpdated' + matches).parent().addClass("checked");
+                    //    $('#ChecklistUpdated' + matches).prop('checked', true);
+                    //    $('#ChecklistUpdated' + matches).html(matches);
+                    //}
+                    //else {
+                    $("#txt" + a).val(getEmpCode + ' ' + getEmpName);
+                    $("#" + a).val(getEmpCode);
+                    //}
+                }
+
+                $('#PeoplePicker').modal('toggle');
+            }
+        });
+    }
+
+    function ApproverAction(btn) {
+        btn.disabled = true;
+        $("#divLoading").show();
+        var myVar = setTimeout(function () { ConfirmAction(btn); }, 3000);
+    }
+
+    function ConfirmAction(btn) {
+        var _IM = document.getElementById('IMEmpCode').value;
+        var _HOD = document.getElementById('HODEmpCode').value;
+        var _VP = document.getElementById('VPEmpCode').value;
+
+        var form = {
+            AssessmentID: '@Model.ID',
+            IM: _IM,
+            //IM: '',
+            HOD: _HOD,
+            VP: _VP    
+        };
+        if ($('#divLoading').is(':visible')) {
+
+
+            $.ajax({
+                type: "POST",
+                url: '@Url.Content("~/EPOP/UpdateAssessment")',
+                cache: false,
+                async: false,
+                dataType: "json",
+                data: form,
+                success: function (result) {
+                    if (result.Success) {
+                        $("#ConfirmUpdate").modal('toggle');
+                        $("#divLoading").hide();
+                        $("#SuccessSubmit").modal();
+
+                        $("#btnOK").click(function () { window.location.href = '@Url.Action("BAForm","EPOP")' });
+                    }
+                    else {
+                        $("#ConfirmUpdate").modal('toggle');
+                        $("#divLoading").hide();
+                        btn.disabled = false;
+
+                        alert(result.ErrorMsg);
+                    }
+                },
+                error: function (e) {
+
+                }
+            });
+        }
+    }
+</script>

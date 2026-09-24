@@ -1,0 +1,106 @@
+﻿@using ServiceAcceptance.Models
+@model ServiceAcceptanceVM
+@{
+    ViewBag.Title = "Service Acceptance";
+}
+
+<div class="form-section">
+    <div class="row">
+        <div class="col-md-12">
+            <h1 class="page-title">
+                @ViewBag.Title 
+                <span style="padding-left:20px;">
+                    <small></small>
+                </span>
+            </h1>
+        </div>
+    </div>
+</div>
+@Html.Partial("__Prompt")
+@using (Html.BeginForm("Index", "ServiceAcceptance", FormMethod.Post))
+{
+    @Html.Partial("_EntrySheetDetails",  Model);
+    @Html.Partial("_PurchaseOrderDetails", Model);
+    @Html.Partial("_ServiceAcceptanceHistory", Model);
+}
+
+<script>
+    function Release() {
+        var message = "Are you sure you want to approve this entry sheet?";
+
+        ShowConfirmationDialog({
+            message: message,
+            positiveCallback: PerformRelease
+        });
+    }
+
+    function PerformRelease() {
+        var data = {
+            EMPLOYEENO: '@ViewBag.EmployeeCode',
+            ENTRYSHEET: '@Model.EntrySheet.EntrySheetNo',
+            POSTING_DATE: $("#ct_PostDate").val(),
+            POSTING_OLD: '@Model.EntrySheet.PostingDate',
+            REL_CODE:'@Model.EntrySheet.ReleaseCode'
+        };
+        HideConfirmationDialog();
+        ShowLoadingScreen();
+
+        $.post('@Url.Action("Release", "ServiceAcceptance")', data, function (result) {
+            HideLoadingScreen();
+
+            if (result.IsSuccess) {
+                ShowDialog({
+                    title: result.Title,
+                    message: result.Message,
+                    okCallback: function () {
+                        window.location.href = '@Url.Action("AppHistory", "ServiceAcceptance")';
+                    }
+                });
+            }
+            else {
+                HideDialog();
+                alert(result.ErrorMessage);
+            }
+        });
+    }
+
+    function Reset() {
+        var message = "Are you sure you want to cancel release this entry sheet?";
+
+        ShowConfirmationDialog({
+            message: message,
+            positiveCallback: PerformReset
+        });
+    }
+
+    function PerformReset() {
+
+        var data = {
+            EMPLOYEENO: '@ViewBag.EmployeeCode',
+            ENTRYSHEET: '@Model.EntrySheet.EntrySheetNo',
+            POSTING_DATE: $("#ct_PostDate").val(),
+            POSTING_OLD: '@Model.EntrySheet.PostingDate',
+            REL_CODE:'@Model.EntrySheet.ReleaseCode'
+        };
+        HideConfirmationDialog();
+        ShowLoadingScreen();
+
+        $.post('@Url.Action("Reset", "ServiceAcceptance")', data, function (result) {
+            HideLoadingScreen();
+
+            if (result.IsSuccess) {
+                ShowDialog({
+                    title: result.Title,
+                    message: result.Message,
+                    okCallback: function () {
+                        window.location.href = '@Url.Action("AppHistory", "ServiceAcceptance")';
+                    }
+                });
+            }
+            else {
+                HideDialog();
+                alert(result.ErrorMessage);
+            }
+        });
+    }
+</script>

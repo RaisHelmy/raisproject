@@ -1,0 +1,48 @@
+﻿@model VerificationLetter.Models.VerificationModel
+@{
+    string readmode = string.IsNullOrEmpty(Model.ID) ? "" : "readonly";
+    Layout = null;
+
+    Dictionary<string, object> htmlAttributes = new Dictionary<string, object>();
+    htmlAttributes.Add("class", "form-control");
+    htmlAttributes.Add("rows", "5");
+    if (!string.IsNullOrEmpty(Model.ID))
+    {
+        htmlAttributes.Add("readonly", "readonly");
+    }
+}
+
+<style>
+    .allowance-checkbox {
+        margin-right: 3px !important;
+    }
+</style>
+
+<div class="form-group">
+    <label class="col-md-2 control-label">
+        Kepada
+    </label>
+    <div class="col-md-6">
+        @Html.TextAreaFor(m => m.AddressTo, htmlAttributes)
+        <span>*Sila masukkan nama dan alamat penuh penerima (contoh: Bank, Koperasi, Badan Kerajaan dan lain-lain).</span>
+    </div>
+</div>
+
+
+<div class="form-group d-none">
+    <label class="control-label col-md-2">
+        @*<abbr title="*Salinan surat pengesahan ini akan dimajukan melalui ESS. Jika tuan/puan memerlukan salinan surat asal, sila pilih cara penerimaan surat seperti berikut">Penghantaran</abbr>*@
+        Penghantaran
+    </label>
+    <div class="col-md-6">
+        @Html.DropDownListFor(m => m.DeliveryCode, new SelectList(ViewBag.DeliveryMethods, "Value", "Text"), new { @class = "bs-select form-control" })
+        <input id="DisabledDeliveryCode" class="form-control hidden" disabled value="@ViewBag.DisabledDeliveryMethods" />
+        <span>*Salinan surat pengesahan ini akan dimajukan melalui ESS. Jika tuan/puan memerlukan salinan surat asal, sila pilih cara penerimaan surat seperti diatas</span>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function () {
+        //App.initAjax();
+    });
+</script>

@@ -1,0 +1,75 @@
+﻿@model List<ESS.Core.EvaluationForm_2_SectionQuestion>
+@{
+    Layout = null;
+}
+
+@*<div class="portlet box blue">
+    <div class="portlet-body form">
+        <div class="form-body">
+            <div class="form-horizontal">*@
+                <div class="table-toolbar">
+                    <table id="tblResultQuestion" class="table table-striped table-bordered table-hover table-full-width SectionQuestionList">
+                        <thead>
+                            <tr>
+                                <th style="width:5%;"><input type="checkbox" ID="chkSelectAllQuestion" name="chkSelectAllQuestion" value="" onclick="javascript:SelectheaderCheckboxes(this)"></th>
+                                <th>Question</th>
+                                <th style="width:10%;">No.</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model)
+                            {
+                                <tr>
+                                    <td>
+                                        <input type="checkbox" ID="chkSelect" name="chkSelect" value="@item.SPItemID" @item.IsChecked>
+                                    </td>
+                                    <td>@item.Question</td>
+                                    <td>
+                                        <input class="form-control" type="text" ID="QuestionOrder" name="QuestionOrder" value="@item.QuestionOrder">
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            @*</div>
+        </div>
+    </div>
+</div>*@
+<script type="text/javascript">
+    $('#tblResultQuestion').dataTable(
+      {
+          "bLengthChange": false,
+          "bFilter": false,
+          "bPaginate": false,
+          "bInfo": false,
+          "bSortable": false,
+          "bRetrieve": true,
+          "bDestroy": true,
+          "bOrdering": false,
+          "aoColumnDefs": [
+          { 'bSortable': false, 'aTargets': [0] }
+          ]
+      });
+
+    function SelectheaderCheckboxes(headerchk) {
+        var gvcheck = document.getElementById("tblResultQuestion");
+        var i;
+        //Condition to check header checkbox selected or not if that is true checked all checkboxes
+        if (headerchk.checked) {
+            for (i = 0; i < gvcheck.rows.length; i++) {
+
+                var inputs = gvcheck.rows[i].getElementsByTagName('input');
+
+                inputs[0].checked = true;
+            }
+        }
+        //if condition fails uncheck all checkboxes in gridview
+        else {
+            for (i = 0; i < gvcheck.rows.length; i++) {
+                var inputs = gvcheck.rows[i].getElementsByTagName('input');
+                inputs[0].checked = false;
+            }
+        }
+    }
+</script>

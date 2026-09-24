@@ -1,0 +1,1289 @@
+﻿@model Tuple<List<ESS.Core.MileageBookDetails>, List<ESS.Core.DropDownObject>, List<SEP.RoutingManagement.Models.GetApprovalAuditLog>>
+
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewBag.Title = "Mileage Book Details";
+    DateTime d1 = DateTime.Now.AddYears(-20);
+    DateTime d2 = DateTime.Now.AddYears(20);
+    string dtStrStart = d1.ToString("dd/MM/yyyy");
+    string dtStrEnd = d2.ToString("dd/MM/yyyy");
+}
+
+<div class="form-section">
+    <div class="row">
+        <div class="col-md-12">
+            <h1 class="page-title">
+                Mileage Book Application
+                <span style="padding-left:20px;">
+                    <small></small>
+                </span>
+            </h1>
+        </div>
+    </div>
+</div>
+@if (!@ViewBag.CanSubmit)
+{
+    <div class="row">
+        <div class="col-md-12">
+            <div class="note note-danger">
+                <h4 class="block">
+                    Sorry, You are not allowed to submit this application.
+                    Immediate Manager not found, please contact administrator for assistance.
+                </h4>
+            </div>
+        </div>
+    </div>
+}
+
+@if (ViewBag.Error != null)
+{
+    <div class="row">
+        <div class="col-md-12">
+            <div class="note note-danger">
+                <h4 class="block">
+                    Invalid Mileage Book ID.
+                </h4>
+            </div>
+        </div>
+    </div>
+}
+
+<input id="hfEmployeeID" type="hidden" value="@ViewBag.EmployeeID" />
+<style type="text/css">
+    .hidden_1 {
+        display: none;
+    }
+</style>
+<div id="tab_1" class="tab-pane active">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="portlet box blue">
+                <div class="mini-triangle"><img src="/_layouts/15/TNBESS/Assets/img/menu-red-triangle.png" /></div>
+                <div class="portlet-title">
+                    <div class="caption">
+                        <i class="fa fa-reorder"></i>Requestor Details
+                    </div>
+                </div>
+                <div class="portlet-body form">
+                    <div class="form-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <label class="control-label col-md-4">Employee Number</label>
+                                        <div class="col-md-8 form-control-static">
+                                            <label id="ct00_EmployeeCode">@Model.Item1[0].EmployeeNumber</label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <label class="control-label col-md-4">Company</label>
+                                        <div class="col-md-8 form-control-static">
+                                            <label id="ct00_Company">@Model.Item1[0].Company</label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <label class="control-label col-md-4">Employee Name</label>
+                                        <div class="col-md-8 form-control-static">
+                                            <label id="ct00_EmployeeName">@Model.Item1[0].EmployeeName</label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <label class="control-label col-md-4">Department</label>
+                                        <div class="col-md-8 form-control-static">
+                                            <label id="ct00_Department">@Model.Item1[0].Department</label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <label class="control-label col-md-4">Position</label>
+                                        <div class="col-md-8 form-control-static">
+                                            <label id="ct00_Position">@Model.Item1[0].Position</label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <label class="control-label col-md-4">Unit/Section</label>
+                                        <div class="col-md-8 form-control-static">
+                                            <label id="ct00_UnitSection">@Model.Item1[0].UnitSection</label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <label class="control-label col-md-4">Immediate Manager</label>
+                                        <div class="col-md-8 form-control-static">
+                                            <label id="ct00_ImmediateManager">@Model.Item1[0].ImmediateManager</label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <label class="control-label col-md-4">Current Approver</label>
+                                        <div class="col-md-8 form-control-static">
+                                            <label id="ct00_CurrentApprover">@ViewBag.CurrApp</label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-12">
+            <div class="portlet box blue">
+                <div class="mini-triangle"><img src="/_layouts/15/TNBESS/Assets/img/menu-red-triangle.png" /></div>
+                <div class="portlet-title">
+                    <div class="caption">
+                        <i class="fa fa-reorder"></i>Mileage Book
+                    </div>
+                </div>
+                <div class="portlet-body form">
+                    <div class="form-body" id="ct01_CustomFieldFormView">
+                        <input type="hidden" id="FormID" value="FE3A5D7C-39CD-4E9A-94E3-011D82C27C70" />
+                        <input type="hidden" id="InstanceID" value="{InstanceID}" />
+                        <input type="hidden" id="ct_CurrEmpID" />
+                        <input type="hidden" id="ct_SubmissionDate" />
+                        <input type="hidden" id="hfStatus" value="@Model.Item1[0].Status" />
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <label class="control-label col-md-4">Reference No.</label>
+                                        <div class="col-md-8 form-control-static">
+                                            <input class="form-control" type="text" id="ct_ReferenceNo" value="@Model.Item1[0].ReferenceNo" readonly />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <label class="control-label col-md-4">Status</label>
+                                        <div class="col-md-8 form-control-static">
+                                            <input class="form-control" type="text" id="ct_Status" value="@Model.Item1[0].Status" readonly />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <label class="control-label col-md-4">Month<span class="mandatory"> *</span></label>
+                                        <div class="col-md-8 form-control-static">
+                                            <input type="hidden" id="hfMonth" value="@Model.Item1[0].Month" />
+                                            @if (@Model.Item1[0].Status == "Draft")
+                                            {
+                                                <select class="form-control" id="ct_Month">
+                                                    <option value="">Select One</option>
+                                                    <option value="January">January</option>
+                                                    <option value="February">February</option>
+                                                    <option value="March">March</option>
+                                                    <option value="April">April</option>
+                                                    <option value="May">May</option>
+                                                    <option value="June">June</option>
+                                                    <option value="July">July</option>
+                                                    <option value="August">August</option>
+                                                    <option value="September">September</option>
+                                                    <option value="October">October</option>
+                                                    <option value="November">November</option>
+                                                    <option value="December">December</option>
+                                                </select>
+                                            }
+                                            else
+                                            {
+                                                <input class="form-control" type="text" id="ct_Month" value="@Model.Item1[0].Month" readonly />
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <label class="control-label col-md-4">Year<span class="mandatory"> *</span></label>
+                                        <div class="col-md-8 form-control-static">
+                                            <input type="hidden" id="hfYear" value="@Model.Item1[0].Year" />
+                                            @if (@Model.Item1[0].Status == "Draft")
+                                            {
+                                                <select class="form-control" id="ct_Year">
+                                                    <option value="">Select One</option>
+                                                    @{
+                                                        int _StartYear = DateTime.Now.AddYears(-1).Year;
+                                                        int _EndYear = DateTime.Now.Year;
+
+                                                        while (_StartYear <= _EndYear)
+                                                        {
+                                                            <option value="@_StartYear">@_StartYear</option>
+                                                            _StartYear++;
+                                                        }
+                                                    }
+                                                </select>
+                                                        }
+                                                        else
+                                                        {
+                                                            <input class="form-control" type="text" id="ct_Year" value="@Model.Item1[0].Year" readonly />
+                                                        }
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <label class="control-label col-md-4">Month Start [A]<span class="mandatory"> *</span></label>
+                                        <div class="col-md-8 form-control-static">
+                                            @if (@Model.Item1[0].Status == "Draft")
+                                            {
+                                                <input class="form-control" type="text" id="ct_ReadingA" value="@Model.Item1[0].ReadingA"
+                                                       onkeyup="CalculateGrossDistance();" onkeypress="NumberOnly(event);" onpaste="return false" />
+                                            }
+                                            else
+                                            {
+                                                <input class="form-control" type="text" id="ct_ReadingA" value="@Model.Item1[0].ReadingA" readonly />
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <label class="control-label col-md-4">Month End [B]<span class="mandatory"> *</span></label>
+                                        <div class="col-md-8 form-control-static">
+                                            @if (@Model.Item1[0].Status == "Draft")
+                                            {
+                                                <input class="form-control" type="text" id="ct_ReadingB" value="@Model.Item1[0].ReadingB"
+                                                       onkeyup="CalculateGrossDistance();" onkeypress="NumberOnly(event);" onpaste="return false" />
+                                            }
+                                            else
+                                            {
+                                                <input class="form-control" type="text" id="ct_ReadingB" value="@Model.Item1[0].ReadingB" readonly />
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <label class="control-label col-md-4">Gross Distance [B - A]</label>
+                                        <div class="col-md-8 form-control-static">
+                                            <input class="form-control" type="text" id="ct_GrossDistance" value="@Model.Item1[0].GrossDistance" readonly />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <label class="control-label col-md-4">Claimable Distance<span class="mandatory"> *</span></label>
+                                        <div class="col-md-8 form-control-static">
+                                            @if (@Model.Item1[0].Status == "Draft")
+                                            {
+                                                <input class="form-control" type="text" id="ct_ClaimDistance" value="@Model.Item1[0].ClaimableDistance"
+                                                       onkeyup="CalculateTotalClaims();" onkeypress="NumberOnly(event);" onpaste="return false" />
+                                            }
+                                            else
+                                            {
+                                                <input class="form-control" type="text" id="ct_ClaimDistance" value="@Model.Item1[0].ClaimableDistance" readonly />
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <label class="control-label col-md-4">Rate<span class="mandatory"> *</span></label>
+                                        <div class="col-md-8 form-control-static">
+                                            <input type="hidden" id="hfRate" value="@Model.Item1[0].Rate" />
+                                            @if (@Model.Item1[0].Status == "Draft")
+                                            {
+                                                @Html.DropDownList("ct_Rate", new SelectList(Model.Item2, "Value", "Text"),
+                                                                   "Select One",
+                                                                   new { @class = "bs-select form-control", onchange = "CalculateTotalClaims();" })
+                                            }
+                                            else
+                                            {
+                                                <input class="form-control" type="text" id="ct_Rate" value="@Model.Item1[0].Rate" readonly />
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <label class="control-label col-md-4">Total Claims</label>
+                                        <div class="col-md-8 form-control-static">
+                                            <input class="form-control" type="text" id="ct_TotalClaims" value="@Model.Item1[0].TotalClaims" readonly />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <label class="control-label col-md-2">Remarks</label>
+                                        <div class="col-md-10 form-control-static">
+                                            @if (@Model.Item1[0].Status == "Draft")
+                                            {
+                                                <textarea class="form-control" id="ct_Remarks" rows="6" style="width:100%;">@Model.Item1[0].Remarks</textarea>
+                                            }
+                                            else
+                                            {
+                                                <textarea class="form-control" id="ct_Remarks" rows="6" style="width:100%;" readonly>@Model.Item1[0].Remarks</textarea>
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    @if (@Model.Item1[0].Status == "Draft")
+    {
+        @Html.Action("ChargeCodeControl", "ChargeCode", new { ID = @ViewBag.ApplicationID, ListOfChargeCode = "" })
+        <div class="row">
+            <div class="col-md-12">
+                <div class="portlet box blue">
+                    <div class="mini-triangle"><img src="/_layouts/15/TNBESS/Assets/img/menu-red-triangle.png" /></div>
+                    <div class="portlet-title">
+                        <div class="caption">
+                            <i class="fa fa-reorder"></i>Mileage Details
+                        </div>
+                    </div>
+                    <div class="portlet-body form">
+                        <div class="form-body" id="ct02_CustomFieldFormView">
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="form-horizontal">
+                                        <div class="table-toolbar">
+                                            <table id="tblMileage" class="table table-striped table-bordered table-hover table-full-width">
+                                                <thead>
+                                                    <tr>
+                                                        <th class="text-center" style="width:5%"></th>
+                                                        <th class="text-center" style="width:50%;">Charge Code</th>
+                                                        <th class="text-center" style="width:45%;">Amount</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    @foreach (var item in @Model.Item1)
+                                                    {
+                                                        <tr class="trMileage">
+                                                            <td><input type="checkbox" class="MileageBookRemoveCheckbox" /></td>
+                                                            <td>
+                                                                <input type="hidden" class="hfChargeCode" value="@item.ChargeCode" />
+                                                                <select class="form-control ddlChargeCode" onchange="ChargeCodeChange(this);">
+                                                                    <option value="">Select One</option>
+                                                                </select>
+                                                            <td><input class="form-control text-right txtAmount" type="text" value="@item.Amount" onblur="FormatAmountColumn(this)" onchange="AmountChange();" /></td>
+                                                        </tr>
+                                                    }
+                                                    <tr>
+                                                        <td colspan="2" class="text-right">Total</td>
+                                                        <td><input class="form-control text-right" type="text" id="txtTotalAmount" value="@Model.Item1[0].TotalClaims" readonly /></td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="form-horizontal">
+                                        <div class="table-toolbar">
+                                            <div class="row">
+                                                <div class="col-md-12">
+                                                    <div class="btn-group">
+                                                        <a class="BtnPlus btn green" href="javascript:MileageBook_addRow();">
+                                                            Add Row
+                                                            <i class="fa fa-plus"></i>
+                                                        </a>
+                                                    </div>
+                                                    <div class="btn-group">
+                                                        <a class="BtnPlus5 btn green" href="javascript:MileageBook_add5Row();">
+                                                            Add 5 Rows
+                                                            <i class="fa fa-plus"></i>
+                                                        </a>
+                                                    </div>
+                                                    <div class="btn-group">
+                                                        <a class="deleteall btn red" href="javascript:MileageBook_removeRow();">
+                                                            Delete Row
+                                                            <i class="fa fa-minus"></i>
+                                                        </a>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="row">
+            <div class="col-md-12">
+                <div class="portlet box blue">
+                    <div class="mini-triangle"><img src="/_layouts/15/TNBESS/Assets/img/menu-red-triangle.png" /></div>
+                    <div class="portlet-title">
+                        <div class="caption">
+                            <i class="fa fa-reorder"></i>Mileage Details
+                        </div>
+                    </div>
+                    <div class="portlet-body form">
+                        <div class="form-body" id="ct02_CustomFieldFormView">
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="form-horizontal">
+                                        <div class="table-toolbar">
+                                            <table id="tblMileage" class="table table-striped table-bordered table-hover table-full-width">
+                                                <thead>
+                                                    <tr>
+                                                        <th class="text-center" style="width: 50%;">Charge Code</th>
+                                                        <th class="text-center" style="width: 50%;">Amount</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    @foreach (var item in @Model.Item1)
+                                                    {
+                                                        <tr>
+                                                            <td><input class="form-control" type="text" value="@item.ChargeCode" readonly /></td>
+                                                            <td><input class="form-control text-right txtAmount" type="text" value="@item.Amount" readonly /></td>
+                                                        </tr>
+                                                    }
+                                                    <tr>
+                                                        <td class="text-right">Total</td>
+                                                        <td><input class="form-control text-right" type="text" id="txtTotalAmount" value="@Model.Item1[0].TotalClaims" readonly /></td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+    @if (@Model.Item1[0].Status == "Draft")
+    {
+        @Html.Action("AttachmentControl", "Attachment", new { EmployeeID = ViewBag.EmployeeID, Mode = "Add", SourceType = "MileageBook", RequestID = ViewBag.ApplicationID })
+    }
+    else
+    {
+        @Html.Action("AttachmentControl", "Attachment", new { EmployeeID = ViewBag.EmployeeID, Mode = "View", SourceType = "MileageBook", RequestID = ViewBag.ApplicationID })
+    }
+    @if (@Model.Item1[0].Status != "Draft")
+    {
+        <div class="row" id="DivAuditLog">
+            <div class="col-md-12">
+                <div class="portlet box blue">
+                    <div class="mini-triangle"><img src="/_layouts/15/TNBESS/Assets/img/menu-red-triangle.png" /></div>
+                    <div class="portlet-title">
+                        <div class="caption">
+                            <i class="fa fa-reorder"></i>Audit Log
+                        </div>
+                    </div>
+                    <div class="portlet-body form">
+                        <div class="form-body">
+                            <div class="form-horizontal">
+                                <div class="table-toolbar">
+                                    <table id="tblAuditLog" class="table table-striped table-bordered table-hover table-full-width">
+                                        <thead>
+                                            <tr>
+                                                <th style="width:15%;">Action By</th>
+                                                <th style="width:15%;">Date</th>
+                                                <th style="width:15%;">Activity</th>
+                                                <th style="width:15%;">Action</th>
+                                                <th style="width:40%;">Comment</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @if (@Model.Item3 != null && @Model.Item3.Count > 0)
+                                            {
+                                                foreach (var item in @Model.Item3)
+                                                {
+                                                    <tr>
+                                                        <td>@item.EmployeeName</td>
+                                                        <td>@item.FormattedDate</td>
+                                                        <td>@item.ActivityName</td>
+                                                        <td>@item.ActivityAction</td>
+                                                        <td>@item.Comment</td>
+                                                    </tr>
+                                                }
+                                            }
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+    <div class="row" id="DivApproval" style="display:none;">
+        <div class="col-md-12">
+            <div class="portlet box blue">
+                <div class="mini-triangle"><img src="/_layouts/15/TNBESS/Assets/img/menu-red-triangle.png" /></div>
+                <div class="portlet-title">
+                    <div class="caption">
+                        <i class="fa fa-reorder"></i>Approval Comments
+                    </div>
+                </div>
+                <div class="portlet-body form">
+                    <div class="form-body">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <label class="control-label col-md-2">Comments</label>
+                                        <div class="col-md-10 form-control-static">
+                                            <textarea class="form-control" id="txtAppComment" rows="5" cols="60"></textarea>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-12">
+        @if (@Model.Item1[0].Status == "Draft")
+        {
+            <input type="button" class="btn green" value="Save As Draft" id="btnSave" onclick="ConfirmAction('SaveAsDraft');" />
+            if (!@ViewBag.CanSubmit)
+            {
+                <input type="button" class="btn green" value="Submit" id="btnSubmit" onclick="FormValidation();" disabled />
+            }
+            else
+            {
+                <input type="button" class="btn green" value="Submit" id="btnSubmit" onclick="FormValidation();" />
+            }
+            <input type="button" class="btn green" value="Delete" id="btnDelete" onclick="ConfirmAction('Delete');" />
+        }
+        <input type="button" class="btn green" value="Withdraw" id="btnWithdraw" onclick="ConfirmAction('Withdraw');" style="display:none;" />
+        <input type="button" class="btn green" value="Agree" id="btnAgree" onclick="ConfirmAction('Agree');" style="display:none;" />
+        <input type="button" class="btn green" value="Approve" id="btnApprove" onclick="ConfirmAction('Approve');" style="display:none;" />
+        <input type="button" class="btn green" value="Return" id="btnReturn" onclick="Decline_CommentMandatory();" style="display:none;" />
+        <input type="button" class="btn green" value="Back" id="btnBack" onclick="BackRedirect();" />
+    </div>
+</div>
+<!-- Success Message -->
+<div class="modal fade" id="SuccessSubmit" tabindex="-1" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header Success-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true" style="display: none;"></button>
+                <h4 class="Success-title">Action Successfully Completed</h4>
+            </div>
+            <div class="modal-body Success-body">
+                <div class="well">
+                    Your Mileage Book Application has been successfully submitted.
+                </div>
+            </div>
+            <div class="modal-footer Success-footer">
+                <button type="submit" class="btn default blue" id="btnOK">
+                    <i class="fa fa-check"></i>
+                    OK
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Confirmation Message -->
+<div class="modal fade" id="ConfirmUpdate" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                <h4 class="modal-title">Confirmation</h4>
+            </div>
+            <div class="modal-body">
+                <div class="well">
+                    Are you sure you want to Submit this Mileage Book application?\n\rPress Confirm to proceed, or Close to stay on the current page.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="submit" class="btn default blue" id="btnSubmitForm" value="Submit" onclick="javascript: SaveForm('Pending');">
+                    <i class="fa fa-check"></i>
+                    Confirm
+                </button>
+                <button type="submit" class="btn default blue" id="btnSubmitSave" value="Draft" onclick="javascript: SaveForm('Draft');">
+                    <i class="fa fa-check"></i>
+                    Confirm
+                </button>
+                <button type="submit" class="btn default blue" id="btnSubmitDelete" onclick="javascript: DeleteForm();">
+                    <i class="fa fa-check"></i>
+                    Confirm
+                </button>
+                <button type="submit" class="btn default blue" id="btnSubmitWithdraw" onclick="javascript: ApproverAction('Withdrawn');">
+                    <i class="fa fa-check"></i>
+                    Confirm
+                </button>
+                <button type="submit" class="btn default blue" id="btnSubmitAgree" onclick="javascript: ApproverAction('Agreed');">
+                    <i class="fa fa-check"></i>
+                    Confirm
+                </button>
+                <button type="submit" class="btn default blue" id="btnSubmitApprove" onclick="javascript: ApproverAction('Approved');">
+                    <i class="fa fa-check"></i>
+                    Confirm
+                </button>
+                <button type="submit" class="btn default blue" id="btnSubmitReturn" onclick="javascript: ApproverAction('Returned');">
+                    <i class="fa fa-check"></i>
+                    Confirm
+                </button>
+                <button type="button" class="btn default" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Loading Gif -->
+<div id="divLoading" style="margin: 0px; padding: 0px; position: fixed; right: 0px; top: 0px; width: 100%; height: 100%; background-color: gainsboro; z-index: 30001; opacity: .8; filter: alpha(opacity=70); display: none; ">
+    <p style="position: absolute; top: 30%; left: 30%; color: black;">
+        Performing action, please wait...<img src="/_layouts/15/TNBESS/Assets/img/ajax-loading.gif">
+    </p>
+</div>
+<!-- Scripts -->
+<script type="text/javascript">
+    var _Path = '/_layouts/15/TNBESS';
+    //var _Path = '';
+
+    function GetParameterByName(name) {
+        name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
+        var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
+        results = regex.exec(location.search);
+        return results === null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
+    }
+
+    function NumberOnly(evt) {
+        var theEvent = evt || window.event;
+        var key = theEvent.keyCode || theEvent.which;
+        key = String.fromCharCode(key);
+        var regex = /[0-9]/;
+        if (!regex.test(key)) {
+            theEvent.returnValue = false;
+            if (theEvent.preventDefault) theEvent.preventDefault();
+        }
+    }
+
+    function ThousandSeparator(x) {
+        return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    }
+
+    function CalculateGrossDistance() {
+        var _ReadingA = document.getElementById('ct_ReadingA').value;
+        var _ReadingB = document.getElementById('ct_ReadingB').value;
+        var _GrossDistance = document.getElementById('ct_GrossDistance');
+
+        if (_ReadingA != '' && _ReadingB != '') {
+            _GrossDistance.value = ThousandSeparator(parseInt(_ReadingB) - parseInt(_ReadingA));
+        }
+    }
+
+    function CalculateTotalClaims() {
+        var _ClaimableDistance = document.getElementById('ct_ClaimDistance').value;
+        var _Rate = document.getElementById('ct_Rate').value;
+        var _TotalClaims = document.getElementById('ct_TotalClaims');
+
+        if (_ClaimableDistance != '' && _Rate != '') {
+            _TotalClaims.value = ThousandSeparator((parseFloat(_ClaimableDistance) * parseFloat(_Rate)).toFixed(2));
+        }
+        else {
+            _TotalClaims.value = '0.00';
+        }
+    }
+
+    function MileageBook_removeRow() {
+        $('#tblMileage tbody tr').not(':last').each(function () {
+            var _checkbox = $(this).children('td:eq(0)').find('input[type=checkbox]');
+
+            if ($('#tblMileage tbody tr').length == 2) {
+
+            }
+            else {
+                if ($(_checkbox).parent().hasClass('checked')) {
+                    $(_checkbox).closest('tr').remove();
+                }
+            }
+        });
+
+        AmountChange();
+    }
+
+    function MileageBook_add5Row() {
+        MileageBook_addRow();
+        MileageBook_addRow();
+        MileageBook_addRow();
+        MileageBook_addRow();
+        MileageBook_addRow();
+    }
+
+    function MileageBook_addRow() {
+        var _table = $('#tblMileage tr:last');
+        var _rowFormat = '<tr class="trMileage">' +
+                            '<td><div class="checker"><span><input type="checkbox" class="mbcheckbox"></span></div></td>' +
+                            '<td><input type="hidden" class="hfChargeCode" />' +
+                            '<select class="form-control ddlChargeCode" onchange="ChargeCodeChange(this);">' +
+                            '<option value="">Select One</option></select></td>' +
+                            '<td><input class="form-control text-right txtAmount" type="text" onblur="FormatAmountColumn(this)" onchange="AmountChange();" /></td></tr>';
+
+        _table.before(_rowFormat);
+
+        $('.mbcheckbox').parent().unbind('click');
+
+        $('.mbcheckbox').parent().click(function () {
+            if ($(this).hasClass('checked')) {
+                $(this).removeClass('checked');
+            }
+            else {
+                $(this).addClass('checked');
+            }
+        });
+
+        BindtoDDL();
+    }
+
+    var origBindtoDDL = BindtoDDL;
+    BindtoDDL = function () {
+        // overwrite method here
+        if (document.getElementById('ChargeCodeList') !== null) {
+            var _ChargeCodeList = document.getElementById('ChargeCodeList').value;
+            _ChargeCodeList = _ChargeCodeList.substring(0, _ChargeCodeList.length - 1);
+
+            BindOptionToSelect(_ChargeCodeList);
+        }
+
+        return origBindtoDDL();
+    }
+
+    function BindOptionToSelect(ChargeCodeList) {
+        var chargeCodes = ChargeCodeList.split(',');
+
+        $('.ddlChargeCode').each(function () {
+            $(this).find('option').remove().end().append('<option value="">Select One</option>');
+
+            if (chargeCodes != '') {
+                for (var i = 0; i < chargeCodes.length; i++) {
+                    var option = document.createElement("option");
+                    option.text = chargeCodes[i].trim();
+                    option.value = chargeCodes[i].trim();
+                    this.add(option);
+                }
+
+                //$(this).val($(this).siblings('.hfChargeCode').val());
+                //if ($(this).val() == null) {
+                //    $(this).children("option[value='']").attr('selected', 'selected');
+                //}
+
+                $(this).children("option[value='" + $(this).siblings('.hfChargeCode').val().trim() + "']").attr('selected', 'selected');
+            }
+        });
+    }
+
+    function ChargeCodeChange(x) {
+        var _hfChargeCode = $(x).siblings('.hfChargeCode').val($(x).val());
+    }
+
+    function AmountChange() {
+        var _Total = 0;
+
+        $('.txtAmount').each(function () {
+            var _Amount = parseFloat($(this).val().replace(/,/g, '')) || 0;
+            _Total += _Amount;
+        });
+
+        $('#txtTotalAmount').val(ThousandSeparator(_Total.toFixed(2)));
+    }
+
+    function FormatAmountColumn(amountInput) {
+        var amount = parseFloat(amountInput.value.replace(/,/g, ''));
+
+        if (!amount) {
+            amountInput.value = '0.00';
+        }
+        else {
+            amountInput.value = ThousandSeparator(amount.toFixed(2));
+        }
+    }
+
+    function GetChargeCodeDropDownDetails() {
+        var _ChargeCodeDetails = [];
+
+        $('.trMileage').each(function () {
+            var _ChargeCode = $(this).find('.ddlChargeCode').val();
+            var _Amount = $(this).find('.txtAmount').val();
+
+            var _details = { ChargeCode: _ChargeCode, Amount: _Amount };
+
+            _ChargeCodeDetails.push(_details);
+        });
+
+        return _ChargeCodeDetails;
+    }
+
+    function FormValidation() {
+        var _Month = document.getElementById('ct_Month');
+        var _Year = document.getElementById('ct_Year');
+        var _ReadingA = document.getElementById('ct_ReadingA');
+        var _ReadingB = document.getElementById('ct_ReadingB');
+        var _ClaimableDistance = document.getElementById('ct_ClaimDistance');
+        var _Rate = document.getElementById('ct_Rate');
+
+        var _ValidationMsg = '';
+
+        if (_Month.value == '')
+            _ValidationMsg += '- Month field is required.\n';
+
+        if (_Year.value == '')
+            _ValidationMsg += '- Year field is required.\n';
+
+        if (_ReadingA.value == '')
+            _ValidationMsg += '- Month Start field is required.\n';
+
+        if (_ReadingB.value == '')
+            _ValidationMsg += '- Month End field is required.\n';
+
+        if (_ClaimableDistance.value == '')
+            _ValidationMsg += '- Claimable Distance field is required.\n';
+
+        if (_Rate.value == '')
+            _ValidationMsg += '- Rate field is required.\n';
+
+        if (_ValidationMsg != null && _ValidationMsg != '') {
+            alert(_ValidationMsg);
+        }
+        else {
+            var _TotalClaims = parseFloat($('#ct_TotalClaims').val()) || 0;
+            var _TotalAmount = parseFloat($('#txtTotalAmount').val()) || 0;
+
+            if (_TotalClaims == 0) {
+                _ValidationMsg += '- Total Claims cannot be 0.00.\n';
+                alert(_ValidationMsg);
+                return false;
+            }
+
+            if (_TotalClaims != _TotalAmount) {
+                _ValidationMsg += '- Total Claims and Total Amount does not tally.\n';
+            }
+
+            if (_ValidationMsg != null && _ValidationMsg != '') {
+                alert(_ValidationMsg);
+            }
+            else {
+                ConfirmAction('Submit');
+            }
+        }
+    }
+
+    function Decline_CommentMandatory() {
+        var _ApproverComment = document.getElementById('txtAppComment').value;
+
+        if (_ApproverComment == '') {
+            alert('- Comment is required.');
+            return false;
+        }
+        else {
+            ConfirmAction('Return');
+        }
+    }
+
+    function SaveForm(_Status) {
+        if (_Status == 'Draft') {
+            $(".Success-body .well").html('Your Mileage Book Application has been successfully saved.');
+        }
+        else {
+            $(".Success-body .well").html('Your Mileage Book Application has been successfully submitted.');
+        }
+
+        jQuery.support.cors = true;
+
+        var _ChargeCodeDetails = GetChargeCodeDropDownDetails();
+
+        var form = {
+            SourceID: GetParameterByName('ID'),
+            EmployeeID: document.getElementById('hfEmployeeID').value,
+            ReferenceNo: document.getElementById('ct_ReferenceNo').value,
+            Status: _Status,
+            Month: document.getElementById('ct_Month').value,
+            Year: document.getElementById('ct_Year').value,
+            ReadingA: document.getElementById('ct_ReadingA').value,
+            ReadingB: document.getElementById('ct_ReadingB').value,
+            GrossDistance: document.getElementById('ct_GrossDistance').value,
+            ClaimableDistance: document.getElementById('ct_ClaimDistance').value,
+            Rate: document.getElementById('ct_Rate').value,
+            TotalClaims: document.getElementById('ct_TotalClaims').value,
+            Remarks: document.getElementById('ct_Remarks').value,
+            Details: _ChargeCodeDetails,
+            ListOfChargeCode: document.getElementById('ChargeCodeList').value
+        };
+
+        $("#divLoading").css("display", "block");
+
+        $.ajax({
+            url: '@Url.Content("~/Claims/UpdateMileageBookForm")',
+            type: 'POST',
+            cache: false,
+            async: false,
+            dataType: "json",
+            data: form,
+            success: function (result) {
+                if (result.Success) {
+                    $("#ConfirmUpdate").modal('toggle');
+                    $("#divLoading").css("display", "none");
+                    $("#SuccessSubmit").modal();
+                } else {
+                    $("#ConfirmUpdate").modal('toggle');
+                    $("#divLoading").css("display", "none");
+                    alert(result.ErrorMsg);
+                }
+            },
+            error: function (x, y, z) {
+                $("#ConfirmUpdate").modal('toggle');
+                $("#divLoading").css("display", "none");
+                console.log(x + '\n' + y + '\n' + z);
+            }
+        });
+    }
+
+    function DeleteForm() {
+        var ItemID = GetParameterByName('ID');
+
+        jQuery.support.cors = true;
+
+        $(".Success-body .well").html('Your Mileage Book Application has been deleted successfully' + '(' + $('#ct_ReferenceNo').val() + ')' + '.');
+        $("#divLoading").show();
+
+        $.ajax({
+            url: _Path + '/API/MileageBookWebApi/GetDeleteMileageBook?ID=' + ItemID,
+            type: 'GET',
+            contentType: "application/json;charset=utf-8",
+            success: function (result) {
+                if (result) {
+                    $("#ConfirmUpdate").modal('toggle');
+                    $("#divLoading").hide();
+                    $("#SuccessSubmit").modal();
+                }
+                else {
+                    $("#ConfirmUpdate").modal('toggle');
+                    $("#divLoading").hide();
+                    alert('Deletion has failed! Please reload and try again.');
+                }
+            },
+            error: function (x, y, z) {
+                console.log(x + '\n' + y + '\n' + z);
+            }
+        });
+    }
+
+    function GetButtonConfiguration(_ID) {
+        var _CurrEmpID = document.getElementById('hfEmployeeID').value;
+
+        jQuery.support.cors = true;
+
+        $.ajax({
+            url: _Path + '/API/MileageBookWebApi/GetMileageBookActions?ID=' + _ID + '&CurrEmpID=' + _CurrEmpID,
+            type: 'GET',
+            contentType: "application/json;charset=utf-8",
+            success: function (result) {
+                if (result != null) {
+                    SetButtonConfiguration(result);
+                }
+                else
+                    console.log('failed!');
+            },
+            error: function (x, y, z) {
+                alert(x + '\n' + y + '\n' + z);
+            }
+        });
+    }
+
+    function SetButtonConfiguration(result) {
+        var _Source = GetParameterByName('Source');
+
+        var ButtonWithdraw = document.getElementById('btnWithdraw');
+        var ButtonAgree = document.getElementById('btnAgree');
+        var ButtonApprove = document.getElementById('btnApprove');
+        var ButtonReturn = document.getElementById('btnReturn');
+
+        if (result.CanWithdraw == '1' && _Source == 'History') {
+            ButtonWithdraw.style.display = '';
+        }
+        else {
+            ButtonWithdraw.style.display = 'none';
+        }
+
+        if (result.CanAgree == '1' && _Source == 'InTray') {
+            document.getElementById('DivApproval').style.display = 'block';
+            ButtonAgree.style.display = '';
+        }
+        else {
+            document.getElementById('DivApproval').style.display = 'none';
+            ButtonAgree.style.display = 'none';
+        }
+
+        if (result.CanApprove == '1' && _Source == 'InTray') {
+            document.getElementById('DivApproval').style.display = 'block';
+            ButtonApprove.style.display = '';
+        }
+        else {
+            document.getElementById('DivApproval').style.display = 'none';
+            ButtonApprove.style.display = 'none';
+        }
+
+        if (result.CanReturn == '1' && _Source == 'InTray') {
+            document.getElementById('DivApproval').style.display = 'block';
+            ButtonReturn.style.display = '';
+        }
+        else {
+            document.getElementById('DivApproval').style.display = 'none';
+            ButtonReturn.style.display = 'none';
+        }
+    }
+
+    function ApproverAction(_Action) {
+        var _ID = GetParameterByName('ID');
+        var _TaskID = GetParameterByName('TaskID');
+        var _CurrentUserID = document.getElementById('hfEmployeeID').value;
+        var _ApproverComment = document.getElementById('txtAppComment').value;
+        var _ActivityName = '';
+        var _OptionalApprover = false;
+
+        jQuery.support.cors = true;
+
+        $("#divLoading").show();
+
+        var form = {
+            ID: _ID,
+            CurrentUserID: _CurrentUserID,
+            Status: _Action,
+            ApproverComment: _ApproverComment,
+            TaskID: _TaskID,
+            ActivityName: _ActivityName,
+            OptionalApprover: _OptionalApprover
+        };
+
+        $.ajax({
+            url: _Path + '/API/MileageBookWebApi/PostApproverAction',
+            type: 'POST',
+            data: JSON.stringify(form),
+            contentType: "application/json;charset=utf-8",
+            success: function (result) {
+                if (result) {
+                    $("#ConfirmUpdate").modal('toggle');
+                    $("#divLoading").hide();
+
+                    if (_Action == "Withdrawn") {
+                        $(".Success-body .well").html('Your Mileage Book Application has been successfully Withdrawn' + ' (' + $('#ct_ReferenceNo').val() + ')' + '.');
+                    }
+                    else if (_Action == "Agreed") {
+                        $(".Success-body .well").html('The Mileage Book has been successfully Agreed' + ' (' + $('#ct_ReferenceNo').val() + ')' + '.');
+                    }
+                    else if (_Action == "Approved") {
+                        $(".Success-body .well").html('The Mileage Book has been successfully Approved' + ' (' + $('#ct_ReferenceNo').val() + ')' + '.');
+                    }
+                    else if (_Action == "Returned") {
+                        $(".Success-body .well").html('The Mileage Book has been successfully Returned' + ' (' + $('#ct_ReferenceNo').val() + ')' + '.');
+                    }
+
+                    $("#SuccessSubmit").modal();
+                }
+                else {
+                    $("#ConfirmUpdate").modal('toggle');
+                    $("#divLoading").hide();
+                    alert('Your action on this Mileage Book Application has failed. Please reload and try again.');
+                }
+            },
+            error: function (x, y, z) {
+                $("#ConfirmUpdate").modal('toggle');
+                $("#divLoading").hide();
+                console.log(x + '\n' + y + '\n' + z);
+            }
+        });
+    }
+
+    function ConfirmAction(_Action) {
+        if (_Action == 'SaveAsDraft') {
+            $('#btnSubmitForm').addClass('hidden_1');
+            $('#btnSubmitSave').removeClass('hidden_1');
+            $('#btnSubmitDelete').addClass('hidden_1');
+            $('#btnSubmitWithdraw').addClass('hidden_1');
+            $('#btnSubmitAgree').addClass('hidden_1');
+            $('#btnSubmitApprove').addClass('hidden_1');
+            $('#btnSubmitReturn').addClass('hidden_1');
+            $('.modal-body .well').html('Are you sure you want to Save this Mileage Book Application?\n\rPress Confirm to proceed, or Close to stay on the current page.');
+            $('#btnOK').click(function () { RedirectTo('Draft'); });
+            $('#ConfirmUpdate').modal('show');
+        }
+        else if (_Action == 'Submit') {
+            $('#btnSubmitForm').removeClass('hidden_1');
+            $('#btnSubmitSave').addClass('hidden_1');
+            $('#btnSubmitDelete').addClass('hidden_1');
+            $('#btnSubmitWithdraw').addClass('hidden_1');
+            $('#btnSubmitAgree').addClass('hidden_1');
+            $('#btnSubmitApprove').addClass('hidden_1');
+            $('#btnSubmitReturn').addClass('hidden_1');
+            $('.modal-body .well').html('Are you sure you want to Submit this Mileage Book Application?\n\rPress Confirm to proceed, or Close to stay on the current page.');
+            $('#btnOK').click(function () { RedirectTo('Submit'); });
+            $('#ConfirmUpdate').modal('show');
+        }
+        else if (_Action == 'Delete') {
+            $('#btnSubmitForm').addClass('hidden_1');
+            $('#btnSubmitSave').addClass('hidden_1');
+            $('#btnSubmitDelete').removeClass('hidden_1');
+            $('#btnSubmitWithdraw').addClass('hidden_1');
+            $('#btnSubmitAgree').addClass('hidden_1');
+            $('#btnSubmitApprove').addClass('hidden_1');
+            $('#btnSubmitReturn').addClass('hidden_1');
+            $('.modal-body .well').html('Are you sure you want to Delete this Mileage Book Application?\n\rPress Confirm to proceed, or Close to stay on the current page.');
+            $('#btnOK').click(function () { RedirectTo('Delete'); });
+            $('#ConfirmUpdate').modal('show');
+        }
+        else if (_Action == "Withdraw") {
+            $('#btnSubmitForm').addClass('hidden_1');
+            $('#btnSubmitSave').addClass('hidden_1');
+            $('#btnSubmitDelete').addClass('hidden_1');
+            $('#btnSubmitWithdraw').removeClass('hidden_1');
+            $('#btnSubmitAgree').addClass('hidden_1');
+            $('#btnSubmitApprove').addClass('hidden_1');
+            $('#btnSubmitReturn').addClass('hidden_1');
+            $('.modal-body .well').html('Are you sure you want to Withdraw this Mileage Book Application?\n\rPress Confirm to proceed, or Close to stay on the current page.');
+            $('#btnOK').click(function () { RedirectTo('Withdraw'); });
+            $('#ConfirmUpdate').modal('show');
+        }
+        else if (_Action == "Agree") {
+            $('#btnSubmitForm').addClass('hidden_1');
+            $('#btnSubmitSave').addClass('hidden_1');
+            $('#btnSubmitDelete').addClass('hidden_1');
+            $('#btnSubmitWithdraw').addClass('hidden_1');
+            $('#btnSubmitAgree').removeClass('hidden_1');
+            $('#btnSubmitApprove').addClass('hidden_1');
+            $('#btnSubmitReturn').addClass('hidden_1');
+            $('.modal-body .well').html('Confirm to Agree this Mileage Book Application?\n\rPress Confirm to proceed, or Close to stay on the current page.');
+            $('#btnOK').click(function () { RedirectTo('Agree'); });
+            $('#ConfirmUpdate').modal('show');
+        }
+        else if (_Action == "Approve") {
+            $('#btnSubmitForm').addClass('hidden_1');
+            $('#btnSubmitSave').addClass('hidden_1');
+            $('#btnSubmitDelete').addClass('hidden_1');
+            $('#btnSubmitWithdraw').addClass('hidden_1');
+            $('#btnSubmitAgree').addClass('hidden_1');
+            $('#btnSubmitApprove').removeClass('hidden_1');
+            $('#btnSubmitReturn').addClass('hidden_1');
+            $('.modal-body .well').html('Confirm to Approve this Mileage Book Application?\n\rPress Confirm to proceed, or Close to stay on the current page.');
+            $('#btnOK').click(function () { RedirectTo('Approve'); });
+            $('#ConfirmUpdate').modal('show');
+        }
+        else if (_Action == "Return") {
+            $('#btnSubmitForm').addClass('hidden_1');
+            $('#btnSubmitSave').addClass('hidden_1');
+            $('#btnSubmitDelete').addClass('hidden_1');
+            $('#btnSubmitWithdraw').addClass('hidden_1');
+            $('#btnSubmitAgree').addClass('hidden_1');
+            $('#btnSubmitApprove').addClass('hidden_1');
+            $('#btnSubmitReturn').removeClass('hidden_1');
+            $('.modal-body .well').html('Confirm to Return this Mileage Book Application?\n\rPress Confirm to proceed, or Close to stay on the current page.');
+            $('#btnOK').click(function () { RedirectTo('Return'); });
+            $('#ConfirmUpdate').modal('show');
+        }
+    }
+
+    function RedirectTo(_Action) {
+        switch (_Action) {
+            case "Agree":
+            case "Approve":
+            case "Return":
+                window.location.href = '/_layouts/15/TNBESS/MSS/MileageBookInTray';  //'/_layouts/15/essv2/MSS/MileageBookInTray'; // 
+                break;
+            case "Draft":
+            case "Submit":
+            case "Delete":
+            case "Withdraw":
+                window.location.href = '/_layouts/15/TNBESS/Claims/MileageBookHistory'; //'/_layouts/15/essv2/Claims/MileageBookHistory'; // 
+                break;
+            default:
+                window.location.href = '/Pages/default.aspx';
+        }
+    }
+
+    function BackRedirect() {
+        if (document.referrer == "" || document.URL == document.referrer) {
+            window.location.href = '/_layouts/15/essv2/Claims/MileageBookHistory';
+        } else {
+            window.location.href = document.referrer;
+        }
+    }
+    $(document).ready(function () {
+        $("#ct_Month").val($('#hfMonth').val());
+        $("#ct_Year").val($('#hfYear').val());
+        $("#ct_Rate").val($('#hfRate').val());
+
+        GetButtonConfiguration(GetParameterByName('ID'));
+        BindtoDDL();
+        AmountChange();
+    });
+</script>

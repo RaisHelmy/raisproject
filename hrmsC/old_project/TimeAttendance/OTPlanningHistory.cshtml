@@ -1,0 +1,585 @@
+﻿
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewBag.Title = "Overtime Planning History (Self)";
+    DateTime d1 = DateTime.Now.AddYears(-20);
+    DateTime d2 = DateTime.Now.AddYears(20);
+    string dtStrStart = d1.ToString("dd MMM yyyy");
+    string dtStrEnd = d2.ToString("dd MMM yyyy");
+
+    DateTime d3 = DateTime.Now;
+    string dtStart = "01" + "/" + d3.AddMonths(-1).ToString("MM") + "/" + d3.AddMonths(-1).ToString("yyyy");
+    string dtDefault = (DateTime.DaysInMonth(d3.Year, d3.Month)).ToString() + "/" + d3.ToString("MM") + "/" + d3.ToString("yyyy");
+}
+
+<div class="row">
+    <div class="col-md-12">
+        <br />
+        <h1 class="page-title">
+            @ViewBag.Title <span style="padding-left:20px;"><small></small></span>
+        </h1>
+    </div>
+</div>
+<br />
+<div class="form-body">
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-4 control-label">Start Date</label>
+                    <div class="col-md-8 form-control-static">
+                        <div class="input-group date date-picker" data-date-format="dd MM yyyy">
+                            <input type="text" class="form-control" id="StartDate" name="StartDate" value="@dtStart" />
+                            <span class="input-group-btn">
+                                <button type="button" class="btn default"><i class="fa fa-calendar"></i></button>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-4 control-label">End Date</label>
+                    <div class="col-md-8 form-control-static">
+                        <div class="input-group date date-picker" data-date-format="dd MM yyyy">
+                            <input type="text" class="form-control" id="EndDate" name="EndDate" value="@dtDefault" />
+                            <span class="input-group-btn">
+                                <button type="button" class="btn default"><i class="fa fa-calendar"></i></button>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-4 control-label">Charge Type</label>
+                    <div class="col-md-8 form-control-static">
+                        <select class="form-control" id="ChargeType">
+                            <option selected value="">- All -</option>
+                            <option value="CC">Cost Center</option>
+                            <option value="PM">Order Number (Plant Maintenance)</option>
+                            <option value="JO">Order Number (Job Order)</option>
+                            <option value="WB">WBS Element</option>
+                            <option value="NT">Network Number And Operation Activity Number</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-4 control-label">Status</label>
+                    <div class="col-md-8 form-control-static">
+                        <select class="form-control" id="Status">
+                            <option selected value="">- All -</option>
+                            <option value="DR">Draft</option>
+                            <option value="PE">Pending</option>
+                            <option value="VE">Verified</option>
+                            <option value="AP">Approved</option>
+                            <option value="DE">Declined</option>
+                            <option value="WD">Withdrawn</option>
+                            <option value="CA">Cancelled</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-4 control-label">Charge Code</label>
+                    <div class="col-md-8 form-control-static">
+                        <input class="form-control" type="text" id="ChargeCode" />
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        @*<div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-4 control-label">Employee</label>
+                    <div class="col-md-8 form-control-static">
+                        <input class="form-control" type="text" id="EmployeeSearch" />
+                    </div>
+                </div>
+            </div>
+        </div>*@
+    </div>
+
+    <div class="row">&nbsp;</div>
+    <div class="row">
+        <div class="col-md-12">
+            <div class="text-right">
+                <input type="button" id="btn-Search" class="btn green btn-Search" value="Search" onclick="SearchListing();">
+                <input id="btn-Clear" type="button" class="btn default " value="Clear" onclick="ClearFilter();">
+            </div>
+        </div>
+    </div>
+    <div class="row">&nbsp;</div>
+    <div class="row">
+        <div class="col-md-12">
+            <div id="SearchResult">
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="TimesheetActionDiv">
+    <div class="row">
+        <div class="col-md-12">
+            <input type="button" class="btn green" value="Submit" id="btnSubmit" onclick="SubmitOTPlanning('PerformActionOnSubmit'); " />
+            <input type="button" class="btn green" value="Withdraw" id="btnWithdraw" onclick="WithdrawOTPlanning();" />
+            <input type="button" class="btn green" value="Cancel" id="btnCancel" onclick="CancelOTPlanning();" />
+            <input type="button" class="btn green" value="Delete" id="btnDelete" onclick="SubmitOTPlanning('Delete');" />
+        </div>
+    </div>
+</div>
+
+
+<!-- Success Message -->
+<div class="modal fade" id="SuccessSubmit" tabindex="-1" role="basic" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header Success-header">
+                @*<button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>*@
+                <h4 class="Success-title">Action Successfully Completed</h4>
+            </div>
+            <div class="modal-body Success-body">
+                <div class="well" id="SuccessMessage">
+                    Claims has been successfully submitted.
+                </div>
+            </div>
+            <div class="modal-footer Success-footer">
+                <a class="btn default blue" id="btnOK">
+                    <i class="fa fa-check"></i>
+                    OK
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+ <!-- Loading Gif -->
+<div id="divLoading" style="margin: 0px; padding: 0px; position: fixed; right: 0px;
+        top: 0px; width: 100%; height: 100%; background-color:gainsboro; z-index: 30001;
+        opacity: .8; filter: alpha(opacity=70);display:none">
+    <p style="position: absolute; top: 30%; left: 30%; color: black;">
+        Loading, please wait...<img src="../Assets/img/ajax-loading.gif" />
+
+    </p>
+</div>
+
+<iframe id="txtArea1" style="display:none"></iframe>
+<script type="text/javascript">
+
+    function ExportToExcel() {
+        // EXPORT TO EXCEL
+        var ua = window.navigator.userAgent;
+        var msie = ua.indexOf("MSIE ");
+
+        // Internet Explorer
+        if (msie > 0 || !!navigator.userAgent.match(/Trident.*rv\:11\./)) {
+            var _btn = document.getElementById('btn-Export');
+            _btn.onclick = fnExcelReport;
+        }
+        else {
+            $("#btn-Export").click(function (e) {
+                //getting values of current time for generating the file name
+                var dt = new Date();
+                var day = dt.getDate();
+                var month = dt.getMonth() + 1;
+                var year = dt.getFullYear();
+                var hour = dt.getHours();
+                var mins = dt.getMinutes();
+                var postfix = day + "." + month + "." + year + "_" + hour + "." + mins;
+                //creating a temporary HTML link element (they support setting file names)
+                var a = document.createElement('a');
+                //getting data from our div that contains the HTML table
+                var data_type = 'data:application/vnd.ms-excel';
+                var table_div = document.getElementById('tblResult');
+                var table_html = table_div.outerHTML.replace(/ /g, '%20');
+                a.href = data_type + ', ' + table_html;
+                //setting the file name
+                a.download = 'Claims_Report_' + postfix + '.xls';
+                //triggering the function
+                a.click();
+                //just in case, prevent default behaviour
+                e.preventDefault();
+            });
+        }
+    }
+
+    function fnExcelReport() {
+        var dt = new Date();
+        var day = dt.getDate();
+        var month = dt.getMonth() + 1;
+        var year = dt.getFullYear();
+        var hour = dt.getHours();
+        var mins = dt.getMinutes();
+        var postfix = day + "." + month + "." + year + "_" + hour + "." + mins;
+        var _fileName = 'Claims_Report_' + postfix + '.xls';
+
+        var tab_text = "<table border='2px'><tr bgcolor='#87AFC6'>";
+        var textRange; var j = 0;
+        tab = document.getElementById('tblResult'); // id of table
+
+        for (j = 0 ; j < tab.rows.length ; j++) {
+            tab_text = tab_text + tab.rows[j].innerHTML + "</tr>";
+            //tab_text=tab_text+"</tr>";
+        }
+
+        tab_text = tab_text + "</table>";
+
+
+        //var ua = window.navigator.userAgent;
+        //var msie = ua.indexOf("MSIE ");
+
+        //if (msie > 0 || !!navigator.userAgent.match(/Trident.*rv\:11\./))      // If Internet Explorer
+        //{
+        txtArea1.document.open("txt/html", "replace");
+        txtArea1.document.write(tab_text);
+        txtArea1.document.close();
+        txtArea1.focus();
+        sa = txtArea1.document.execCommand("SaveAs", true, _fileName);
+        //}
+        //else //other browser not tested on IE 11
+        //    sa = window.open('data:application/vnd.ms-excel,filename=aaa.xlsx' + encodeURIComponent(tab_text));
+        return (sa);
+    }
+
+
+    function SubmitOTPlanning(Type) {
+        DisableActionButton();
+        HideErrorWarningMessage();
+        var _EntryIDs = "";
+        var MatchAction = true;
+
+        $("#tblResult td input[type=checkbox]:checked").each(function (i, value) {
+            var row = $(this).closest("tr");
+            _EntryIDs += row.find('.OTPlanningCheckBox').val() + ',';
+            var Status = (row.find('.Status').text()).trim();
+            var CheckAction = CheckAllowedAction(Type, Status);
+            if (CheckAction != '') {
+                row.find('.ErrorMsg').attr('title', CheckAction);
+                row.find('.ErrorMsg').show();
+                MatchAction = false;
+            }
+        });
+
+        switch (Type) {
+            case 'PerformActionOnSubmit':
+                Action = 'Submitted';
+                break;
+            case 'Cancel':
+                Action = 'Cancelled';
+                break;
+            case 'Submit':
+                Action = 'Submitted';
+                break;
+            case 'Draft':
+                Action = 'Saved as Draft';
+                break;
+            case 'Delete':
+                Action = 'Deleted';
+                break;
+            default:
+        }
+
+        if (_EntryIDs != "") {
+            if (MatchAction) {
+                $.ajax({
+                    type: "POST",
+                    url: '@Url.Content("~/TimeAttendance/SubmitOTPlanningAction")',
+                    data: {
+                        EntryIDs: _EntryIDs,
+                        SubmitType: Type
+                    },
+                    success: function (result) {
+                        if (result.result == true) {
+
+                            $('#SuccessSubmit').modal();
+                            $('#SuccessMessage').html("Overtime Planning has been successfully " + Action);
+                            $('#btnOK').attr('href', '../TimeAttendance/OTPlanningHistory');
+                        } else {
+                            if (CheckEmptyKeyValueMessage(result.EntryErrorMessage)) {
+                                ShowErrorWarningMessage(result.EntryErrorMessage);
+                            } else {
+                                alert('Unknown error occurs. Please contact your system administrator.');
+                            }
+                        }
+                    },
+                    error: function (e) {
+                        console.log(e);
+                    }
+                });
+            }
+            else {
+                alert('Action is not allow.');
+            }
+        }
+        else {
+            alert('Please select entry to proceed.');
+        }
+        EnableActionButton();
+    }
+
+    function WithdrawOTPlanning() {
+        DisableActionButton();
+        HideErrorWarningMessage();
+        var _EntryIDs = "";
+        var MatchWithdrawnAction = true;
+
+        $("#tblResult td input[type=checkbox]:checked").each(function (i, value) {
+            var row = $(this).closest("tr");
+            _EntryIDs += row.find('.OTPlanningCheckBox').val() + ',';
+            var Status = (row.find('.Status').text()).trim();
+            if (Status != 'Pending') {
+                row.find('.ErrorMsg').attr('title', 'Unsuccessful. Only Pending record can be withdrawn.');
+                row.find('.ErrorMsg').show();
+                MatchWithdrawnAction = false;
+            }
+        });
+
+
+        if (_EntryIDs != "") {
+            if (MatchWithdrawnAction) {
+                $.ajax({
+                    type: "POST",
+                    url: '@Url.Content("~/TimeAttendance/WithdrawOTPlanning")',
+                    data: {
+                        EntryIDs: _EntryIDs
+                    },
+                    success: function (result) {
+                        if (result.result == true) {
+
+                            $('#SuccessSubmit').modal();
+                            $('#SuccessMessage').html("Overtime Planning has been successfully " + "Withdrawn.");
+                            $('#btnOK').attr('href', '../TimeAttendance/OTPlanningHistory');
+                        } else {
+                            if (CheckEmptyKeyValueMessage(result.EntryErrorMessage)) {
+                                ShowErrorWarningMessage(result.EntryErrorMessage);
+                            } else {
+                                alert('Unknown error occurs. Please contact your system administrator.');
+                            }
+                        }
+                    },
+                    error: function (e) {
+                        console.log(e);
+                    }
+                });
+            }
+            else {
+                alert('Action is not allow.');
+            }
+        }
+        else {
+            alert('Please select entry to proceed.');
+        }
+        EnableActionButton();
+    }
+
+    function CancelOTPlanning() {
+        DisableActionButton();
+        HideErrorWarningMessage();
+        var _EntryIDs = "";
+        var MatchCancelAction = true;
+
+        $("#tblResult td input[type=checkbox]:checked").each(function (i, value) {
+            var row = $(this).closest("tr");
+            _EntryIDs += row.find('.OTPlanningCheckBox').val() + ',';
+            var Status = (row.find('.Status').text()).trim();
+            if (Status != 'Approved') {
+                row.find('.ErrorMsg').attr('title', 'Unsuccessful. Only Approved record can be cancelled.');
+                row.find('.ErrorMsg').show();
+                MatchCancelAction = false;
+            }
+        });
+
+
+        if (_EntryIDs != "") {
+            if (MatchCancelAction) {
+                $.ajax({
+                    type: "POST",
+                    url: '@Url.Content("~/TimeAttendance/CancelOTPlanning")',
+                    data: {
+                        EntryIDs: _EntryIDs
+                    },
+                    success: function (result) {
+                        if (result.result == true) {
+
+                            $('#SuccessSubmit').modal();
+                            $('#SuccessMessage').html("Overtime Planning has been successfully " + "Cancelled.");
+                            $('#btnOK').attr('href', '../TimeAttendance/OTPlanningHistory');
+                        } else {
+                            if (CheckEmptyKeyValueMessage(result.EntryErrorMessage)) {
+                                ShowErrorWarningMessage(result.EntryErrorMessage);
+                            } else {
+                                alert('Unknown error occurs. Please contact your system administrator.');
+                            }
+                        }
+                    },
+                    error: function (e) {
+                        console.log(e);
+                    }
+                });
+            }
+            else {
+                alert('Action is not allow.');
+            }
+        }
+        else {
+            alert('Please select entry to proceed.');
+        }
+        EnableActionButton();
+    }
+
+    function CheckAllowedAction(Action, Status) {
+        if (Action == 'PerformActionOnSubmit') {
+            if (Status != 'Draft') {
+                return 'Unsuccesful. Please submit draft record only.';
+            }
+        }
+        if (Action == 'Withdraw') {
+            if (Status != 'Pending') {
+                return 'Unsuccesful. Only Pending record can be withdrawn.';
+            }
+        }
+        if (Action == 'Cancel') {
+            if (Status != 'Approved') {
+                return 'Unsuccesful. Only Approved record can be cancelled.';
+            }
+        }
+        if (Action == 'Delete') {
+            if (Status != 'Draft') {
+                return 'Unsuccesful. Only Draft record can be deleted.';
+            }
+        }
+
+        return '';
+    }
+
+    function SearchListing() {
+        var _DateFrom = $('#StartDate').val();
+        var _DateTo = $('#EndDate').val();
+        var _ChargeType = $('#ChargeType').val();
+        var _Status = $('#Status').val();
+        var _ChargeCode = $('#ChargeCode').val();
+        var _EmployeeSearch = $('#EmployeeSearch').val();
+
+        $("#SearchResult").html("LOADING...");
+
+        $.ajax({
+            type: "GET",
+            url: '@Url.Content("~/TimeAttendance/_OTPlanningHistoryResult")',
+            cache: false,
+            dataType: "html",
+            data: {
+                StartDate: _DateFrom,
+                EndDate: _DateTo,
+                ChargeType: _ChargeType,
+                Status: _Status,
+                ChargeCode: _ChargeCode,
+                EmployeeSearch: _EmployeeSearch
+            },
+            success: function (content) {
+                $("#SearchResult").html(content);
+                //ExportToExcel();
+            },
+            error: function (e) {
+                console.log(e);
+            }
+        });
+    }
+
+
+    function ShowErrorWarningMessage(Message) {
+
+        for (var k in Message) {
+            if (Message.hasOwnProperty(k)) {
+                //console.log("Key is " + k + ", value is" + Message[k]);
+
+                $("#tblResult td input[type=checkbox]:checked").each(function (i, value) {
+                    var row = $(this).closest("tr");
+                    var EntryID = row.find('.OTPlanningCheckBox').val();
+                    if (k == EntryID) {
+                        row.find('.ErrorMsg').attr('title', Message[k]);
+                        row.find('.ErrorMsg').show();
+
+                        return;
+                    }
+                });
+            }
+        }
+
+    }
+
+    function HideErrorWarningMessage() {
+        $('.ErrorMsg').attr('title', '');
+        $('.ErrorMsg').hide();
+    }
+
+    function CheckEmptyKeyValueMessage(Message) {
+        var count = 0;
+        for (var key in Message) {
+            count++;
+            break;
+        }
+        if (count == 0) {
+            return false;
+        } else {
+            return true;
+        }
+    }
+
+    function SelectUnselectAll(element) {
+        $('#tblResult .OTPlanningCheckBox').prop('checked', element.checked);
+        $.uniform.update();
+    }
+
+    function DisableActionButton() {
+        $('#TimesheetActionDiv').children().children().children('.btn').attr('disabled', true);
+        $('#divLoading').show();
+    }
+
+    function EnableActionButton() {
+        $('#divLoading').hide();
+        $('#TimesheetActionDiv').children().children().children('.btn').attr('disabled', false);
+    }
+    function ClearFilter() {
+        $('#StartDate').val('');
+        $('#EndDate').val('');
+        $('#ChargeType').val('');
+        $('#Status').val('');
+        $('#ChargeCode').val('');
+    }
+
+    jQuery(document).ready(function () {
+        $('.date-picker').datepicker({
+            format: 'dd/mm/yyyy',
+            autoclose: true,
+            setStartDate: '@dtStrStart',
+            setEndDate: '@dtStrEnd'
+        });
+
+        SearchListing();
+
+        $('input[type=checkbox]').uniform();
+    });
+
+
+
+</script>
+

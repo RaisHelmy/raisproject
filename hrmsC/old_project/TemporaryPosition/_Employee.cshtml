@@ -1,0 +1,137 @@
+﻿@model TemporaryPosition.Models.TemporaryPositionForm
+@{
+	Layout = null;
+}
+
+<div class="portlet box blue">
+	<div class="mini-triangle"><img src="/_layouts/15/TNBESS/Assets/img/menu-red-triangle.png"></div>
+	<div class="portlet-title">
+		<div class="caption">
+			<i class="fa fa-reorder"></i>Employee
+		</div>
+		<div class="tools">
+			<a title="" data-original-title="" href="javascript:;" class="collapse"> </a>
+		</div>
+	</div>
+	<div class="portlet-body form">
+		<div class="form-body">
+			<div id="tblEmployeeContainer">
+				@Html.Partial("_EmployeeTable", Model)
+			</div>
+
+			<div class="form-horizontal">
+				<div class="table-toolbar">
+					@if (Model.IsEditable)
+					{
+						<div class="row">
+							<div class="col-md-12">
+								<div class="btn-group">
+									<a class="btn green" id="btnAddEmployeePanel" onclick="OpenAddEmployeePanel();">
+										Add
+										<i class="fa fa-plus"></i>
+									</a>
+								</div>
+								<div class="btn-group">
+									<a class="btn red" id="btnRemoveEmployee" onclick="RemoveEmployee();">
+										Delete
+										<i class="fa fa-minus"></i>
+									</a>
+								</div>
+							</div>
+						</div>
+					}
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div class="modal fade" id="EmployeePeoplePicker" tabindex="-1" aria-hidden="true">
+	<div class="modal-dialog modal-lg">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+				<h4 id="ConfirmationDialog_Title" class="modal-title">Employees</h4>
+			</div>
+			<div class="modal-body">
+				@Html.Partial("_EmployeePicker")
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn default blue" onclick="AddEmployee()">
+					Add
+				</button>
+				<button type="button" class="btn default" data-dismiss="modal">
+					Close
+				</button>
+			</div>
+		</div>
+	</div>
+</div>
+
+<script>
+	var tblEmployee = null;
+	$(function () {
+		tblEmployee = $('#tblEmployee').dataTable({
+			"bLengthChange": false,
+			"bFilter": false,
+			"bPaginate": false,
+			"bInfo": false,
+			"bSortable": false,
+		});
+	});
+
+	function OpenAddEmployeePanel() {
+		$('.MultiPeoplePickerCheckbox').attr('checked', false);
+		$('#EmployeePeoplePicker').modal();
+	}
+
+	function AddEmployee() {
+		//GetEmployee() list the guid value in employee table
+		var _SelectedEmployee = $('.MultiPeoplePickerCheckbox:checked');
+		var _TotalEmployee = GetEmployee().length + _SelectedEmployee.length;
+
+		if (_TotalEmployee > 10) {
+			alert("Maximum 10 employees are allowed.");
+			return;
+		}
+
+		_SelectedEmployee.each(function (i, v) {
+			var row = $(v).closest('tr');
+			var EmployeeID = $(v).val();
+			var Employee = row.find('.Employee').text();
+			var EmployeeGrade = row.find('.EmployeeGrade').text();
+			var Manager = row.find('.IM').text();
+
+			if (GetEmployee().indexOf(EmployeeID) != -1) {
+				alert(Employee + " have been added.");
+				return;
+			}
+
+			tblEmployee.fnAddData([
+				'<input type="hidden" name="Employee" value="' + EmployeeID +
+				'" /><input type="checkbox" class="RemoveEmployeeCheckbox" value="' + EmployeeID + '" />',
+				Employee,
+				EmployeeGrade,
+				Manager]);
+		});
+		$('input[type="checkbox"]').uniform();
+		$('#EmployeePeoplePicker').modal("hide");
+	}
+
+	function RemoveEmployee() {
+		$('.RemoveEmployeeCheckbox:checked').each(function (i, v) {
+			var row = $(v).closest('tr').get(0);
+			tblEmployee.fnDeleteRow(tblEmployee.fnGetPosition(row));
+		});
+	}
+
+	function GetEmployee() {
+		var employee = [];
+
+		$('.RemoveEmployeeCheckbox').each(function (i, v) {
+			employee.push($(v).val());
+		});
+
+		return employee;
+	}
+</script>

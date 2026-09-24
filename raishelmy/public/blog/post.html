@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title id="post-title">Blog Post - Rais Helmy</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: #f5f2ed;
+            color: #111;
+            overflow-x: hidden;
+            line-height: 1.6;
+        }
+        img { max-width: 100%; display: block; }
+        a { text-decoration: none; color: inherit; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 0 40px; position: relative; }
+
+        /* ─── NAVBAR ─── */
+        header {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 22px 0; z-index: 100; position: sticky; top: 0;
+            background-color: transparent; transition: background-color 0.3s ease;
+        }
+        header.scrolled {
+            background-color: #e4dfd5;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            padding: 16px 0;
+        }
+        .logo { font-size: 24px; font-weight: 900; letter-spacing: -1px; }
+
+        .hamburger {
+            display: none;
+            flex-direction: column;
+            gap: 6px;
+            cursor: pointer;
+            z-index: 1001;
+            padding: 5px;
+        }
+        .hamburger span {
+            display: block;
+            width: 25px;
+            height: 2px;
+            background-color: #111;
+            transition: 0.3s;
+        }
+
+        nav ul { display: flex; list-style: none; gap: 30px; }
+        nav ul li a { font-size: 13px; font-weight: 600; color: #333; text-transform: uppercase; letter-spacing: 1px; }
+        .btn-contact {
+            border: 1.5px solid #222; padding: 10px 24px; border-radius: 50px;
+            font-weight: 700; font-size: 12px; cursor: pointer; text-transform: uppercase;
+            background: transparent; color: #222; transition: 0.3s;
+        }
+
+        /* ─── POST HERO ─── */
+        .post-hero {
+            padding: 60px 0 40px;
+        }
+        .post-meta {
+            font-size: 13px;
+            color: #999;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 16px;
+        }
+        .post-hero h1 {
+            font-size: 48px;
+            font-weight: 900;
+            margin-bottom: 24px;
+            line-height: 1.2;
+            letter-spacing: -1px;
+        }
+        .post-featured-img {
+            width: 100%;
+            max-height: 500px;
+            object-fit: cover;
+            border-radius: 20px;
+            margin: 40px 0;
+        }
+
+        /* ─── POST CONTENT ─── */
+        .post-content {
+            max-width: 800px;
+            margin: 60px auto;
+            font-size: 16px;
+            color: #444;
+            line-height: 1.8;
+        }
+        .post-content h2 {
+            font-size: 32px;
+            font-weight: 800;
+            margin: 40px 0 20px;
+        }
+        .post-content h3 {
+            font-size: 24px;
+            font-weight: 700;
+            margin: 30px 0 16px;
+        }
+        .post-content p {
+            margin-bottom: 24px;
+        }
+        .post-content ul, .post-content ol {
+            margin-left: 24px;
+            margin-bottom: 24px;
+        }
+        .post-content li {
+            margin-bottom: 12px;
+        }
+        .post-content blockquote {
+            border-left: 4px solid #111;
+            padding-left: 24px;
+            margin: 32px 0;
+            font-style: italic;
+            color: #666;
+        }
+        .post-content code {
+            background: #f0ece5;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+        }
+        .post-content pre {
+            background: #2d2d2d;
+            color: #f8f8f2;
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 24px 0;
+        }
+        .post-content pre code {
+            background: none;
+            padding: 0;
+            color: inherit;
+        }
+
+        /* ─── BACK LINK ─── */
+        .back-link {
+            display: inline-block;
+            margin: 60px 0 40px;
+            font-weight: 700;
+            color: #111;
+            border-bottom: 2px solid #111;
+            padding-bottom: 2px;
+        }
+        .back-link:hover {
+            opacity: 0.7;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 100px 20px;
+            font-size: 18px;
+            color: #999;
+        }
+
+        .error {
+            text-align: center;
+            padding: 100px 20px;
+        }
+        .error h2 {
+            font-size: 32px;
+            font-weight: 800;
+            margin-bottom: 16px;
+        }
+        .error p {
+            font-size: 16px;
+            color: #666;
+            margin-bottom: 24px;
+        }
+
+        /* ─── RESPONSIVE ─── */
+        @media (max-width: 750px) {
+            .container { padding: 0 20px; }
+            
+            .desktop-only { display: none; }
+            .hamburger { display: flex; }
+
+            nav {
+                position: fixed;
+                top: 0;
+                right: -100%;
+                width: 70%;
+                height: 100vh;
+                background-color: #f5f2ed;
+                padding: 100px 40px;
+                transition: 0.4s ease-in-out;
+                z-index: 1000;
+                box-shadow: -10px 0 30px rgba(0,0,0,0.05);
+            }
+            nav.active { right: 0; }
+            nav ul { flex-direction: column; gap: 40px; }
+            nav ul li a { font-size: 24px; font-weight: 700; }
+
+            .hamburger.active span:nth-child(1) { transform: rotate(45deg) translate(6px, 6px); }
+            .hamburger.active span:nth-child(2) { opacity: 0; }
+            .hamburger.active span:nth-child(3) { transform: rotate(-45deg) translate(5px, -5px); }
+
+            .post-hero h1 {
+                font-size: 32px;
+                margin-bottom: 16px;
+            }
+            .post-featured-img {
+                margin: 24px 0;
+            }
+            .post-content {
+                margin: 40px auto;
+                font-size: 15px;
+            }
+            .post-content h2 {
+                font-size: 24px;
+                margin: 32px 0 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <div class="container" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+        <a href="/" class="logo">RAIS HELMY</a>
+        <nav>
+            <ul>
+                <li><a href="/">Home</a></li>
+                <li><a href="/blog">Blog</a></li>
+                <li><a href="/proposal-khairul-aming">Proposal Khairul Aming</a></li>
+                <li><a href="/ma63">MA63 Dashboard</a></li>
+            </ul>
+        </nav>
+        <div class="hamburger">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+        <button class="btn-contact desktop-only" onclick="document.location='/#contact'">Contact Me</button>
+    </div>
+</header>
+
+<script>
+    const hamburger = document.querySelector('.hamburger');
+    const nav = document.querySelector('nav');
+    const navLinks = document.querySelectorAll('nav ul li a');
+
+    window.addEventListener('scroll', function() {
+        const header = document.querySelector('header');
+        if (window.scrollY > 0) {
+            header.classList.add('scrolled');
+        } else {
+            header.classList.remove('scrolled');
+        }
+    });
+
+    hamburger.addEventListener('click', () => {
+        hamburger.classList.toggle('active');
+        nav.classList.toggle('active');
+    });
+
+    navLinks.forEach(link => {
+        link.addEventListener('click', () => {
+            hamburger.classList.remove('active');
+            nav.classList.remove('active');
+        });
+    });
+</script>
+
+<section class="container">
+    <a href="/blog" class="back-link">← Back to Blog</a>
+    
+    <div id="post-container">
+        <div class="loading">Loading post...</div>
+    </div>
+</section>
+
+<script>
+    async function loadPost() {
+        const slug = window.location.pathname.split('/').pop();
+        
+        try {
+            const response = await fetch(`/api/blog/posts/${slug}`);
+            
+            if (!response.ok) {
+                throw new Error('Post not found');
+            }
+
+            const data = await response.json();
+            const post = data.post;
+
+            document.getElementById('post-title').textContent = `${post.title} - Rais Helmy`;
+
+            // Fetch HTML content from R2
+            let htmlContent = '';
+            try {
+                const contentResponse = await fetch(post.content_url);
+                if (contentResponse.ok) {
+                    htmlContent = await contentResponse.text();
+                }
+            } catch (e) {
+                console.error('Error fetching post content:', e);
+                htmlContent = '<p>Error loading post content.</p>';
+            }
+
+            const container = document.getElementById('post-container');
+            container.innerHTML = `
+                <section class="post-hero">
+                    <div class="post-meta">${new Date(post.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</div>
+                    <h1>${post.title}</h1>
+                    <img src="${post.featured_image}" alt="${post.title}" class="post-featured-img">
+                </section>
+
+                <article class="post-content">
+                    ${htmlContent}
+                </article>
+            `;
+        } catch (error) {
+            console.error('Error loading post:', error);
+            document.getElementById('post-container').innerHTML = `
+                <div class="error">
+                    <h2>Post not found</h2>
+                    <p>Sorry, the post you're looking for doesn't exist.</p>
+                    <a href="/blog" class="back-link">← Back to Blog</a>
+                </div>
+            `;
+        }
+    }
+
+    loadPost();
+</script>
+
+</body>
+</html>

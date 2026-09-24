@@ -1,0 +1,740 @@
+﻿@model LeaveQuota.Models.OILLeave
+@{
+    var CurrentEmployeeID = ViewData["CurrentEmployeeID"];
+    var CurrentEmployeeCode = ESS.Core.Common.GetEmployeeInfo(CurrentEmployeeID.ToString()).EmployeeNo;
+
+    var ApplicantDescription = ViewData["Description"];
+    var ReferenceNo = ViewData["ReferenceNo"];
+
+    string Status = ViewData["Status"] == null ? "Draft" : ViewData["Status"].ToString();
+
+    var readStatus = "readonly";
+    var isEditable = Status == "Draft" || Status == "Withdrawn";
+    if (isEditable)
+    {
+        readStatus = "";
+    }
+    var attachmentMode = "View";
+    if (string.IsNullOrEmpty(Model.RequestID))
+    {
+        attachmentMode = "New";
+    }
+    else if (Status == "Agreed"
+        && ESS.Core.Common.IsEmployeeInRoleByModule(ESS.Core.Common.GetEmployeeID(), "Leave Quota Application", "HR SSC BA"))
+    {
+        //get HRSSC BA to attach attachment
+        attachmentMode = "Add";
+    }
+    else if (string.IsNullOrEmpty(readStatus))
+    {
+        attachmentMode = "Add";
+    }
+
+    var isEligibilityZero = Model.OILList != null && Model.OILList.All(o => o.EligibleOILDays == "0.00");
+}
+<input type="hidden" value="@isEligibilityZero.ToString()" />
+<div id="divMainForm" class="portlet box blue">
+    <div class="mini-triangle"><img src="/_layouts/15/TNBESS/Assets/img/menu-red-triangle.png" /></div>
+    <div class="portlet-title">
+        <div class="caption">
+            Description of Work
+        </div>
+        <div class="tools">
+            <a title="" data-original-title="" href="javascript:;" class="collapse"> </a>
+        </div>
+    </div>
+    <div class="portlet-body form">
+        <div class="form-body">
+            <div class="form-horizontal">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-horizontal">
+                            <div class="form-group">
+                                <label class="control-label col-md-4">Reference No</label>
+                                <div class="col-md-8 form-control-static">
+                                    <input type="text" id="ReferenceNo" class="form-control" value="@ReferenceNo" readonly />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-horizontal">
+                            <div class="form-group">
+                                <label class="control-label col-md-4">Status</label>
+                                <div class="col-md-8 form-control-static">
+                                    <input type="text" id="Status" class="form-control" value="@Status" readonly />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <table id="tblOIL" class="table table-bordered table-full-width">
+                    <thead>
+                        <tr>
+                            <th style="display: @(string.IsNullOrEmpty(readStatus) ? "" : "none")"></th>
+                            <th>Start Date</th>
+                            <th>Start Time</th>
+                            <th>End Date</th>
+                            <th>End Time</th>
+                            <th>Total Hours <br>(HH:mm)</br></th>
+                            <th>Description of Work</th>
+                            <th>EASy</th>
+                            <th>Eligibility of OIL (days)</th>
+                            @if (isEditable || isEligibilityZero)
+                            {
+                                <th>Eligibility of Time Off</th>
+                            }
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @{ var index = 0;}
+                        @foreach (var item in Model.OILList)
+                        {
+                            var StartDate = string.Empty;
+                            var StartTime = string.Empty;
+                            var EndDate = string.Empty;
+                            var EndTime = string.Empty;
+
+                            if (!string.IsNullOrEmpty(Model.RequestID))
+                            {
+                                if (item.StartDateTime.Split(' ')[1] == "00:00:00") //StartTime
+                                {
+                                    DateTime strtDateBefore = DateTime.ParseExact(item.StartDateTime.Split(' ')[0], "dd/MM/yyyy", null).Subtract(TimeSpan.FromDays(1));
+                                    StartDate = strtDateBefore.ToString("dd/MM/yyyy");
+                                    StartTime = "24:00";
+                                }
+                                else
+                                {
+                                    StartDate = item.StartDateTime.Split(' ')[0];
+                                    StartTime = item.StartDateTime.Split(' ')[1];
+                                }
+
+                                if (item.EndDateTime.Split(' ')[1] == "00:00:00") //EndTime
+                                {
+                                    DateTime endDateBefore = DateTime.ParseExact(item.EndDateTime.Split(' ')[0], "dd/MM/yyyy", null).Subtract(TimeSpan.FromDays(1));
+                                    EndDate = endDateBefore.ToString("dd/MM/yyyy");
+                                    EndTime = "24:00";
+                                }
+                                else
+                                {
+                                    EndDate = item.EndDateTime.Split(' ')[0];
+                                    EndTime = item.EndDateTime.Split(' ')[1];
+                                }
+                            }
+
+                            <tr>
+                                <td style="display: @(string.IsNullOrEmpty(readStatus) ? "" : "none")">
+                                    <input name="OILLeave[@index].CheckBox" type="checkbox" class="tick DestroyUniform" style="margin-left: 13px; margin-top: 10px;" />
+                                </td>
+                                <td>
+                                    <div class="input-group date  @(string.IsNullOrEmpty(readStatus) ? "date-picker": "")" data-date-format="dd MM yyyy">
+                                        <input name="OILLeave[@index].StartDate" type="text" style="min-width:100px" class="form-control startDate" value="@(string.IsNullOrEmpty(Model.RequestID) ? "": StartDate)" @readStatus />
+                                        <span class="input-group-btn">
+                                            <button type="button" class="btn default"><i class="fa fa-calendar"></i></button>
+                                        </span>
+                                    </div>
+
+                                </td>
+                                <td>
+                                    <input type="text" name="OILLeave[@index].StartTime" style="min-width:76px" class="startTime time-picker form-control" value="@(string.IsNullOrEmpty(Model.RequestID) ? "": StartTime)" placeholder="HH:MM" @readStatus />
+                                </td>
+                                <td>
+                                    <div class="input-group date  @(string.IsNullOrEmpty(readStatus) ? "date-picker": "")" data-date-format="dd MM yyyy">
+                                        <input name="OILLeave[@index].EndDate" type="text" style="min-width:100px" class="form-control endDate" value="@(string.IsNullOrEmpty(Model.RequestID) ? "": EndDate)" @readStatus />
+                                        <span class="input-group-btn">
+                                            <button type="button" class="btn default"><i class="fa fa-calendar"></i></button>
+                                        </span>
+                                    </div>
+
+                                </td>
+                                <td>
+                                    <input name="OILLeave[@index].EndTime" type="text" style="min-width:76px" class="endTime time-picker form-control" value="@(string.IsNullOrEmpty(Model.RequestID) ? "": EndTime)" placeholder="HH:MM" @readStatus />
+                                </td>
+                                <td>
+                                    <input name="OILLeave[@index].TotalHours" type="text" class="totalHours form-control" readonly value="@(string.IsNullOrEmpty(Model.RequestID) ? "00:00": item.TotalHours)" @readStatus />
+                                </td>
+                                <td>
+                                    <input type="text" name="OILLeave[@index].Description" class="description form-control" maxlength="1000" style="min-width:350px;" value="@item.Description" @readStatus />
+                                </td>
+                                <td>
+                                    <a class="EASy blue" name="OILLeave[@index].Link" style="text-decoration:underline; cursor:pointer">EASy</a>
+                                </td>
+                                <td>
+                                    <input type="text" name="OILLeave[@index].OILNumber" class="oil form-control" readonly value="@(string.IsNullOrEmpty(Model.RequestID) ? "0.00": item.EligibleOILDays)" @readStatus />
+                                </td>
+                                @if (isEditable || isEligibilityZero)
+                                {
+                                    <td>
+                                        <input type="text" name="OILLeave[@index].OILTIMEOFF" class="timeoff form-control" readonly value="@(string.IsNullOrEmpty(Model.RequestID) ? "00:00": item.TimeOffHours)" @readStatus />
+                                    </td>
+                                }
+                                else
+                                {
+                                    <input type="hidden" name="OILLeave[@index].OILTIMEOFF" class="timeoff form-control" readonly value="@(string.IsNullOrEmpty(Model.RequestID) ? "00:00": item.TimeOffHours)" @readStatus />
+                                }
+                            </tr>
+
+                            index++;
+                        }
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <td colspan="@(string.IsNullOrEmpty(readStatus) ? "8" : "7")"></td>
+                            <td>
+                                <input type="text" class="oilTotal form-control" readonly />
+                            </td>
+                            @if (isEditable || isEligibilityZero)
+                            {
+                                <td>
+                                    <input type="text" class="timeOffTotal form-control" readonly />
+                                </td>
+                            }
+                            else
+                            {
+                                <input type="hidden" class="timeOffTotal form-control" readonly />
+                            }
+                        </tr>
+                    </tfoot>
+                </table>
+
+                @if (string.IsNullOrEmpty(readStatus))
+                {
+                    <!--action buttons-->
+                    <a class="btn green" id="btnAddRow" onclick="javascript: AddRow()">
+                        <i class="fa fa-plus"></i>
+                        Add Row
+                    </a>
+                    <a class="btn green" id="btnAddFiveRows" onclick="javascript: AddFiveRows()">
+                        <i class="fa fa-plus"></i>
+                        Add 5 Rows
+                    </a>
+                    <a class="btn red" id="btnDeleteRow" onclick="javascript: DeleteRow()">
+                        <i class="fa fa-minus"></i>
+                        Delete Row
+                    </a>
+                }
+
+                <div class="row">&nbsp;</div>
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="form-horizontal">
+                            <div class="form-group">
+                                <label class="control-label col-md-2">Description/Comment</label>
+                                <div class="col-md-8">
+                                    <textarea maxlength="1000" rows="5" class="form-control" id="ApplicantDescription" @readStatus>@ApplicantDescription</textarea>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!--attachment control-->
+@Html.Action("AttachmentControl", "Attachment", new { EmployeeID = CurrentEmployeeID, Mode = attachmentMode, SourceType = Model.GetDisplayName(), RequestID = Model.RequestID })
+
+<div class="modal fade" id="EASYModal" tabindex="-1" aria-hidden="true" data-keyboard="false">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header Success-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                <h4 class="Success-title">EASy Door Access Records</h4>
+            </div>
+            <div class="modal-body Success-body">
+                <div id="EASYModalBody">
+
+                </div>
+            </div>
+            <div class="modal-footer Success-footer">
+                <button type="button" class="btn default blue" data-dismiss="modal">
+                    <i class="fa fa-check"></i>
+                    OK
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+
+    var OILTable = $('#tblOIL').DataTable({
+        "bLengthChange": false,
+        "bFilter": false,
+        "bPaginate": false,
+        "bInfo": false,
+        "columnDefs": [
+            { "name": "checkboxTick", "targets": 0 },
+            { "name": "startdate", "targets": 1 },
+            { "name": "starttime", "targets": 2 },
+            { "name": "enddate", "targets": 3 },
+            { "name": "endtime", "targets": 4 },
+            { "name": "totalhours", "targets": 5 },
+            { "name": "desc", "targets": 6 },
+            { "name": "link", "targets": 7 },
+            { "name": "eligibleoil", "targets": 8 },
+            { "name": "eligibletimeoff", "targets": 9}
+        ]
+    });
+
+    $(window).load(function () {
+        $.uniform.restore(".DestroyUniform");
+    });
+
+    $(document).ready(function () {
+        InitDateAndTimePickers();
+        var status = '@Status';
+        if (status = "") {
+            $(".oilTotal").val("0.0");
+            $(".timeOffTotal").val("00:00");
+        }
+
+        CalculateOILSum();
+    });
+
+    function InitDateAndTimePickers() {
+        $('.date-picker').datepicker({
+            format: 'dd/mm/yyyy',
+            autoclose: true
+        });
+
+        $('.time-picker').inputmask("mask", {
+            "mask": "99:99"
+        });
+    }
+
+    function setStartDate() {
+        $('.date-picker').datepicker('setDate', new Date());
+    }
+
+    function AddRow() {
+        var $tr = $("#tblOIL>tbody>tr:last");
+        var $clone = $tr.clone();
+
+        var array = [];
+        $($clone[0]).has('td').each(function () {
+            var arrayItem = {};
+            $('td', $(this)).each(function (index, item) {
+                arrayItem[index] = $(item).html();
+            });
+            array.push(arrayItem);
+        });
+        OILTable.fnAddData(array[0]);
+
+        $clone = $("#tblOIL>tbody>tr:last");
+        $clone.find('.startDate').val('');
+        $clone.find('.endDate').val('');
+        $clone.find('.startTime').val('');
+        $clone.find('.endTime').val('');
+        $clone.find('.totalHours').val('00:00');
+        $clone.find('.timeoff').val('00:00');
+        $clone.find('.oil').val('0.00');
+        $clone.find('.description').val('');
+        $clone.find(':checkbox').attr('checked', false);
+
+        InitDateAndTimePickers();
+    }
+
+    function AddFiveRows() {
+        for (var i = 0; i < 5; i++) {
+            AddRow();
+        }
+    }
+
+    function DeleteRow() {
+        var totalRows = OILTable.fnGetData().length;
+        if (totalRows == 1)
+            return;
+
+        var rowsToDelete = [];
+        $("#tblOIL >tbody >tr").each(function (index, val) {
+            var item = $(this).find('.tick'); //find checkbox in first column
+            if (item.is(':checked')) {
+                rowsToDelete.push(OILTable.fnGetNodes(index));
+            }
+        });
+
+        for (var i = 0; i < rowsToDelete.length; i++) {
+            if (OILTable.fnGetData().length > 1) //prevent deleting all rows
+                OILTable.fnDeleteRow(rowsToDelete[i]);
+        }
+
+        CalculateOILSum();
+    }
+
+    $(document).on('change', '.startDate,.endDate, .startTime, .endTime', function () {
+
+        var $row = $(this).closest("tr");
+
+        var startTime = $row.find(".startTime").val(),
+            endTime = $row.find(".endTime").val();
+        var startDate = $row.find(".startDate").val(),
+            endDate = $row.find(".endDate").val();
+
+        var start = startDate + ' ' + startTime;
+        var end = endDate + ' ' + endTime;
+
+        var totalHours = $row.find('.totalHours').val();
+
+        var startMoment = moment(start, 'DD/MM/YYYY HH:mm');
+        var endMoment = moment(end, 'DD/MM/YYYY HH:mm');
+
+        if (startMoment.isAfter(endMoment) || !validTime(startTime) || !validTime(endTime) ||
+            startDate == '' || endDate == '' || start.indexOf("_") > 0 || end.indexOf("_") > 0
+            || !validRange(startDate, endDate)
+            || endMoment.diff(startMoment, 'hours') >  24) {
+            $row.find('.totalHours').val('00:00');
+            $row.find('.oil').val('0.00');
+            $row.find('.timeoff').val('00:00');
+            CalculateOILSum();
+            return;
+        }
+
+        var hours = moment(endMoment).diff(moment(startMoment), 'hours');
+        var minutes = moment(endMoment).diff(moment(startMoment), 'minutes');
+
+        var h = minutes / 60 | 0,
+            m = minutes % 60 | 0;
+        $row.find(".totalHours").val(pad(h, 2) + ':' + pad(m, 2));
+
+        ComputeOIL($row, hours, minutes);
+
+        CalculateOILSum();
+    });
+
+    function validRange(startDate, endDate) {
+        var valid = true;
+        if (startDate == '' || endDate == '')
+            valid = false;
+        else {
+            var startMoment = moment(startDate, 'DD/MM/YYYY HH:mm');
+            var endMoment = moment(endDate, 'DD/MM/YYYY HH:mm');
+            if (endMoment.isAfter(startMoment.add('days', 1)))
+                valid = false;
+        }
+
+        return valid;
+    }
+
+    function validTime(time) {
+        var valid = true;
+        if (time == '' || time.indexOf('_') != -1)
+            valid = false;
+        else {
+            var hour = time.split(':')[0];
+            var minute = time.split(':')[1];
+            if (Number(hour) > 24 || Number(minute) > 59 || (Number(hour) > 23 && Number(minute) > 0))
+                valid = false;
+        }
+        return valid;
+    }
+
+
+    function ComputeOIL(row, hours, minutes) {
+        //var hours = row.find(".totalHours").val();
+        var start = row.find(".startDate").val();
+
+        var OIL = 0;
+        var timeOff = 0;
+        var date = moment(start, 'DD/MM/YYYY');
+        var dayOfWeek = moment(start, 'DD/MM/YYYY').day();
+        //if (dayOfWeek == 0 || dayOfWeek == 6) //Saturday or Sunday
+        //{
+        //    OIL = parseInt(hours / 4);
+        //    if (hours < 4 && hours > 0) {
+        //        OIL = 0.50;
+        //    }
+        //    else if (hours >= 4) {
+        //        OIL = 1;
+        //    }
+
+        //}
+        if (IsHoliday(date)) //Saturday or Sunday
+        {
+            OIL = parseInt(hours / 4);
+            if (hours < 4 && hours > 0) {
+                OIL = 0.50;
+            }
+            else if (hours >= 4) {
+                OIL = 1;
+            }
+
+        }
+        else {
+            OIL = parseInt(hours / 8);
+            if (hours < 8)
+                timeOff = minutes;
+            else
+                timeOff = 0;
+
+            if (OIL > 1)//OIL days cannot exceed 1 day
+                OIL = 1;
+        }
+
+        row.find('.oil').val(OIL.toFixed(2));
+        row.find('.timeoff').val(getTimeFromMins(timeOff));
+    }
+
+    //returns true if first date is earlier than second date
+    //false, otherwise
+    function compareDates(firstDate, secondDate) {
+        var startDate = moment(firstDate, 'DD/MM/YYYY').toDate();
+        var endDate = moment(endDate, 'DD/MM/YYYY').toDate();
+
+        return moment(endDate).isBefore(startDate);
+    }
+
+    function getTimeFromMins(mins) {
+
+        if (mins >= 24 * 60 || mins < 0) {
+            //throw new RangeError("Valid input should be greater than or equal to 0 and less than 1440.");
+        }
+        var h = mins / 60 | 0,
+            m = mins % 60 | 0;
+        return moment.utc().hours(h).minutes(m).format("HH:mm");
+    }
+
+    function GetData() {
+        var rows = OILTable.fnGetNodes();
+        var data = new Array();
+
+        for (var i = 0; i < rows.length; i++) {
+            var node = rows[i];
+            var oil = new Object();
+
+            if ($('.startTime', node).val() == '24:00') //moment auto adds 1 day if the start time is 24:00
+            {
+                var strtMoment = moment($('.startDate', node).val() + ' ' + $('.startTime', node).val(), 'DD/MM/YYYY HH:mm');
+                oil.StartDateTime = strtMoment.format('DD/MM/YYYY') + ' ' + '00:00';
+            }
+            else
+            {
+                oil.StartDateTime = $('.startDate', node).val() + ' ' + $('.startTime', node).val();
+            }
+
+            if ($('.endTime', node).val() == "24:00")
+            {
+                var endMoment = moment($('.endDate', node).val() + ' ' + $('.endTime', node).val(), 'DD/MM/YYYY HH:mm');
+                oil.EndDateTime = endMoment.format('DD/MM/YYYY') + ' ' + '00:00';
+            }
+            else
+            {
+                oil.EndDateTime = $('.endDate', node).val() + ' ' + $('.endTime', node).val();
+            }
+
+
+            oil.Description = $('.description', node).val();
+            oil.EligibleOILDays = $('.oil', node).val();
+            oil.TotalHours = $('.totalHours', node).val();
+            oil.TimeOffHours = $('.timeoff', node).val();
+            oil.Position = i;
+            data.push(oil);
+        }
+
+        var leaveDetails = new Object
+        leaveDetails.OILList = data;
+        return leaveDetails;
+    }
+
+    function validTotalHours(TotalHours) {
+
+        var valid = true;
+        var hourNumber = Number(TotalHours.split(':')[0]);
+        var minuteNumber = Number(TotalHours.split(':')[1]);
+
+        if (hourNumber > 24 || (hourNumber >= 24 && minuteNumber > 0))
+            valid = false;
+        return valid;
+    }
+
+    function validate() {
+        var rows = OILTable.fnGetNodes();
+        var message = "";
+
+        $("#tblOIL >tbody >tr").each(function (index, val) {
+            var $element = $(this);
+
+            var StartTime = $element.find('.startTime').val();
+            var EndTime = $element.find('.endTime').val();
+
+            var StartDate = $element.find('.startDate').val();
+            var EndDate = $element.find('.endDate').val();
+
+            var Description = $element.find('.description').val();
+            var EligibleOILDays = $element.find('.oil').val();
+            var TotalHours = $element.find('.totalHours').val();
+            var TimeOffHours = $element.find('.timeoff').val();
+
+            var rowNumber = index + 1;
+            message += StartTime == "" ? "Start time at row " + rowNumber + " is empty \n" : "";
+            message += EndTime == "" ? "End time at row " + rowNumber + " is empty \n" : "";
+            message += StartDate == "" ? "Start date at row " + rowNumber + " is empty \n" : "";
+            message += EndDate == "" ? "End date at row " + rowNumber + " is empty \n" : "";
+            message += validTime(StartTime) ? "" : "Start time at row " + rowNumber + " is invalid \n";
+            message += validTime(EndTime) ? "" : "End time at row " + rowNumber + " is invalid \n";
+            message += TotalHours == "00:00" ? "Total hours at row " + rowNumber + " is invalid \n" : "";
+            message += !validTotalHours(TotalHours) ? "Total hours at row " + rowNumber + " cannot be greater than 24 hours. \n" : "";
+            //message += validRange(StartDate, EndDate) ? "" : "Start and End dates at row " + rowNumber + " is invalid range \n";
+
+            var start = StartDate + ' ' + StartTime;
+            var end = EndDate + ' ' + EndTime;
+            var startMoment = moment(start, 'DD/MM/YYYY HH:mm');
+            var endMoment = moment(end, 'DD/MM/YYYY HH:mm');
+
+            message += startMoment.year() < moment().year() ? "Start date at row " + rowNumber + " cannot be past years \n" : "";
+            message += endMoment.year() < moment().year() ? "End date at row " + rowNumber + " cannot be past years \n" : "";
+            message += startMoment.isAfter(moment()) ? "Start Date at "+rowNumber+" cannot be a future date \n" : "";
+            message += endMoment.isAfter(moment()) ? "End Date at " + rowNumber + " cannot be a future date \n" : "";
+
+            if (startMoment.isAfter(endMoment)) {
+                message += "Start Date and Time must be before End Date and Time. Row " + rowNumber + "\n";
+            }
+
+            if (datesOverlap(start, rowNumber) || datesOverlap(end, rowNumber))
+                message += "Dates at row " + rowNumber + " have time collision with other rows. \n";
+
+            if (duplicateRow(startMoment, endMoment, rowNumber))
+                message += "Dates at row " + rowNumber + " is a duplicate of other rows. \n";
+
+            var hours = moment(endMoment).diff(moment(startMoment), 'hours');
+            var minutes = moment(endMoment).diff(moment(startMoment), 'minutes');
+
+            ComputeOIL($element, hours, minutes);
+        });
+        
+        if (message != "") {
+            alert(message);
+            return false;
+        }
+
+        CalculateOILSum();
+
+        return true;
+    }
+
+    function datesOverlap(date, rowToExclude) {
+        var collision = false;
+        $("#tblOIL >tbody >tr").each(function (index, val) {
+            var $element = $(this);
+
+            var StartTime = $element.find('.startTime').val();
+            var EndTime = $element.find('.endTime').val();
+
+            var StartDate = $element.find('.startDate').val();
+            var EndDate = $element.find('.endDate').val();
+
+            var start = StartDate + ' ' + StartTime;
+            var end = EndDate + ' ' + EndTime;
+
+            var dateMoment = moment(date, 'DD/MM/YYYY HH:mm');
+            var startMoment = moment(start, 'DD/MM/YYYY HH:mm');
+            var endMoment = moment(end, 'DD/MM/YYYY HH:mm');
+
+            var currentRow = index + 1;
+            //if (dateMoment.isAfter(startMoment) && dateMoment.isBefore(endMoment) && currentRow != rowToExclude)
+            //    collision = true;
+            if (isBetween(dateMoment, startMoment, endMoment) && currentRow != rowToExclude)
+                collision = true;
+        });
+
+        return collision;
+    }
+
+    function duplicateRow(firstMoment, secondMoment, rowToExclude) {
+        var duplicate = false;
+        $("#tblOIL >tbody >tr").each(function (index, val) {
+            var $element = $(this);
+
+            var start = $element.find('.startDate').val() + ' ' + $element.find('.startTime').val();
+            var end = $element.find('.endDate').val() + ' ' + $element.find('.endTime').val();
+
+            var startMoment = moment(start, 'DD/MM/YYYY HH:mm');
+            var endMoment = moment(end, 'DD/MM/YYYY HH:mm');
+
+            var currentRow = index + 1;
+            if (firstMoment.isSame(startMoment) && secondMoment.isSame(endMoment) && currentRow != rowToExclude)
+                duplicate = true;
+        });
+
+        return duplicate;
+    }
+
+    function isBetween(targetMoment, startMoment, endMoment) {
+        var result = (targetMoment.isAfter(startMoment))
+                    && (targetMoment.isBefore(endMoment));
+        return result;
+    }
+
+
+    function CalculateOILSum() {
+        var oilSum = 0.0;
+        var hoursTotal = 0;
+        var minutesTotal = 0;
+        $("#tblOIL >tbody >tr").each(function (index, val) {
+            var $element = $(this);
+
+            var eligibleOIL = $element.find('.oil').val();
+            var timeOff = $element.find('.timeoff').val();
+
+            oilSum += Number(eligibleOIL);
+            hoursTotal += Number(timeOff.split(':')[0]);
+            minutesTotal += Number(timeOff.split(':')[1]);
+        });
+
+        hoursTotal = hoursTotal * 60; //convert to minutes
+        hoursTotal += minutesTotal; //add total minutes
+
+        var timeTotal = getTimeFromMins(hoursTotal);
+
+        $(".oilTotal").val(oilSum.toFixed(2) + '');
+        $(".timeOffTotal").val(timeTotal + '');
+    }
+
+    //function ShowEasyModal(element) {
+    $(document).on('click', '.EASy', function () {
+        var rowIndex = $('#tblOIL tbody> tr').index($(this).closest('tr'));
+        var data = {
+            EmployeeCode: $("#ct00_EmployeeCodeRO").text(),
+            StartDate: $("#tblOIL > tbody > tr:eq(" + rowIndex + ")").find('.startDate').val(),
+            EndDate: $("#tblOIL > tbody > tr:eq(" + rowIndex + ")").find('.endDate').val()
+        }
+
+        console.log(rowIndex);
+        console.log(data);
+
+        $('#divLoading').show();
+        $.ajax({
+            url: '@Url.Action("DoorAccessRecordDetails", "LeaveQuota")',
+            data: data,
+            success: function (response) {
+                $('#divLoading').hide();
+                if (response.Success != null && response.Success == false) {
+                    $("#EASYModalBody").html(response.TechnicalError);
+                    $("#EASYModalBody").addClass("well");
+                    $("#EASYModalBody").css('color', 'red');
+                }
+                else {
+                    $("#EASYModalBody").html(response);
+                    $("#EASYModalBody").removeClass("well");
+                    $("#EASYModalBody").css('color', 'black');
+                }
+                $("#EASYModal").modal();
+            },
+            error: function (err) {
+                console.log(err);
+            }
+        });
+    });
+
+    $(document).on('mouseenter mouseleave', '.description', function () {
+        $(this).prop('title', $(this).val());
+    });
+
+    function pad(n, width, z) {
+        z = z || '0';
+        n = n + '';
+        return n.length >= width ? n : new Array(width - n.length + 1).join(z) + n;
+    }
+</script>

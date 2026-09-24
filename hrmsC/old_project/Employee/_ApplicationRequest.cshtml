@@ -1,0 +1,157 @@
+﻿@model ESS.Employee.Models.EmployeeRequest
+@using ESS.Employee.Models;
+@using atQuest.Utilities;
+@using ESS.Employee;
+@{
+    Layout = null;
+    string StatusCSS = "green";
+    string CheckStatus = Model.RequestStatus;
+
+    if (CheckStatus == RequestStatus.Declined.ToString() ||
+                                CheckStatus == Helper.SplitText(RequestStatus.SystemError.ToString()) ||
+                                CheckStatus == RequestStatus.Withdrawn.ToString() ||
+                                CheckStatus == RequestStatus.Failed.ToString())
+    {
+        StatusCSS = "red";
+    }
+}
+
+<style>
+    .leave-fullwidth-dropdown {
+        width: 100%;
+    }
+</style>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="portlet box blue">
+            <div class="mini-triangle"><img src="../Assets/img/menu-red-triangle.png" /></div>
+            <div class="portlet-title">
+                <div class="caption">
+                    <i class="fa fa-reorder"></i>Maintenance Details
+                </div>
+                <div class="tools">
+                    <a title="" data-original-title="" href="javascript:;" class="collapse"> </a>
+                </div>
+            </div>
+            <div class="portlet-body form">
+                <div class="form-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <label class="control-label col-md-4">Reference No.</label>
+                                        <div class="col-md-8 form-control-static">
+                                            <input type="text" class="form-control refno" readonly
+                                                   name="LeaveNo" value="@Model.RequestNo">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <label class="control-label col-md-4">Status</label>
+                                        <div class="col-md-8 form-control-static">
+                                            <input type="hidden" name="RequestStatusCode" value="@Model.RequestStatusCode" />
+                                            <input type="text" class="form-control" readonly style="color:@StatusCSS; font-weight: bold;"
+                                                   name="RequestStatus" value="@Helper.SplitText(Model.RequestStatus)">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <label class="control-label col-md-4">Category</label>
+                                        <div class="col-md-8 form-control-static">
+                                            <input type="hidden" name="RequestCategoryCode" value="@Model.RequestCategoryCode" />
+                                            <input type="hidden" name="RequestCategoryName" value="@Model.RequestCategory" />
+                                            <input type="text" class="form-control" readonly
+                                                   value="@Model.RequestCategory">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <label class="control-label col-md-4">Type</label>
+                                        <div class="col-md-8 form-control-static">
+                                            <input type="hidden" name="RequestTypeCode" value="@Model.RequestTypeCode" />
+                                            <input type="hidden" name="RequestTypeName" value="@Model.RequestType" />
+                                            <input type="text" class="form-control" readonly
+                                                   value="@Model.RequestType">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    @if (!String.IsNullOrEmpty(Model.CurrentApprovers))
+                    {
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <label class="control-label col-md-4">Current Approver</label>
+                                        <div class="col-md-8 form-control-static">
+                                            <input type="text" class="form-control" readonly
+                                                   value="@Model.CurrentApprovers" title="@Model.CurrentApprovers">
+
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                        
+
+                </div>
+                    
+                <div class="form-body" id="SearchGetRequestDetails">
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    var LeaveTypes = null;
+    var LeaveSubtypes = null;
+
+    $(function () {
+        $('[data-toggle="tooltip"]').tooltip();
+
+        $("#txtEmpName").val('@(Model.Submiter.EmployeeCode + " - " + Model.Submiter.EmployeeName)');
+        $("#hfEmpID").val('@Model.EmployeeID');
+
+        SearchGetRequestDetails();
+
+
+    });
+
+    function SearchGetRequestDetails() {
+
+        $("#SearchGetRequestDetails").html("LOADING...");
+
+        $.ajax({
+            type: "GET",
+            url: '@Url.Content("~/Employee/_ApplicationRequestDetails")',
+            cache: false,
+            dataType: "html",
+            data: { RequestID: '@Model.RequestID' },
+            success: function (content) {
+                $("#SearchGetRequestDetails").html(content);
+            },
+            error: function (e) {
+                console.log(e);
+            }
+        });
+
+    }
+</script>

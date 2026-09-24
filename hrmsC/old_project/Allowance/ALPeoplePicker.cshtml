@@ -1,0 +1,53 @@
+﻿@model Tuple<int?, ESS.Allowance.Models.AllowanceVM>
+
+@{
+    Layout = null;
+
+    string entries = "";
+
+    if (Model.Item1 != null)
+    {
+        if (Model.Item1 >= 0)
+        {
+            entries = "Entries[" + Model.Item1.Value + "].";
+        }
+    }
+
+    string type = "Employee";
+
+    string PeoplePicker = type + "PeoplePicker";
+    string EmployeeName = entries + type + "Name";
+    string EmployeeCode = entries + type + "Code";
+    string EmployeeID = entries + type + "ID";
+    string DisplayTextName = type + "DisplayText";
+
+    string EmployeeNameValue = "";
+    string EmployeeCodeValue = "";
+    string EmployeeIDValue = "";
+    string EmployeeDisplayText = "";
+
+    if (Model.Item2 != null)
+    {
+        EmployeeNameValue = Model.Item2.EmployeeName;
+        EmployeeCodeValue = Model.Item2.EmployeeCode;
+
+        if (!string.IsNullOrEmpty(EmployeeCodeValue) &&
+        !string.IsNullOrEmpty(EmployeeNameValue))
+        {
+            EmployeeIDValue = (Model.Item2.EmployeeID).ToString();
+            EmployeeDisplayText = EmployeeCodeValue + " - " + EmployeeNameValue;
+        }
+    }
+}
+
+<div>
+    <div class="input-group">
+        <input type="text" class="form-control ALPeoplePickerDisplay @PeoplePicker" name="@DisplayTextName" value="@EmployeeDisplayText" readonly />
+        <span class="input-group-btn" style="">
+            <a data-toggle="modal" href="#PeoplePicker" class="btn default AllowancePeoplePicker" onclick="SetCurrentSelectedID(this)"><i class="fa fa-user"></i></a>
+        </span>
+        <input class="ALPeoplePickerID" type="hidden" name="@EmployeeID" value="@EmployeeIDValue" />
+        <input class="ALPeoplePickerCode" type="hidden" name="@EmployeeCode" value="@EmployeeCodeValue" />
+        <input class="ALPeoplePickerName" type="hidden" name="@EmployeeName" value="@EmployeeNameValue" />
+    </div>
+</div>

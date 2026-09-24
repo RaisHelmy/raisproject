@@ -1,0 +1,287 @@
+﻿@model ESS.AdvanceClaim.Models.AdvanceClaim
+@{
+    var RoundDownTotal = Math.Floor(Model.RequestedAmount).ToString("#.00");
+
+    DateTime startDate = DateTime.ParseExact(Model.StartDate, "dd/MM/yyyy", System.Globalization.CultureInfo.InvariantCulture);
+    DateTime endDate = DateTime.ParseExact(Model.EndDate, "dd/MM/yyyy", System.Globalization.CultureInfo.InvariantCulture);
+    int totalDays = (int)(endDate - startDate).TotalDays;
+
+    if (totalDays == 0) 
+    {
+        totalDays = 1; 
+    }
+}
+<style>
+    .center {
+        text-align: center;
+    }
+</style>
+
+<div class="portlet box blue subtypeportlet" id="dTable_Bus">
+    <div class="portlet-title">
+        <div class="caption">
+            <i class="fa fa-reorder"></i>Advance Claim Details
+        </div>
+        <div class="tools">
+        </div>
+    </div>
+    <div class="portlet-body form">
+        <div class="form-body">
+            <div class="form-horizontal">
+                <div class="table-toolbar">
+                    <table class="table table-striped table-bordered table-hover table-full-width">
+                        <thead>
+                            <tr>
+                                <th class="col-md-3"></th>
+                                <th class="col-md-2 text-right">
+                                    Number of Day(s)
+                                </th>
+                                <th class="col-md-1 center">
+                                    x
+                                </th>
+                                <th class="col-md-2 text-right">
+                                    Entitlement (RM)
+                                </th>
+                                <th class="col-md-1 center">
+                                    x
+                                </th>
+                                <th class="col-md-1">
+                                    Percentage
+                                </th>
+                                <th class="col-md-2 text-right">
+                                    Total (RM)
+                                </th>
+                            </tr>
+                        </thead>
+
+                        @if (Model.Status == 0)
+                        {
+
+
+                            <tbody>
+                                <tr>
+                                    <td>1. Subsistence Allowance *</td>
+                                    <td>
+                                        @Html.TextBoxFor(m => m.SubsistenceDays, new
+                                {
+                                    @class = "form-control text-right",
+                                            @onkeypress = "NumberOnly(event);",
+                                            @onkeyup = "Count();"
+                                })
+                                    </td>
+                                    <td class="center">x</td>
+                                    <td>
+                                        @Html.TextBoxFor(m => m.SubsistenceEntitlement, new
+                               {
+                                   @class = "form-control text-right"/*, @onkeypress = "DecimalOnly(event);", @onkeyup = "Count();"*/ ,
+                                            @readonly = "readonly"
+                               })
+                                    </td>
+                                    <td class="center">x</td>
+                                    <td class="center">
+                                        @Model.SubsistencePercentage%
+                                        @*<input type="hidden" name="SubsistencePercentage" value="@Model.SubsistencePercentage" />*@
+                                    </td>
+                                    @*<td>@Html.TextBoxFor(m => m.SubsistenceTotal, new { @class = "form-control text-right", @readonly = "readonly" })</td>*@
+                                    <td>@Html.TextBoxFor(m => m.SubsistenceTotal, new { @class = "form-control text-right", @readonly = "readonly" })</td>
+                                </tr>
+                                <tr>
+
+                                    <td>2. Maximum Hotel Entitlement *</td>
+                                    <td>
+                                        @Html.TextBoxFor(m => m.HotelDays, new
+                                {
+                                    @class = "form-control text-right",
+                                            @onkeypress = "NumberOnly(event);",
+                                            @onkeyup = "Count();"
+})
+                                    </td>
+                                    <td class="center">x</td>
+                                    <td>
+                                        @Html.TextBoxFor(m => m.HotelEntitlement, new
+                                {
+                                    @class = "form-control text-right",@*@onkeyup = "Count();", @onkeypress = "DecimalOnly(event);",*@@readonly = "readonly"
+})
+                                    </td>
+                                    <td class="center">x</td>
+                                    <td class="center">
+                                        @Model.HotelPercentage%
+                                        @*<input type="hidden" name="HotelPercentage" value="@Model.HotelPercentage" />*@
+                                    </td>
+                                    @*<td>@Html.TextBoxFor(m => m.HotelAmount, new { @class = "form-control text-right", @readonly = "readonly" })</td>*@
+                                    <td>@Html.TextBoxFor(m => m.HotelAmount, new { @class = "form-control text-right", @readonly = "readonly" })</td>
+                                </tr>
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <td colspan="6"></td>
+                                    <td>@Html.TextBoxFor(m => m.RequestedAmount, new { @class = "form-control text-right", @disabled = "disabled" })</td>
+                                </tr>
+                            </tfoot>
+                        }
+                        else if (Model.Status == 1 || Model.Status == 4)
+                        {
+                            <tbody>
+                                <tr>
+
+                                    <td>1. Subsistence Allowance *</td>
+                                    <td>
+                                        @Html.TextBoxFor(m => m.SubsistenceDays, new
+                                {
+                                    @class = "form-control text-right",
+                                    @ReadOnly = "ReadOnly"@*, @onkeypress = "NumberOnly(event);", @onkeyup = "Count();"*@})
+                                    </td>
+                                    <td class="center">x</td>
+                                    <td>
+                                        @Html.TextBoxFor(m => m.SubsistenceEntitlement, new
+                                {
+                                    @class = "form-control text-right",
+                                    @ReadOnly = "ReadOnly"@*, @onkeypress = "DecimalOnly(event);", @onkeyup = "Count();"*@})
+                                    </td>
+                                    <td class="center">x</td>
+                                    <td class="center">
+                                        @Model.SubsistencePercentage%
+                                        <input type="hidden" name="SubsistencePercentage" value="@Model.SubsistencePercentage" />
+                                    </td>
+                                    <td>@Html.TextBoxFor(m => m.SubsistenceTotal, new { @class = "form-control text-right", @readonly = "readonly" })</td>
+                                </tr>
+                                <tr>
+                                    <td>2. Maximum Hotel Entitlement *</td>
+                                    <td>
+                                        @Html.TextBoxFor(m => m.HotelDays, new
+                                {
+                                    @class = "form-control text-right",
+                                    @ReadOnly = "ReadOnly"@*, @onkeypress = "NumberOnly(event);", @onkeyup = "Count();"*@})
+                                    </td>
+                                    <td class="center">x</td>
+                                    <td>
+                                        @Html.TextBoxFor(m => m.HotelEntitlement, new
+                                {
+                                    @class = "form-control text-right",
+                                    @ReadOnly = "ReadOnly"@*, @onkeyup = "Count();", @onkeypress = "DecimalOnly(event);",*@})
+                                    </td>
+                                    <td class="center">x</td>
+                                    <td class="center">
+                                        @Model.HotelPercentage%
+                                        <input type="hidden" name="HotelPercentage" value="@Model.HotelPercentage" />
+                                    </td>
+                                    <td>@Html.TextBoxFor(m => m.HotelAmount, new { @class = "form-control text-right", @readonly = "readonly" })</td>
+                                </tr>
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <td colspan="6"></td>
+                                    <td>@Html.TextBoxFor(m => m.RequestedAmount, new { @class = "form-control text-right", @disabled = "disabled" })</td>
+
+                                </tr>
+                            </tfoot>
+                        }
+                        else
+                        {
+                            <tbody>
+                                <tr>
+
+                                    <td>1. Subsistence Allowance *</td>
+                                    <td>@Html.TextBoxFor(m => m.SubsistenceDays, new { @class = "form-control text-right",@readonly = "readonly"@*, @onkeypress = "NumberOnly(event);", @onkeyup = "Count();"*@ })</td>
+                                    <td class="center">x</td>
+                                    <td>
+                                        @Html.TextBoxFor(m => m.SubsistenceEntitlement, new
+                                {
+                                    @class = "form-control text-right",
+                                    @ReadOnly = "ReadOnly"@*, @onkeypress = "DecimalOnly(event);", @onkeyup = "Count();"*@})
+                                    </td>
+                                    <td class="center">x</td>
+                                    <td class="center">
+                                        @Model.SubsistencePercentage%
+                                        <input type="hidden" name="SubsistencePercentage" value="@Model.SubsistencePercentage" />
+                                    </td>
+                                    <td>@Html.TextBoxFor(m => m.SubsistenceTotal, new { @class = "form-control text-right", @readonly = "readonly" })</td>
+                                </tr>
+                                <tr>
+
+                                    <td>2. Maximum Hotel Entitlement *</td>
+                                    <td>@Html.TextBoxFor(m => m.HotelDays, new { @class = "form-control text-right", @readonly = "readonly"@*, @onkeypress = "NumberOnly(event);", @onkeyup = "Count();"*@ })</td>
+                                    <td class="center">x</td>
+                                    <td>
+                                        @Html.TextBoxFor(m => m.HotelEntitlement, new
+                                {
+                                    @class = "form-control text-right",
+                                    @ReadOnly = "ReadOnly"@*, @onkeyup = "Count();", @onkeypress = "DecimalOnly(event);",*@})
+                                    </td>
+                                    <td class="center">x</td>
+                                    <td class="center">
+                                        @Model.HotelPercentage%
+                                        <input type="hidden" name="HotelPercentage" value="@Model.HotelPercentage" />
+                                    </td>
+                                    <td>@Html.TextBoxFor(m => m.HotelAmount, new { @class = "form-control text-right", @readonly = "readonly" })</td>
+                                </tr>
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <td colspan="6"></td>
+                                    <td>@Html.TextBoxFor(m => m.RequestedAmount, new { @class = "form-control text-right", @disabled = "disabled" })</td>
+                                </tr>
+                            </tfoot>
+                        }
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function Count() {
+        var subPercent = @Model.SubsistencePercentage;
+        var hotelPercent = @Model.HotelPercentage;
+        var subEntitle = @Model.SubsistenceEntitlement;
+        var hotelEntitle = @Model.HotelEntitlement;
+        var maxTotalDays = @totalDays;
+        var subDays = $('#SubsistenceDays').val();
+        var hotelDays = $('#HotelDays').val();
+        var SubsisTotal;
+        var HotelTotal;
+
+        if (subDays > maxTotalDays) {
+            $('#SubsistenceDays').val(maxTotalDays);
+            subDays = maxTotalDays;
+        }
+
+        if (hotelDays > maxTotalDays) {
+            $('#HotelDays').val(maxTotalDays);
+            hotelDays = maxTotalDays;
+        }
+
+        SubsisTotal = subDays * subEntitle * subPercent / 100;
+        HotelTotal = hotelDays * hotelEntitle * hotelPercent / 100;
+        $('#SubsistenceTotal').val(SubsisTotal.toFixed(2));
+        $('#HotelAmount').val(HotelTotal.toFixed(2));
+        $('#RequestedAmount').val((Math.floor(SubsisTotal + HotelTotal)).toFixed(2));
+    }
+
+    function NumberOnly(evt) {
+        var theEvent = evt || window.event;
+        var key = theEvent.keyCode || theEvent.which;
+        key = String.fromCharCode(key);
+        var regex = /[0-9]/;
+        if (!regex.test(key)) {
+
+            theEvent.returnValue = false;
+            if (theEvent.preventDefault) theEvent.preventDefault();
+        }
+
+    }
+
+    function DecimalOnly(evt) {
+        var theEvent = evt || window.event;
+        var key = theEvent.keyCode || theEvent.which;
+        key = String.fromCharCode(key);
+        var regex = /[0-9.]/;
+        if (!regex.test(key)) {
+
+            theEvent.returnValue = false;
+            if (theEvent.preventDefault) theEvent.preventDefault();
+        }
+
+    }
+</script>

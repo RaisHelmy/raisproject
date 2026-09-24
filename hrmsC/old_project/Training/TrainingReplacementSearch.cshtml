@@ -1,0 +1,171 @@
+﻿@model List<ESS.Core.DropDownObject>
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewBag.Title = "Training Replacement Search";
+}
+
+<input id="hfEmployeeID" type="hidden" value="@ViewBag.EmployeeID" />
+
+<div class="row">
+    <div class="col-md-12">
+        <br />
+        <h1 class="page-title">
+            Training Replacement Search<span style="padding-left:20px;"><small></small></span>
+        </h1>
+    </div>
+</div>
+<br />
+<div class="form-body">
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-4 control-label">Start Date</label>
+                    <div class="col-md-8 form-control-static">
+                        <div class="input-group date date-picker" data-date-format="dd MM yyyy">
+                            <input type="text" class="form-control" id="SubDateFrom" name="SubDateFrom" />
+                            <span class="input-group-btn">
+                                <button type="button" class="btn default"><i class="fa fa-calendar"></i></button>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-4 control-label">End Date</label>
+                    <div class="col-md-8 form-control-static">
+                        <div class="input-group date date-picker" data-date-format="dd MM yyyy">
+                            <input type="text" class="form-control" id="SubDateTo" name="SubDateTo" />
+                            <span class="input-group-btn">
+                                <button type="button" class="btn default"><i class="fa fa-calendar"></i></button>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-4 control-label">Employee</label>
+                    <div class="col-md-8 form-control-static">
+                        @Html.Partial("_PeoplePicker")
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-4 control-label">Course Title</label>
+                    <div class="col-md-8 form-control-static">
+                        <input type="text" class="form-control" id="CourseTitle"/>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-4 control-label">Request Reference No</label>
+                    <div class="col-md-8 form-control-static">
+                        <input class="form-control" id="ReferenceNo" />
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-4 control-label">BE Number</label>
+                    <div class="col-md-8 form-control-static">
+                        <input class="form-control" id="CourseSessionID" />
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-4 control-label">Subordinates</label>
+                    <div class="col-md-8 form-control-static">
+                        @if (Model != null)
+                        {
+                            @Html.DropDownList("ddlSubordinate", new SelectList(Model, "Value", "Text"), "- Show All Subordinate -", new { @class = "bs -select form-control" })
+                        }
+                        else
+                        {
+                            <select class="form-control" id="ddlSubordinate">
+                                <option value="">- Show All Subordinate -</option>
+                            </select>
+                        }
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">&nbsp;</div>
+    <div class="row">
+        <div class="col-md-12">
+            <div class="text-right">
+                <input type="button" id="btn-Search" class="btn green btn-Search" value="Search" onclick="SearchListing();">
+            </div>
+        </div>
+    </div>
+    <div class="row">&nbsp;</div>
+    <div class="row">
+        <div class="col-md-12">
+            <div id="SearchResult">
+
+            </div>
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+    function SearchListing() {
+        var _DateFrom = $('#SubDateFrom').val();
+        var _DateTo = $('#SubDateTo').val();
+        var _EmpID = $('#hfEmployeeID').val();
+        var _CourseTitle = $('#CourseTitle').val();
+        var _ReferenceNo = $('#ReferenceNo').val();
+        var _CourseSessionID = $('#CourseSessionID').val();
+        var _CourseTitle = $('#CourseTitle').val();
+        var _Subordinate = $('#ddlSubordinate option:selected').val();
+
+        $("#SearchResult").html("LOADING...");
+
+        $.ajax({
+            type: "GET",
+            url: '@Url.Content("~/Training/_TrainingReplacementSearchResult")',
+            cache: false,
+            dataType: "html",
+            data: { DateFrom: _DateFrom, DateTo: _DateTo, EmployeeID: _EmpID, CourseTitle: _CourseTitle, ReferenceNo: _ReferenceNo, CourseSessionID: _CourseSessionID, Subordinate: _Subordinate },
+            success: function (content) {
+                $("#SearchResult").html(content);
+            },
+            error: function (e) {
+                console.log(e);
+            }
+        });
+    }
+
+    jQuery(document).ready(function () {
+        $('.date-picker').datepicker({
+            format: 'dd/mm/yyyy',
+            autoclose: true
+        });
+
+        SearchListing();
+    });
+
+</script>

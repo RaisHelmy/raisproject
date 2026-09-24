@@ -1,0 +1,150 @@
+﻿@model ESS.DeathDonation.Models.IntrayDto.ResponseIntray
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewBag.Title = "MSS - Death Donation";
+
+}
+<style>
+    .text-style {
+        text-align: left !important;
+        height: 34px;
+    }
+</style>
+
+<div class="form-section">
+    <div class="row">
+        <div class="col-md-12">
+            <h1 class="page-title">
+                MSS - Death Donation
+            </h1>
+        </div>
+    </div>
+</div>
+
+<div class="form-body">
+
+    <div class="row">
+        <div class="input-daterange" id="datepicker">
+            <div class="col-md-6">
+                <div class="form-horizontal">
+                    <div class="form-group">
+                        <label class="col-md-5 control-label">Submission Date (From)</label>
+                        <div class="col-md-7 form-control-static">
+                            <div class="input-group date date-picker startDate" data-date-format="dd/MM/yyyy">
+                                <input type="text" class="input-sm form-control text-style" name="StartDate" id="StartDate" autocomplete="off" />
+                                <span class="input-group-btn">
+                                    <button type="button" class="btn default"><i class="fa fa-calendar"></i></button>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-horizontal">
+                    <div class="form-group">
+                        <label class="col-md-5 control-label">Submission Date (To)</label>
+                        <div class="col-md-7 form-control-static">
+                            <div class="input-group date date-picker endDate" data-date-format="dd/MM/yyyy">
+                                <input type="text" class="input-sm form-control text-style" name="EndDate" id="EndDate" autocomplete="off" />
+                                <span class="input-group-btn">
+                                    <button type="button" class="btn default"><i class="fa fa-calendar"></i></button>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-5 control-label">Employee</label>
+                    <div class="col-md-7 form-control-static">
+                        @Html.Partial("_PeoplePicker")
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-5 control-label">Status</label>
+                    <div class="col-md-7 form-control-static">
+                        <select class="form-control" id="ddlStatus">
+                            <option value="">- All -</option>
+                            <option value="Pending">Pending</option>
+                            <option value="Approved">Approved</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">&nbsp;</div>
+    <div class="row">
+        <div class="col-md-12">
+            <div class="text-right">
+                <input type="button" id="btn-Search" class="btn green btn-Search" value="Search" onclick="SearchListing();">
+                <input id="btn-Clear" type="button" class="btn default " value="Clear" onclick="ClearFilter();">
+            </div>
+        </div>
+    </div>
+    <div class="row">&nbsp;</div>
+    <div class="row">
+        <div class="col-md-12">
+            <div id="SearchResult">
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+    $(document).ready(function () {
+
+        $('.input-daterange').datepicker({
+            format: "dd/mm/yyyy",
+            autoclose: true,
+            orientation: "auto"
+        });
+
+        SearchListing();
+    });
+
+    function SearchListing() {
+        var _DateFrom = $('#StartDate').val();
+        var _DateTo = $('#EndDate').val();
+        var _SearchEmployeeID = $('#hfEmpID').val();
+        var _Status = $('#ddlStatus').val();
+      
+        $("#SearchResult").html("LOADING...");
+
+        $.ajax({
+            type: "GET",
+            url: '@Url.Content("~/DeathDonation/_MyIntrayResult")',
+            cache: false,
+            dataType: "html",
+            data: {
+                dateFrom: _DateFrom, dateTo: _DateTo, status: _Status, employeeID: _SearchEmployeeID
+            },
+            success: function (content) {
+                $("#SearchResult").html(content);
+            },
+            error: function (e) {
+                console.log(e);
+            }
+        });
+    }
+
+    function ClearFilter() {
+        location.reload();
+    }
+</script>
+

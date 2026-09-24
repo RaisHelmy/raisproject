@@ -1,0 +1,134 @@
+﻿@model List<Asset.Models.Liability>
+@{
+    string Title = @"Tanggungan/Ansuran Bulanan Atas Hutang/Pinjaman Lain";
+    string EmployeeID = ViewBag.EmployeeID;
+
+    bool Readonly = ViewBag.Readonly;
+}
+
+<div class="collapse-portlet portlet box blue">
+    <div class="mini-triangle"><img src="/_layouts/15/TNBESS/Assets/img/menu-red-triangle.png" /></div>
+    <div class="portlet-title">
+        <div class="caption">
+            <i class="fa fa-reorder"></i>@Title @(ViewBag.ErrorMessage)
+        </div>
+        <div class="tools">
+            <a title="" data-original-title="" href="javascript:;" class="collapse"></a>
+        </div>
+        @if (!Readonly)
+        {
+            <div class="actions">
+                <a href="javascript:void(0)" onclick="MonthlyLiability_OpenForm();" class="btn green">
+                    <i class="fa fa-pencil"></i> Kemaskini
+                </a>
+            </div>
+        }
+    </div>
+    <div class="portlet-body form">
+        <div class="form-body">
+            <div class="form-horizontal">
+                <div class="table-toolbar">
+                    <table id="tblResultMonthlyLiability" class="table table-striped table-bordered table-hover table-full-width">
+                        <thead>
+                            <tr>
+                                <th>Hubungan</th>
+                                <th>Maklumat</th>
+                                <th>Pinjaman Koperasi</th>
+                                <th>Lain-Lain</th>
+                                <th>Jumlah</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (Model != null && Model.Count > 0)
+                            {
+                                decimal tempDec = 0;
+
+                                foreach (var item in Model)
+                                {
+                                    <tr>
+                                        <td rowspan="3">
+                                            @item.RelationshipTypeDesc
+                                        </td>
+                                        <td>
+                                            Jumlah (RM)
+                                        </td>
+                                        <td>
+                                            @(decimal.TryParse(item.KoopLoanAmount, out tempDec) ? tempDec.ToString("#,##0.00") : "0.00")
+                                        </td>
+                                        <td>
+                                            @(decimal.TryParse(item.OthersAmount, out tempDec) ? tempDec.ToString("#,##0.00") : "0.00")
+                                        </td>
+                                        <td>
+                                            @(decimal.TryParse(item.TotalAmount, out tempDec) ? tempDec.ToString("#,##0.00") : "0.00")
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>Baki (RM)</td>
+                                        <td>
+                                            @(decimal.TryParse(item.KoopLoanBalance, out tempDec) ? tempDec.ToString("#,##0.00") : "0.00")
+                                        </td>
+                                        <td>
+                                            @(decimal.TryParse(item.OthersBalance, out tempDec) ? tempDec.ToString("#,##0.00") : "0.00")
+                                        </td>
+                                        <td>
+                                            @(decimal.TryParse(item.TotalBalance, out tempDec) ? tempDec.ToString("#,##0.00") : "0.00")
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>Bulanan (RM)</td>
+                                        <td>
+                                            @(decimal.TryParse(item.KoopLoanMonthly, out tempDec) ? tempDec.ToString("#,##0.00") : "0.00")
+                                        </td>
+                                        <td>
+                                            @(decimal.TryParse(item.OthersMonthly, out tempDec) ? tempDec.ToString("#,##0.00") : "0.00")
+                                        </td>
+                                        <td>
+                                            @(decimal.TryParse(item.TotalMonthly, out tempDec) ? tempDec.ToString("#,##0.00") : "0.00")
+
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                            else
+                            {
+                                <tr>
+                                    <td colspan="5" style="text-align: center;">
+                                        No data available in table
+                                    </td>
+                                </tr>
+                            }
+
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="MonthlyLiability_ModalContainer">
+</div>
+
+<script>
+    //var tblResultMonthlyLiability =
+    //    $('#tblResultMonthlyLiability').dataTable({
+    //        "bLengthChange": false,
+    //        "bFilter": false,
+    //        "bPaginate": false,
+    //        "bInfo": false,
+    //        "bSortable": false,
+    //    });
+
+    function MonthlyLiability_OpenForm() {
+        ShowLoadingScreen();
+        var link = '@Url.Action("_MonthlyLiabilityForm", "Asset", new { EmployeeID = EmployeeID })';
+        link += "&Readonly=" + '@Readonly';
+
+        $.get(link,
+            function (result) {
+                HideLoadingScreen();
+                $('#MonthlyLiability_ModalContainer').html(result);
+                $('#MonthlyLiability_Modal').modal();
+        });
+    }
+</script>

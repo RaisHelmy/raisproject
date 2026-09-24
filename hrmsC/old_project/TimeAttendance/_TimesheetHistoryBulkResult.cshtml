@@ -1,0 +1,282 @@
+﻿@using TimeAttendance.Services
+
+@model List<TimeAttendance.Models.TimesheetHistoryVM>
+@{
+    Layout = null;
+}
+
+<div class="portlet box blue">
+    <div class="mini-triangle"><img src="../Assets/img/menu-red-triangle.png" /></div>
+    <div class="portlet-title">
+        <div class="caption">
+            <i class="fa fa-reorder"></i>Timesheet History
+        </div>
+        @*<input type="button" id="btn-Export" class="btn btn-xs green pull-right" value="Export To Excel" />*@
+        <div class="tools">
+        </div>
+    </div>
+    <div class="portlet-body form">
+        <div class="form-body">
+            <div class="form-horizontal">
+                <div class="table-toolbar">
+                    <table id="tblResult" class="table table-striped table-bordered table-hover table-full-width">
+                        <thead>
+							<tr>
+								<th></th>
+								<th>
+									<input type="checkbox" name="SelectAll" id="SelectAll" onchange="SelectUnselectAll(this);" />
+								</th>
+								<th></th>
+								<th>Status</th>
+								<th>Integration Status</th>
+								<th>Employee</th>
+								<th>Type</th>
+								<th>Subtype</th>
+								<th>Start Date</th>
+								<th>End Date</th>
+								<th>Start Time</th>
+								<th>End Time</th>
+								<th>Total Hours</th>
+								<th>Acc. OT Hours</th>
+								<th>Charge Type</th>
+								<th>Charge Code</th>
+								<th>TCS No.</th>
+								<th>Original OT Planning</th>
+								<th>No. Of Meal</th>
+								<th>Last Modified Date</th>
+							</tr>
+                        </thead>
+
+                        <tbody>
+                            @foreach (var item in @Model)
+                            {
+							<tr>
+								<td>
+									<div>
+										<i class="fa fa-exclamation-circle ErrorMsg" name="ErrorMsg"
+										   style="font-size:24px;color:red;display: none"
+										   data-toggle="tooltip" title=""></i>
+									</div>
+								</td>
+								<td>
+									<input type="hidden" class="TimesheetID" name="EntryID" value="@item.EntryID" />
+									<input type="hidden" class="EmployeeID" name="EmployeeID" value="@item.EmployeeID" />
+									<input type="checkbox" class="TimesheetHistoryCheckBox" name="TimesheetHistoryCheckBox" value="@item.EntryID" />
+								</td>
+								<td>
+									<a class="btn blue btn-sm" href="@Url.Content("~/TimeAttendance/TimesheetDetails")?ID=@item.EntryID&Source=TimesheetHistoryBulk">
+										<i class="fa fa-edit"></i>
+									</a>
+								</td>
+
+								@if (item.EntryStatus == Timesheet.EntryStatus.Withdrawn ||
+									 item.EntryStatus == Timesheet.EntryStatus.Declined ||
+									 item.EntryStatus == Timesheet.EntryStatus.Error ||
+									 item.EntryStatus == Timesheet.EntryStatus.Failed)
+								{
+
+									<td class="Status" style="color:red;"><b>@item.EntryStatus</b></td>
+
+								}
+								else
+								{
+									<td class="Status" style="color:green;"><b>@item.EntryStatus</b></td>
+								}
+								@{
+									string integrationStatus = string.Empty;
+
+									if (item.IntegrationStatus.ToLower().Contains("failed"))
+									{
+										integrationStatus = "Failed";
+									}
+									else if (item.IntegrationStatus.ToLower().Contains("sync"))
+									{
+										integrationStatus = "Processed";
+									}
+									else if (item.IntegrationStatus.ToLower().Contains("sent"))
+									{
+										integrationStatus = "Sent";
+									}
+									else if (item.IntegrationStatus.ToLower().Contains("error"))
+									{
+										integrationStatus = "Error";
+									}
+								}
+								<td>@integrationStatus</td>
+								<td class="Employee">@item.EmployeeCode - @item.EmployeeName</td>
+								<td>@item.AttendanceType</td>
+								<td class="SubType">@item.AttendanceSubType</td>
+								<td class="StartDate">@item.sDate</td>
+								<td class="EndDate">@item.eDate</td>
+								@{
+									string AccOTHoursColor = "Black";
+
+									if (Convert.ToDouble(item.AccumulatedOTHours) > 51)
+									{
+										AccOTHoursColor = "Orange";
+									}
+
+									if (Convert.ToDouble(item.AccumulatedOTHours) > 104)
+									{
+										AccOTHoursColor = "Red";
+									}
+								}
+								@if (item.AttendanceType == Timesheet.TimesheetEntryType.Availability.ToString())
+								{
+									<td></td>
+									<td></td>
+									<td></td>
+									<td></td>
+								}
+								else
+								{
+									<td class="StartTime">@item.sTime</td>
+									<td class="EndTime">@item.eTime</td>
+									<td>@item.TotalHours</td>
+									<td style="color:@AccOTHoursColor">@item.AccumulatedOTHours</td>
+								}
+
+								<td>@item.ChargeType</td>
+								<td>@item.ChargeCode</td>
+								<td>@item.TCSNo</td>
+								<td>@item.OTPlanningCode</td>
+								@*<td>@item.NoOfMeal</td>*@
+								@{
+									string strNoOfMeal = @item.PremiumNo;
+									string NoOfMeal = !string.IsNullOrEmpty(strNoOfMeal) ? strNoOfMeal.Substring(strNoOfMeal.Length - 1) : "";
+
+									<td>@NoOfMeal</td>
+								}
+
+								<td>@item.Mdate</td>
+
+								@*@if (@item.Status == "Returned" || @item.Status == "Withdrawn")
+		{
+			<td style="color:red;"><b>@item.Status</b></td>
+		}
+		else
+		{
+			<td style="color:green;"><b>@item.Status</b></td>
+		}*@
+
+							</tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+
+    function loadRowTooltip($row) {
+
+        var _StartDate = $row.find(".StartDate").text();
+        var _EndDate = $row.find(".EndDate").text();
+        //var _Employee = $row.find(".Employee").text();
+        //var _StartTime = $row.find(".StartTime").text();
+        //var _EndTime = $row.find(".EndTime").text();
+
+        if (
+            (_StartDate != '' && _StartDate != undefined)
+            //&& (_StartTime != '' && _StartTime != undefined)
+            && (_EndDate != '' && _EndDate != undefined)
+            //&& (_EndTime != '' && _EndTime != undefined)
+            //&& (_Employee != '' && _Employee != undefined)
+        ) {
+
+            $($row).qtip({
+                content: createRowTooltips($row),
+                position: {
+                    target: 'mouse',
+                    adjust: {
+                        mouse: true
+                    }
+                },
+                style: {
+                    width: " + this.Width + ",
+                    border: {
+                        width: 2,
+                        radius: 5,
+                        color: '#CECECE'
+                    },
+                    padding: 5,
+                    tip: true,
+                    name: 'light'
+                },
+                show: {
+                    event: 'mouseover'
+                },
+                hide: {
+                    event: 'mouseout'
+                }
+            });
+
+        }
+
+    }
+
+
+    function createRowTooltips($row) {
+
+        var _Employee = $row.find(".Employee").text();
+        var _StartDate = $row.find(".StartDate").text();
+        var _StartTime = $row.find(".StartTime").text();
+        var _EndDate = $row.find(".EndDate").text();
+        var _EndTime = $row.find(".EndTime").text();
+        var _SubType = $row.find(".SubType").text();
+
+        var returnContent = '<table align="center">';
+
+        returnContent += '<tr><td>Employee    :   </td><td align=right>' + _Employee + '</td></tr>'
+        returnContent += '<tr><td>Subtype    :   </td><td align=right>' + _SubType + '</td></tr>'
+        returnContent += '<tr><td>Start Date    :   </td><td align=right>' + _StartDate + '</td></tr>'
+        returnContent += '<tr><td>Start Time    :   </td><td align=right>' + _StartTime + '</td></tr>'
+        returnContent += '<tr><td>End Date    :   </td><td align=right>' + _EndDate + '</td></tr>'
+        returnContent += '<tr><td>End Time    :   </td><td align=right>' + _EndTime + '</td></tr>'
+        returnContent += '</table > ';
+
+        return returnContent;
+
+    }
+
+    function RowDisplayInfo() {
+        var $row = $(this).closest("tr");
+        loadRowTooltip($row);
+    }
+
+    function TableRowDisplayInfo() {
+        $(".qtip").remove();
+
+        $.each($('#tblResult').dataTable().fnGetNodes(), function (i, e) {
+            var $row = $(this).closest("tr");
+            loadRowTooltip($row);
+            //$row.attr('title', _StartDate + ' &#010;' + _StartTime + _EndDate + _EndTime);
+        });
+    }
+
+    function InitiateRowDisplayInfo() {
+        //$('.RowTooltipDisplay').on('change', TableRowDisplayInfo);
+        //$('.TSPeoplePickerDisplay').on('change', TableRowDisplayInfo);
+        TableRowDisplayInfo();
+    }
+
+    var tblResult = $('#tblResult').dataTable({
+        "fnDrawCallback": function (settings) {
+            $('input[type="checkbox"]').uniform();
+        },
+        aoColumnDefs: [
+        {
+            bSortable: false,
+            aTargets: [1]
+        }]
+
+    });
+
+
+    $(function () {
+        $('input[type="checkbox"]').uniform();
+        InitiateRowDisplayInfo();
+    });
+</script>

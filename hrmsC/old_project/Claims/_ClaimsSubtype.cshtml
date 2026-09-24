@@ -1,0 +1,429 @@
+﻿@using ESS.Claim.ViewModels
+@model List<ClaimsSubtypeCategory>
+@using Newtonsoft.Json
+
+@{
+    /**/
+    Layout = null;
+    var IsChoosen = false;
+}
+<script>
+    var __claimSubtypes = @Html.Raw(JsonConvert.SerializeObject(Model));
+</script>
+<div class="row">
+    <div class="col-md-12">
+        <div class="portlet box blue SubTypeTab">
+
+            <div class="mini-triangle"><img src="../Assets/img/menu-red-triangle.png" /></div>
+            <div class="portlet-title">
+                <div class="caption">
+                    <i class="fa fa-reorder"></i>Claims Subtype Selection
+                </div>
+                <div class="tools">
+                    <a id="subtypeToggle" title="" data-original-title="" href="javascript:;" class="collapse"> </a>
+                </div>
+            </div>
+            <div class="portlet-body form" id="SubTypeBody" style="padding:10px !important">
+                <div class="row" style="padding: 10px 0px;">
+                    <div class="col-md-12">
+                        <input type="hidden" id="t_Mode" name="t_Mode" />
+                        <input type="hidden" id="t_Allowance" name="t_Allowance" />
+
+                        @{
+                            foreach (ClaimsSubtypeCategory category in Model)
+                            {
+                                int c = category.ClaimSubtype.FirstOrDefault().categoryIndex;
+                                bool isClaimSubtypeCategoryEmpty = category.ClaimSubtype.Where(x => x.IsVisible).Count() == 0;
+
+                                <div class="portlet box blue" style="@(isClaimSubtypeCategoryEmpty ? "display: none;" : "")">
+                                    <div class="portlet-title">
+                                        <div class="caption">
+                                            <i class="fa fa-reorder"></i>@category.ClaimsCategoryName
+                                        </div>
+                                    </div>
+                                    <input type="hidden" name="ClaimsSubtypeCategory[@c].ClaimsCategoryName" value="@category.ClaimsCategoryName" />
+
+                                    <div class="portlet-body form">
+                                        <div class="row">
+                                            <div class="col-md-12" id="@category.ClaimsCategoryName">
+                                                @{
+                                                    List<ESS.Claim.ViewModels.ClaimsSubtype> visibleSubtypes = category.ClaimSubtype.Where(x => x.IsVisible).ToList();
+                                                    List<ESS.Claim.ViewModels.ClaimsSubtype> invisibleSubtypes = category.ClaimSubtype.Where(x => x.IsVisible == false).ToList();
+                                                    double cols = 2;
+                                                    int rows = (int)Math.Ceiling(visibleSubtypes.Count / cols);
+
+                                                    var part1 = visibleSubtypes.Take(rows);
+                                                    var part2 = visibleSubtypes.GetRange(rows, visibleSubtypes.Count - rows);
+
+                                                    IsChoosen = IsChoosen || category.ClaimSubtype.Any(subtype => subtype.IsChoosen);
+                                                }
+
+                                                <div class="col-md-6">
+                                                    @foreach (var subtype in part1)
+                                                    {
+                                                        @Html.Partial("_ClaimsSubtypeSelection", subtype, new ViewDataDictionary() { { "count", c } })
+                                                    }
+                                                </div>
+                                                <div class="col-md-6">
+                                                    @foreach (var subtype in part2)
+                                                    {
+                                                        @Html.Partial("_ClaimsSubtypeSelection", subtype, new ViewDataDictionary() { { "count", c } })
+                                                    }
+                                                </div>
+                                                @foreach (ESS.Claim.ViewModels.ClaimsSubtype subtype in invisibleSubtypes)
+                                                {
+                                                    @Html.Partial("_ClaimsSubtypeSelection", subtype, new ViewDataDictionary() { { "count", c } })
+                                                }
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        }
+
+                        <div class="row">
+                            <div class="col-md-12">
+                                <a class="btn green" href="javascript:EditSubtype();">Next</a>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@if (IsChoosen)
+{
+    <div class="row">
+        <div class="col-md-12">
+            <a class="btn green pull-right" style="margin: 5px;" href="javascript:CollapseAll();">Collapse All  <i class="fa fa-angle-down"></i></a>
+            <a class="btn green pull-right" style="margin: 5px;" href="javascript:ExpendAll();">Expand All  <i class="fa fa-angle-up"></i></a>
+            <a class="btn green pull-right" style="margin: 5px;" href="javascript:EditSubtype();">Refresh</a>
+        </div>
+    </div>
+}
+
+<script>
+    $(function () {
+        $('.popovers').popover();
+
+        $('.SubTypeCheckBox').on('change', function () {
+            var name = $(this).prop('name').replace('IsChoosen', 'IsManualCheckedByUser');
+            $('input[name="' + name + '"]').val(true);
+        }).uniform();
+
+        $('input[subtypename*="Subsistence Allowance"], input[subtypename*="Day Trip Allowance"]').change(function () {
+            //checkbox disabled between dayTrip/subsistence
+            var SubTypeName = $(this).attr('subtypename');
+            if (/Day Trip Allowance/.test(SubTypeName) || /Subsistence Allowance/.test(SubTypeName)) {
+                var checked = $(this).prop('checked');
+                if (/Day Trip Allowance/.test(SubTypeName)) {
+                    var tCount = 0;
+                    $('input[subtypename*="Day Trip Allowance"]').each(function () {
+                        if ($(this).prop('checked')) tCount++;
+                    });
+
+                    checked = !(tCount < 1);
+
+                    $('input[subtypename*="Subsistence Allowance"]').each(function () {
+
+                        //important to ignore subtypeprefix controlling
+                        $(this).attr('prefixIgnore', checked);
+
+                        $(this).prop('disabled', checked);
+                        $(this).prop('checked', false);
+                        $(this).uniform();
+                    });
+                }
+                else if (/Subsistence Allowance/.test(SubTypeName)) {
+                    var tCount = 0;
+                    $('input[subtypename*="Subsistence Allowance"]').each(function () {
+                        if ($(this).prop('checked')) tCount++;
+                    });
+
+                    checked = !(tCount < 1);
+
+                    $('input[subtypename*="Day Trip Allowance"]').each(function () {
+
+                        //important to ignore subtypeprefix controlling
+                        $(this).attr('prefixIgnore', checked);
+
+                        $(this).prop('disabled', checked);
+                        $(this).prop('checked', false);
+                        $(this).uniform();
+                    });
+                }
+            }
+        });
+
+        ClaimSubtype_SelectionsOnLoad();
+    });
+
+    function ExpendAll() {
+        $('.subtypeportlet .form').show();
+        $('.subtypeportlet a.expand').removeClass('expand').addClass('collapse');
+    }
+
+    function CollapseAll() {
+        $('.subtypeportlet .form').hide();
+        $('.subtypeportlet a.collapse').removeClass('collapse').addClass('expand');
+    }
+
+    function ToggleOff() {
+        $('#SubTypeBody').hide();
+        $('#subtypeToggle').removeClass('collapse').addClass('expand');
+    }
+
+    function EditSubtype() {
+        var Error = false;
+        $("#ReselectSubtype").val("true");
+        TransportMultiSelect_OnChange();
+        TravellingAllowanceMultiSelect_OnChange();
+        if ($("[name='ClaimTypeCode']").val() == "CIS01") {
+            if ($('#ILSASCoordinator').val() == "") {
+                alert("Please Choose ILSAS Coordinator");
+                Error = true;
+            }
+
+        }
+
+        var ClaimTypeCode = $("[name='ClaimTypeCode']").val();
+        if (ClaimTypeCode != "COH01" && ClaimTypeCode != "COB01") {
+            Error = CheckDate();
+        }
+
+        if (ClaimTypeCode != "COH01" && ClaimTypeCode != "COB01") {
+            Error = CheckDate();
+        }
+
+        if (Error) {
+            return;
+        }
+
+        if ($('#ChargeCodeList').val() == "") {
+            Error = true;
+            alert('Please Select Charge Code');
+            return;
+        }
+
+        if (ClaimTypeCode != "COH01" && ClaimTypeCode != "COB01") {
+            Error = ValidateSubtypeDateRange();
+        }
+
+        if (!Error)
+            $('form').submit();
+    }
+
+    function ValidateSubtypeDateRange() {
+        var Error = false;
+        var ChoosenStartDate = moment($('#StartDate').val(), "DD/MM/YYYY")._d;
+        var ChoosenEndDate = moment($('#EndDate').val(), "DD/MM/YYYY")._d;
+
+        var SubsistenceAllowanceNoGstChecked = false;
+        var SubsistenceAllowanceNoSstChecked = false;
+        var FlightWithoutGstChecked = false;
+        var FlightWithoutSstChecked = false;
+
+        $('.SubTypeCheckBox:checked').each(function (index) {
+            var Start = $(this).attr('validityStart');
+            var End = $(this).attr('validityEnd');
+            var SubTypeName = $(this).attr('subtypename');
+            var StartDate = new Date(Start);
+            var EndDate = new Date(End);
+            var Today = new Date();
+
+            if (ChoosenStartDate < StartDate && ChoosenEndDate < StartDate) {
+                alert('The Selected Subtype (' + SubTypeName + ') exceeded the Validity StartDate.');
+                Error = true;
+                return;
+
+            }
+
+            if (ChoosenStartDate > EndDate && ChoosenEndDate > EndDate) {
+                alert('The Selected Subtype (' + SubTypeName + ') exceeded the Validity EndDate.');
+                Error = true;
+                return;
+            }
+
+            if ($("[name='ClaimTypeCode']").val() == "COV01") {
+                //Additional Logic - subsistence allowance required flight subtype to be selected as well
+
+                if (SubTypeName == "Subsistence Allowance (No GST)") {
+                    SubsistenceAllowanceNoGstChecked = true;
+                }
+
+                if (SubTypeName == "Flight without GST") {
+                    FlightWithoutGstChecked = true;
+                }
+
+                if (SubTypeName == "Subsistence Allowance (No SST)") {
+                    SubsistenceAllowanceNoSstChecked = true;
+                }
+
+                if (SubTypeName == "Flight without SST") {
+                    FlightWithoutSstChecked = true;
+                }
+            }
+
+            //console.log(index + ": " + $(this).text());
+        });
+
+        if (SubsistenceAllowanceNoGstChecked == true && FlightWithoutGstChecked == false) {
+            alert('The Selected Subtype (Subsistence Allowance (No GST)) required Flight without GST Subtype.');
+            Error = true;
+            return;
+        }
+
+        if (SubsistenceAllowanceNoSstChecked == true && FlightWithoutSstChecked == false) {
+            alert('The Selected Subtype (Subsistence Allowance (No SST)) required Flight without SST Subtype.');
+            Error = true;
+            return;
+        }
+
+        return Error;
+    }
+
+    function CheckDate() {
+        if ($('#StartDate').val() == "") {
+            alert("Please Fill In Start Date");
+            return true;
+        }
+        if ($('#EndDate').val() == "") {
+            alert("Please Fill In End Date");
+            return true;
+        }
+
+        if ($('#StartTime').val() == "") {
+            alert("Please Fill In Start Time");
+            return true;
+        }
+        if ($('#EndTime').val() == "") {
+            alert("Please Fill In End Time");
+            return true;
+        }
+
+        var startDateString = $('#StartDate').val() + " " + $('#StartTime').val();
+        var endDateString = $('#EndDate').val() + " " + $('#EndTime').val();
+
+        var StartDate = moment(startDateString, "DD/MM/YYYY HH:mm")._d;
+        var EndDate = moment(endDateString, "DD/MM/YYYY HH:mm")._d;
+
+        //console.log("Start Date : " + StartDate);
+        //console.log("End Date : " + EndDate);
+
+        if (EndDate <= StartDate) {
+            alert('End Date/Time has to be later than Start Date/Time');
+            return true;
+        }
+    }
+
+    function TransportMultiSelect_OnChange() {
+        var _Mode = $('#t_Mode');
+        _Mode.val('');
+
+        $('#Transportation input:checked').each(function () {
+            if (_Mode.val() == '') {
+                _Mode.val($(this).attr('subtypename'));
+            }
+            else {
+                var _temp = _Mode.val();
+                _temp += ',' + $(this).attr('subtypename');
+                _Mode.val('');
+                _Mode.val(_temp);
+            }
+        });
+    }
+
+    function TravellingAllowanceMultiSelect_OnChange() {
+        var _Mode = $('#t_Allowance');
+        _Mode.val('');
+
+        $("[id='Travelling Allowance'] input:checked").each(function () {
+            if (_Mode.val() == '') {
+                _Mode.val($(this).attr('subtypename'));
+            }
+            else {
+                var _temp = _Mode.val();
+                _temp += ',' + $(this).attr('subtypename');
+                _Mode.val('');
+                _Mode.val(_temp);
+            }
+        });
+    }
+
+    var selectedSubtypes = [];
+    function ClaimSubtype_SelectionsOnLoad() {
+        $('.SubTypeCheckBox:checked').each(function () {
+            ClaimSubtype_SelectionsOnChange(this);
+        });
+    }
+    function ClaimSubtype_SelectionsOnChange(element) {
+        var _element = $(element);
+        var prefix = _element.attr('subtypePrefix');
+
+        if (_element.prop('checked')) {
+            selectedSubtypes.push(prefix);
+        }
+        else {
+            for (var i = 0; i < selectedSubtypes.length; i++) {
+                if (selectedSubtypes[i] == prefix) {
+                    selectedSubtypes.splice(i, 1);
+                    break;
+                }
+            }
+        }
+
+        if (selectedSubtypes.length == 0) {
+            $('.SubTypeCheckBox').prop('disabled', false);
+        }
+        else {
+            var current = selectedSubtypes[0];
+
+            $('.SubTypeCheckBox[subtypePrefix!="' + prefix + '"]').each(function () {
+                var prefixIgnore = true;
+                //to ignore subtypeprefix controlling
+                if (typeof $(this).attr('prefixIgnore') !== 'undefined') {
+                    prefixIgnore = $(this).attr('prefixIgnore') !== 'true';
+                }
+
+                if (prefixIgnore) {
+                    $(this).prop('disabled', true);
+                    $(this).prop('checked', false);
+                }
+            })
+
+            $('.SubTypeCheckBox[subtypePrefix="' + prefix + '"]').each(function () {
+                var prefixIgnore = true;
+                //to ignore subtypeprefix controlling
+                if (typeof $(this).attr('prefixIgnore') !== 'undefined') {
+                    prefixIgnore = $(this).attr('prefixIgnore') !== 'true';
+                }
+
+                if (prefixIgnore) {
+                    $(this).prop('disabled', false);
+                }
+            });
+        }
+
+        $('.SubTypeCheckBox').uniform();
+    }
+
+    function ClaimSubtype_ValidateSelections() {
+        var formSubtypes = $('.subtypeportlet .portlet-title').map(function (i, e) {
+            var tokens = $(this).text().split('-');
+
+            if (tokens.length == 1)
+                return tokens[0].trim();
+
+            return tokens.slice(1, tokens.length).join('-').trim();
+        }).get();
+
+        var selectedSubtypes = $('.SubTypeCheckBox:checked').map(function (i, e) {
+            return $(this).attr('subtypename').trim();
+        }).get();
+
+        return formSubtypes.length === selectedSubtypes.length && formSubtypes.every(function (value, index) { return value === selectedSubtypes[index] });
+    }
+</script>

@@ -1,0 +1,346 @@
+﻿@model Dictionary<string, int>
+@{
+    ViewBag.Title = "Integrity Pledge - Head Count Report";
+}
+
+@{
+    //DateTime dStartDateTime = DateTime.Now.AddMonths(-3);
+    //DateTime dEndDateTime = DateTime.Now;
+    //string dtStart = new DateTime(dStartDateTime.Year, dStartDateTime.Month, 1).ToString("dd/MM/yyyy");
+    //string dtDefault = dEndDateTime.ToString("dd/MM/yyyy");
+}
+
+<div class="row">
+    <div class="col-md-12">
+        <br />
+        <h1 class="page-title">
+            @ViewBag.Title
+            <span style="padding-left:20px;">
+                <small>
+                </small>
+            </span>
+        </h1>
+    </div>
+</div>
+<br />
+
+<form>
+    <div class="form-body">
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-horizontal">
+                    <div class="form-group">
+                        <label class="col-md-4 control-label">Employee</label>
+                        <div class="col-md-8 form-control-static">
+                            <input type="text" class="form-control EmployeeSearch" name="EmployeeSearch" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-horizontal">
+                    <div class="form-group">
+                        <label class="col-md-4 control-label">Status</label>
+                        <div class="col-md-8 form-control-static">
+                            <select id="ddlType" class="form-control" name="Status">
+                                <option value="">--  All --</option>
+                                <option value="Completed">Completed</option>
+                                <option value="Incomplete">Incomplete</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-horizontal">
+                    <div class="form-group">
+                        <label class="col-md-4 control-label">Division</label>
+                        <div class="col-md-8 form-control-static">
+                            <select id="ddlDivisionCode" class="form-control" name="division">
+                                <option value="">--  All --</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-horizontal">
+                    <div class="form-group">
+                        <label class="col-md-4 control-label">Company Code</label>
+                        <div class="col-md-8 form-control-static">
+                            <select id="ddlCompanyCode" class="form-control" name="company">
+                                <option value="">--  All --</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-horizontal">
+                    <div class="form-group">
+                        <label class="col-md-4 control-label">Personnel Area</label>
+                        <div class="col-md-8 form-control-static">
+                            <select id="ddlPersonnelArea" class="form-control" name="area">
+                                <option value="">--  All --</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-horizontal">
+                    <div class="form-group">
+                        <label class="col-md-4 control-label">Personnel Subarea</label>
+                        <div class="col-md-8 form-control-static">
+                            <select id="ddlPersonnelSubarea" class="form-control" name="subarea">
+                                <option value="">--  All --</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-horizontal">
+                    <div class="form-group">
+                        <label class="col-md-4 control-label">Grade</label>
+                        <div class="col-md-8 form-control-static">
+                            <select id="ddlGrade" class="form-control" name="grade">
+                                <option value="">--  All --</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="form-horizontal">
+                    <div class="form-group">
+                        <label class="col-md-4 control-label">
+                            Displayable Row Limit
+                            <img id="imgRowLimit" src="/_layouts/15/images/info16by16.gif" alt="rowLimitInfo" title="">
+                        </label>
+                        <div class="col-md-8 form-control-static">
+                            <select id="ddlRowLimit" class="form-control" name="rowLimit">
+                                <option value="1000" selected>1000</option>
+                                <option value="5000">5000</option>
+                                <option value="10000">10000</option>
+                                <option value="0">--  All --</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">&nbsp;</div>
+        <div class="row">
+            <div class="col-md-12">
+                <div class="text-right">
+                    <input type="button" class="btn green btn-Search"
+                           value="Search" onclick="SearchListing();">
+                </div>
+            </div>
+        </div>
+
+        <div class="row">&nbsp;</div>
+        <div class="row">
+            <div class="col-md-12">
+                <div id="SearchResult">
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+@Html.Partial("__Prompt")
+<script>
+    @*$(function () {
+        $('.date-picker').datepicker({
+            format: 'dd/mm/yyyy',
+            autoclose: true,
+        });
+    });*@
+
+    function SearchListing() {
+        var option = $('form').serializeArray();
+        option.push({ name: '_', value: $.now() });
+
+        ShowLoadingScreen();
+        $.get('@Url.Action("HeadCountReportResult", "IntegrityPledge")', option, function (result) {
+            HideLoadingScreen();
+            $('#SearchResult').html(result);
+        });
+    }
+
+    var OptionLink = '@Url.Action("_GetAssetSearchOptions", "Asset")';
+    var ddlCompanyCode;
+    var ddlDivisionCode;
+    var ddlGrade;
+    var ddlPersonnelArea;
+    var ddlPersonnelSubarea;
+    var ddlDeclarationStatus;
+    var defaultSelectOpt = '<option value="">-- All --</option>';
+    //var ddlCompanyCode = $('#ddlCompanyCode');
+
+    $(function () {
+        ddlCompanyCode = $('#ddlCompanyCode');
+        ddlDivisionCode = $('#ddlDivisionCode')
+        ddlGrade = $('#ddlGrade');
+        ddlPersonnelArea = $('#ddlPersonnelArea');
+        ddlPersonnelSubarea = $('#ddlPersonnelSubarea');
+        ddlDeclarationStatus = $('#ddlDeclarationStatus');
+
+        //InitCompanyCodeOptions();
+        InitDivisionCodeOptions();
+        InitPayScaleGroupOptions();
+
+        ddlDivisionCode.on('change', UpdateCompanyCodeOption);
+        ddlCompanyCode.on('change', UpdateAreaCodeOption);
+        ddlPersonnelArea.on('change', UpdateSubAreaCodeOption);
+
+        $('#imgRowLimit').qtip({
+            content: "<p>Limits the number of rows displayed in the viewing table.</p><p>The <b>Export to Excel</b> will export all records found.</p>",
+            position: {
+                corner: {
+                    target: 'rightMiddle',
+                    tooltip: 'leftMiddle',
+                    adjust: {
+                        method: 'shift none'
+                    }
+                }
+            },
+            show: {
+                ready: false, // Show the tooltip when ready
+                solo: true
+            },
+            style: {
+                width: " + this.Width + ",
+                border: {
+                    width: 2,
+                    radius: 5,
+                    color: '#CECECE'
+                },
+                padding: 5,
+                tip: true,
+                name: 'light'
+            }
+        });
+    });
+
+    function InitPayScaleGroupOptions() {
+        FillDropdown(ddlGrade,
+            {
+                OptionType: "Grade",
+                CompanyCode: ddlCompanyCode.val() || "",
+                AreaCode: ddlPersonnelArea.val() || "",
+                SubAreaCode: ddlPersonnelSubarea.val() || ""
+            });
+    }
+
+    function InitDivisionCodeOptions() {
+        FillDropdown(ddlDivisionCode, {
+            OptionType: "DivisionCode"
+        });
+    }
+
+    function InitCompanyCodeOptions() {
+        FillDropdown(ddlCompanyCode,
+        {
+            OptionType: "CompanyCode",
+        });
+    }
+
+    function UpdateDivisionCodeOption() {
+        ddlDivisionCode.val("");
+        ddlDivisionCode.empty().append(defaultSelectOpt);
+        ddlPersonnelArea.empty().append(defaultSelectOpt);
+        ddlPersonnelSubarea.empty().append(defaultSelectOpt);
+
+        if (ddlCompanyCode.val() !== "") {
+            FillDropdown(ddlDivisionCode,
+                {
+                    OptionType: "DivisionCode",
+                    CompanyCode: ddlCompanyCode.val() || "",
+                    DivisionCode: ddlDivisionCode.val() || ""
+                });
+        }
+    }
+
+    function UpdateCompanyCodeOption() {
+        ddlCompanyCode.val("");
+        ddlCompanyCode.empty().append(defaultSelectOpt);
+        ddlPersonnelArea.empty().append(defaultSelectOpt);
+        ddlPersonnelSubarea.empty().append(defaultSelectOpt);
+
+        if (ddlDivisionCode.val() !== "") {
+            FillDropdown(ddlCompanyCode,
+                {
+                    OptionType: "CompanyCode",
+                    CompanyCode: ddlCompanyCode.val() || "",
+                    DivisionCode: ddlDivisionCode.val() || ""
+                });
+        }
+    }
+
+    function UpdateAreaCodeOption() {
+        ddlPersonnelArea.val("");
+        ddlPersonnelArea.empty().append(defaultSelectOpt);
+        ddlPersonnelSubarea.empty().append(defaultSelectOpt);
+
+        if (ddlDivisionCode !== "") {
+            FillDropdown(ddlPersonnelArea,
+                {
+                    OptionType: "PersonnelArea",
+                    CompanyCode: ddlCompanyCode.val() || "",
+                    DivisionCode: ddlDivisionCode.val() || "",
+                    AreaCode: ddlPersonnelArea.val() || ""
+                });
+        }
+    }
+
+    function UpdateSubAreaCodeOption() {
+        ddlPersonnelSubarea.val("");
+        ddlPersonnelSubarea.empty().append(defaultSelectOpt);
+
+        if (ddlPersonnelArea.val() !== "") {
+            FillDropdown(ddlPersonnelSubarea,
+                {
+                    OptionType: "PersonnelSubarea",
+                    CompanyCode: ddlCompanyCode.val() || "",
+                    DivisionCode: ddlDivisionCode.val() || "",
+                    AreaCode: ddlPersonnelArea.val() || "",
+                    SubAreaCode: ddlPersonnelSubarea.val() || ""
+                });
+        }
+    }
+
+    function FillDropdown(ddl, option, callback) {
+        $.get(OptionLink, option, function (result) {
+
+            var currVal = ddl.val();
+
+            ddl.empty().append(defaultSelectOpt);
+
+            for (var i = 0; i < result.length; i++) {
+                var selectOrNot = "";
+                if (result[i].Code === currVal) {
+                    selectOrNot = "selected"
+                }
+                ddl.append('<option '+selectOrNot+' value="' + result[i].Code + '">' + result[i].Description + '</option>');
+            }
+
+            if (callback) {
+                callback();
+            }
+        });
+    }
+</script>
+
+@Html.Partial("_ExcelExport")

@@ -1,0 +1,124 @@
+﻿@{
+    ViewBag.Title = "LTIP Grant/Vesting Status";
+    String EmployeeID = ViewBag.EmployeeID;
+    List<string> CompPlan = ViewBag.CompPlan;
+}
+
+<div class="row">
+    <div class="col-md-12">
+        <br />
+        <h1 class="page-title">
+            @ViewBag.Title
+            <span style="padding-left:20px;">
+                <small></small>
+            </span>
+        </h1>
+    </div>
+</div>
+
+<br />
+<div class="row">
+    <div class="col-md-6">
+        <div class="form-horizontal">
+            <div class="form-group">
+                <label class="col-md-4 control-label">Comp. Plan</label>
+                <div class="col-md-8 form-control-static">
+                    <select class="form-control" id="ddlCompPlan" onchange="UpdateCompReviewDDL();">
+                        <option value="">-  All -</option>
+                        @foreach (var cp in CompPlan)
+                        {
+                            <option value="@cp">@cp</option>
+                        }
+                    </select>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="form-horizontal">
+            <div class="form-group">
+                <label class="col-md-4 control-label">Comp. Review Item</label>
+                <div class="col-md-8 form-control-static">
+                    <select class="form-control" id="ddlCompReview">
+                        <option value="">-  All -</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row">&nbsp;</div>
+<div class="row">
+    <div class="col-md-12">
+        <div class="text-right">
+            <input type="button" id="btn-Search" class="btn green btn-Search" value="Search" onclick="SearchListing();">
+            <input id="btn-Clear" type="button" class="btn default " value="Clear" onclick="ClearFilter();">
+        </div>
+    </div>
+</div>
+<div class="row">&nbsp;</div>
+<div class="form-body">
+    <div class="row">
+        <div class="col-md-12">
+            <div id="SearchResult">
+            </div>
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+    function SearchListing() {
+        $("#SearchResult").html("LOADING...");
+
+        var _EmployeeID = '@EmployeeID';
+        var _CompPlan = $('#ddlCompPlan').val();
+        var _CompReviewItem = $('#ddlCompReview').val();
+        var _Status = $('#ddlStatus').val();
+
+        $.ajax({
+            type: "GET",
+            url: '@Url.Action("_GrantStatusResults", "LTIP")',
+            cache: false,
+            data: {
+                EmployeeID: _EmployeeID,
+                CompPlan: _CompPlan,
+                CompReviewItem: _CompReviewItem,
+                Status : _Status
+            },
+            success: function (content) {
+                $("#SearchResult").html(content);
+            },
+            error: function (e) {
+                console.log(e);
+            }
+        });
+    }
+
+    $(function () {
+        SearchListing();
+    });
+
+    function UpdateCompReviewDDL() {
+        $.get('@Url.Action("_GetCompReviewItem", "LTIP")',
+            {
+                EmployeeID: '@EmployeeID',
+                CompPlan: $('#ddlCompPlan').val()
+            }, function (result) {
+                var ddlCompReview = $('#ddlCompReview');
+                ddlCompReview.empty();
+                ddlCompReview.append('<option value=""> - All - </option>');
+                if (result != null && result.length > 0) {
+                    for (var i = 0; i < result.length; i++) {
+                        ddlCompReview.append('<option value="' + result[i] + '">' + result[i] + '</option>');
+                    }
+                }
+        });
+    }
+
+    function ClearFilter() {
+        $('#ddlCompReview').val("");
+        $('#ddlCompPlan').val("");
+
+        SearchListing();
+    }
+</script>
+

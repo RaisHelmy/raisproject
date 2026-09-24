@@ -1,0 +1,203 @@
+﻿@model ETKEMS.Models.ETKEMSViewModel
+@{
+    List<string> ReasonsForVacancy = ViewBag.ReasonsForVacancy;
+    String VacancyMinDate = DateTime.Today.AddDays(-14).ToString("dd/MM/yyyy");
+    String VacancyMaxDate = new DateTime(DateTime.Now.Year + 1, 12, 31).ToString("dd/MM/yyyy");
+}
+
+<div class="portlet box blue">
+    <div class="mini-triangle"><img src="/_layouts/15/TNBESS/Assets/img/menu-red-triangle.png" /></div>
+    <div class="portlet-title">
+        <div class="caption">
+            <i class="fa fa-reorder"></i>Vacancy Details for Acting Position
+        </div>
+        <div class="tools">
+            <a title="" data-original-title="" href="javascript:;" class="collapse"> </a>
+        </div>
+    </div>
+    <div class="portlet-body form">
+        @if (Model.EStatus == ETKEMS.Status.Draft || Model.EStatus == ETKEMS.Status.Declined)
+        {
+            <div class="form-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-horizontal">
+                            <div class="form-group">
+                                <label class="control-label col-md-4">
+                                    Vacancy From Date <span style="color:red;"> *</span>
+                                </label>
+                                <div class="col-md-8 form-control-static">
+                                    <div id="VacancyStartDate" class="input-group date date-picker" data-date-format="dd/mm/yyyy">
+                                        <input type="text" class="form-control FromDate" name="FromDate" value="@Model.FromDate" />
+                                        <span class="input-group-btn">
+                                            <button type="button" id="btnFromDate" class="btn default">
+                                                <i class="fa fa-calendar">
+                                                </i>
+                                            </button>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="form-horizontal">
+                            <div class="form-group">
+                                <label class="control-label col-md-4">
+                                    Vacancy To Date <span style="color:red;"> *</span>
+                                </label>
+                                <div class="col-md-8 form-control-static">
+                                    <div id="VacancyEndDate" class="input-group date date-picker" data-date-format="dd/mm/yyyy">
+                                        <input type="text" class="form-control ToDate" name="ToDate" value="@Model.ToDate" />
+                                        <span class="input-group-btn">
+                                            <button type="button" id="btnToDate" class="btn default">
+                                                <i class="fa fa-calendar">
+                                                </i>
+                                            </button>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="form-horizontal">
+                            <div class="form-group">
+                                <label class="control-label col-md-2">
+                                    Reason For Vacancy <span style="color:red;"> *</span>
+                                </label>
+                                <div class="col-md-10 form-control-static">
+                                    <div class="radio-list">
+                                        <div class="row">
+                                            @foreach (var reason in ReasonsForVacancy)
+                                            {
+                                                <label class="col-md-4">
+                                                    <input type="radio" name="Reason" value="@reason" />
+                                                    @reason
+                                                </label>
+                                            }
+                                        </div>
+                                        <div class="row">
+                                            <label class="col-md-4">
+                                                <input type="radio" name="Reason" value="Others" />
+                                                Others
+                                            </label>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-md-8">
+                                                <input type="text" name="ReasonOther" class="form-control" readonly="readonly" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="form-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-horizontal">
+                            <div class="form-group">
+                                <label class="control-label col-md-4">Vacancy From Date</label>
+                                <div class="col-md-8 form-control-static">
+                                    <input type="text" class="form-control FromDate" name="FromDate"
+                                           readonly="readonly" value="@Model.FromDate" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="form-horizontal">
+                            <div class="form-group">
+                                <label class="control-label col-md-4">Vacancy To Date</label>
+                                <div class="col-md-8 form-control-static">
+                                    <input type="text" class="form-control ToDate" name="ToDate"
+                                           readonly="readonly" value="@Model.ToDate" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-horizontal">
+                            <div class="form-group">
+                                <label class="control-label col-md-4">Reason For Vacancy</label>
+                                <div class="col-md-8 form-control-static">
+                                    <input type="text" class="form-control Reason" name="Reason"
+                                           readonly="readonly" value="@Model.Reason" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    @if (Model.Reason == "Others")
+                    {
+                        <div class="col-md-6">
+                            <div class="form-horizontal">
+                                <div class="form-group">
+                                    <label class="control-label col-md-4">Other Reason</label>
+                                    <div class="col-md-8 form-control-static">
+                                        <input type="text" class="form-control ReasonOther" name="ReasonOther"
+                                               readonly="readonly" value="@Model.ReasonOther" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+<script>
+    $(function () {
+        $('input[name="Reason"]').change(ToggleOtherReasonBox);
+        $('input[name="Reason"]').filter('[value="@Model.Reason"]').attr('checked', true);
+        ToggleOtherReasonBox();
+
+        $('#VacancyStartDate, #VacancyEndDate').datepicker({
+            format: 'dd/mm/yyyy',
+            autoclose: true,
+        });
+
+        $('#VacancyStartDate').datepicker('setStartDate', '@VacancyMinDate');
+        $('#VacancyStartDate').datepicker('setEndDate', '@VacancyMaxDate');
+        $('.FromDate').change(function () {
+            VacancyDate_OnChange();
+        });
+    });
+
+    function VacancyDate_OnChange() {
+        var vacStartDate = moment($('input[name="FromDate"]').val(), 'DD/MM/YYYY');
+
+        if (vacStartDate != null) {
+            $('#VacancyEndDate').datepicker('setStartDate', vacStartDate.format('DD/MM/YYYY'));
+            $('#VacancyEndDate').datepicker('setEndDate', vacStartDate.clone().add(179, 'days').format('DD/MM/YYYY'));
+        }
+    }
+
+    function ToggleOtherReasonBox() {
+        var isOtherSelected = $('input[name="Reason"]:checked').val() == "Others";
+
+        if (isOtherSelected) {
+            $('input[name="ReasonOther"]').attr("readonly", false);
+        }
+        else {
+            $('input[name="ReasonOther"]').val("");
+            $('input[name="ReasonOther"]').attr("readonly", true);
+        }
+    }
+</script>

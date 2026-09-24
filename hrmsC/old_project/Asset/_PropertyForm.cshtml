@@ -1,0 +1,783 @@
+﻿@using Asset.Models
+@model PropertyFormViewModel
+@{
+    bool isKemasKini = false;
+    if (Model.Property == null)
+    {
+        isKemasKini = false;
+        ViewBag.Title = "Tambah Maklumat Pemilikan Harta";
+    }
+    else
+    {
+        isKemasKini = true;
+        ViewBag.Title = "Kemaskini Maklumat Pemilikan Harta";
+    }
+
+    String EmployeeID = ViewBag.EmployeeID;
+    List<DropDownItem> PropertyTypeSelections = ViewBag.PropertyTypeSelections;
+    List<DropDownItem> FundSourceTypeSelections = ViewBag.FundSourceTypeSelections;
+
+    string Mode = ViewBag.Mode;
+    bool NewRecord = ViewBag.NewRecord;
+
+    bool AllowEdit = ViewBag.AllowEdit;
+    bool AllowDelete = ViewBag.AllowDelete;
+    bool Readonly = false;
+
+    if (Mode == "Read" || Mode == "ReadAndEdit" || Mode == "Discard")
+    {
+        Readonly = true;
+    }
+    else if (Mode == "Edit")
+    {
+        Readonly = false;
+    }
+}
+
+<style>
+    .PropertyForm_TableHeaderRow1 {
+        background-color: lawngreen;
+    }
+
+    .PropertyForm_TableHeaderRow2 {
+        background-color: green;
+        color: white;
+    }
+</style>
+
+<form id="PropertyForm">
+    <input type="hidden" name="Property.PropertyID" value="@(Model.Property == null ? "" : Model.Property.PropertyID)" />
+    <input type="hidden" name="Property.EmployeeID" value="@ViewBag.EmployeeID" />
+    <div class="modal fade" id="Property_Modal" tabindex="-1" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                    <h4 id="PropertyForm_Title" class="modal-title">@ViewBag.Title</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="collapse-portlet portlet box blue">
+                        <div class="portlet-title">
+                            <div class="caption">
+                                <i class="fa fa-reorder"></i>Maklumat Harta
+                            </div>
+                        </div>
+                        <div class="portlet-body form">
+                            <div class="form-horizontal">
+                                <div class="form-body">
+                                    @if (!NewRecord)
+                                    {
+                                        <div class="form-group popup-form-group">
+                                            <label class="control-label col-md-6">
+                                                Status
+                                            </label>
+                                            <div class="col-md-6">
+                                                @if (Mode == "Discard")
+                                                {
+                                                    <select class="bs-select form-control" name="Property.AssetStatusCode"
+                                                            disabled="disabled">
+                                                        <option value="AK">
+                                                            Aktif
+                                                        </option>
+                                                        <option value="LU" selected="selected">
+                                                            Lupus
+                                                        </option>
+                                                    </select>
+                                                }
+                                                else
+                                                {
+                                                    <select class="bs-select form-control" name="Property.AssetStatusCode"
+                                                            @(Readonly ? "readonly" : "") @(Readonly ? "disabled" : "")>
+                                                        <option value="AK" @(Model.Property.AssetStatusCode == "AK" ? "selected" : "")>
+                                                            Aktif
+                                                        </option>
+                                                        <option value="LU" @(Model.Property.AssetStatusCode == "LU" ? "selected" : "")>
+                                                            Lupus
+                                                        </option>
+                                                    </select>
+                                                }
+                                            </div>
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <input type="hidden" name="Property.AssetStatusCode" value="AK" />
+                                    }
+
+                                    <div class="form-group popup-form-group">
+                                        <label class="control-label col-md-6">
+                                            Jenis Harta
+                                            <span style="color: red;">*</span>
+                                        </label>
+                                        <div class="col-md-6">
+                                            <select class="bs-select form-control" name="Property.PropertyTypeCode"
+                                                    @(Readonly ? "readonly" : "") @(Readonly ? "disabled" : "")>
+                                                @foreach (var item in PropertyTypeSelections)
+                                                {
+                                                    string selected = Model.Property == null ? "" : Model.Property.PropertyTypeCode;
+                                                    if (selected == item.Code)
+                                                    {
+                                                        <option value="@item.Code" selected="selected">@item.Description</option>
+                                                    }
+                                                    else
+                                                    {
+                                                        <option value="@item.Code">@item.Description</option>
+                                                    }
+
+                                                }
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="form-group popup-form-group">
+                                        <label class="control-label col-md-6">
+                                            Pemilikan Harta dan Hubungan Dengan Pekerja
+                                            <span style="color: red;">*</span>
+                                        </label>
+                                        <div class="col-md-6">
+                                            <input type="hidden" name="Property.OwnershipDetails" disabled="disabled" value="EM" />
+                                            <select class="bs-select form-control" name="Property.OwnershipDetails"
+                                                    @(Readonly ? "readonly" : "") @(Readonly ? "disabled" : "")>
+                                                @{
+                                                    string ownershipDetails = Model.Property == null ? "" : Model.Property.OwnershipDetails;
+
+                                                    <option value="" @(ownershipDetails == "" ? "selected" : "")>--Sila Pilih--</option>
+                                                    <option value="EM" @(ownershipDetails == "EM" ? "selected" : "")>Sendiri</option>
+                                                    <option value="S1" @(ownershipDetails == "S1" ? "selected" : "")>Pasangan</option>
+                                                    <option value="CH" @(ownershipDetails == "CH" ? "selected" : "")>Anak</option>
+                                                }
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="form-group popup-form-group">
+                                        <label class="control-label col-md-6">
+                                            Alamat Harta / No. Pendaftaran / No. Sijil dan Sebagainya
+                                            <span style="color: red;">*</span>
+                                        </label>
+                                        <div class="col-md-6">
+                                            <textarea class="form-control" rows="6"
+                                                      name="Property.AddressDetails" @(Readonly ? "readonly" : "") @(Readonly ? "disabled" : "")
+                                                      placeholder="Alamat Harta / No. Pendaftaran / No. Sijil dan Sebagainya">@(Model.Property == null ? "" : Model.Property.AddressDetails)</textarea>
+                                            <span id="PropertyType_HelpBlock" class="help-block" style="display: none;">
+                                                Wang simpanan / syer / debenture / saham amanah yang melebihi 6 bulan emolument yang disimpan dan/atau dilabur di mana-mana institusi kewangan
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div class="form-group popup-form-group">
+                                        <label class="control-label col-md-6">
+                                            Tarikh Pemilikan Harta
+                                            <span style="color: red;">*</span>
+                                        </label>
+                                        <div class="col-md-6">
+                                            <div class="input-group date date-picker" data-date-format="dd/mm/yyyy">
+                                                <input type="text" class="form-control" name="Property.OwnershipDate"
+                                                       @(Readonly ? "readonly" : "") @(Readonly ? "disabled" : "")
+                                                       value="@(Model.Property == null ? "" : Model.Property.OwnershipDate)" />
+                                                <span class="input-group-btn">
+                                                    <button type="button" class="btn default" @(Readonly ? "disabled" : "")>
+                                                        <i class="fa fa-calendar"></i>
+                                                    </button>
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="form-group popup-form-group">
+                                        <label class="control-label col-md-6">
+                                            Bilangan / Ekar / Kaki Persegi / Unit
+                                            <span style="color: red;">*</span>
+                                        </label>
+                                        <div class="col-md-6">
+                                            <input type="text" class="form-control" name="Property.UnitDetails" @(Readonly ? "readonly" : "")
+                                                   value="@(Model.Property == null ? "" : Model.Property.UnitDetails) ">
+                                            <span class="help-block">
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div class="form-group popup-form-group">
+                                        <label class="control-label col-md-6">
+                                            Nilai Perolehan Harta (RM)
+                                            <span style="color: red;">*</span>
+                                        </label>
+                                        <div class="col-md-6">
+                                            <input type="text" class="form-control currency select-all-focus"
+                                                   name="Property.Value" @(Readonly ? "readonly" : "")
+                                                   value="@(Model.Property == null ? "" : Model.Property.Value)">
+                                            <span class="help-block">
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div class="form-group popup-form-group">
+                                        <label class="control-label col-md-6">
+                                            Punca Pemilikan
+                                            <span style="color: red;">*</span>
+                                        </label>
+                                        <div class="col-md-6">
+                                            <select class="form-control" name="Property.FundSourceTypeCode"
+                                                    @(Readonly ? "readonly" : "") @(Readonly ? "disabled" : "")>
+                                                @foreach (DropDownItem item in FundSourceTypeSelections)
+                                                {
+                                                    string selected = Model.Property == null ? "" : Model.Property.FundSourceTypeCode;
+                                                    if (selected == item.Code)
+                                                    {
+                                                        <option value="@item.Code" selected="selected">@item.Description</option>
+                                                    }
+                                                    else
+                                                    {
+                                                        <option value="@item.Code">@item.Description</option>
+                                                    }
+                                                }
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <!--Pinjaman-->
+                                    <div class="form-group Pinjaman popup-form-group">
+                                        <label class="control-label col-md-6">
+                                            Pinjaman : Jumlah Pinjaman (RM)
+                                            <span style="color: red;">*</span>
+                                        </label>
+                                        <div class="col-md-6">
+                                            <input type="text" class="form-control currency select-all-focus" 
+                                                   name="Property.LoanTotal" @(Readonly ? "readonly" : "")
+                                                   value="@(Model.Property == null ? "" : Model.Property.LoanTotal)">
+                                        </div>
+                                    </div>
+                                    <div class="form-group Pinjaman popup-form-group">
+                                        <label class="control-label col-md-6">
+                                            Pinjaman : Institusi Pemberi Pinjaman
+                                            <span style="color: red;">*</span>
+                                        </label>
+                                        <div class="col-md-6">
+                                            <input type="text" class="form-control" name="Property.LoanInstitution" @(Readonly ? "readonly" : "")
+                                                   value="@(Model.Property == null ? "" : Model.Property.LoanInstitution)">
+                                        </div>
+                                    </div>
+                                    <div class="form-group Pinjaman popup-form-group">
+                                        <label class="control-label col-md-6">
+                                            Pinjaman : Tempoh Bayaran Balik (Bulan)
+                                            <span style="color: red;">*</span>
+                                        </label>
+                                        <div class="col-md-6">
+                                            <input type="text" class="form-control" name="Property.LoanTenure" @(Readonly ? "readonly" : "")
+                                                   value="@(Model.Property == null ? "" : Model.Property.LoanTenure)">
+                                        </div>
+                                    </div>
+                                    <div class="form-group Pinjaman popup-form-group">
+                                        <label class="control-label col-md-6">
+                                            Pinjaman : Ansuran Bulanan (RM)
+                                            <span style="color: red;">*</span>
+                                        </label>
+                                        <div class="col-md-6">
+                                            <input type="text" class="form-control currency select-all-focus" 
+                                                   name="Property.LoanMonthly" @(Readonly ? "readonly" : "")
+                                                   value="@(Model.Property == null ? "" : Model.Property.LoanMonthly)">
+                                        </div>
+                                    </div>
+                                    <div class="form-group Pinjaman popup-form-group">
+                                        <label class="control-label col-md-6">
+                                            Pinjaman : Tarikh Ansuran Pertama
+                                            <span style="color: red;">*</span>
+                                        </label>
+                                        <div class="col-md-6">
+                                            <div class="input-group date date-picker" data-date-format="dd/mm/yyyy">
+                                                @{
+                                                    DateTime LoanFirstPayment;
+                                                    string LoanPaymentDisplay = "";
+
+                                                    if (Model.Property != null && DateTime.TryParse(Model.Property.LoanFirstPayment, out LoanFirstPayment))
+                                                    {
+                                                        LoanPaymentDisplay = LoanFirstPayment.ToString("dd/MM/yyyy");
+                                                    }
+                                                    else if (Model.Property != null)
+                                                    {
+                                                        LoanPaymentDisplay = Model.Property.LoanFirstPayment;
+                                                    }
+
+                                                    <input type="text" class="form-control" name="Property.LoanFirstPayment"
+                                                           @(Readonly ? "readonly" : "") @(Readonly ? "disabled" : "")
+                                                           value="@(Model.Property == null ? "" : LoanPaymentDisplay)" />
+                                                    <span class="input-group-btn">
+                                                        <button type="button" class="btn default" @(Readonly ? "disabled" : "")>
+                                                            <i class="fa fa-calendar"></i>
+                                                        </button>
+                                                    </span>
+                                                }
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!--Pelupusan-->
+                                    <div class="form-group Pelupusan popup-form-group">
+                                        <label class="control-label col-md-6">
+                                            Pelupusan : Jenis Harta
+                                            <span style="color: red;">*</span>
+                                        </label>
+                                        <div class="col-md-6">
+                                            <input type="text" class="form-control" name="Property.DisposeType" @(Readonly ? "readonly" : "")
+                                                   value="@(Model.Property == null ? "" : Model.Property.DisposeType)">
+                                        </div>
+                                    </div>
+                                    <div class="form-group Pelupusan popup-form-group">
+                                        <label class="control-label col-md-6">
+                                            Pelupusan : Alamat
+                                            <span style="color: red;">*</span>
+                                        </label>
+                                        <div class="col-md-6">
+                                            <textarea class="form-control" @(Readonly ? "readonly" : "") @(Readonly ? "disabled" : "")
+                                                      name="Property.DisposeAddress">@(Model.Property == null ? "" : Model.Property.DisposeAddress)</textarea>
+                                            <span class="help-block">
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div class="form-group Pelupusan popup-form-group">
+                                        <label class="control-label col-md-6">
+                                            Pelupusan : No. Pendaftaran
+                                            <span style="color: red;">*</span>
+                                        </label>
+                                        <div class="col-md-6">
+                                            <input type="text" class="form-control" name="Property.DisposeRegistration"
+                                                   @(Readonly ? "readonly" : "")
+                                                   value="@(Model.Property == null ? "" : Model.Property.DisposeRegistration)">
+                                        </div>
+                                    </div>
+                                    <div class="form-group Pelupusan popup-form-group">
+                                        <label class="control-label col-md-6">
+                                            Pelupusan : Harga Jualan (RM)
+                                            <span style="color: red;">*</span>
+                                        </label>
+                                        <div class="col-md-6">
+                                            <input type="text" class="form-control currency select-all-focus" 
+                                                   name="Property.DisposePrice"
+                                                   @(Readonly ? "readonly" : "")
+                                                   value="@(Model.Property == null ? "" : Model.Property.DisposePrice)">
+                                        </div>
+                                    </div>
+                                    <div class="form-group Pelupusan popup-form-group">
+                                        <label class="control-label col-md-6">
+                                            Pelupusan : Tarikh Lupus
+                                            <span style="color: red;">*</span>
+                                        </label>
+                                        <div class="col-md-6">
+                                            <div class="input-group date date-picker" data-date-format="dd/mm/yyyy">
+                                                <input type="text" class="form-control" name="Property.DisposeDate"
+                                                       @(Readonly ? "readonly" : "") @(Readonly ? "disabled" : "")
+                                                       value="@(Model.Property == null ? "" : Model.Property.DisposeDate)" />
+                                                <span class="input-group-btn">
+                                                    <button type="button" class="btn default" @(Readonly ? "disabled" : "")>
+                                                        <i class="fa fa-calendar"></i>
+                                                    </button>
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group popup-form-group">
+                                        <label class="control-label col-md-6">
+                                            Keterangan Lain
+                                        </label>
+                                        <div class="col-md-6">
+                                            <textarea class="form-control" @(Readonly ? "readonly" : "") @(Readonly ? "disabled" : "")
+                                                      name="Property.OtherDetails">@(Model.Property == null ? "" : Model.Property.OtherDetails)</textarea>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    @if (Readonly)
+                    {
+                        <div class="collapse-portlet portlet box blue">
+                            <div class="portlet-title">
+                                <div class="caption">
+                                    <i class="fa fa-reorder"></i>Ahli Keluarga yang Terlibat Dalam Syarikat
+                                </div>
+                            </div>
+                            <div class="portlet-body form">
+                                <div class="form-body">
+                                    <div class="row">
+                                        <div class="col-md-12">
+                                            <div class="form-horizontal">
+                                                <div class="form-group">
+                                                    <label class="control-label col-md-6">
+                                                        Tarikh Dimasukkan
+                                                    </label>
+                                                    <div class="col-md-6 form-control-static">
+                                                        <label>
+                                                            @Model.Property.DtCreatedDate.Value.ToString("dd/MM/yyyy h:mm:ss tt")
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                                <div class="form-group">
+                                                    <label class="control-label col-md-6">
+                                                        Tarikh Dikemaskini
+                                                    </label>
+                                                    <div class="col-md-6 form-control-static">
+                                                        @Model.Property.DtModifiedDate.Value.ToString("dd/MM/yyyy h:mm:ss tt")
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+
+                    <!-- Attachment -->
+                    @if (Readonly)
+                    {
+                        @Html.Action("AttachmentControl", "Asset", new { EmployeeID = EmployeeID, Mode = "View", SourceType = "Asset", RequestID = Model.Property.PropertyID })
+                    }
+                    else
+                    {
+                        if (NewRecord)
+                        {
+                            @Html.Action("AttachmentControl", "Asset", new { EmployeeID = EmployeeID, Mode = "New", SourceType = "Asset" })
+                        }
+                        else
+                        {
+                            @Html.Action("AttachmentControl", "Asset", new { EmployeeID = EmployeeID, Mode = "Add", SourceType = "Asset", RequestID = Model.Property.PropertyID })
+                        }
+                    }
+                </div>
+
+                <div class="modal-footer">
+                    @if (Mode == "Discard")
+                    {
+                        <button type="button" id="PropertyForm_btnDiscard" class="btn default blue">
+                            Lupuskan
+                        </button>
+                    }
+                    else
+                    {
+                        if (AllowEdit && !Readonly)
+                        {
+                            <button type="button" id="PropertyForm_btnSave" class="btn default blue">
+                                Simpan
+                            </button>
+                        }
+
+                        if (AllowEdit && Readonly)
+                        {
+                            <button type="button" id="PropertyForm_btnActivateEdit" class="btn default blue">
+                                Kemas Kini
+                            </button>
+                        }
+
+                        if (AllowDelete)
+                        {
+                            <button type="button" id="PropertyForm_btnDelete" class="btn default blue">
+                                Padam
+                            </button>
+                        }
+                    }
+
+                    <button type="button" id="PropertyForm_btnClose" class="btn default" data-dismiss="modal">
+                        Tutup
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+<script>
+    var isPropertyFormUpdated = false;
+
+    $(function () {
+        isPropertyFormUpdated = false;
+        $('#Property_Modal').on('hidden.bs.modal', function () {
+            Property_RefreshForm(false);
+        });
+
+        InitializeCommonControls();
+        $('select[name="Property.PropertyTypeCode"]').on('change', PropertyForm_PropertyTypeOnchange);
+        $('select[name="Property.FundSourceTypeCode"').on('change', PropertyForm_FundSourceOnChange);
+
+        $('#PropertyForm_btnSave').on('click', function () {
+            PropertyForm_Save();
+        });
+
+        $('#PropertyForm_btnActivateEdit').on('click', function () {
+            var id = $('input[name="Property.PropertyID"]').val();
+            Property_OpenForm(id, 'Edit');
+        });
+
+        $('#PropertyForm_btnDiscard').on('click', function () {
+            PropertyForm_Discard();
+        });
+
+        $('#PropertyForm_btnDelete').on('click', function () {
+            PropertyForm_Delete();
+        });
+
+        PropertyForm_PropertyTypeOnchange();
+        PropertyForm_FundSourceOnChange();
+    });
+
+    function PropertyForm_Save() {
+        var validationMessage = PropertyForm_Validation();
+        if (validationMessage) {
+            alert(validationMessage);
+            return;
+        }
+
+        var successMessage = "";
+        var failMessage = "";
+
+        if ('@isKemasKini' == 'False') {
+            successMessage = "Maklumat Pemilikan Harta telah berjaya ditambah.";
+            failMessage = "Tambahan Pemilikan Harta telah gagal. <br />";
+        }
+        else {
+            successMessage = "Maklumat Pemilikan Harta telah berjaya dikemaskini.";
+            failMessage = "Kemaskini maklumat Pemilikan Harta telah gagal. <br />";
+        }
+
+        ShowConfirmationDialog({
+            message: 'Tambah maklumat Pemilikan Harta?',
+            positiveCallback: function () {
+                var data = $('#PropertyForm').serializeArray();
+                $.each(data, function (i, val) {
+                    if (val.name == "Property.Value" ||
+                        val.name == "Property.LoanTotal" ||
+                        val.name == "Property.LoanMonthly" ||
+                        val.name == "Property.DisposePrice") {
+                        val.value = val.value.replace(/,/g, "");
+                    }
+                });
+
+                HideConfirmationDialog();
+                ShowLoadingScreen();
+
+                $.post('@Url.Action("_PropertyForm_Save", "Asset")', data, function (result) {
+                    HideLoadingScreen();
+                    if (result.IsSuccess) {
+                        isPropertyFormUpdated = true;
+
+                        ShowDialog({
+                            message: successMessage,
+                            okCallback: function () {
+                                $('#Property_Modal').modal('hide');
+                            }
+                        });
+                    }
+                    else {
+                        ShowDialog({
+                            title: "Gagal",
+                            message: failMessage + result.ErrorMessage,
+                            okCallback: function () {
+                                HideDialog();
+                            }
+                        });
+                    }
+                });
+            }
+        });
+    }
+
+    function PropertyForm_Validation() {
+        var validationMessage = "";
+        var PropertyTypeCode = $('select[name="Property.PropertyTypeCode"]').val();
+        var OwnershipDetails = $('select[name="Property.OwnershipDetails"]').val();
+        var AddressDetails = $('textarea[name="Property.AddressDetails"]').val();
+        var OwnershipDate = $('input[name="Property.OwnershipDate"]').val();
+        var UnitDetails = $('input[name="Property.UnitDetails"]').val();
+        var Value = $('input[name="Property.Value"]').val();
+        var FundSourceTypeCode = $('select[name="Property.FundSourceTypeCode"]').val();
+
+        if (PropertyTypeCode == null || PropertyTypeCode == "") {
+            validationMessage += "Jenis Harta wajib dipilih. \r\n";
+        }
+
+        if (OwnershipDetails == null || OwnershipDetails == "") {
+            validationMessage += "Pemilikan Harta dan Hubungan Dengan Pekerja wajib diisi. \r\n";
+        }
+        if (AddressDetails == null || AddressDetails == "") {
+            validationMessage += "Alamat Harta / No. Pendaftaran / No. Sijil dan Sebagainya wajib diisi. \r\n";
+        }
+
+        if (OwnershipDate == null || OwnershipDate == "") {
+            validationMessage += "Tarikh Pemilikan Harta wajib diisi. \r\n";
+        }
+
+        if (UnitDetails == null || UnitDetails == "") {
+            validationMessage += "(Bilangan/Ekar/Kaki Persegi/Unit) wajib diisi. \r\n";
+        }
+
+        if (Value == null | Value == "") {
+            validationMessage += "Nilai Perolehan Harta (RM) wajib diisi. \r\n";
+        }
+
+        if (FundSourceTypeCode == null || FundSourceTypeCode == "") {
+            validationMessage += "Punca Pemilikan wajib dipilih. \r\n";
+        }
+
+        if (FundSourceTypeCode == "PI") {
+            var LoanTotal = $('input[name="Property.LoanTotal"]').val();
+            var LoanInstitution = $('input[name="Property.LoanInstitution"]').val();
+            var LoanTenure = $('input[name="Property.LoanTenure"]').val();
+            var LoanMonthly = $('input[name="Property.LoanMonthly"]').val();
+            var LoanFirstPayment = $('input[name="Property.LoanFirstPayment"]').val();
+
+            if (LoanTotal == null || LoanTotal == "") {
+                validationMessage += "Pinjaman : Jumlah Pinjaman (RM) wajib diisi. \r\n";
+            }
+
+            if (LoanInstitution == null || LoanInstitution == "") {
+                validationMessage += "Pinjaman : Institusi Pemberi Pinjaman wajib diisi. \r\n";
+            }
+
+            if (LoanTenure == null || LoanTenure == "") {
+                validationMessage += "Pinjaman : Tempoh Bayaran Balik (Bulan) wajib diisi. \r\n";
+            }
+
+            if (LoanMonthly == null || LoanMonthly == "") {
+                validationMessage += "Pinjaman : Ansuran Bulanan (RM) wajib diisi. \r\n";
+            }
+
+            if (LoanFirstPayment == null || LoanFirstPayment == "") {
+                validationMessage += "Pinjaman : Tarikh Ansuran Pertama wajib diisi. \r\n";
+            }
+        }
+        else if (FundSourceTypeCode == "PE") {
+            var DisposeType = $('input[name="Property.DisposeType"]').val();
+            var DisposeAddress = $('input[name="Property.DisposeAddress"]').val();
+            var DisposeRegistration = $('input[name="Property.DisposeRegistration"]').val();
+            var DisposePrice = $('input[name="Property.DisposePrice"]').val();
+            var DisposeDate = $('input[name="DisposeDate"]').val();
+
+            if (DisposeType == null || DisposeType == "") {
+                validationMessage += "Pelupusan : Jenis Harta wajib diisi. \r\n";
+            }
+
+            if (DisposeAddress == null || DisposeAddress == "") {
+                validationMessage += "Pelupusan : Alamat wajib diisi. \r\n";
+            }
+
+            if (DisposeRegistration == null || DisposeRegistration == "") {
+                validationMessage += "Pelupusan : No. Pendaftaran wajib diisi. \r\n";
+            }
+
+            if (DisposePrice == null || DisposePrice == "") {
+                validationMessage += "Pelupusan : Harga Jualan (RM) wajib diisi. \r\n";
+            }
+
+            if (DisposeDate == null || DisposeDate == "") {
+                validationMessage += "Pelupusan : Tarikh Lupus wajib diisi. \r\n";
+            }
+        }
+
+        return validationMessage;
+    }
+
+    function PropertyForm_Discard() {
+        ShowConfirmationDialog({
+            message: 'Lupuskan Pemilikan Harta ini?',
+            positiveCallback: function () {
+                var data = { PropertyID: $('input[name="Property.PropertyID"]').val() };
+                HideConfirmationDialog();
+                ShowLoadingScreen();
+
+                $.post('@Url.Action("_PropertyForm_Discard", "Asset")', data, function (result) {
+                    HideLoadingScreen();
+                    if (result.IsSuccess) {
+                        isPropertyFormUpdated = true;
+
+                        ShowDialog({
+                            message: "Pemilikan Harta berjaya dilupuskan.",
+                            okCallback: function () {
+                                $('#Property_Modal').modal('hide');
+                            }
+                        });
+                    }
+                    else {
+                        ShowDialog({
+                            title: "Pelupusan harta gagal",
+                            message: result.ErrorMessage,
+                            okCallback: function () {
+                                HideDialog();
+                            }
+                        });
+                    }
+                });
+            }
+        });
+    }
+
+    function PropertyForm_Delete() {
+        ShowConfirmationDialog({
+            message: 'Padamkan Pemilikan Harta ini?',
+            positiveCallback: function () {
+                var data = { PropertyID: $('input[name="Property.PropertyID"]').val() };
+                HideConfirmationDialog();
+                ShowLoadingScreen();
+
+                $.post('@Url.Action("_PropertyForm_Delete", "Asset")', data, function (result) {
+                    HideLoadingScreen();
+                    if (result.IsSuccess) {
+                        isPropertyFormUpdated = true;
+
+                        ShowDialog({
+                            message: "Pemilikan Harta berjaya dipadam.",
+                            okCallback: function () {
+                                $('#Property_Modal').modal('hide');
+                            }
+                        });
+                    }
+                    else {
+                        ShowDialog({
+                            title: "Pemadaman harta gagal",
+                            message: result.ErrorMessage,
+                            okCallback: function () {
+                                HideDialog();
+                            }
+                        });
+                    }
+                });
+            }
+        });
+    }
+
+    function PropertyForm_PropertyTypeOnchange() {
+        if ('@Readonly' == "True") {
+            return;
+        }
+
+        var selected = $('select[name="Property.PropertyTypeCode"]').val();
+
+        if (selected == "WT") {
+            $('select[name="Property.OwnershipDetails"]').val('EM');
+            $('select[name="Property.OwnershipDetails"]').prop('disabled', true);
+            $('input[name="Property.OwnershipDetails"]').prop('disabled', false);
+            $('#PropertyType_HelpBlock').show();
+        }
+        else if (selected == "SY" || selected == "UA") {
+            $('select[name="Property.OwnershipDetails"]').prop('disabled', false);
+            $('input[name="Property.OwnershipDetails"]').prop('disabled', true);
+            $('#PropertyType_HelpBlock').show();
+        }
+        else {
+            $('select[name="Property.OwnershipDetails"]').prop('disabled', false);
+            $('input[name="Property.OwnershipDetails"]').prop('disabled', true);
+            $('#PropertyType_HelpBlock').hide();
+        }
+    }
+
+    function PropertyForm_FundSourceOnChange() {
+        var selected = $('select[name="Property.FundSourceTypeCode"').val();
+
+        if (selected == "PI") {
+            $('.Pinjaman').show();
+            $('.Pelupusan').hide();
+        }
+        else if (selected == "PE") {
+            $('.Pinjaman').hide();
+            $('.Pelupusan').show();
+        }
+        else {
+            $('.Pinjaman').hide();
+            $('.Pelupusan').hide();
+        }
+    }
+</script>

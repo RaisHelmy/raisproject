@@ -1,0 +1,157 @@
+﻿@using ESS.Core
+
+@model List<ESS.ContractAbsorption.Models.ContractAbsorptionAssessment>
+
+@{
+    Layout = null;
+    int CountRow = 0;
+
+}
+
+<div class="portlet box blue">
+    <div class="mini-triangle"><img src="../Assets/img/menu-red-triangle.png" /></div>
+    <div class="portlet-title">
+        <div class="caption">
+            <i class="fa fa-reorder"></i>Absorption Result Tracking
+        </div>
+        <input type="button" id="ExportExcel" class="btn btn-xs green pull-right" value="Export To Excel" onclick="ExportExcel()" />
+        <div class="tools">
+        </div>
+    </div>
+    <div class="portlet-body form">
+        <div class="form-body">
+            <div class="form-horizontal">
+                <div class="table-toolbar">
+                    <table id="tblResult" class="table table-striped table-bordered table-hover table-full-width">
+                        <thead>
+                            <tr>
+                                <th class="DivBAUserOnly"><input type="checkbox" id="checkAll"></th>
+                                <th class="hidden">ID</th>
+                                <th></th>
+                                <th>Reference No.</th>
+                                <th>Employee No.</th>
+                                <th>Employee Name</th>
+                                <th>Division</th>
+                                <th>Personnel Area</th>
+                                <th>Category</th>
+                                <th>PayScaleGroup</th>
+                                <th>Status</th>
+                                <th>Active EOC</th>
+                                <th>Table</th>
+                                <th>Absorption Status</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model)
+                            {
+                                <tr>
+                                    <td class="DivBAUserOnly">
+                                        <span class="DivcheckItem" id="DivchkSelect_@CountRow"><input type="checkbox" id="chkSelect_@CountRow" class="checkItem" name="chkSelect" value="@item.ID"></span>
+                                    </td>
+                                    <td class="hidden">
+                                        <label id="LabelchkSelect_@CountRow">@item.ID</label>
+                                    </td>
+                                    <td>
+                                        <a class="btn blue btn-sm" href="@Url.Content("~/ContractAbsorption/OnlineAssessmentForm")?AssessmentID=@item.AssessmentID.Trim()&RequestID=@item.ID.Trim()&TaskID=">
+                                            <i class="fa fa-search"></i>
+                                        </a>
+                                    </td>
+                                    <td>@item.ReferenceNo</td>
+                                    <td>@item.EmployeeCode</td>
+                                    <td>@item.EmployeeName</td>
+                                    <td>@item.Division</td>
+                                    <td>@item.PA</td>
+                                    <td>@item.Category</td>
+                                    <td>@item.PayScaleGroup</td>
+                                    <td><span style="color:green">@item.StatusName</span></td>
+                                    <td>@item.EOCReferenceNo</td>
+                                    <td>@(item.Table.HasValue ? "Table" : string.Empty)</td>
+                                    <td>@item.AbsorptionStatus</td>
+                                    <td>
+                                        @if (ESS.ContractAbsorption.Service.isApprover(Common.GetEmployeeID(), "HeadPS")
+                                            || ESS.ContractAbsorption.Service.isApprover(Common.GetEmployeeID(), "PSAdmin2")
+                                            || ESS.ContractAbsorption.Service.isApprover(Common.GetEmployeeID(), "PSAdmin1"))
+                                        {
+                                            if (item.StatusCode == "HPF")
+                                            {
+                                                if (!item.Table.HasValue)
+                                                {
+                                                    <input type="button" id="btn-Table" class="btn green" value="Table" onclick="javascript: TableAction(this, '@item.ID.Trim()')">
+                                                }
+
+                                                if (item.Table.HasValue && string.IsNullOrEmpty(item.AbsorptionStatus))
+                                                {
+                                                    <input type="button" id="btn-Absorb" class="btn green" value="Absorb" onclick="javascript: AbsorbAction(this, 'A', '@item.ID.Trim()')">
+                                                    <input type="button" id="btn-NotAbsorb" class="btn green" value="Not Absorb" onclick="javascript: AbsorbAction(this, 'NA', '@item.ID.Trim()')">
+                                                }
+                                            }
+                                        }
+                                    </td>
+                                </tr>
+                                CountRow++;
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<script type="text/javascript">
+    //transformTable("#tblResult");
+    $('#tblResult').dataTable({
+        "aLengthMenu": [[10, 25, 50, 100, 1000], [10, 25, 50, 100, 1000]]
+    });
+
+    var tableWrapper = "#tblResult_wrapper";
+
+    jQuery(tableWrapper + ' .dataTables_filter input').addClass("form-control input-medium input-inline"); // modify table search input
+    jQuery(tableWrapper + ' .dataTables_length select').addClass("form-control input-small"); // modify table per page dropdown
+    jQuery(tableWrapper + ' .dataTables_length select').select2({
+        showSearchInput: false //hide search box with special css class
+    });
+
+    jQuery(document).ready(function () {
+
+        $(".DivBAUserOnly").addClass("hidden");
+
+        $('#checkAll').click(function () {
+            $(':checkbox.checkItem').prop('checked', this.checked);
+
+            var _Disclaimer = document.getElementById('checkAll');
+
+            if (!_Disclaimer.checked) {
+                $(".DivcheckItem").addClass('checked');
+            }
+            else {
+                $(".DivcheckItem").removeClass('checked');
+            }
+        });
+
+        $('.checkItem').click(function () {
+            var name = $(this).attr('id');
+
+            var _Chk = $('#Div' + name).hasClass('checked');
+
+            if (_Chk) {
+                $("#Div" + name).addClass('checked');
+            }
+            else {
+                $("#Div" + name).removeClass('checked');
+            }
+        });
+    });
+</script>
+
+@if (Model.Count > 0)
+{
+    <script type="text/javascript">
+        jQuery(document).ready(function () {
+            $(".DivBAUserOnly").removeClass("hidden");
+        });
+    </script>
+}

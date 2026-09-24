@@ -1,0 +1,65 @@
+﻿@model List<ServiceAcceptance.Models.History>
+@{
+    Layout = null;
+}
+
+<div class="portlet box blue">
+    <div class="mini-triangle"><img src="../Assets/img/menu-red-triangle.png" /></div>
+    <div class="portlet-title">
+        <div class="caption">
+            <i class="fa fa-reorder"></i>My Approval History
+        </div>
+        <div class="tools">
+        </div>
+    </div>
+    <div class="portlet-body form">
+        <div class="form-body">
+            <div class="form-horizontal">
+                <div class="table-toolbar">
+                    <table id="tblResult" class="table table-striped table-bordered table-hover table-full-width">
+                        <thead>
+                            <tr>
+                                <th></th>
+                                <th>Entry Sheet No.</th>
+                                <th>Rel. Code</th>
+                                <th>Release or Cancel Release</th>
+                                <th>Type</th>
+                                <th>Message</th>
+                                <th>Date</th>
+                                <th>Time</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model)
+                            {
+                                var data = String.Format("{0},{1},{2}", item.EntrySheetNo, item.ReleaseCode, "AppHistory");
+                                var encodedData = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(data));
+
+                                <tr>
+                                    <td>
+                                        <a class="btn blue btn-sm" href="@Url.Action("Index", "ServiceAcceptance", new { SaID = item.EntrySheetNo, Data = encodedData })">
+                                            <i class="fa fa-edit"></i>
+                                        </a> 
+                                    </td>
+                                    <td>@item.EntrySheetNo</td>
+                                    <td>@item.ReleaseCode</td>
+                                    <td>@item.Status</td>
+                                    @if (item.Type == "I"){<td>Info</td>}
+                                    else if (item.Type == "E"){<td>Error</td>}
+                                    else if (item.Type == "W"){<td>Warning</td>}
+                                    else{<td>@item.Type</td>}
+                                    <td>@item.Message</td>
+                                    <td>@item.Date</td>
+                                    <td>@item.Time</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+    transformTable("#tblResult");
+</script>

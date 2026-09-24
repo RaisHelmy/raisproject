@@ -1,0 +1,241 @@
+﻿@model List<ESS.EPop.Models.Revert>
+@{
+    Layout = null;
+    var count = 0;
+}
+<div class="row">
+    <div class="col-md-12">
+        <div class="form-horizontal">
+            <div class="table-toolbar">
+                <div class="row">
+                    <div class="col-md-5">
+                        <div class="form-horizontal">
+                            <div class="form-group">
+                                <label class="control-label col-md-4">
+                                    Revert To
+                                </label>
+                                @*<div class="col-md-8 form-control-static">
+                                    <input class="form-control" id="WorkScheduleType" value="@Model.WorkScheduleType" @*readonly="readonly"*@ @*/>
+                                    </div>*@
+                                    <div class="col-md-8 form-control-static">
+                                        <select class="form-control" id="Status">
+                                            <option value=""> - SELECT - </option>
+                                            <option value="HRBP" data-statusCode="PHRBPV" data-statusName="Pending">
+                                                HRBP
+                                            </option>
+                                            @foreach (var item in Model)
+                                            {
+                                                <option value="@item.ApprovalRole" data-assessmentID="@item.AssessmentID"
+                                                        data-approverID="@item.ApproverID" data-approverCode="@item.ApproverCode" data-approverName="@item.ApproverName"
+                                                        data-statusCode="@item.StatusCode" data-statusName="@item.StatusName">
+                                                    @item.ApprovalRole
+                                                </option>
+                                                count++;
+                                            }
+
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-5">
+                            <div class="form-horizontal">
+                                <div class="form-group">
+                                    <label class="control-label col-md-4">
+                                        Approver
+                                    </label>
+                                    <div class="col-md-8 form-control-static">
+                                        @Html.Partial("_PeoplePicker")
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <br />
+                    <div class="row">
+                        <div class="col-md-10">
+                            <div class="form-horizontal">
+                                <div class="form-group">
+                                    <label class="control-label col-md-2">
+                                        <b>Remarks</b>
+                                    </label>
+                                    <div class="col-md-10">
+                                        <textarea class="form-control" name="txtRevertRemarks" onkeydown="return CheckMaxLength(this, event, '1000');" style="width:100%;" rows="4" id="txtRevertRemarks"></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="form-horizontal">
+                                <div class="form-group">
+                                    <div class="col-md-8 form-control-static">
+                                        @*<button type="button" class="btn red" id="btnRevertStatus" onclick="RevertAssessmentStatus(); return false;">
+                                                <i class="fa"></i>
+                                                Revert Status
+                                            </button>*@
+                                        <input type="button" class="btn blue" value="Revert Status" id="btnRevert" onclick="RevertAssessmentStatus();" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+
+                    <!-- Confirmation Message -->
+                    <div class="modal fade" id="ConfirmRevert" tabindex="-1" aria-hidden="true">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                                    <h4 class="modal-title">Confirmation</h4>
+                                </div>
+                                <div class="modal-body">
+                                    <div class="well">
+                                        Are you sure you want to Revert this Assessment?\n\rPress Confirm to proceed, or Close to stay on the current page.
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn default blue" id="btnSubmitRevert" value="SubmitRevert" onclick="javascript: SubmitRevert();">
+                                        <i class="fa fa-check"></i>
+                                        Confirm
+                                    </button>
+                                    <button type="button" class="btn default" data-dismiss="modal">Close</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Success Message -->
+                    <div class="modal fade" id="SuccessRevert" tabindex="-1" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header Success-header">
+                                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true" style="display: none;"></button>
+                                    <h4 class="Success-title">Action Successfully Completed</h4>
+                                </div>
+                                <div class="modal-body Success-body">
+                                    <div class="well">
+                                        Assessment has been successfully reverted.
+                                    </div>
+                                </div>
+                                <div class="modal-footer Success-footer">
+                                    <button type="button" class="btn default blue" id="btnOK">
+                                        <i class="fa fa-check"></i>
+                                        OK
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    $(function () {
+        $('#Status').change(function () {
+            if ($('#Status').val() == "HRBP" || $('#Status').val() == "" || $('#Status').val() == "HR Admin SCC Recruiting" || $('#Status').val() == 'SCC Recruiting Specialist') {
+                document.querySelector('.fa-user').closest('a').setAttribute('disabled', 'disabled');
+            }
+            else {
+                document.querySelector('.fa-user').closest('a').removeAttribute('disabled');
+            }
+
+            if ($(this).find('option:selected').attr('data-approverID') == '' || $(this).find('option:selected').attr('data-approverID') ==null) {
+                $('#txtEmpName').val('');
+                $('#hfEmpID').val('');
+            } else {
+                $('#txtEmpName').val($(this).find('option:selected').attr('data-approverCode') + ' - ' + $(this).find('option:selected').attr('data-approverName'));
+                $('#hfEmpID').val($(this).find('option:selected').attr('data-approverID'));
+            }
+        }).trigger('change');
+    });
+
+    function RevertAssessmentStatus() {
+        var ValidationMsg = '';
+
+        if ($('#Status').val() == '' || $('#Status').val() == null) {
+            ValidationMsg = 'Please select a status to revert.\n';
+        }
+        if ($('#Status').val() == 'HOD (DEPARTMENT)' || $('#Status').val() == 'IM') {
+            if ($('#hfEmpID').val() == '' || $('#hfEmpID').val() == null) {
+                ValidationMsg = 'Please select an approver.\n';
+            }
+        }
+
+
+        if (ValidationMsg != "") {
+            alert(ValidationMsg);
+        }
+        else{
+            $('#btnSubmitRevert').css("display", "initial");
+            $('#ConfirmRevert .modal-body .well').html('Are you sure you want to Revert this Assessment?\n\rPress Confirm to proceed, or Close to stay on the current page.');
+            //$('#btnOK').click(function () { RedirectTo(); });
+            $('#ConfirmRevert').modal('show');
+        }
+    }
+
+    function SubmitRevert() {
+        $("#divLoading").css("display", "block");
+        var myVar = setTimeout(SubmitFormAction, 3000);
+    }
+
+    function SubmitFormAction() {
+        $("#SuccessRevert .Success-body .well").html('Assessment has been successfully reverted.');
+
+        jQuery.support.cors = true;
+
+        var form = {
+            RequestID: $("#hfRequestID").val(),
+            ApproverID: $("#hfEmpID").val(),
+            //ApproverName: $("#txtEmpName").val(),
+            //ApproverCode: $("#txtEmpName").val(),
+            ApprovalRole: $('#Status').val(),
+            AssessmentID: $('#hfAssessmentID').val(),//$('#Status').find('option:selected').attr('data-assessmentID'),
+            StatusCode: $('#Status').find('option:selected').attr('data-statusCode'),
+            StatusName: $('#Status').find('option:selected').attr('data-statusName'),
+            RevertRemarks: $('#txtRevertRemarks').val()
+        };
+
+        $.ajax({
+            url: '@Url.Content("~/EPop/PerformRevertEPopStatus")',
+            type: 'POST',
+            cache: false,
+            async: false,
+            dataType: "json",
+            data: form,
+            //contentType: "application/json;charset=utf-8",
+            success: function (result) {
+                if (result.Success) {
+                    $("#ConfirmRevert").modal('toggle');
+                    $("#divLoading").css("display", "none");
+                    $("#SuccessRevert").modal();
+                    $('#btnOK').click(function () { RevertRedirectTo(); });
+
+                } else {
+                    $("#ConfirmRevert").modal('toggle');
+                    $("#divLoading").css("display", "none");
+                    alert('Revert Error');
+                    alert(result.ErrorMsg);
+                }
+
+            },
+            error: function (x, y, z) {
+                $("#ConfirmRevert").modal('toggle');
+                $("#divLoading").css("display", "none");
+                console.log(x + '\n' + y + '\n' + z);
+                alert('error');
+            }
+        });
+
+
+    }
+    function RevertRedirectTo() {
+        window.location.href = '@Url.Action("RevertAssessment", "EPOP")';
+        //window.location.reload();
+    }
+    </script>
+
+
+
+

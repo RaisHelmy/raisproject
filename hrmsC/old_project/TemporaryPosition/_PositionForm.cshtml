@@ -1,0 +1,594 @@
+﻿@model TemporaryPosition.Models.TemporaryPositionForm
+@using TemporaryPosition.Models;
+@{
+    var attachmentMode = "View";
+    if (string.IsNullOrEmpty(Model.PositionID))
+    {
+        attachmentMode = "New";
+    }
+    else if (string.IsNullOrEmpty(Model.StatusCode))
+    {
+        attachmentMode = "Add";
+    }
+
+    var readType = string.Empty;
+    if (!string.IsNullOrEmpty(Model.StatusCode))
+    {
+        readType = "readonly";
+    }
+}
+
+<!-- Loading Gif -->
+<div id="divLoading" style="margin: 0px; padding: 0px; position: fixed; right: 0px; top: 0px; width: 100%; height: 100%; background-color: gainsboro; z-index: 30001; opacity: .8; filter: alpha(opacity=70); display: none; ">
+    <p style="position: absolute; top: 30%; left: 30%; color: black;">
+        Performing action, please wait...<img src="/_layouts/15/TNBESS/Assets/img/ajax-loading.gif">
+    </p>
+</div>
+
+<div id="positionForm">
+
+    <!--Request Details-->
+    @*<div class="row">
+            <div class="col-md-12">
+                <div class="portlet box blue">
+                    <div class="mini-triangle"><img src="~/Assets/img/menu-red-triangle.png" /></div>
+                    <div class="portlet-title">
+                        <div class="caption">
+                            <i class="fa fa-reorder"></i>Application Details
+                        </div>
+                    </div>
+                    <div class="portlet-body form">
+                        <div class="form-horizontal">
+                            <div class="position-form">
+                                <div class="form-body">
+
+                                    <div class="form-group">
+                                        <label class="control-label col-md-2">
+                                            Division
+                                            <span style="color:red">*</span>
+                                        </label>
+                                        <div class="col-md-4">
+                                            @Html.DropDownList("CompanyCode", new SelectList(ViewBag.DivisionDDL, "Value", "Text"), "- All -", new { @class = "bs-select form-control", @onchange = "changeCompany(this)" })
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="control-label col-md-2">
+                                            Personnel Area
+                                            <span style="color:red">*</span>
+                                        </label>
+                                        <div class="col-md-4">
+                                            @Html.Action("_DDLDepartment", "TemporaryPosition", new { })
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="control-label col-md-2">
+                                            Personnel Sub Area
+                                            <span style="color:red">*</span>
+                                        </label>
+                                        <div class="col-md-4">
+                                            @Html.Action("_DDLUnitSection", "TemporaryPosition", new { })
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>*@
+
+    <!--Position Details-->
+    <div class="row">
+        <div class="col-md-12">
+            <div class="portlet box blue">
+                <div class="mini-triangle"><img src="~/Assets/img/menu-red-triangle.png" /></div>
+                <div class="portlet-title">
+                    <input type="hidden" name="ReferenceNo" value="[Draft]">
+                    <input type="hidden" name="StatusCode" value="DR">
+                    <div class="caption">
+                        <i class="fa fa-reorder"></i>Position Details
+                    </div>
+                    <div class="tools">
+                        <a title="" data-original-title="" href="javascript:;" class="collapse"> </a>
+                    </div>
+                </div>
+                <div class="portlet-body form">
+                    <div class="form-horizontal">
+                        <div class="position-form">
+                            <div class="form-body">
+                                @Html.Partial("_OrgUnitNumberInit", Model)
+
+                                <!--Position Category-->
+                                <div class="form-group">
+                                    <label class="control-label col-md-2">
+                                        Position Category
+                                        <span style="color:red">*</span>
+                                    </label>
+                                    <div class="col-md-10 form-control-static" style="padding-left:0">
+                                        <div class="col-md-4">
+                                            <div class="row">
+                                                <label class="control-label col-md-5">
+                                                    Category A
+                                                </label>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-md-12" style="margin-left: -35px;">
+                                                    @{
+                                                        List<PositionCategory> pc = (ViewBag.PositionCategoryA as IEnumerable<PositionCategory>).ToList();
+
+                                                        <div class="col-md-12">
+                                                            @foreach (var position in pc.OrderBy(x => x.Title))
+                                                            {
+                                                                @Html.Partial("_PositionCategoryRadioButton", Tuple.Create(Model, position))
+                                                            }
+                                                        </div>
+                                                    }
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="col-md-4">
+                                            <div class="row">
+                                                <label class="control-label col-md-5">
+                                                    Category B
+                                                </label>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-md-12" style="margin-left: -35px;">
+                                                    @{
+                                                        pc = (ViewBag.PositionCategoryB as IEnumerable<PositionCategory>).ToList();
+
+                                                        <div class="col-md-12">
+                                                            @foreach (var position in pc.OrderBy(x => x.Title))
+                                                            {
+                                                                @Html.Partial("_PositionCategoryRadioButton", Tuple.Create(Model, position))
+                                                            }
+                                                        </div>
+                                                    }
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="col-md-4">
+                                            <div class="row">
+                                                <label class="control-label col-md-5">
+                                                    Category C
+                                                </label>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-md-12" style="margin-left: -35px;">
+                                                    @{
+                                                        pc = (ViewBag.PositionCategoryC as IEnumerable<PositionCategory>).ToList();
+
+                                                        <div class="col-md-12">
+                                                            @foreach (var position in pc.OrderBy(x => x.Title))
+                                                            {
+                                                                @Html.Partial("_PositionCategoryRadioButton", Tuple.Create(Model, position))
+                                                            }
+                                                        </div>
+                                                    }
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!--Position Text-->
+                                <div class="form-group">
+                                    <label class="control-label col-md-2">
+                                        Position Text
+                                        <span style="color:red">*</span>
+                                    </label>
+                                    <div class="col-md-4">
+                                        @Html.DropDownList("PositionText", new SelectList(ViewBag.PositionTextDDL, "Value", "Text"), "- SELECT -", new { @class = "bs-select form-control" })
+                                    </div>
+                                    <label class="control-label col-md-2">
+                                        Effective Date
+                                        <span style="color:red">*</span>
+                                    </label>
+                                    <div class="col-md-4">
+                                        <div class="input-group date date-picker" data-date-format="dd MM yyyy">
+                                            <input type="text" class="form-control" id="EffectiveDate" name="EffectiveDate" />
+                                            <span class="input-group-btn">
+                                                <button type="button" class="btn default"><i class="fa fa-calendar"></i></button>
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!--Job Text-->
+                                <div class="form-group">
+                                    <label class="control-label col-md-2">
+                                        Job Text
+                                        <span style="color:red">*</span>
+                                    </label>
+                                    <div class="col-md-4">
+                                        <input type="text" class="form-control" id="JobText" name="JobText" maxlength="40" />
+                                    </div>
+                                    <label class="control-label col-md-2">
+                                        Delimit Date
+                                        <span style="color:red">*</span>
+                                    </label>
+                                    <div class="col-md-4">
+                                        <div class="input-group date date-picker" data-date-format="dd MM yyyy">
+                                            <input type="text" class="form-control" id="DelimitDate" name="DelimitDate" />
+                                            <span class="input-group-btn">
+                                                <button type="button" class="btn default"><i class="fa fa-calendar"></i></button>
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!--Reason for Creation-->
+                                <div class="form-group">
+                                    <label class="control-label col-md-2" for="form-group-input">
+                                        Reason for Creation of Position
+                                        <span style="color:red">*</span>
+                                    </label>
+                                    <div class="col-md-10">
+                                        <textarea class="form-control" maxlength="500" rows="5" name="Reason" id="Reason"></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!--Employee-->
+    @Html.Partial("_Employee", Model)
+
+    <!--Supervisor Details-->
+    <div class="row">
+        <div class="col-md-12">
+            <div class="portlet box blue">
+                <div class="mini-triangle"><img src="~/Assets/img/menu-red-triangle.png" /></div>
+                <div class="portlet-title">
+                    <div class="caption">
+                        <i class="fa fa-reorder"></i>IM Details
+                    </div>
+                    <div class="tools">
+                        <a title="" data-original-title="" href="javascript:;" class="collapse"> </a>
+                    </div>
+                </div>
+                <div class="portlet-body form">
+                    <div class="form-horizontal">
+                        <div class="position-form">
+                            <div class="form-body">
+                                <div class="form-group">
+                                    <label class="control-label col-md-2">
+                                        IM
+                                        <span style="color:red">*</span>
+                                    </label>
+                                    <div class="col-md-4">
+                                        @Html.Partial("_PeoplePickerControl", new ViewDataDictionary { { "PPID", "SupervisorID" }, { "PositionID", "Position" } })
+                                    </div>
+
+                                    <label class="control-label col-md-2">
+                                        Position
+                                        <span style="color:red">*</span>
+                                    </label>
+                                    <div class="col-md-4">
+                                        <input class="form-control" id="Position" name="Position" readonly />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @Html.Partial("_PeoplePickerInit")
+
+    <!--Additional Info (attachment)-->
+    @Html.Action("AttachmentControl", "Attachment", new { EmployeeID = Model.EmployeeID, Mode = attachmentMode, SourceType = "TemporaryPosition", RequestID = Model.PositionID, Mandatory = "TRUE" })
+
+    <div class="row">
+        <div class="col-md-12">
+            <!--Save Button-->
+            <button class="btn green" type="button" id="btnDraft" onclick="javascript: SubmitApplication('Save'); return false;">Save</button>
+            <!--Submit Button-->
+            @if (string.IsNullOrEmpty(Model.StatusCode))
+            {
+                <button class="btn green" type="button" id="btnSubmit" onclick="javascript: SubmitApplication('Submit'); return false;">Submit</button>
+            }
+        </div>
+    </div>
+
+</div>
+
+<!-- Confirmation Message -->
+<div class="modal fade" id="ConfirmationDialog" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                <h4 id="ConfirmationDialog_Title" class="modal-title"></h4>
+            </div>
+            <div class="modal-body">
+                <div id="ConfirmationValidation_Message" class="well" style="background-color:yellow;" hidden>
+                </div>
+                <div id="ConfirmationDialog_Message" class="well">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="ConfirmationDialog_PositiveButton" type="button" class="btn default blue">
+                    <i class="fa fa-check"></i>
+                </button>
+                <button id="ConfirmationDialog_NegativeButton" type="button" class="btn default" data-dismiss="modal">
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Success Message -->
+<div class="modal fade" id="SuccessDialog" tabindex="-1" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header Success-header">
+                <h4 id="SuccessDialog_Title" class="Success-title"></h4>
+            </div>
+            <div class="modal-body Success-body">
+                <div class="well" id="SuccessDialog_Message">
+                </div>
+            </div>
+            <div class="modal-footer Success-footer">
+                <a class="btn default blue" id="SuccessDialog_OkButton" data-dismiss="modal">
+                    <i class="fa fa-check"></i>
+                    OK
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(function () {
+        $('.date-picker').datepicker({
+            format: 'dd/mm/yyyy',
+            autoclose: true
+        });
+
+        $('.popovers').popover();
+
+		AppendAttachmentLabel();
+	});
+
+	$('input:radio[name="PositionCategory"]').change(
+		function () {
+			if ($(this).is(':checked')) {
+				$('#note').html($(this).attr("note").replace(/\n/g, "<br />"));
+			}
+		});
+
+    function AppendAttachmentLabel() {
+		var label = $('<div class="form-group"><label class="control-label col-md-3">Note</label><div class="col-md-5"><label id="note"></label></div></div>');
+		label.insertAfter($('#divAddAttach .form-group').get(0));
+
+		var collapse = $('<div class="tools"><a title="" data-original-title="" href="javascript:;" class="collapse"></a></div>');
+		collapse.insertAfter($('.portlet-title .caption').last())
+	}
+
+	$('#OrgUnitNumber').keyup(function (e) {
+		if (e.keyCode == 46 || e.keyCode == 8) {
+			$("#Division").val("");
+			$("#PersonnelArea").val("");
+			$("#PersonnelSubArea").val("");
+		}
+	});
+
+	function IsValid(saveOrSubmit) {
+		var errorMessage = "";
+		var effectiveDate = $("#EffectiveDate").val();
+        var delimitDate = $("#DelimitDate").val();
+        var category = $('input:radio[name=PositionCategory]:checked').attr("category");
+
+		errorMessage += $("#OrgUnitNumber").val() == "" ? "- Org Unit Number (EHRMS) is required. \n" : "";
+		errorMessage += !$('input:radio[name=PositionCategory]:checked').val() ? "- Position Category is required. \n" : "";
+		errorMessage += $("#OrgUnitNumber").val() != "" && $("#OrgUnitNumber").val().length != 8 ? "- Invalid Org Unit Number (EHRMS) length. \n" : "";
+
+		if (effectiveDate != "" && delimitDate != "") {
+			errorMessage += moment(effectiveDate, "DD/MM/YYYY").isAfter(moment(delimitDate, 'DD/MM/YYYY')) ? "- Effective Date must be earlier than Delimit Date \n" : "";
+		}
+
+		if (saveOrSubmit == "Submit") {
+			errorMessage += $("#PositionText").val() == "" ? "- Position Text is required. \n" : "";
+			errorMessage += $("#JobText").val() == "" ? "- Job Text is required. \n" : "";
+			errorMessage += $("#EffectiveDate").val() == "" ? "- Effective Date is required. \n" : "";
+			errorMessage += $("#DelimitDate").val() == "" ? "- Delimit Date is required. \n" : "";
+			errorMessage += $("#Reason").val() == "" ? "- Reason for Creation of Position is required. \n" : "";
+            errorMessage += $("#SupervisorID").val() == "" ? "- IM Details is required. \n" : "";
+
+            if (category != "B" && $('[name=Employee]').serializeArray().length < 1) {
+                errorMessage += "- Employee is required. \n";
+            }
+		}
+
+		if (($("#OrgUnitNumber").val() == "" || $("#OrgUnitNumber").val().length != 8) && errorMessage != "") {
+            return errorMessage;
+		}
+		else {
+			$.ajax({
+				type: "POST",
+				url: "@Url.Action("CheckOrgUnitDetails", "TemporaryPosition")?OrgUnitNumber=" + $("#OrgUnitNumber").val(),
+				success: function (content) {
+					if (content.orgUnitNo.OrgUnitNumber != null) {
+						$("#OrgUnitNumber").val(content.orgUnitNo.OrgUnitNumber);
+						$("#Division").val(content.orgUnitNo.DivisionCode + " - " + content.orgUnitNo.Division);
+						$("#PersonnelArea").val(content.orgUnitNo.PersonnelAreaCode + " - " + content.orgUnitNo.PersonnelArea);
+						$("#PersonnelSubArea").val(content.orgUnitNo.PersonnelSubAreaCode + " - " + content.orgUnitNo.PersonnelSubArea);
+						$("#DivisionCode").val(content.orgUnitNo.DivisionCode);
+						$("#PersonnelAreaCode").val(content.orgUnitNo.PersonnelAreaCode);
+						$("#PersonnelSubAreaCode").val(content.orgUnitNo.PersonnelSubAreaCode);
+						$("#btnOrgUnitNumber").prop("disabled", false);
+					}
+					else {
+						errorMessage += "- Org Unit Number (EHRMS) is invalid. \n";
+					}
+				},
+				error: function (err) {
+					console.log(err);
+					alert("Error in the ajax call.");
+				}
+			});
+		}
+
+        return errorMessage;
+	}
+    
+    function SubmitApplication(action) {
+        if (action == "Submit") {
+            var validationMessage = IsValid(action);
+
+            if (validationMessage) {
+                alert(validationMessage);
+            }
+            else {
+                ShowConfirmationDialog({
+                    positiveCallback: function () { PerformSubmission(action); }
+                });
+            }
+        }
+        else {
+            var validationMessage = IsValid(action);
+
+            if (validationMessage) {
+                alert(validationMessage);
+            }
+            else {
+                ShowConfirmationDialog({
+                    title: "Save as Draft",
+                    message: "Are you sure you want to save this Temporary Position Request?\n\r Press Save to proceed, or Close to stay on the current page.",
+                    positiveButtonText: "Save",
+                    positiveCallback: function () { PerformSubmission(action); }
+                });
+            }
+        }
+	}
+
+    function PerformSubmission(action) {
+        var url = '';
+
+        if (action == 'Submit') {
+            url = '@Url.Action("Add", "TemporaryPosition")';
+        }
+        else {
+            url = '@Url.Action("Draft", "TemporaryPosition")';
+        }
+
+        HideConfirmationDialog();
+
+        ShowLoadingScreen();
+
+        var data = $('#positionForm').serializeArray();
+
+        $.post(url, data, function (result) {
+            HideLoadingScreen();
+            
+            if (result.Success) {
+                if (action == 'Submit') {
+                    ShowDialog({
+                        okCallback: function () {
+                            window.location.href = '@Url.Action("RequestHistory", "TemporaryPosition")';
+                        }
+                    });
+                }
+                else {
+                    ShowDialog({
+                        message: "Temporary Position Request has been successfully saved.",
+                        okCallback: function () {
+                            window.location.href = '@Url.Action("RequestHistory", "TemporaryPosition")';
+                        }
+                    });
+                }
+            }
+            else {
+                alert(result.Message);
+            }
+        });
+    }
+
+    function ShowConfirmationDialog(data) {
+        if (!data) {
+            data = {};
+        }
+
+        var dialog = $('#ConfirmationDialog'),
+            title = data.title || "Confirmation",
+            message = data.message || "Are you sure you want to submit this Temporary Position Request?\n\r Press Confirm to proceed, or Close to stay on the current page.",
+            positiveButtonText = data.positiveButtonText || "Confirm",
+            positiveCallback = data.positiveCallback,
+            negativeButtonText = data.negativeButtonText || "Close",
+            negativeCallback = data.negativeCallback;
+
+        dialog.find("#ConfirmationDialog_Title").html(title);
+        dialog.find("#ConfirmationDialog_Message").html(message);
+        var ePositiveButton = dialog.find("#ConfirmationDialog_PositiveButton");
+        var eNegativeButton = dialog.find("#ConfirmationDialog_NegativeButton");
+
+        ePositiveButton.html(positiveButtonText);
+        ePositiveButton.off('click');
+        ePositiveButton.one('click', function () {
+            if (positiveCallback)
+                positiveCallback(dialog);
+        });
+
+        eNegativeButton.html(negativeButtonText);
+        eNegativeButton.off('click');
+        eNegativeButton.one('click', function () {
+            if (negativeCallback)
+                negativeCallback(dialog);
+        });
+
+        dialog.modal();
+    }
+
+    function HideConfirmationDialog() {
+        var dialog = $('#ConfirmationDialog');
+        dialog.modal("hide");
+    }
+
+    // Dialog with OK
+    function ShowDialog(data) {
+        if (!data) {
+            data = {};
+        }
+
+        var dialog = $('#SuccessDialog'),
+            title = data.title || "Action Successfully Completed",
+            message = data.message || "Temporary Position Request has been successfully submitted.",
+            okCallback = data.okCallback;
+
+        var okButton = dialog.find("#SuccessDialog_OkButton");
+
+        dialog.find("#SuccessDialog_Title").html(title);
+        dialog.find("#SuccessDialog_Message").html(message);
+
+        okButton.off('click');
+        okButton.one('click', function () {
+            if (okCallback)
+                okCallback();
+        });
+
+        dialog.modal();
+    }
+
+    function HideDialog() {
+        var dialog = $('#SuccessDialog');
+        dialog.modal("hide");
+    }
+
+    function ShowLoadingScreen() {
+        $("#divLoading").show();
+    }
+
+    function HideLoadingScreen() {
+        $('#divLoading').hide();
+    }
+</script>

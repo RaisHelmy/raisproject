@@ -1,0 +1,218 @@
+﻿@using ESS.Core
+
+@model ESS.ContractAbsorption.Models.SubmitResult
+
+@{
+	Layout = "~/Views/Shared/_Layout.cshtml";
+	ViewBag.Title = "Contract Absorption - Bulk Entry";
+
+	if (!ESS.ContractAbsorption.Service.isApprover(Common.GetEmployeeID(), "RoleMaintenanceAdmin"))
+	{
+		Response.Redirect("~/AccessControl/ErrorPermission");
+	}
+
+	string _MaximumFileSize = ViewBag.MaximumFileSize + "";
+	string _AllowedFileTypes = ViewBag.AllowedFileTypes + "";
+
+	string maxSize = _MaximumFileSize;
+
+	if (!string.IsNullOrEmpty(_MaximumFileSize))
+	{
+		int bits = int.Parse(_MaximumFileSize);
+		double mb = (double)bits / (1024 * 1024);
+		maxSize = string.Format("{0:f1}", mb);
+	}
+}
+
+<div class="row">
+	<div class="col-md-12">
+		<br />
+		<h1 class="page-title">
+			@ViewBag.Title <span style="padding-left:20px;"><small></small></span>
+		</h1>
+	</div>
+</div>
+<br />
+
+@using (Html.BeginForm("ImportFile", "ContractAbsorption", FormMethod.Post, new { enctype = "multipart/form-data", @id = "MainForm" }))
+{
+	if (!string.IsNullOrEmpty(Model.Message))
+	{
+		string classNote = "";
+		if (Model.Error)
+		{
+			classNote = "note note-danger";
+		}
+		if (Model.Success)
+		{
+			classNote = "note note-success";
+		}
+		<div class="row">
+			<div class="col-md-12">
+				<div class="@classNote">
+					<label class="control-label">
+						@Model.Message
+					</label>
+				</div>
+			</div>
+		</div>
+	}
+
+	<input type="hidden" id="actionType" name="actionType" />
+	<div class="row">
+		<div class="col-md-12">
+			<div class="portlet box blue">
+				<div class="mini-triangle"><img src="/_layouts/15/TNBESS/Assets/img/menu-red-triangle.png" /></div>
+				<div class="portlet-title">
+					<div class="caption">
+						<i class="fa fa-reorder"></i>Data Import
+					</div>
+				</div>
+				<div class="portlet-body form">
+					<div class="form-body">
+						<div class="row">
+							<div class="col-md-12">
+								<div class="form-group">
+									<div class="col-md-5 form-control-static">
+										<input type="file" id="UploadFile" name="UploadFile" />
+									</div>
+									<div class="col-md-7">
+										<div class="text-left">
+											<a class="btn btn-sm default blue" id="btnPerformImport" onclick="PerformFormValidation(this, 'Import')" data-toggle="modal">
+												Import
+											</a>
+											<a class="btn btn-sm default blue" id="btnDownload" target="_blank" href="@Url.Content("~/TemplateFiles/ESS_ContractAbsorption_DataUploadTemplateV1.csv")">
+												Download Template
+											</a>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- Confirmation Message -->
+	<div class="modal fade" id="ConfirmSubmit" tabindex="-1" role="basic" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header Success-header">
+					<h4 class="Success-title">Confirmation - Data Import</h4>
+				</div>
+				<div class="modal-body Success-body">
+					<div class="well" id="SuccessMessage">
+						Clicking confirm will import the data into system. If you want to discard the changes, click Close.
+					</div>
+				</div>
+				<div class="modal-footer Success-footer">
+					<button type="button" class="btn default blue" id="btnSubmit" onclick="submitForm();">
+						<i class="fa fa-check"></i>
+						Confirm
+					</button>
+					<button type="button" class="btn default" data-dismiss="modal">Close</button>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- Loading Gif -->
+	<div id="divLoading" style="margin: 0px; padding: 0px; position: fixed; right: 0px;
+        top: 0px; width: 100%; height: 100%; background-color:gainsboro; z-index: 30001;
+        opacity: .8; filter: alpha(opacity=70);display:none">
+		<p style="position: absolute; top: 30%; left: 30%; color: black;">
+			Loading, please wait...<img src="../Assets/img/ajax-loading.gif" />
+
+		</p>
+	</div>
+}
+
+<script type="text/javascript">
+	function PerformFormValidation(elem, action) {
+		$("#actionType").val(action);
+
+		if (document.getElementById("UploadFile").files.length == 0) {
+			alert("Please select a file.");
+		}
+		else {
+			var _AllowedMaxSize = parseFloat('@_MaximumFileSize') || 0;
+			var _AllowedExtensions = '@_AllowedFileTypes';
+
+			var _documentName = $('#UploadFile')[0].files[0].name;
+			var _documentSize = $('#UploadFile')[0].files[0].size;
+			var _fileExtension = _documentName.substring(_documentName.lastIndexOf('.') + 1).toLowerCase();
+
+			var _docSize = parseFloat(_documentSize) || 0;
+
+			if (_AllowedExtensions.indexOf(_fileExtension) < 0) {
+				alert('- Invalid file type. Only files of the following extensions are allowed (' + _AllowedExtensions + ')');
+			}
+			else if (_docSize > _AllowedMaxSize) {
+				alert('- File size has exceeded the allowed limit of ' + @maxSize + ' MB');
+			}
+			else {
+				if (action == "Import") {
+					$("#btnSubmit").prop('disabled', false);
+					$(elem).attr("href", "#ConfirmSubmit");
+				}
+				else {
+					$("#MainForm").submit();
+				}
+			}
+		}
+	}
+
+	function _ConvertImageToBaseSixtyFour() {
+		var _AllowedMaxSize = parseFloat('@_MaximumFileSize') || 0;
+		var _AllowedExtensions = $('#_ImageFileExtension').val();
+        var _selectedFile = document.getElementById('UploadFile').files;
+
+        if (_selectedFile.length > 0) {
+            var _fileToLoad = _selectedFile[0];
+
+            var _fileReader = new FileReader();
+
+            _fileReader.onload = function (fileLoadedEvent) {
+                var _ValidFile = false;
+				var _documentName = $('#UploadFile')[0].files[0].name;
+				var _documentSize = $('#UploadFile')[0].files[0].size;
+                var _fileExtension = _documentName.substring(_documentName.lastIndexOf('.') + 1).toLowerCase();
+
+                if (_AllowedExtensions.indexOf(_fileExtension) > -1) {
+                    var _docSize = parseFloat(_documentSize) || 0;
+                    if (_docSize > _AllowedMaxSize) {
+						$('#UploadFile').val("");
+                        alert('- File size has exceeded the allowed limit of ' + @maxSize + ' MB');
+                    }
+                    else {
+                        _ValidFile = true;
+                    }
+                }
+                else {
+					$('#UploadFile').val("");
+                    alert('- Invalid file type. Only files of the following extensions are allowed (' + _AllowedExtensions + ')');
+                }
+
+                if (_ValidFile) {
+                    var _fileContents = fileLoadedEvent.target.result;
+                    var _documentContentType = _fileContents.split(",")[0].split(":")[1].split(";")[0];
+
+					$('#_ImageDocumentName').val(_documentName);
+                    $('#_ImageDocumentSize').val(_documentSize);
+                    $('#_ImageDocumentContentType').val(_documentContentType);
+                    $('#_ImageContentURL').val(fileLoadedEvent.target.result);
+                }
+            };
+
+            _fileReader.readAsDataURL(_fileToLoad);
+        }
+	}
+
+    function submitForm() {
+        $('#btnSubmit').prop('disabled', true);
+
+        $("#MainForm").submit();
+    }
+</script>

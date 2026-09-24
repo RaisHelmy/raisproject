@@ -1,0 +1,79 @@
+﻿@model SEP.RoutingManagement.Models.App
+@{
+    string Disabled = "";
+    bool DisabledDDL = false;
+    if (ViewBag.Disabled == true)
+    {
+        Disabled = "disabled = 'disabled' ";
+    }
+    if (Model.ID != Guid.Empty)
+    {
+        DisabledDDL = true;
+    }
+}
+<div class="portlet box blue">
+    <div class="portlet-title">
+
+    </div>
+    <div class="portlet-body">
+        <form class="form-horizontal" role="form">
+            <div class="form-body">
+                <div class="form-group">
+                    <label class="col-md-2 control-label">Select System</label>
+                    <div class="col-md-10 SystemIDDiv">
+                        @Html.DropDownListFor(m => m.SystemID,
+                            (SelectList)ViewBag.ListOfSystem,
+                            DisabledDDL ? (object)new
+                            {
+                                @class = "form-control requiredFields",
+                                @id = "SystemID",
+                                disabled = true
+                            }
+                            : new
+                            {
+                                @class = "form-control requiredFields",
+                                @id = "SystemID"
+                            })
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="col-md-2 control-label">Routing Name<span class="required">*</span></label>
+                    <div class="col-md-10 ApplicationNameDiv">
+                        @Html.TextBoxFor(m => m.ApplicationName,
+                                ViewBag.Disabled ? (object)new
+                                {
+                                    @class = "form-control requiredFields",
+                                    @placeholder = "Application Name",
+                                    readOnly = true
+                                }
+                                : new
+                                {
+                                    @class = "form-control requiredFields",
+                                    @placeholder = "Application Name"
+                                })
+                    </div>
+                </div>
+                @if (Model.ID != Guid.Empty)
+                {
+                    <div class="form-group">
+                        <label class="col-md-2 control-label">Active</label>
+                        <div class="col-md-10">
+                            <div class="checkbox-list">
+                                <label class="checkbox-inline">
+                                    <input type="checkbox"
+                                           id="Active"
+                                           name="Active"
+                                           value="true"
+                                           checked="@Model.Active"
+                                           string.empty"
+                                           @Disabled />
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </form>
+    </div>
+</div>

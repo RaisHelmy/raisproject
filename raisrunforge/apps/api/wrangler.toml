@@ -1,0 +1,38 @@
+name = "runforge-api"
+main = "src/worker.ts"
+compatibility_date = "2025-01-01"
+compatibility_flags = ["nodejs_compat"]
+
+routes = [
+  { pattern = "runforge.raishelmy.uk", custom_domain = true }
+]
+
+[vars]
+RUNFORGE_MODE = "demo"
+RUNFORGE_AUTH_MODE = "demo"
+
+# Postgres access via Hyperdrive (replaces the earlier D1 plan below).
+# The Worker resolves the private VPC connection automatically through this
+# binding — no host/port needed here. See packages/database/src/pg for the
+# client and migrations/postgres for the schema.
+[[hyperdrive]]
+binding = "HYPERDRIVE"
+id = "7a7777560d434c2b91ff37c52ab1b2c9"
+
+# Formerly (D1, no longer used — kept for history, see migrations/0001_init.sql):
+# [[d1_databases]]
+# binding = "DB"
+# database_name = "runforge"
+# database_id = "REPLACE_ME"
+
+# Uncomment once a real R2 bucket has been created with `wrangler r2 bucket create runforge-storage`.
+# [[r2_buckets]]
+# binding = "STORAGE"
+# bucket_name = "runforge-storage"
+
+# [[queues.producers]]
+# binding = "JOB_QUEUE"
+# queue = "runforge-jobs"
+
+# [[queues.consumers]]
+# queue = "runforge-jobs"

@@ -1,0 +1,34 @@
+﻿@model Integrity.IntegrityPledge.Models.PledgeVM
+@{
+}
+
+@if (String.IsNullOrEmpty(Model.DeclarationID) || Model.DeclarationID == Guid.Empty.ToString())
+{
+    <!-- Attachment -->
+    @Html.Action("AttachmentControl", "Attachment", new
+    {
+        EmployeeID = @Model.EmployeeID,
+        Mode = "New",
+        SourceType = "Integrity"
+    })
+}
+else if (Model.CanEdit)
+{
+    @Html.Action("AttachmentControl", "Attachment", new
+    {
+        EmployeeID = @Model.EmployeeID,
+        Mode = "Add",
+        SourceType = "Integrity",
+        RequestID = @Model.DeclarationID
+    })
+}
+else
+{
+    @Html.Action("AttachmentControl", "Attachment", new
+    {
+       EmployeeID = @Model.EmployeeID,
+       Mode = "View",
+       SourceType = "Integrity",
+       RequestID = @Model.DeclarationID
+    })
+}

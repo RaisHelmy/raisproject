@@ -1,0 +1,104 @@
+﻿@model List<Vendor.Models.ConsolidatedReportModel>
+
+@{
+    Layout = null;
+    var firstModel = Model.FirstOrDefault();
+}
+
+<div class="portlet box blue">
+    <div class="mini-triangle"><img src="/_layouts/15/TNBESS/Assets/img/menu-red-triangle.png" /></div>
+    <div class="portlet-title">
+        <div class="caption">
+            <i class="fa fa-reorder"></i>Order Report
+        </div>
+        <input type="button" id="btn-Export" class="btn btn-xs green pull-right" value="Export To Excel">
+    </div>
+    <div class="portlet-body form">
+        <div class="form-body">
+            <div class="form-horizontal">
+                <div class="table-toolbar">
+                    <table id="tblResult" class="table table-striped table-bordered table-hover table-full-width">
+                        <thead>
+                            <tr>
+                                <th>Vendor</th>
+                                <th>Medicine ID</th>
+                                <th>Medicine Name</th>
+                                <th>Medicine Price (RM)</th>
+                                @if (firstModel != null)
+                                {
+                                    foreach (var key in firstModel.Dispensaries.Keys)
+                                    {
+                                        <th>@key</th>
+                                    }
+                                }
+                                <th>Total Count</th>
+                                <th>Total Price (RM)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in @Model)
+                            {
+                                <tr>
+                                    <td>@item.Vendor</td>
+                                    <td>@item.MedicineID</td>
+                                    <td>@item.MedicineName</td>
+                                    <td>@item.MedicinePrice</td>
+                                    @foreach (var key in item.Dispensaries.Keys)
+                                    {
+                                        <th>@item.Dispensaries[key]</th>
+                                    }
+                                    <td>@item.TotalCount</td>
+                                    <td>@item.TotalPrice</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<table id="tblExport" border='1' style="display: none;">
+    <thead>
+        <tr bgcolor='#87AFC6'>
+            <th>Vendor</th>
+            <th>Medicine ID</th>
+            <th>Medicine Name</th>
+            <th>Medicine Price (RM)</th>
+            @if (firstModel != null)
+            {
+                foreach (var key in firstModel.Dispensaries.Keys)
+                {
+                    <th>@key</th>
+                }
+            }
+            <th>Total Count</th>
+            <th>Total Price (RM)</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in @Model)
+        {
+            <tr>
+                <td>@item.Vendor</td>
+                <td>@item.MedicineID</td>
+                <td>@item.MedicineName</td>
+                <td>@item.MedicinePrice</td>
+                @foreach (var key in item.Dispensaries.Keys)
+                {
+                    <th>@item.Dispensaries[key]</th>
+                }
+                <td>@item.TotalCount</td>
+                <td>@item.TotalPrice</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<script type="text/javascript">
+    transformTable("#tblResult");
+    $(function () {
+        BindExport();
+    });
+</script>

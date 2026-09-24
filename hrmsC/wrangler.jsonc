@@ -1,0 +1,31 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "hrms-saas",
+  "compatibility_date": "2026-08-31",
+  "compatibility_flags": ["nodejs_compat"],
+  "pages_build_output_dir": "dist",
+  "vars": {
+    "JWT_SECRET": "dev-only-insecure-secret-change-me"
+  },
+  "hyperdrive": [
+    {
+      "binding": "HYPERDRIVE",
+      "id": "7a7777560d434c2b91ff37c52ab1b2c9",
+      // Used only by `wrangler dev`/`wrangler pages dev` — points at the SSH
+      // tunnel from CLAUDE.md/README (`sshpass ... -L 15432:localhost:5432
+      // ...`). Prod resolves the real Hyperdrive private-VPC connection
+      // regardless of this value. Now a SHARED database (`raishelmy`) with
+      // this app's data isolated in schema `hrmsc` — a plain connection
+      // string can't set `search_path`, so `worker/core/db.ts`'s `getDb()`
+      // sets it explicitly via postgres.js's `connection.search_path` option
+      // for every client (local and prod both go through the same code).
+      "localConnectionString": "postgresql://postgres:postgres@localhost:15432/raishelmy?sslmode=require"
+    }
+  ],
+  "r2_buckets": [
+    {
+      "binding": "ATTACHMENTS",
+      "bucket_name": "hrms-attachments"
+    }
+  ]
+}

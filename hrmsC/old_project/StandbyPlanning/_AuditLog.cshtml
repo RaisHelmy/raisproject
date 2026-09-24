@@ -1,0 +1,77 @@
+﻿@{
+	Layout = null;
+}
+
+<div class="row" id="DivAuditLog">
+	<div class="col-md-12">
+		<div class="portlet box blue">
+			<div class="mini-triangle"><img src="../Assets/img/menu-red-triangle.png" /></div>
+			<div class="portlet-title">
+				<div class="caption">
+					<i class="fa fa-reorder"></i>Audit Log
+				</div>
+			</div>
+			<div class="portlet-body form">
+				<div class="form-body">
+					<div class="form-horizontal">
+						<div class="table-toolbar">
+							<table id="tblAuditLog" class="table table-striped table-bordered table-hover table-full-width">
+								<thead>
+									<tr>
+										<th style="width:15%;">Action By</th>
+										<th style="width:15%;">Date</th>
+										<th style="width:15%;">Activity</th>
+										<th style="width:15%;">Action</th>
+										<th style="width:40%;">Comment</th>
+									</tr>
+								</thead>
+								<tbody>
+
+									@foreach (var item in @Model)
+									{
+                                    <tr>
+                                        <td>@item.EmployeeName</td>
+                                        <td>@item.FormattedDate</td>
+                                        <td>@item.ActivityName</td>
+                                        <td>@item.ActivityAction</td>
+                                        <td class="break-words" style="word-wrap: break-word;overflow-wrap: break-word; hyphens: auto; ">@Html.Raw(item.Comment)</td>
+                                    </tr>
+									}
+
+								</tbody>
+							</table>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<script>
+    $(document).ready(function () {
+        // Function to break long words within a specific column
+        function breakLongWords(columnSelector, maxLength) {
+            $(columnSelector).each(function () {
+                var htmlContent = $(this).html();
+
+                // Preserve existing <br> tags or newline characters
+                var preservedContent = htmlContent.replace(/<br>/g, '<br>​').replace(/\n/g, '\n​');
+
+                // Process words while excluding preserved elements
+                var processedContent = preservedContent.replace(/[^<>\n]*\S[^<>\n]*/g, function (match) {
+                    if (match.includes('<br>') || match.includes('\n')) {
+                        return match; // Preserve existing <br> or newline characters
+                    }
+                    return match.replace(/,/g, ',​'); // Add zero-width space after comma and break long words
+                });
+
+                $(this).html(processedContent);
+            });
+        }
+
+        // Call the function for the 'break-words' class (adjust maxLength as needed)
+        breakLongWords('.break-words', 10);
+    });
+</script>
+

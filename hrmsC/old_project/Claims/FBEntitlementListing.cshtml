@@ -1,0 +1,198 @@
+﻿@{
+    ViewBag.Title = "Flexi Benefits Entitlement Listing";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="form-section">
+    <div class="row">
+        <div class="col-md-12">
+            <h1 class="page-title">
+                Flexi Benefits Entitlement 
+                <span style="padding-left:20px;">
+                    <small></small>
+                </span>
+            </h1>
+        </div>
+    </div>
+</div>
+<div class="form-body">
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-4 control-label">Year</label>
+                    <div class="col-md-8 form-control-static">
+                        <input type="hidden" id="Role" value="@ViewBag.Role" />
+                        <select class="form-control" id="Year"></select>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-4 control-label">Employee</label>
+                    <div class="col-md-8 form-control-static">
+                        @Html.Partial("_PeoplePicker")
+                        @*PeoplePicker hiddenfieldid = hfEmpID, textboxid =txtEmpName*@
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">&nbsp;</div>
+    <div class="row">
+        <div class="col-md-12">
+            <div class="text-right">
+                <input type="button" id="btn-Search" class="btn green btn-Search" value="Search" onclick="SearchListing();">
+                <input id="btn-Clear" type="button" class="btn default " value="Clear" onclick="ClearFilter();">
+            </div>
+        </div>
+    </div>
+    <div class="row">&nbsp;</div>
+    <div class="row">
+        <div class="col-md-12">
+            <div id="SearchResult">
+
+            </div>
+        </div>
+    </div>
+</div>
+<iframe id="txtArea1" style="display:none"></iframe>
+
+<script>
+
+    jQuery(document).ready(function () {
+        YearDropdown();
+        SearchListing()
+    });
+
+    function YearDropdown() {
+        var min = 2017;//new Date().getFullYear();
+        var max = new Date().getFullYear() + 1; //From 2017 to current_year + 1
+        var current = new Date().getFullYear();
+
+        select = document.getElementById('Year');
+        var length = $('#Year > option').length;
+
+        if (length <= 0) {
+            for (var i = min; i <= max; i++) {
+                var opt = document.createElement('option');
+                opt.value = i;
+                opt.innerHTML = i;
+
+                if (i == current) {
+                    opt.selected = true;
+                }
+
+                select.appendChild(opt);
+            }
+        }
+    }
+
+
+    function SearchListing() {
+        var _Role = $('#Role').val();
+        var _EmpID = $('#hfEmpID').val();
+        var _Year = $('#Year').val();
+
+        $("#SearchResult").html("LOADING...");
+
+        $.ajax({
+            type: "GET",
+            url: '@Url.Content("~/Claims/_FBEntitlementListingResult")',
+            cache: false,
+            dataType: "html",
+            data: { SearchEmpID: _EmpID, Role: _Role, Year: _Year },
+            success: function (content) {
+                $("#SearchResult").html(content);
+                ExportToExcel();
+            },
+            error: function (e) {
+                console.log(e);
+            }
+        });
+    }
+
+    function ClearFilter() {
+        $('#Year').val('');
+        $('#hfEmpID').val('');
+        $('#txtEmpName').val('');
+        SearchListing();
+    }
+
+    function fnExcelReport() {
+        var dt = new Date();
+        var day = dt.getDate();
+        var month = dt.getMonth() + 1;
+        var year = dt.getFullYear();
+        var hour = dt.getHours();
+        var mins = dt.getMinutes();
+        var postfix = day + "." + month + "." + year + "_" + hour + "." + mins;
+        var _fileName = 'Entitlement_Report_' + postfix + '.xls';
+
+        var tab_text = "<table border='2px'><tr bgcolor='#87AFC6'>";
+        var textRange; var j = 0;
+        tab = document.getElementById('tblResult'); // id of table
+
+        for (j = 0 ; j < tab.rows.length ; j++) {
+            tab_text = tab_text + tab.rows[j].innerHTML + "</tr>";
+            //tab_text=tab_text+"</tr>";
+        }
+
+        tab_text = tab_text + "</table>";
+
+
+        //var ua = window.navigator.userAgent;
+        //var msie = ua.indexOf("MSIE ");
+
+        //if (msie > 0 || !!navigator.userAgent.match(/Trident.*rv\:11\./))      // If Internet Explorer
+        //{
+        txtArea1.document.open("txt/html", "replace");
+        txtArea1.document.write(tab_text);
+        txtArea1.document.close();
+        txtArea1.focus();
+        sa = txtArea1.document.execCommand("SaveAs", true, _fileName);
+        //}
+        //else //other browser not tested on IE 11
+        //    sa = window.open('data:application/vnd.ms-excel,filename=aaa.xlsx' + encodeURIComponent(tab_text));
+        return (sa);
+    }
+
+    function ExportToExcel() {
+        // EXPORT TO EXCEL
+        var ua = window.navigator.userAgent;
+        var msie = ua.indexOf("MSIE ");
+
+        // Internet Explorer
+        if (msie > 0 || !!navigator.userAgent.match(/Trident.*rv\:11\./)) {
+            var _btn = document.getElementById('btn-Export');
+            _btn.onclick = fnExcelReport;
+        }
+        else {
+            $("#btn-Export").click(function (e) {
+                //getting values of current time for generating the file name
+                var dt = new Date();
+                var day = dt.getDate();
+                var month = dt.getMonth() + 1;
+                var year = dt.getFullYear();
+                var hour = dt.getHours();
+                var mins = dt.getMinutes();
+                var postfix = day + "." + month + "." + year + "_" + hour + "." + mins;
+                //creating a temporary HTML link element (they support setting file names)
+                var a = document.createElement('a');
+                //getting data from our div that contains the HTML table
+                var data_type = 'data:application/vnd.ms-excel';
+                var table_div = document.getElementById('tblResult');
+                var table_html = table_div.outerHTML.replace(/ /g, '%20');
+                a.href = data_type + ', ' + table_html;
+                //setting the file name
+                a.download = 'Entitlement_Report_' + postfix + '.xls';
+                //triggering the function
+                a.click();
+                //just in case, prevent default behaviour
+                e.preventDefault();
+            });
+        }
+    }
+</script>

@@ -1,0 +1,237 @@
+﻿@using ESS.Core
+
+@model List<ESS.Core.DropDownObject>
+
+@{
+	Layout = "~/Views/Shared/_Layout.cshtml";
+
+	ViewBag.Title = "Standby Planning Report (By Request)";
+
+	DateTime d1 = DateTime.Now.AddYears(-20);
+	DateTime d2 = DateTime.Now.AddYears(20);
+	string dtStrStart = d1.ToString("dd/MM/yyyy");
+	string dtStrEnd = d2.ToString("dd/MM/yyyy");
+}
+<div class="row">
+	<div class="col-md-12">
+		<br />
+		<h1 class="page-title">
+			@ViewBag.Title<span style="padding-left:20px;"><small></small></span>
+		</h1>
+	</div>
+</div>
+<br />
+<input type="hidden" id="hfEmployeeID" value="@ViewBag.EmployeeID" />
+<div class="form-body">
+	<div class="row">
+		<div class="col-md-6">
+			<div class="form-horizontal">
+				<div class="form-group">
+					<label class="col-md-5 control-label">Employee Code</label>
+					<div class="col-md-7 form-control-static">
+						<input class="form-control" type="text" id="EmployeeCode" />
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="col-md-6">
+			<div class="form-horizontal">
+				<div class="form-group">
+					<label class="col-md-5 control-label">Reference No</label>
+					<div class="col-md-7 form-control-static">
+						<input class="form-control" type="text" id="ReferenceNo" />
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="row">
+		<div class="col-md-6">
+			<div class="form-horizontal">
+				<div class="form-group">
+					<label class="col-md-5 control-label">Submitted Date (From)</label>
+					<div class="col-md-7 form-control-static">
+						<div class="input-group date date-picker" id="divSubmissionDateFrom" data-date-format="dd MM yyyy">
+							<input type="text" class="form-control" id="SubDateFrom" name="SubDateFrom" />
+							<span class="input-group-btn">
+								<button type="button" class="btn default"><i class="fa fa-calendar"></i></button>
+							</span>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="col-md-6">
+			<div class="form-horizontal">
+				<div class="form-group">
+					<label class="col-md-5 control-label">Submitted Date (To)</label>
+					<div class="col-md-7 form-control-static">
+						<div class="input-group date date-picker" id="divSubmissionDateTo" data-date-format="dd MM yyyy">
+							<input type="text" class="form-control" id="SubDateTo" name="SubDateTo" />
+							<span class="input-group-btn">
+								<button type="button" class="btn default"><i class="fa fa-calendar"></i></button>
+							</span>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="row">
+		<div class="col-md-6">
+			<div class="form-horizontal">
+				<div class="form-group">
+					<label class="col-md-5 control-label">Status</label>
+					<div class="col-md-7 form-control-static">
+                        <select class="form-control" id="Status">
+                            <option value="">- All -</option>
+                            <option value="DR">Draft</option>
+                            <option value="PE">Pending</option>
+                            <option value="VR">Verified</option>
+                            <option value="AP">Approved</option>
+                            <option value="RW">Rework</option>
+                            <option value="DC">Declined</option>
+                            <option value="WD">Withdrawn</option>
+                        </select>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="col-md-6">
+			<div class="form-horizontal">
+				<div class="form-group">
+
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="row">&nbsp;</div>
+	<div class="row">
+		<div class="col-md-12">
+			<div class="text-right">
+				<input type="button" id="btn-Search" class="btn green btn-Search" value="Search" onclick="SearchListing();">
+				<input type="button" id="btn-Clear" class="btn default " value="Clear" onclick="ClearFilter();">
+			</div>
+		</div>
+	</div>
+	<div class="row">&nbsp;</div>
+	<div class="row">
+		<div class="col-md-12">
+			<div id="SearchResult">
+
+			</div>
+		</div>
+	</div>
+</div>
+
+<script type="text/javascript">
+	jQuery(document).ready(function () {
+		$('.date-picker').datepicker({
+			format: 'dd/mm/yyyy',
+			autoclose: true
+		});
+
+		$('#divSubmissionDateFrom').datepicker('setStartDate', '@dtStrStart');
+        $('#divSubmissionDateFrom').datepicker('setEndDate', '@dtStrEnd');
+
+        $('#divSubmissionDateTo').datepicker('setStartDate', '@dtStrStart');
+        $('#divSubmissionDateTo').datepicker('setEndDate', '@dtStrEnd');
+
+        $("#divSubmissionDateFrom").datepicker({
+            autoclose: true,
+        }).on('changeDate', function (selected) {
+            var minDate = new Date(selected.date.valueOf());
+            minDate.setDate(minDate.getDate() + 1);
+            $('#divSubmissionDateTo').datepicker('setStartDate', minDate);
+        });
+
+        $("#divSubmissionDateTo").datepicker({
+            autoclose: true,
+        })
+        .on('changeDate', function (selected) {
+            var minDate = new Date(selected.date.valueOf());
+            minDate.setDate(minDate.getDate() - 1);
+            $('#divSubmissionDateFrom').datepicker('setEndDate', minDate);
+        });
+
+        $("#SubDateFrom").on("blur", function (e) {
+            if ($('#SubDateFrom').val() == "") {
+                $('#divSubmissionDateTo').datepicker('setStartDate', '@dtStrStart');
+            }
+        });
+
+        $("#SubDateTo").on("blur", function (e) {
+            if ($('#SubDateTo').val() == "") {
+                $('#divSubmissionDateFrom').datepicker('setEndDate', '@dtStrEnd');
+            }
+        });
+	});
+
+	function SearchListing() {
+		var _EmployeeCode = $('#EmployeeCode').val();
+		var _ReferenceNo = $('#ReferenceNo').val();
+		var _DateFrom = $('#SubDateFrom').val();
+		var _DateTo = $('#SubDateTo').val();
+		var _Status = $('#Status').val();
+
+		$("#SearchResult").html("LOADING...");
+
+		$.ajax({
+			type: "GET",
+			url: '@Url.Content("~/StandbyPlanning/_ByRequestReportResult")',
+			cache: false,
+			dataType: "html",
+			data: {
+				EmployeeCode: _EmployeeCode, ReferenceNo: _ReferenceNo,
+				DateFrom: _DateFrom, DateTo: _DateTo,
+				Status: _Status
+			},
+			success: function (content) {
+				$("#SearchResult").html(content);
+			},
+			error: function (e) {
+				console.log(e);
+			}
+		});
+	}
+
+	var host = "..";
+
+	function ExportExcel() {
+		var dt = new Date();
+		var day = dt.getDate();
+		var month = dt.getMonth() + 1;
+		var year = dt.getFullYear();
+		var hour = dt.getHours();
+		var mins = dt.getMinutes();
+		var postfix = day + "." + month + "." + year + "_" + hour + "." + mins;
+
+		var _EmployeeCode = $('#EmployeeCode').val();
+		var _ReferenceNo = $('#ReferenceNo').val();
+		var _DateFrom = $('#SubDateFrom').val();
+		var _DateTo = $('#SubDateTo').val();
+		var _Status = $('#Status').val();
+
+		var JsonObjectFilter = {
+			EmployeeCode: _EmployeeCode,
+			ReferenceNo: _ReferenceNo,
+			DateFrom: _DateFrom,
+			DateTo: _DateTo,
+			Status: _Status
+		}
+
+		var Filter = JSON.stringify(JsonObjectFilter);
+
+		window.open(host +"/StandbyPlanning/_ExportToExcelGeneral?FileName=ByRequestReport_" + postfix +
+			"&ReportCategory=" + "ByRequestReport" +
+			"&Filter=" + Filter);
+	}
+
+	function ClearFilter() {
+		$('#EmployeeCode').val('');
+		$('#ReferenceNo').val('');
+		$('#SubDateFrom').val('');
+		$('#SubDateTo').val('');
+		$('#Status').val('');
+	}
+</script>

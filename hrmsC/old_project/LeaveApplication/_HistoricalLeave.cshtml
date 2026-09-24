@@ -1,0 +1,125 @@
+﻿@using System.Linq
+@model List<LeaveApplication.Models.HistoricalLeaveModel>
+@{
+    Layout = null;
+
+    var groupedItems = Model.GroupBy(s => s.LeaveSubtypeName);
+}
+
+<div class="portlet box blue">
+    <div class="mini-triangle"><img src="/_layouts/15/TNBESS/Assets/img/menu-red-triangle.png" /></div>
+    <div class="portlet-title">
+        <div class="caption">
+            <i class="fa fa-reorder"></i>Historical Leave
+        </div>
+        <div class="tools">
+            <a title="" data-original-title="" href="javascript:;" class="collapse"> </a>
+        </div>
+    </div>
+    <div class="portlet-body form">
+        <div class="form-body">
+            <div class="form-horizontal">
+                <div class="table-toolbar">
+                    <table id="tblHistoricalLeave" class="table table-striped table-bordered table-hover table-full-width">
+                        <thead>
+                            <tr>
+                                <th>Leave Subtype</th>
+                                <th>HURES</th>
+                                <th>HRIS</th>
+                                <th>EHRMS</th>
+                                <th>Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in groupedItems)
+                            {
+                                <tr>
+                                    <td>@item.Key</td>
+                                    <td>
+                                        @(item.Where(i => i.System == "HURES").Sum(i => i.CalendarDay).Value.ToString("0.00"))
+                                    </td>
+                                    <td>
+                                        @(item.Where(i => i.System == "HRIS").Sum(i => i.CalendarDay).Value.ToString("0.00"))
+                                    </td>
+                                    <td>
+                                        @(item.Where(i => i.System == "EHRMS").Sum(i => i.CalendarDay).Value.ToString("0.00"))
+                                    </td>
+                                    <td>
+                                        <a href="#" onclick="DisplayDetails('@item.Key.Replace(" ", "")')">
+                                            @(item.Sum(i => i.CalendarDay).Value.ToString("0.00"))
+                                        </a>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@foreach (var item in groupedItems)
+{
+    <div id="details_@item.Key.Replace(" ", "")" class="modal fade" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                    <h4 class="modal-title">@item.Key</h4>
+                </div>
+                <div class="modal-body">
+                    <table class="table table-striped table-bordered table-hover table-full-width">
+                        <thead>
+                            <tr>
+                                <th>System</th>
+                                <th>Start Date</th>
+                                <th>End Date</th>
+                                <th>Total Days</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item2 in item.OrderByDescending(i => i.CalendarDay))
+                            {
+                                <tr>
+                                    <td>@item2.System</td>
+                                    <td>
+                                        @(item2.StartDate.HasValue ? item2.StartDate.Value.ToString("dd/MM/yyyy") : " - ")
+                                    </td>
+                                    <td>
+                                        @(item2.EndDate.HasValue ? item2.EndDate.Value.ToString("dd/MM/yyyy") : " - ")
+                                    </td>
+                                    <td>
+                                        @item2.CalendarDay
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn default" data-dismiss="modal">
+                        Close
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+
+<script>
+    $(function () {
+        $('#tblHistoricalLeave').DataTable({
+                "bLengthChange": false,
+                "bFilter": false,
+                "bPaginate": false,
+                "bInfo": false,
+                "bSort": false
+            });
+    });
+
+    function DisplayDetails(leaveSubtypeName) {
+        $('#details_' + leaveSubtypeName).modal();
+    }
+</script>

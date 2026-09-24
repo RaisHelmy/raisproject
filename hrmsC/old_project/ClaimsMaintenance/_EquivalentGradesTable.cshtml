@@ -1,0 +1,243 @@
+﻿@model List<ESS.Claim.Models.EquivalentGradeMaintenanceModel>
+@{
+    Layout = null;
+    ViewBag.Title = "Equivalent Grade Maintenance";
+}
+
+<style>
+    .btn {
+        margin: 0px 5px;
+    }
+</style>
+
+<div class="portlet box blue">
+    <div class="mini-triangle"><img src="/_layouts/15/TNBESS/Assets/img/menu-red-triangle.png"></div>
+    <div class="portlet-title">
+        <div class="caption">
+            <i class="fa fa-reorder"></i> Equivalent Grades
+        </div>
+        <div class="tools">
+            <a title="" data-original-title="" href="javascript:;" class="collapse"> </a>
+        </div>
+    </div>
+    <div class="portlet-body form">
+        <div class="form-body">
+            <div id="Container">
+                <table id="table" class="table table-striped table-bordered table-hover table-full-width">
+                    <thead>
+                        <tr>
+                            @*<th>
+                                <input id="AllRemoveCheckbox" type="checkbox" onchange="SelectAll(this)" />
+                            </th>*@
+                            <th>EquivalentGrade</th>
+                            <th>Valid From</th>
+                            <th>Valid To</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @{
+                            int i = 0;
+
+                            foreach (var item in Model)
+                            {
+                                <tr>
+                                    @*<td>
+                                        <input type="checkbox" class="RemoveCheckbox" />
+                                        
+                                    </td>*@
+                                    <td>
+                                        <input type="hidden" name="MaintenanceID" class="MaintenanceID" value="@item.MaintenanceID" />
+                                        <input type="text" class="form-control EquivalentGrade" name="EquivalentGrade" value="@item.EquivalentGrade" />
+                                    </td>
+                                    <td>
+                                        <div class="input-group date date-picker DPValidFrom" data-date-format="yyyy-mm-dd">
+                                            <input type="text" class="form-control ValidFrom"
+                                                   name="ValidFrom"
+                                                   value="@item.InputValidFrom" />
+                                            <span class="input-group-btn">
+                                                <button type="button" class="btn default">
+                                                    <i class="fa fa-calendar"></i>
+                                                </button>
+                                            </span>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="input-group date date-picker DPValidTo" data-date-format="yyyy-mm-dd">
+                                            <input type="text" class="form-control ValidTo"
+                                                   name="ValidTo"
+                                                   value="@item.InputValidTo" />
+                                            <span class="input-group-btn">
+                                                <button type="button" class="btn default">
+                                                    <i class="fa fa-calendar"></i>
+                                                </button>
+                                            </span>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <input type="button" class="btn blue btn-update" value="Save" onclick="SaveRow(this);" />
+                                        <input type="button" class="btn red btn-delete" value="Delete" onclick="DeleteRow(this);" />
+                                    </td>
+                                </tr>
+
+                                i++;
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="form-horizontal">
+                <div class="table-toolbar">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="btn-group">
+                                <a class="btn green" onclick="AddRow();">
+                                    Add
+                                    <i class="fa fa-plus"></i>
+                                </a>
+                            </div>
+                            @*<div class="btn-group">
+                                <a class="btn red" onclick="DeleteRows();">
+                                    Delete
+                                    <i class="fa fa-minus"></i>
+                                </a>
+                            </div>*@
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<script>
+    var table = null;
+
+    $(function () {
+        table = $('#table').dataTable({
+            "bLengthChange": false,
+            "bFilter": false,
+            "bPaginate": false,
+            "bInfo": false,
+            "bSort": false,
+        });
+
+        $('input[type="checkbox"]').uniform();
+    });
+
+    function SelectAll(element) {
+        $('#table .RemoveCheckbox').attr('checked', element.checked);
+        $.uniform.update();
+    }
+
+    function SaveRow(row) {
+        var $row = $(row).closest('tr');
+
+        var dtFrom = moment($row.find('[name=ValidFrom]').val());
+        var dtTo = moment($row.find('[name=ValidTo]').val());
+
+        if (dtFrom.diff(dtTo) > 0) {
+            alert('Valid To date must be after Valid From date.');
+            return;
+        }
+
+        $row.find('.btn-update').prop('disabled', true);
+        $row.find('.btn-delete').prop('disabled', true);
+
+        var data = {
+            MaintenanceID: $row.find('[name=MaintenanceID]').val(),
+            EmployeeID: $('#hfEmpID').val(),
+            EquivalentGrade: $row.find('[name=EquivalentGrade]').val(),
+            ValidFrom: $row.find('[name=ValidFrom]').val(),
+            ValidTo: $row.find('[name=ValidTo]').val()
+        };
+
+        $.post('@Url.Action("SaveGrade", "ClaimsMaintenance")', data, function (result) {
+            if (result.Success) {
+                $row.find('[name=MaintenanceID]').val(result.MaintenanceID);
+                alert("Equivalent grade saved.");
+            }
+            else {
+                alert(result.ErrorMessage);
+            }
+
+            $row.find('.btn-update').prop('disabled', false);
+            $row.find('.btn-delete').prop('disabled', false);
+        });
+    }
+
+    function DeleteRow(row) {
+        var $row = $(row).closest('tr');
+
+        $row.find('.btn-update').prop('disabled', true);
+        $row.find('.btn-delete').prop('disabled', true);
+
+        var maintenanceID = $row.find('[name=MaintenanceID]').val();
+
+        if (maintenanceID == null || maintenanceID == '') {
+            table.fnDeleteRow(table.fnGetPosition($row.get(0)));
+            return;
+        }
+
+        var data = {
+            MaintenanceID: maintenanceID
+        };
+
+        $.post('@Url.Action("DeleteGrade", "ClaimsMaintenance")', data, function (result) {
+            if (result.Success) {
+                alert("Equivalent grade deleted.");
+                table.fnDeleteRow(table.fnGetPosition($row.get(0)));
+            }
+            else {
+                alert(result.ErrorMessage);
+            }
+
+            $row.find('.btn-update').prop('disabled', false);
+            $row.find('.btn-delete').prop('disabled', false);
+        });
+    }
+
+    function AddRow() {
+        table.fnAddData([
+            //'<input type="checkbox" class="RemoveCheckbox" />',
+            '<input type="hidden" name="MaintenanceID" class="MaintenanceID" /><input type="text" class="form-control EquivalentGrade" name="EquivalentGrade" />',
+            '<div class="input-group date date-picker DPValidFrom" data-date-format="yyyy-mm-dd">' +
+            '<input type="text" class="form-control ValidFrom" name="ValidFrom" />' +
+            '<span class="input-group-btn">' +
+            '    <button type="button" class="btn default">' +
+            '         <i class="fa fa-calendar"></i>' +
+            '      </button>' +
+            '   </span>' +
+            '</div>',
+            '<div class="input-group date date-picker DPValidTo" data-date-format="yyyy-mm-dd">' +
+            '<input type="text" class="form-control ValidTo" name="ValidTo" />' +
+            '<span class="input-group-btn">' +
+            '    <button type="button" class="btn default">' +
+            '         <i class="fa fa-calendar"></i>' +
+            '      </button>' +
+            '   </span>' +
+            '</div>',
+            //'<div class="form-horizontal">' +
+            '<input type="button" class="btn blue btn-update" value="Save" onclick="SaveRow(this);" />' +
+            '<input type="button" class="btn red btn-delete" value="Delete" onclick="DeleteRow(this);" />'
+            //'</div >'
+        ]);
+
+        $('.date-picker').datepicker({
+            format: 'yyyy-mm-dd',
+            autoclose: true,
+        });
+
+        $('input[type="checkbox"]').uniform();
+    }
+
+    function DeleteRows() {
+        $('.RemoveCheckbox:checked').each(function (i, v) {
+            var row = $(v).closest('tr').get(0);
+            table.fnDeleteRow(table.fnGetPosition(row));
+        });
+    }
+</script>

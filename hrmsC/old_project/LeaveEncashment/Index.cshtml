@@ -1,0 +1,141 @@
+﻿@model LeaveApplication.Models.LeaveEncashmentVM
+@{
+    ViewBag.Title = "Leave Encashment (Retirement)";
+    ViewBag.IsEditable = true;
+    ViewBag.IsApproval = false;
+}
+
+@using (Html.BeginForm("Index", "LeaveEncashment", FormMethod.Post))
+{
+    <div class="form-section">
+        <div class="row">
+            <div class="col-md-12">
+                <h1 class="page-title">
+                    Leave Encashment (Retirement)
+                    <span style="padding-left:20px;">
+                        <small></small>
+                    </span>
+                </h1>
+                <input type="hidden" name="EncashmentID" value="@Model.EncashmentID" />
+            </div>
+        </div>
+    </div>
+
+    <input type="hidden" id="RetirementPeriod" name="RetirementPeriod" value="@ViewBag.EligiblePeriod" />
+
+    @Html.Partial("_LeaveEncashmentRequestDetails", Model)
+
+    <div class="row note-section" style="display: none;">
+        <div class="col-md-12">
+            <div class="note note-danger">
+                <h4 class="block note-message"></h4>
+            </div>
+        </div>
+    </div>
+
+    <div id="divEmployeeDetails">
+        @if (!string.IsNullOrEmpty(Model.EmployeeID))
+        {
+            @Html.Action("_EmployeeDetails", "LeaveEncashment", new { EmployeeID = Model.EmployeeID })
+        }
+    </div>
+
+    <div id="divEncashmentDetails">
+        @if (Model.Details != null && Model.Details.Count > 0)
+        {
+            @Html.Partial("_LeaveEncashmentDetails", Model)
+        }
+    </div>
+
+    <div id="divAttachment">
+        <!-- Attachment -->
+        @if ((Model.Status == "Draft" || Model.Status == "DR")
+        && Model.EncashmentID == Guid.Empty.ToString())
+        {
+            @Html.Action("LeaveAttachmentControl", "LeaveApplication",
+                    new
+                    {
+                        Mode = "New",
+                        SourceType = "LeaveApplication",
+                        EmployeeID = Model.Submitter.ID.ToString()
+                    })
+        }
+        else if ((Model.Status == "Draft" || Model.Status == "DR" ||
+                    Model.Status == "Cancelled" || Model.Status == "CA" ||
+                    Model.Status == "Withdrawn" || Model.Status == "WD")
+                && Model.EncashmentID != Guid.Empty.ToString())
+        {
+            @Html.Action("LeaveAttachmentControl", "LeaveApplication",
+                    new
+                    {
+                        Mode = "Add",
+                        SourceType = "LeaveApplication",
+                        RequestID = Model.EncashmentID,
+                        EmployeeID = Model.Submitter.ID.ToString()
+                    })
+        }
+        else if ((Model.StatusName == "Recommended" || Model.Status == "RC" ||
+                    Model.StatusName == "Processing" || Model.Status == "PR" ||
+                    Model.StatusName == "Processing Memo" || Model.Status == "PRM")
+                && ESS.Core.Common.IsEmployeeInRoleByModule(ESS.Core.Common.GetEmployeeID(),
+                                                "Leave Encashment", "HR SSC BA")
+                && Model.EncashmentID != Guid.Empty.ToString())
+        {
+            @Html.Action("LeaveAttachmentControl", "LeaveApplication",
+                    new
+                    {
+                        Mode = "Add",
+                        SourceType = "LeaveApplication",
+                        RequestID = Model.EncashmentID,
+                        EmployeeID = ESS.Core.Common.GetEmployeeID()
+                    })
+        }
+        else
+        {
+            @Html.Action("LeaveAttachmentControl", "LeaveApplication",
+                    new
+                    {
+                        Mode = "View",
+                        SourceType = "LeaveApplication",
+                        RequestID = Model.EncashmentID,
+                        EmployeeID = Model.Submitter.ID.ToString()
+                    })
+        }
+    </div>
+
+    if (Model.Status != "Draft" && Model.Status != "DR")
+    {
+        @Html.Action("_AuditLog", "LeaveApplication", new { SourceID = Model.EncashmentID })
+    }
+
+    @Html.Action("_ActionButtons", "LeaveEncashment", new { vm = Model, BackUrl = ViewBag.BackUrl })
+}
+
+<script>
+    function DisableSubmit(message, showMessage) {
+        if (showMessage) {
+            $('.note-message').html(message);
+            $('.note-section').show();
+        }
+
+        $('#divAttachment').hide();
+        $('#btnSubmit').hide();
+    }
+
+    function EnableSubmit() {
+        $('.note-section').hide();
+        $('.note-message').html('');
+
+        $('#divAttachment').show();
+        $('#btnSubmit').show();
+    }
+</script>
+
+@if (Model.Status == "DR")
+{
+    <script>
+        $(function () {
+            CheckCanSubmit();
+        });
+    </script>
+}

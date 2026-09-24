@@ -1,0 +1,161 @@
+﻿
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewBag.Title = "Eligibility Report";
+}
+
+<div class="row">
+    <div class="col-md-12">
+        <br />
+        <h1 class="page-title">
+            @ViewBag.Title <span style="padding-left:20px;"><small></small></span>
+            <input type="hidden" id="ExportIDs" name="ExportIDs" />
+            <input type="hidden" id="Type" name="Type" value="Procurement" />
+        </h1>
+    </div>
+</div>
+<br />
+<div class="form-body">
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-4 control-label">Employee</label>
+                    <div class="col-md-8 form-control-static">
+                        <input class="form-control" type="text" id="Employee" />
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-4 control-label">Position</label>
+                    <div class="col-md-8 form-control-static">
+                        <input class="form-control" type="text" id="Position" />
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-4 control-label">Show</label>
+                    <div class="col-md-8 form-control-static">
+                        <select class="form-control" id="Show">
+                            <option selected value="0">- All -</option>
+                            <option value="1">Missing Configuration</option>
+                            <option value="2">Configuration</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">&nbsp;</div>
+    <div class="row">
+        <div class="col-md-12">
+            <div class="text-right">
+                <input type="button" id="btn-Search" class="btn green btn-Search" value="Search" onclick="SearchListing();">
+                <input id="btn-Clear" type="button" class="btn default " value="Clear" onclick="ClearFilter();">
+            </div>
+        </div>
+    </div>
+    <div class="row">&nbsp;</div>
+    <div class="row">
+        <div class="col-md-12">
+            <div id="SearchResult">
+
+            </div>
+        </div>
+    </div>
+</div>
+
+@Html.Partial("_ExcelExport")
+
+<!-- Success Message -->
+<div class="modal fade" id="SuccessSubmit" tabindex="-1" role="basic" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header Success-header">
+                @*<button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>*@
+                <h4 class="Success-title">Action Successfully Completed</h4>
+            </div>
+            <div class="modal-body Success-body">
+                <div class="well" id="SuccessMessage">
+                    Claims has been successfully submitted.
+                </div>
+            </div>
+            <div class="modal-footer Success-footer">
+                <a class="btn default blue" id="btnOK">
+                    <i class="fa fa-check"></i>
+                    OK
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Loading Gif -->
+<div id="divLoading" style="margin: 0px; padding: 0px; position: fixed; right: 0px;
+        top: 0px; width: 100%; height: 100%; background-color:gainsboro; z-index: 30001;
+        opacity: .8; filter: alpha(opacity=70);display:none">
+    <p style="position: absolute; top: 30%; left: 30%; color: black;">
+        Loading, please wait...<img src="../Assets/img/ajax-loading.gif" />
+
+    </p>
+</div>
+
+<script type="text/javascript">
+
+    function SearchListing() {
+        var _Employee = $('#Employee').val();
+        var _Position = $('#Position').val();
+        var _Show = $('#Show').val();
+
+        $("#SearchResult").html("LOADING...");
+
+        $.ajax({
+            type: "GET",
+            url: '@Url.Content("~/UniformApplication/_EligibilityReportResult")',
+            cache: false,
+            dataType: "html",
+            data: {
+                Employee: _Employee,
+                Position: _Position,
+                Show: _Show
+            },
+            success: function (content) {
+                $("#SearchResult").html(content);
+                //ExportToExcel();
+            },
+            error: function (e) {
+                console.log(e);
+            }
+        });
+    }
+
+    function ClearFilter() {
+        $('#Employee').val('');
+        $('#Position').val('');
+        $('#Show').val('');
+    }
+
+
+    jQuery(document).ready(function () {
+        $('.date-picker').datepicker({
+            format: 'dd/mm/yyyy',
+            autoclose: true
+        });
+
+        //SearchListing();
+
+    });
+
+
+
+</script>
+

@@ -1,0 +1,364 @@
+﻿@model VerificationLetter.Models.VerificationModel
+@{
+	/**/
+
+	ViewBag.Title = "Verification Letter";
+
+	bool isApprover = ViewBag.IsApprover;
+	string mode = isApprover ? "Add" : "View";
+	var Path = string.Format("{0}://{1}{2}", Request.Url.Scheme, Request.Url.Authority, Url.Content("~"));
+
+	string currentID = ESS.Core.Common.GetEmployeeID();
+
+	Dictionary<string, object> htmlAttributes2 = new Dictionary<string, object>();
+	htmlAttributes2.Add("class", "form-control");
+	htmlAttributes2.Add("rows", "12");
+}
+
+<style>
+	.form-group {
+		margin-bottom: 5px;
+	}
+</style>
+<!-- Loading Gif -->
+<div id="divLoading" style="margin: 0px; padding: 0px; position: fixed; right: 0px; top: 0px; width: 100%; height: 100%; background-color: gainsboro; z-index: 30001; opacity: .8; filter: alpha(opacity=70); display: none; ">
+	<p style="position: absolute; top: 30%; left: 30%; color: black;">
+		Performing action, please wait...<img src="/_layouts/15/TNBESS/Assets/img/ajax-loading.gif">
+	</p>
+</div>
+<div class="form-section">
+	<div class="row">
+		<div class="col-md-12">
+			<h1 class="page-title">
+				Verification Letter
+			</h1>
+		</div>
+	</div>
+</div>
+
+
+@Html.Action("_RequestorDetails", "VerificationLetter", new { ID = Model.ID })
+
+<div class="row">
+	<div class="col-md-12">
+		<div class="portlet box blue">
+			<div class="mini-triangle"><img src="~/Assets/img/menu-red-triangle.png" /></div>
+			<div class="portlet-title">
+				<div class="caption">
+					<i class="fa fa-reorder"></i>Application Details
+				</div>
+				<div class="tools">
+					<a href="javascript:;" class="collapse" id="hidePersonalInfo"></a>
+				</div>
+			</div>
+			<div class="portlet-body form">
+				<div class="form-horizontal">
+                    <form id="verificationform">
+                        @Html.HiddenFor(m => m.FormType)
+                        @Html.HiddenFor(m => m.CreatedBy)
+                        @Html.HiddenFor(m => m.ID)
+                        <div class="form-body">
+                            <div class="form-group">
+                                <label class="col-md-2 control-label">Reference No.</label>
+                                <div class="col-md-6">
+                                    <input class="form-control" id="ReferenceNo" name="ReferenceNo" value="@Model.ReferenceNo" readonly />
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-md-2 control-label">Status</label>
+                                <div class="col-md-6">
+                                    <input class="form-control" id="Status" name="Status" value="@Model.Status" readonly />
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label col-md-2">
+                                    Form Type
+                                </label>
+                                <div class="col-md-6">
+                                    <input class="form-control" value="@Model.FormType" readonly />
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-md-2 control-label">Signed letter</label>
+                                <div class="col-md-6">
+                                    <input class="form-control" value="@Model.RequireSignature" readonly />
+                                </div>
+                            </div>
+                            <div id="templateDiv">
+                                @{
+                                    string partial_view = string.Empty;
+                                    switch (Model.FormType)
+                                    {
+                                        case "Surat pengesahan dan butir-butir perkhidmatan":
+                                        case "Surat Pengesahan Bujang / Status Perkahwinan":
+                                            partial_view = "_Bujang";
+                                            break;
+                                        case "Surat Pengesahan and Butir perkhidmatan (Pinjaman Pembelian Kereta Mewah)":
+                                            partial_view = "_CarPurchase";
+                                            break;
+                                        case "Surat Pengesahan Pembelian Kenderaan – Eksekutif/Bukan Eksekutif":
+                                            partial_view = "_CarPurchaseE";
+                                            break;
+                                        case "Surat Diskaun Korporat Pembelian Kereta Mewah – M Group":
+                                            partial_view = "_CarPurchaseM";
+                                            break;
+                                        case "Surat Pengesahan and Butir Perkhidmatan (Dengan Maklumat Gaji)":
+                                        case "Surat Pengesahan and Butir Perkhidmatan (Tanpa Maklumat Gaji)":
+                                            partial_view = "_ServiceDetail";
+                                            break;
+                                        default:
+                                            break;
+                                    }
+                                }
+
+                                @Html.Partial(partial_view, Model)
+                            </div>
+                            @{
+                                if (Model.FormType != "Surat Diskaun Korporat Pembelian Kereta Mewah – M Group" && Model.FormType != "Surat Diskaun Korporat Pembelian Kereta Mewah – M Group (Mercedes)" && Model.FormType != "Surat Pengesahan Pembelian Kenderaan – Eksekutif / Bukan Eksekutif" && Model.FormType != "Surat Pengesahan Pembelian Kenderaan – Eksekutif / Bukan Eksekutif (Mercedes)" && Model.FormType != "")
+                                {
+                                    <div class="form-group">
+                                        <label class="col-md-2 control-label">
+                                            @*<abbr title="*Salinan surat pengesahan ini akan dimajukan melalui ESS. Jika tuan/puan memerlukan salinan surat asal, sila pilih cara penerimaan surat seperti berikut">Penghantaran</abbr>*@
+                                            Penghantaran
+                                        </label>
+                                        <div class="col-md-6">
+                                            @if (Model.CreatedBy == currentID && Model.Status == "Withdrawn" && !string.IsNullOrEmpty(Model.FormType) &&
+                                            (Model.FormType == "Surat Diskaun Korporat Pembelian Kereta Mewah – M Group" ||
+                                            Model.FormType == "Surat Diskaun Korporat Pembelian Kereta Mewah – M Group (Mercedes)" ||
+                                            Model.FormType == "Surat Pengesahan Pembelian Kenderaan – Eksekutif / Bukan Eksekutif" ||
+                                            Model.FormType == "Surat Pengesahan Pembelian Kenderaan – Eksekutif / Bukan Eksekutif (Mercedes)"))
+                                            {
+                                                @Html.DropDownListFor(m => m.DeliveryCode, new SelectList(ViewBag.DeliveryMethods, "Value", "Text"), new { @class = "bs-select form-control" })
+                                                <input id="DisabledDeliveryCode" class="form-control hidden" disabled value="@ViewBag.DisabledDeliveryMethods" />
+                                            }
+                                            else
+                                            {
+                                                @Html.TextBoxFor(m => m.DeliveryCode, new { @class = "form-control", @readonly = "readonly" });
+                                            }
+                                            <span>Salinan surat pengesahan ini akan dimajukan melalui ESS. Jika tuan/puan memerlukan salinan surat asal, sila pilih cara penerimaan surat seperti berikut</span>
+                                        </div>
+                                    </div>
+                                }
+                                else
+                                {
+                                }
+                            }
+                            <div class="form-group">
+                                <label class="col-md-2 control-label">Nota</label>
+                                <div class="col-md-6">
+                                    @if (Model.CreatedBy == currentID && Model.Status == "Withdrawn")
+                                    {
+                                        @Html.TextAreaFor(m => m.Remarks, htmlAttributes2);
+                                    }
+                                    else
+                                    {
+                                        @Html.TextAreaFor(m => m.Remarks, new { @class = "form-control", @readonly = "readonly" });
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+				</div>
+			</div>
+		</div>
+
+	</div>
+</div>
+
+
+@*@if (isApprover == false)
+	{
+		@Html.Action("AttachmentControl", "Attachment", new { EmployeeID = Model.EmployeeID, Mode = mode, SourceType = "VerificationLetter", RequestID = Model.ID })
+	}*@
+
+@Html.Action("_ApproverSection", "VerificationLetter", new { ID = Model.ID })
+
+@if (Model.CreatedBy == currentID && Model.Status == "Pending")
+{
+	<input type="button" class="btn red" value="Withdraw" id="btnWithdraw" onclick="ApproverAction('Withdrawn'); " />
+}
+
+@if (Model.CreatedBy == currentID && Model.Status == "Withdrawn")
+{
+	<input type="button" class="btn green" value="Submit" id="btnSubmit" onclick="ApproverAction('Submit'); " />
+}
+
+@if (isApprover == false && Model.Status == "Completed")
+{
+	<div class="row">
+		<div class="col-md-12">
+			<button class="btn green" type="button" onclick="Download()">Download Letter</button>
+		</div>
+	</div>
+}
+
+<!-- Success Message -->
+<div class="modal fade" id="SuccessDialog" tabindex="-1" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header Success-header">
+				<h4 id="SuccessDialog_Title" class="Success-title">
+					Action Successfully Completed.
+				</h4>
+			</div>
+			<div class="modal-body Success-body">
+				<div class="well" id="SuccessDialog_Message">
+					Application has been successfully submitted.
+				</div>
+			</div>
+			<div class="modal-footer Success-footer">
+				<a class="btn default blue" id="SuccessDialog_OkButton" data-dismiss="modal">
+					<i class="fa fa-check"></i>
+					OK
+				</a>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div id="divLoading" style="margin: 0px; padding: 0px; position: fixed;
+    right: 0px; top: 0px; width: 100%; height: 100%; background-color: gainsboro; z-index: 30001; opacity: .8; filter: alpha(opacity=70); display: none; ">
+	<p style="position: absolute; top: 30%; left: 30%; color: black;">
+		Performing action, please wait...<img src="/_layouts/15/TNBESS/Assets/img/ajax-loading.gif">
+	</p>
+</div>
+
+<script>
+
+    function Download() {
+        @if(Model.RequireSignature == "Yes")
+        {
+            @:DownloadSignature();
+        }
+        else
+        {
+            @:GenerateSignature();
+        }
+        AddDownloadLetterHistory();
+    }
+
+    function DownloadSignature() {
+        var url = '@Url.Action("DownloadSignature", "VerificationLetter")?RequestID=' + '@Model.ID';
+        window.open(url, "_blank");
+    }
+
+    function GenerateSignature() {
+        UpdateAddressTo();
+
+        var signature = $("#Signature").val();
+        var data = $('#verificationform').serialize();
+
+        if (signature) {
+            data += "&Signature=" + signature;
+		}
+		console.table(data)
+        window.open("@Url.Action("Preview")?" + data);
+    }
+
+    function AddDownloadLetterHistory() {
+        var request_id = '@Model.ID';
+
+        $.ajax({
+            url: '@Url.Action("AddDownloadHistory", "VerificationLetter")',
+            data: { SourceID: request_id },
+            success: function () {
+                location.reload();
+            },
+            error: function (err) {
+                alert('Error in adding verification letter download history');
+            }
+        });
+    }
+
+	function UpdateAddressTo() {
+		var data = { ID: '@Model.ID', AddressTo: $("#AddressTo").val() };
+
+        $.ajax({
+            type: "POST",
+            url: '@Url.Action("UpdateAddressTo", "VerificationLetter")',
+            data: data
+        });
+	}
+
+	function ApproverAction(action) {
+        ShowLoadingScreen();
+
+		var RequestID = "@Model.ID";
+		var ApproverActionStatus;
+        var validationMessage = '';
+
+        if (validationMessage) {
+            HideLoadingScreen();
+            alert(validationMessage);
+        }
+        else {
+            switch (action) {
+                case "Withdrawn":
+                    ApproverActionStatus = "Withdrawn";
+					break;
+				case "Submit":
+					ApproverActionStatus = "Submitted";
+					break;
+            }
+
+			var NotifyMessage = 'This application has been ' + ApproverActionStatus.toLowerCase() + ' successfully.';
+
+            $.post('@Url.Action("PostApproverAction", "VerificationLetter")',
+				{
+					requestID: RequestID,
+					approverAction: action,
+					AddressTo: $('#AddressTo').val(),
+					DeliveryCode: $('#DeliveryCode').val(),
+					Remarks: $('#Remarks').val()
+				},
+				function (result) {
+					HideLoadingScreen();
+					if (result.IsSuccess) {
+						ShowDialog({
+							message: NotifyMessage,
+							okCallback: function () {
+								window.location.href = '@Url.Action("RequestHistory", "VerificationLetter")';
+							}
+						});
+					}
+					else {
+						HideLoadingScreen();
+						alert(result.Message);
+					}
+				}
+			);
+        }
+    }
+
+	function ShowLoadingScreen() {
+		$("#divLoading").show();
+	}
+
+	function HideLoadingScreen() {
+		$('#divLoading').hide();
+	}
+
+	function ShowDialog(data) {
+		if (!data) {
+			data = {};
+		}
+
+		var dialog = $('#SuccessDialog'),
+			title = data.title,
+			message = data.message || "The operation was success.",
+			okCallback = data.okCallback;
+
+		var okButton = dialog.find("#SuccessDialog_OkButton");
+
+		dialog.find("#SuccessDialog_Title").html(title);
+		dialog.find("#SuccessDialog_Message").html(message);
+
+		okButton.off('click');
+		okButton.one('click', function () {
+			if (okCallback)
+				okCallback();
+		});
+
+		dialog.modal();
+	}
+</script>

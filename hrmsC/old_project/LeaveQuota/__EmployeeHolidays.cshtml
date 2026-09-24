@@ -1,0 +1,23 @@
+﻿@model List<DateTime>
+@foreach (var date in Model)
+{
+    <input type="hidden" name="hfEmployeeHoliday" value="@date.ToString("yyyy-MM-dd")" />
+}
+
+<script>
+    var EMPLOYEE_HOLIDAYS = [];
+    $(function () {
+        EMPLOYEE_HOLIDAYS = $('input[name=hfEmployeeHoliday]').map(function (index, item) { return moment(new Date(item.value)); }).get();
+    });
+
+    function IsHoliday(date) {
+        var inputDate = moment(date);
+        for (var i = 0; i < EMPLOYEE_HOLIDAYS.length; i++) {
+            if (inputDate.isSame(EMPLOYEE_HOLIDAYS[i], 'd')) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+</script>

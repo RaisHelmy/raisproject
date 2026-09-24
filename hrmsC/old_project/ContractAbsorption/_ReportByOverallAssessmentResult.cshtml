@@ -1,0 +1,114 @@
+﻿@model List<ESS.ContractAbsorption.Models.ContractAbsorptionRecommendation>
+
+@{
+	Layout = null;
+	int CountRow = 0;
+
+}
+
+<div class="portlet box blue">
+	<div class="mini-triangle"><img src="../Assets/img/menu-red-triangle.png" /></div>
+	<div class="portlet-title">
+		<div class="caption">
+			<i class="fa fa-reorder"></i>Absorption of Contract Staff Overall Assessment Report
+		</div>
+		<input type="button" id="ExportExcel" class="btn btn-xs green pull-right" value="Export To Excel" onclick="ExportExcel()" />
+		<div class="tools">
+		</div>
+	</div>
+	<div class="portlet-body form">
+		<div class="form-body">
+			<div class="form-horizontal">
+				<div class="table-toolbar">
+					<table id="tblResult" class="table table-striped table-bordered table-hover table-full-width">
+						<thead>
+                            <tr>
+                                <th></th>
+                                <th>Reference No.</th>
+                                <th>Employee No.</th>
+                                <th>Employee Name</th>
+                                <th>Division</th>
+                                <th>Position</th>
+                                <th>PayScaleGroup</th>
+                                <th>Category</th>
+
+                                <th>Approver 1</th>
+                                <th>Appr. 1 Recommendation</th>
+
+                                <th>Approver 2</th>
+                                <th>Appr. 2 Recommendation</th>
+
+                                <th>Approver 3</th>
+                                <th>Appr. 3 Recommendation</th>
+
+                                <th>Disciplinary Case</th>
+                                <th>Employee Acceptance</th>
+                                <th>Submission by Staff</th>
+                                <th>Suitable for Work</th>
+                                <th>Smoking</th>
+                                <th>BMI</th>
+                                <th>Table</th>
+                                <th>Absorption Status</th>
+                            </tr>
+						</thead>
+						<tbody>
+							@foreach (var item in Model)
+							{
+                            <tr>
+                                <td>
+                                    <a class="btn blue btn-sm" href="@Url.Content("~/ContractAbsorption/OnlineAssessmentForm")?AssessmentID=@item.AssessmentID.Trim()&RequestID=@item.ID.Trim()&TaskID=">
+                                        <i class="fa fa-search"></i>
+                                    </a>
+                                </td>
+                                <td>@item.ReferenceNo</td>
+                                <td>@item.EmployeeCode</td>
+                                <td>@item.EmployeeName</td>
+                                <td>@item.Division</td>
+                                <td>@item.PositionCode - @item.PositionName</td>
+                                <td>@item.PayScaleGroup</td>
+                                <td>@item.Category</td>
+
+                                <td>@item.Approver1Code - @item.Approver1Name</td>
+                                <td>@item.Approver1Recommendation</td>
+
+                                <td>@item.Approver2Code - @item.Approver2Name</td>
+                                <td>@item.Approver2Recommendation</td>
+
+                                <td>@item.Approver3Code - @item.Approver3Name</td>
+                                <td>@item.Approver3Recommendation</td>
+
+                                <td>@item.DisciplinaryCase</td>
+                                <td>@item.Acceptance</td>
+                                <td>@item.AcceptanceDate</td>
+                                <td>@item.FitToWork</td>
+                                <td>@item.Smoking</td>
+                                <td>@(item.Height.HasValue && item.Weight.HasValue ? (item.Weight.Value / item.Height.Value / item.Height.Value * 10000).ToString("0.0") : "0.0")</td>
+                                <td>@(item.Table.HasValue ? "Table" : string.Empty)</td>
+                                <td>@item.AbsorptionStatus</td>
+                            </tr>
+								CountRow++;
+							}
+						</tbody>
+					</table>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+
+
+<script type="text/javascript">
+    //transformTable("#tblResult");
+    $('#tblResult').dataTable({
+        "aLengthMenu": [[10, 25, 50, 100, 1000], [10, 25, 50, 100, 1000]]
+    });
+
+    var tableWrapper = "#tblResult_wrapper";
+
+    jQuery(tableWrapper + ' .dataTables_filter input').addClass("form-control input-medium input-inline"); // modify table search input
+    jQuery(tableWrapper + ' .dataTables_length select').addClass("form-control input-small"); // modify table per page dropdown
+    jQuery(tableWrapper + ' .dataTables_length select').select2({
+        showSearchInput: false //hide search box with special css class
+    });
+</script>

@@ -1,0 +1,188 @@
+﻿@model ESS.Claim.Models.EquivalentGradeMaintenanceViewModel
+@{
+    ViewBag.Title = "Equivalent Grade Maintenance";
+}
+
+@using (Html.BeginForm("EquivalentGradeMaintenance", "ClaimsMaintenance", FormMethod.Post))
+{
+    <div class="form-section">
+        <div class="row">
+            <div class="col-md-12">
+                <h1 class="page-title">
+                    @ViewBag.Title
+                    <span style="padding-left:20px;">
+                    </span>
+                </h1>
+            </div>
+        </div>
+    </div>
+
+    <div class="portlet box blue">
+        <div class="mini-triangle"><img src="../Assets/img/menu-red-triangle.png"></div>
+        <div class="portlet-title">
+            <div class="caption">
+                <i class="fa fa-reorder"></i>
+                Equivalent Grade Details
+            </div>
+            <div class="tools">
+            </div>
+        </div>
+        <div class="portlet-body form">
+            <div class="form-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-horizontal">
+                            <div class="form-group">
+                                <label class="control-label col-md-4 ">
+                                    Employee
+                                </label>
+                                <div class="col-md-8 form-control-static">
+                                    @Html.Action("_PeoplePickerExt", "PeoplePicker", new { CurrEmpID = ESS.Core.Common.GetEmployeeID(), SearchType = "" })
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="form-horizontal">
+                            <div class="form-group">
+                                <label class="control-label col-md-4 ">
+                                    Current Grade
+                                </label>
+                                <div class="col-md-8 form-control-static">
+                                    <input type="text" class="form-control" name="ActualGrade" value="@Model.ActualGrade" readonly="readonly" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                @*<div class="row">
+                        <div class="col-md-6">
+                            <div class="form-horizontal">
+                                <div class="form-group">
+                                    <label class="control-label col-md-4">
+                                        Valid From
+                                    </label>
+                                    <div class="col-md-8 form-control-static">
+                                        <div class="input-group date date-picker ValidFrom" data-date-format="yyyy-mm-dd">
+                                            <input type="text" class="form-control" name="ValidFrom" value="@Model.InputValidFrom" />
+                                            <span class="input-group-btn">
+                                                <button type="button" id="btnValidFrom" class="btn default"><i class="fa fa-calendar"></i></button>
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-horizontal">
+                                <div class="form-group">
+                                    <label class="control-label col-md-4">
+                                        Valid To
+                                    </label>
+                                    <div class="col-md-8 form-control-static">
+                                        <div class="input-group date date-picker ValidTo" data-date-format="yyyy-mm-dd">
+                                            <input type="text" class="form-control" name="ValidTo" value="@Model.InputValidTo" />
+                                            <span class="input-group-btn">
+                                                <button type="button" id="btnValidTo" class="btn default"><i class="fa fa-calendar"></i></button>
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-horizontal">
+                                <div class="form-group">
+                                    <label class="control-label col-md-4 ">
+                                        Current Grade
+                                    </label>
+                                    <div class="col-md-8 form-control-static">
+                                        <input type="text" class="form-control" name="ActualGrade" value="@Model.ActualGrade" readonly="readonly" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="form-horizontal">
+                                <div class="form-group">
+                                    <label class="control-label col-md-4">
+                                        Equivalent Grade
+                                    </label>
+                                    <div class="col-md-8 form-control-static">
+                                        <input type="text" class="form-control" name="EquivalentGrade" value="@Model.EquivalentGrade" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>*@
+            </div>
+        </div>
+    </div>
+
+    <div id="tblContainer">
+        @Html.Partial("_EquivalentGradesTable", Model.EquivalentGrades)
+    </div>
+
+    <input type="button" class="btn green" value="Back" id="btnBack" onclick="BackToHistory();" />
+}
+
+@Html.Partial("__Prompt")
+
+<script>
+    $(function () {
+        $('.date-picker').datepicker({
+            format: 'yyyy-mm-dd',
+            autoclose: true,
+        });
+
+        @*$('.ValidFrom').datepicker('setDate', '@Model.InputValidFrom');
+        $('.ValidTo').datepicker('setDate', '@Model.InputValidTo');*@
+
+        @if (!String.IsNullOrEmpty(Model.EmployeeName))
+        {
+        <text>
+            $("#txtEmpName").val('@(Model.EmployeeCode + " - " + Model.EmployeeName)');
+            $("#hfEmpID").val('@Model.EmployeeID');
+        </text>
+        }
+    });
+
+    function BackToHistory() {
+        location.href = '@Url.Action("EquivalentGradeConfigurationListing", "ClaimsMaintenance")';
+    }
+
+    function _PeoplePickerExtCallback() {
+        var employeeID = $('[name=EmployeeID]').val();
+        $.get('@Url.Action("GetCurrentActualGrade", "ClaimsMaintenance")' + '?EmployeeID=' + employeeID, function (result) {
+            $('[name="ActualGrade"]').val(result);
+        });
+
+        LoadEquivalentGradeTable();
+    }
+
+    function LoadEquivalentGradeTable() {
+        ShowLoadingScreen();
+         $.ajax({
+            type: "GET",
+            cache : false,
+            url: '@Url.Action("_EquivalentGradesTable", "ClaimsMaintenance")',
+             data: {
+                 EmployeeID: $('#hfEmpID').val()
+            },
+            success: function (content) {
+                $("#tblContainer").html(content);
+                HideLoadingScreen();
+            },
+            error: function (e) {
+                console.log(e);
+                HideLoadingScreen();
+            }
+        });
+    }
+</script>

@@ -1,0 +1,472 @@
+﻿@using Admin.Models
+@using System.Linq
+@model List<Admin.Models.EmployeeSearchListing>    
+@{
+    Layout = null;
+    int CountList = Model.Count;
+    var EmployeeInfo = Model.FirstOrDefault();
+}
+
+<div class="portlet box blue">
+    @*<div class="mini-triangle"><img src="~/Assets/img/menu-red-triangle.png" /></div>*@
+    <div class="portlet-title">
+        <div class="caption">
+            <i class="fa fa-reorder"></i>Employee Details
+        </div>
+        <div class="tools">
+            <a href="javascript:;" class="collapse" id="hidePersonalInfo">
+            </a>
+        </div>
+    </div>
+
+    <div class="portlet-body form">
+        <div class="form-body">
+            <div class="form-horizontal">
+                <table id="tblAdminResult" class="table table-striped table-bordered table-hover table-full-width">
+                    <thead>
+                        <tr>
+                            <th>Employee</th>
+                            <th>Current IM</th>
+                            <th>Current IM of IM</th>
+                            <th>Current SubHOD</th>
+                            <th>Current HOD</th>
+                            <th>Current HODiv</th>
+                            <th>Employee Status</th>
+                            <th>Email Address</th>
+                            <th>Payscale Group</th>
+                            <th>Assignment</th>
+                            <th class="dataTables_length:10px">Quick Link</th>
+                            <th>Created Date</th>
+                            <th>Modified Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td>
+                                    <a class="text" href="@Url.Action("EmployeeSearch", "Admin")?EmployeeCode=@item.EmployeeCode"> @((string.IsNullOrEmpty(item.EmployeeCode)) ? "" : item.EmployeeCode)</a> - @((string.IsNullOrEmpty(item.EmployeeName)) ? "" : item.EmployeeName)
+                                </td>
+                                <td>
+                                    <a class="text" href="@Url.Action("EmployeeSearch", "Admin")?EmployeeCode=@item.IMCode"> @((string.IsNullOrEmpty(item.IMCode)) ? "" : item.IMCode)</a> - @((string.IsNullOrEmpty(item.IMName)) ? "" : item.IMName)
+                                </td>
+                                <td>
+                                    <a class="text" href="@Url.Action("EmployeeSearch", "Admin")?EmployeeCode=@item.IMofIMCode"> @((string.IsNullOrEmpty(item.IMofIMCode)) ? "" : item.IMofIMCode)</a> - @((string.IsNullOrEmpty(item.IMofIMName)) ? "" : item.IMofIMName)
+                                </td>
+                                <td>
+                                    <a class="text" href="@Url.Action("EmployeeSearch", "Admin")?EmployeeCode=@item.SubHODCode"> @((string.IsNullOrEmpty(item.SubHODCode)) ? "" : item.SubHODCode)</a> - @((string.IsNullOrEmpty(item.SubHODName)) ? "" : item.SubHODName)
+                                </td>
+                                <td>
+                                    <a class="text" href="@Url.Action("EmployeeSearch", "Admin")?EmployeeCode=@item.HODCode"> @((string.IsNullOrEmpty(item.HODCode)) ? "" : item.HODCode)</a> - @((string.IsNullOrEmpty(item.HODName)) ? "" : item.HODName)
+                                </td>
+                                <td>
+                                    <a class="text" href="@Url.Action("EmployeeSearch", "Admin")?EmployeeCode=@item.HODivCode"> @((string.IsNullOrEmpty(item.HODivCode)) ? "" : item.HODivCode)</a> - @((string.IsNullOrEmpty(item.HODivName)) ? "" : item.HODivName)
+                                </td>
+                                <td>
+                                    @((string.IsNullOrEmpty(item.EmployeeStatus)) ? "-" : item.EmployeeStatus)
+                                </td>
+                                <td title="@item.LoginName , @item.OfficeMobile">
+                                    @((string.IsNullOrEmpty(item.EmailAddress)) ? "-" : item.EmailAddress)                                    
+                                </td>
+                                <td title="GroupName: @item.GroupName &#013;SubGroupName: @item.SubGroupName &#013;Position: @item.PositionCode - @item.PositionName &#013;JobKeyName: @item.JobKeyName">
+                                    @((string.IsNullOrEmpty(item.PayScaleGroup)) ? "-" : item.PayScaleGroup)                                    
+                                </td>
+                                <td>
+                                    <label title="@((string.IsNullOrEmpty(item.CompanyName)) ? "-" : item.CompanyName)">Company : @((string.IsNullOrEmpty(item.CompanyCode)) ? "-" : item.CompanyCode)</label>
+                                    <br />
+                                    <label title="@item.AreaName">Area : @item.AreaCode</label>
+                                    <br />
+                                    <label title="@item.SubAreaName">SubArea : @item.SubAreaCode</label>
+                                    <br />
+                                    <label title="@((string.IsNullOrEmpty(item.BusinessAreaName)) ? "-" : item.BusinessAreaName)">Business Area : @((string.IsNullOrEmpty(item.BusinessAreaCode)) ? "-" : item.BusinessAreaCode)</label>
+                                    <br />
+                                    <label title="@item.CostCenterName">Cost Center : @item.CostCenterCode</label>
+                                    <br />
+                                    <label>Holiday Calendar : @((string.IsNullOrEmpty(item.HolidayCalendar)) ? "-" : item.HolidayCalendar)</label>
+                                </td>
+                                <td>
+                                    <a class="" style="cursor: pointer;" onmouseover="" onclick="ShortQuickLinkPP('EP','@item.EmployeeID','@item.EmployeeCode', '@item.EmployeeName');" title="Employee Profile">
+                                        EP
+                                    </a>
+                                    &nbsp;
+                                    <a class="" style="cursor: pointer;" onmouseover="" onclick="ShortQuickLinkPP('CL','@item.EmployeeID','@item.EmployeeCode', '@item.EmployeeName');" title="Claims">
+                                        CL
+                                    </a>
+                                    &nbsp;
+                                    <a class="" style="cursor: pointer;" onmouseover="" onclick="ShortQuickLinkPP('FB','@item.EmployeeID','@item.EmployeeCode', '@item.EmployeeName');" title="Flexi Benefits">
+                                        FB
+                                    </a>
+                                    &nbsp;
+                                    <a class="" style="cursor: pointer;" onmouseover="" onclick="ShortQuickLinkPP('OF','@item.EmployeeID','@item.EmployeeCode', '@item.EmployeeName');" title="Outstation Form">
+                                        OF
+                                    </a>
+                                    &nbsp;
+                                    <a class="" style="cursor: pointer;" onmouseover="" onclick="ShortQuickLinkFT('LR','@item.EmployeeID','@item.EmployeeCode', '@item.EmployeeName');" title="Leave Report">
+                                        LR
+                                    </a>
+                                    &nbsp;
+                                    <a class="" style="cursor: pointer;" onmouseover="" onclick="ShortQuickLinkFT('LQ','@item.EmployeeID','@item.EmployeeCode', '@item.EmployeeName');" title="Leave Quota">
+                                        LQ
+                                    </a>
+                                    &nbsp;
+                                    <a class="" style="cursor: pointer;" onmouseover="" onclick="ShortQuickLinkFT('TR','@item.EmployeeID','@item.EmployeeCode', '@item.EmployeeName');" title="Training Request">
+                                        TR
+                                    </a>
+                                    &nbsp;
+                                    <a class="" style="cursor: pointer;" onmouseover="" onclick="ShortQuickLinkFT('TE','@item.EmployeeID','@item.EmployeeCode', '@item.EmployeeName');" title="Training Evaluation">
+                                        TE
+                                    </a>
+                                    &nbsp;
+                                    <a class="" style="cursor: pointer;" onmouseover="" onclick="ShortQuickLinkFT('TS','@item.EmployeeID','@item.EmployeeCode', '@item.EmployeeName');" title="Training Request Summary Report">
+                                        TS
+                                    </a>
+                                    <br />
+                                    <a class="" style="cursor: pointer;" onmouseover="" onclick="ShortQuickLinkFT('TP','@item.EmployeeID','@item.EmployeeCode', '@item.EmployeeName');" title="Temporary Position">
+                                        TP
+                                    </a>
+                                    &nbsp;
+                                    <a class="" style="cursor: pointer;" onmouseover="" onclick="ShortQuickLinkFT('LA','@item.EmployeeID','@item.EmployeeCode', '@item.EmployeeName');" title="LTIP Offer Acceptance">
+                                        LA
+                                    </a>
+                                    &nbsp;
+                                    <a class="" style="cursor: pointer;" onmouseover="" onclick="ShortQuickLinkFT('LM','@item.EmployeeID','@item.EmployeeCode', '@item.EmployeeName');" title="LTIP CDS Maintenance">
+                                        LM
+                                    </a>
+                                    &nbsp;
+                                    <a class="" style="cursor: pointer;" onmouseover="" onclick="ShortQuickLinkPP('PY','@item.EmployeeID','@item.EmployeeCode', '@item.EmployeeName');" title="Payroll">
+                                        PY
+                                    </a>
+                                    &nbsp;
+                                    <a class="" style="cursor: pointer;" onmouseover="" onclick="ShortQuickLinkPP('OE','@item.EmployeeID','@item.EmployeeCode', '@item.EmployeeName');" title="OJA (By Employee)">
+                                        OE
+                                    </a>
+                                    &nbsp;
+                                    <a class="" target="_blank" href="@Url.Action("RequestReportByVacancy", "OJA")?ID=@item.EmployeeID" title="OJA (By Vacancy)">
+                                        OV
+                                    </a>
+                                    &nbsp;
+                                    <a class="" style="cursor: pointer;" onmouseover="" onclick="ShortQuickLinkPP('AW','@item.EmployeeID','@item.EmployeeCode', '@item.EmployeeName');" title="Allowance">
+                                        AW
+                                    </a>
+                                    &nbsp;
+                                    <a class="" style="cursor: pointer;" onmouseover="" onclick="ShortQuickLinkPP('ID','@item.EmployeeID','@item.EmployeeCode', '@item.EmployeeName');" title="iDispensary">
+                                        ID
+                                    </a>
+                                    <br />
+                                    <a class="" style="cursor: pointer;" onmouseover="" onclick="ShortQuickLinkPP('LO','@item.EmployeeID','@item.EmployeeCode', '@item.EmployeeName');" title="Loan">
+                                        LO
+                                    </a>
+                                    &nbsp;
+                                    <a class="" style="cursor: pointer;" onmouseover="" onclick="ShortQuickLinkPP('MB','@item.EmployeeID','@item.EmployeeCode', '@item.EmployeeName');" title="Medical Board">
+                                        MB
+                                    </a>
+                                    &nbsp;
+                                    <a class="" style="cursor: pointer;" onmouseover="" onclick="ShortQuickLinkPP('WS','@item.EmployeeID','@item.EmployeeCode', '@item.EmployeeName');" title="Work Schedule">
+                                        WS
+                                    </a>
+                                    &nbsp;
+                                    <a class="" style="cursor: pointer;" onmouseover="" onclick="ShortQuickLinkPP('HT','@item.EmployeeID','@item.EmployeeCode', '@item.EmployeeName');" title="Harta">
+                                        HT
+                                    </a>
+                                    &nbsp;
+                                    <a class="" style="cursor: pointer;" onmouseover="" onclick="ShortQuickLinkFT('EM','@item.EmployeeID','@item.EmployeeCode', '@item.EmployeeName');" title="EPOP Memo">
+                                        EM
+                                    </a>
+                                    &nbsp;
+                                    <a class="" style="cursor: pointer;" onmouseover="" onclick="ShortQuickLinkFT('ES','@item.EmployeeID','@item.EmployeeCode', '@item.EmployeeName');" title="EPOP By Status">
+                                        ES
+                                    </a>
+                                    &nbsp;
+                                    <a class="" style="cursor: pointer;" onmouseover="" onclick="ShortQuickLinkFT('SC','@item.EmployeeID','@item.EmployeeCode', '@item.EmployeeName');" title="Employee Schedule">
+                                        SC
+                                    </a>
+                                    &nbsp;
+                                    <a class="" style="cursor: pointer;" onmouseover="" onclick="ShortQuickLinkFT('EW','@item.EmployeeID','@item.EmployeeCode', '@item.EmployeeName');" title="Employee Working Schedule">
+                                        EW
+                                    </a>
+                                    &nbsp;
+
+                                    @*<a class="" target="_blank" href="@Url.Action("ProfileMaintenanceReport", "Employee")?ID=@item.EmployeeID" title="Employee Profile">
+            EP
+        </a>
+        &nbsp;*@
+                                    @*<a class="" target="_blank" href="@Url.Action("Claimsreport", "ClaimsReport")?ID=@item.EmployeeID" title="Claims">
+            CL
+        </a>
+        &nbsp;*@
+                                    @*<a class="" target="_blank" href="@Url.Action("FlexiBenefitsReport", "Claims")?ID=@item.EmployeeID" title="Flexi Benefits">
+            FB
+        </a>
+        &nbsp;*@
+                                    @*<a class="" target="_blank" href="@Url.Action("OutstationFormReport", "ClaimsReport")?ID=@item.EmployeeID" title="Outstation Form">
+            OF
+        </a>
+        &nbsp;*@
+                                    @*<a class="" target="_blank" href="@Url.Action("RequestReport", "LeaveQuota")?ID=@item.EmployeeID" title="Leave Quota">
+            LQ
+        </a>
+        &nbsp;*@
+                                    @*<a class="" target="_blank" href="@Url.Action("TrainingRequestReport", "Training")?ID=@item.EmployeeID" title="Training Request">
+            TR
+        </a>
+        &nbsp;*@
+                                    @*<a class="" target="_blank" href="@Url.Action("TrainingEvaluationReport", "TrainingEvaluation")?ID=@item.EmployeeID" title="Training Evaluation">
+            TE
+        </a>
+        &nbsp;*@
+                                    @*<a class="" target="_blank" href="@Url.Action("TrainingSummaryTrackingReport", "Training")?ID=@item.EmployeeID" title="Training Request Summary Report">
+            TS
+        </a>
+        <br />*@
+                                    @*<a class="" target="_blank" href="@Url.Action("AdminSearch", "TemporaryPosition")?ID=@item.EmployeeID" title="Temporary Position">
+            TP
+        </a>
+        &nbsp;*@
+                                    @*<a class="" target="_blank" href="@Url.Action("OfferAcceptanceReport", "LTIP")?ID=@item.EmployeeID" title="LTIP Offer Acceptance">
+            LA
+        </a>
+        &nbsp;*@
+                                    @*<a class="" target="_blank" href="@Url.Action("CDSMaintenanceReport", "LTIP")?ID=@item.EmployeeID" title="LTIP CDS Maintenance">
+            LM
+        </a>
+        &nbsp;*@
+                                    @*<a class="" target="_blank" href="@Url.Action("PayrollReport", "Payroll")?ID=@item.EmployeeID" title="Payroll">
+            PY
+        </a>
+        &nbsp;*@
+                                    @*<a class="" target="_blank" href="@Url.Action("RequestReport", "OJA")?ID=@item.EmployeeID" title="OJA (By Employee)">
+            OE
+        </a>
+        &nbsp;*@
+                                    @*<a class="" target="_blank" href="@Url.Action("RequestReportByVacancy", "OJA")?ID=@item.EmployeeID" title="OJA (By Vacancy)">
+            OV
+        </a>
+        &nbsp;*@
+                                    @*<a class="" target="_blank" href="@Url.Action("AllowanceReport", "Allowance")?ID=@item.EmployeeID" title="Allowance">
+            AW
+        </a>
+        &nbsp;*@
+                                    @*<a class="" target="_blank" href="@Url.Action("VendorReport", "Vendor")?ID=@item.EmployeeID" title="iDispensary">
+            ID
+        </a>
+        <br />*@
+                                    @*<a class="" target="_blank" href="@Url.Action("LoanReport", "Loan")?ID=@item.EmployeeID" title="Loan">
+            LO
+        </a>
+        &nbsp;*@
+                                    @*<a class="" target="_blank" href="@Url.Action("MedicalBoardReport", "MedicalBoard")?ID=@item.EmployeeID" title="Medical Board">
+            MB
+        </a>
+        &nbsp;*@
+                                    @*<a class="" target="_blank" href="@Url.Action("WorkScheduleReport", "WorkSchedule")?ID=@item.EmployeeID" title="Work Schedule">
+            WS
+        </a>
+        &nbsp;*@
+                                    @*<a class="" target="_blank" href="@Url.Action("AssetSearch", "Asset")?ID=@item.EmployeeID" title="Harta">
+            HT
+        </a>
+        &nbsp;*@
+                                    @*<a class="" target="_blank" href="@Url.Action("ReportMemo", "EPOP")?ID=@item.EmployeeID" title="EPOP Memo">
+            EM
+        </a>
+        &nbsp;*@
+                                    @*<a class="" target="_blank" href="@Url.Action("ReportStatus", "EPOP")?ID=@item.EmployeeID" title="EPOP By Status">
+            ES
+        </a>
+        &nbsp;*@
+                                </td>
+                                <td>
+                                    @((string.IsNullOrEmpty(item.CreatedDate)) ? "-" : item.CreatedDate)
+                                </td>
+                                <td>
+                                    @((string.IsNullOrEmpty(item.ModifiedDate)) ? "-" : item.ModifiedDate)
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="SearchGetPersonalInfo">
+
+</div>
+<div id="DisplayQuickLink">
+
+</div>
+
+
+
+
+
+<script>
+    $('#tblAdminResult').dataTable({
+		"aLengthMenu": [[10, 25, 50, 100, 1000], [10, 25, 50, 100, 1000]]
+	});
+
+    var tableWrapper = "#tblAdminResult_wrapper";
+
+	jQuery(tableWrapper + ' .dataTables_filter input').addClass("form-control input-medium input-inline"); // modify table search input
+	jQuery(tableWrapper + ' .dataTables_length select').addClass("form-control input-small"); // modify table per page dropdown
+	jQuery(tableWrapper + ' .dataTables_length select').select2({
+		showSearchInput: false //hide search box with special css class
+    });
+
+    $(function () {
+        if (@CountList == 1) {
+            SearchGetPersonalInfo();
+            DisplayQuickLink();
+        }
+    });
+
+    @if (EmployeeInfo != null) {
+        <text>
+        function SearchGetPersonalInfo()
+        {
+        //if (@EmployeeInfo.EmployeeID != null ) {
+        $("#SearchGetPersonalInfo").html("LOADING...");
+
+        $.ajax({
+                    type: "GET",
+            url: '@Url.Content("~/Admin/GetPersonalInfo")',
+            cache: false,
+            dataType: "html",
+            data: { EmployeeID: '@EmployeeInfo.EmployeeID', EmployeeCode: '@EmployeeInfo.EmployeeCode', PhotoID: '@EmployeeInfo.PhotoID' },
+            success: function (content) {
+                $("#SearchGetPersonalInfo").html(content);
+                    },
+            error: function (e) {
+                        console.log(e);
+                    }
+                });
+            //}
+        }
+
+    function DisplayQuickLink()
+    {
+        $("#DisplayQuickLink").html("LOADING...");
+
+        $.ajax({
+            type: "GET",
+            url: '@Url.Content("~/Admin/QuickLinkChoice")',
+            cache: false,
+            dataType: "html",
+            data: { EmployeeID: '@EmployeeInfo.EmployeeID', EmployeeCode: '@EmployeeInfo.EmployeeCode', IMCode: '@EmployeeInfo.IMCode', SubHODCode: '@EmployeeInfo.SubHODCode', HODCode: '@EmployeeInfo.HODCode' },
+            success: function (content) {
+                $("#DisplayQuickLink").html(content);
+            },
+            error: function (e) {
+                console.log(e);
+            }
+        });
+    }
+        </text>
+    }
+
+    function ShortQuickLinkPP(target, empID, empCode, empName) {
+        var targeturl = "";
+        if (target == "EP") {
+            targeturl = '@Url.Content("~/Employee/ProfileMaintenanceReport")';
+        }
+        else if (target == "CL") {
+            targeturl = '@Url.Content("~/ClaimsReport/ClaimsReport")';
+        }
+        else if (target == "FB") {
+            targeturl = '@Url.Content("~/Claims/FlexiBenefitsReport")';
+        }
+        else if (target == "OF") {
+            targeturl = '@Url.Content("~/ClaimsReport/OutstationFormReport")';
+        }
+        else if (target == "PY") {
+            targeturl = '@Url.Content("~/Payroll/PayrollReport")';
+        }
+        else if (target == "OE") {
+            targeturl = '@Url.Content("~/OJA/RequestReport")';
+        } 
+        else if (target == "AW") {
+            targeturl = '@Url.Content("~/Allowance/AllowanceReport")';
+        } 
+        else if (target == "ID") {
+            targeturl = '@Url.Content("~/Vendor/VendorReport")';
+        }
+        else if (target == "LO") {
+            targeturl = '@Url.Content("~/Loan/LoanReport")';
+        }
+        else if (target == "MB") {
+            targeturl = '@Url.Content("~/MedicalBoard/MedicalBoardReport")';
+        }
+        else if (target == "WS") {
+            targeturl = '@Url.Content("~/WorkSchedule/WorkScheduleReport")';
+        }
+        else if (target == "HT") {
+            targeturl = '@Url.Content("~/Asset/AssetSearch")';
+        }
+        $.ajax({
+            type: "GET",
+            url: targeturl + '?CallFromShortQuickLinkPP=1' + '&EmployeeID=' + empID + '&EmployeeCode=' + empCode + '&EmployeeName=' + empName , //+'?CallFromAdminQuickLink=1' ,//'Url.Content("")', //targeturl + "?CallFromAdminQuickLink=1" + "&EmployeeID=" + "Model.EmployeeID",
+            cache: false,
+            dataType: "html",
+            success: function (content) {
+                window.open(targeturl + '?CallFromShortQuickLinkPP=1' + '&EmployeeID=' + empID + '&EmployeeCode=' + empCode + '&EmployeeName=' + empName);
+            },
+            error: function (e) {
+                console.log(e);
+            }
+        });
+    }
+    function ShortQuickLinkFT(target, empID, empCode, empName) {
+        var targeturl = "";
+        if (target == "LR") {
+            targeturl = '@Url.Content("~/LeaveApplication/LeaveReport")';
+        }
+        else if (target == "LQ") {
+            targeturl = '@Url.Content("~/LeaveQuota/RequestReport")';
+        }
+        else if (target == "TR") {
+            targeturl = '@Url.Content("~/Training/TrainingRequestReport")';
+        }
+        else if (target == "TE") {
+            targeturl = '@Url.Content("~/TrainingEvaluation/TrainingEvaluationReport")';
+        }
+        else if (target == "TS") {
+            targeturl = '@Url.Content("~/Training/TrainingSummaryTrackingReport")';
+        }
+        else if (target == "TP") {
+            targeturl = '@Url.Content("~/TemporaryPosition/AdminSearch")';
+        }
+        else if (target == "LA") {
+            targeturl = '@Url.Content("~/LTIP/OfferAcceptanceReport")';
+        }
+        else if (target == "LM") {
+            targeturl = '@Url.Content("~/LTIP/CDSMaintenanceReport")';
+        }
+        else if (target == "EM") {
+            targeturl = '@Url.Content("~/EPOP/ReportMemo")';
+        }
+        else if (target == "ES") {
+            targeturl = '@Url.Content("~/EPOP/ReportStatus")';
+        }
+        else if (target == "SC") {
+            targeturl = '@Url.Content("~/Admin/EmployeeScheduleSearch")';
+        }
+        else if (target == "EW") {
+            targeturl = '@Url.Content("~/Admin/EmployeeWorkingScheduleSearch")';
+        }
+        $.ajax({
+            type: "GET",
+            url: targeturl + '?CallFromShortQuickLinkFT=1' + '&EmployeeID=' + empID + '&EmployeeCode=' + empCode + '&EmployeeName=' + empName, //+'?CallFromAdminQuickLink=1' ,//'Url.Content("")', //targeturl + "?CallFromAdminQuickLink=1" + "&EmployeeID=" + "Model.EmployeeID",
+            cache: false,
+            dataType: "html",
+            success: function (content) {
+                window.open(targeturl + '?CallFromShortQuickLinkFT=1' + '&EmployeeID=' + empID + '&EmployeeCode=' + empCode + '&EmployeeName=' + empName );
+            },
+            error: function (e) {
+                console.log(e);
+            }
+        });
+    }
+
+</script>

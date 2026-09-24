@@ -1,0 +1,216 @@
+﻿@using ESS.Payroll.Models
+@model TaxExemptionVM
+@{
+    ViewBag.Title = "Tax Exemption Record Form";
+
+
+    List<TaxExemptionSpecialRule> SpecialRules = ViewBag.SpecialRules;
+}
+
+<style type="text/css">
+    .hidden_1 {
+        display: none;
+    }
+</style>
+
+<div class="form-section">
+    <div class="row">
+        <div class="col-md-12">
+            <h1 class="page-title">
+                @ViewBag.Title
+                <span style="padding-left:20px;">
+                    <small></small>
+                </span>
+            </h1>
+        </div>
+    </div>
+</div>
+
+@using (Html.BeginForm("TaxExemptionForm", "Payroll", FormMethod.Post))
+{
+    <input type="hidden" name="EntryID" value="@Model.EntryID" />
+    <input type="hidden" name="EmployeeID" value="@Model.EmployeeID" />
+    <input type="hidden" name="FinancialYear" value="@Model.FinancialYear" />
+
+    @Html.Partial("_RequestDetails", Model)
+    <!-- Employee Details -->
+    @Html.Partial("_PayrollEmployeeDetails", Model.Submiter)
+    <!-- Medical Board Details -->
+    @Html.Partial("_IncomeTaxDetails", new Tuple<IncomeTaxDetail, string, bool>(Model.IncomeTaxDetail, Model.EmployeeID, true))
+
+    @Html.Partial("_OptionalDeductions", Model.TaxExemptionDeductions)
+
+    <!-- Attachment -->
+    if (Model.EntryID == null)
+    {
+        @Html.Action("AttachmentControl", "Payroll",
+                                               new { EmployeeID = Model.EmployeeID, Mode = "New", SourceType = "Payroll" })
+
+    }
+    else
+    {
+        @Html.Action("AttachmentControl", "Payroll",
+                                               new
+                                               {
+                                                   EmployeeID = Model.EmployeeID,
+                                                   Mode = "Add",
+                                                   SourceType = "Payroll",
+                                                   RequestID = Model.EntryID
+                                               })
+    }
+
+    if (Model.StatusCode != "DR")
+    {
+        @Html.Action("_AuditLog", "Payroll", new { RequestID = Model.EntryID })
+    }
+    <div class="row">
+        <div class="col-md-12">
+            <label style="position: relative;top: -10px;"><b>Note:</b> Please attach 'Borang TP1' without receipt.</label>
+        </div>
+    </div>
+
+    <!-- Disclaimer -->
+    <div class="row">
+        <div class="col-md-12">
+            <input type="hidden" name="Declaration" value="@Model.Declaration" />
+            <input type="checkbox" id="ct_Disclaimer" />
+            I declare that all information provided on this form is true, correct and complete. If the information provided is untrue, legal action can be taken against me under paragraph 113(1)(b) of income Tax Act 1967.
+        </div>
+    </div>
+
+    <br />
+
+    <div class="row">
+        <div class="col-md-12">
+            <label><b>Note:</b> This Tax Exemption Application will be processed depending on monthly payroll run date. </label>
+        </div>
+    </div>
+
+    <br />
+
+    <!-- Buttons -->
+    <div class="row">
+        <div class="col-md-12">
+            <!-- Submitter -->
+            @if (Model.StatusCode == "DR")
+            {
+                <input type="button" class="btn green" value="Save As Draft" id="btnSave" onclick="SubmitRequest('Draft');" />
+            }
+            <input type="button" class="btn green" value="Submit" id="btnSubmit" onclick="SubmitRequest('Submission');" />
+            <input type="button" class="btn green" value="Back" id="btnBack" onclick="window.history.back()" />
+        </div>
+    </div>
+}
+
+@Html.Partial("__Prompt")
+
+<script>
+    $(function () {
+        InitCurrencyInput();
+        InitDeclaration();
+    });
+
+    function SubmitRequest(mode) {
+        var validationMessage = PerformSubmissionValidation();
+        if (mode == "Submission" && validationMessage.length > 0) {
+            alert(validationMessage);
+            return;
+        }
+
+        ShowConfirmationDialog({
+            message: 'Are you sure you want to submit this Tax Exemption Record?' +
+                     '<br /> Press OK to continue, or Cancel to stay on the current page.',
+            positiveButtonText : "OK",
+            positiveCallback: function () {
+                PerformSubmission(mode);
+            }
+        });
+    }
+
+    function PerformSubmission(mode) {
+        var data = {};
+        var link = "";
+
+        if (mode == "Submission") {
+            link = '@Url.Action("SubmitTaxExemptionForm", "Payroll")';
+        }
+        else {
+            link = '@Url.Action("SaveTaxExemptionForm", "Payroll")';
+        }
+
+        data = $('form').serializeArray();
+
+        HideConfirmationDialog();
+        ShowLoadingScreen();
+
+        $.post(link, data,
+        function (result) {
+            HideLoadingScreen();
+
+            if (result.IsSuccess) {
+                ShowDialog({
+                    message: "Your Tax Exemption Record had been submitted successfully.",
+                    okCallback: function () {
+                        window.location.href = '@Url.Action("PayrollHistory", "Payroll")';
+                    }
+                });
+            }
+            else {
+                //ShowDialog({
+                //    title: "Submission Failed",
+                //    message: "Error Message : " + result.ErrorMessage.replace('\r\n', '<br />'),
+                //    okCallback: function () {
+                //        HideDialog();
+                //    }
+                //});
+                alert(result.ErrorMessage);
+            }
+        });
+    }
+
+    function PerformSubmissionValidation() {
+        var validationMessage = "";
+
+        if (!$('#ct_Disclaimer').prop('checked')) {
+            validationMessage += "Please check the declaration in order to submit the request.";
+        }
+
+        return validationMessage;
+    }
+
+    function InitCurrencyInput() {
+        $(".currencyinput").inputmask("decimal", {
+            rightAlign: false
+        });
+        $(".currencyinput").css("textAlign", "left");
+        $(".currencyinput").on("blur", function () {
+            var input = parseFloat($(this).val());
+            if (input) {
+                $(this).val(input.toFixed(2));
+            }
+            else {
+                $(this).val("0.00");
+            }
+        });
+    }
+
+    function InitDeclaration() {
+        var Declaration = $('input[name="Declaration"]').val();
+
+        if (Declaration == "" || Declaration == "0") {
+            $('#ct_Disclaimer').prop('checked', false);
+        }
+        else {
+            $('#ct_Disclaimer').prop('checked', true);
+        }
+
+        $('#ct_Disclaimer').on('change', function () {
+            if ($('#ct_Disclaimer').prop('checked')) {
+                $('input[name="Declaration"]').val("1");
+            }
+            else {
+                $('input[name="Declaration"]').val("0");
+            }
+        });
+    }
+</script>

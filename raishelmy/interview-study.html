@@ -1,0 +1,991 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Interview Study — Rais Helmy</title>
+<style>
+  :root{
+    --bg:#0f1115; --panel:#161a22; --panel-2:#1c212b; --ink:#eef1f6; --ink-2:#a8b0bf; --ink-3:#6b7383;
+    --red:#c1443a; --accent:#5b8def; --accent-2:#3ecf8e; --line:#262c38;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;line-height:1.5;}
+  header{padding:22px 20px 14px;text-align:center;border-bottom:1px solid var(--line);}
+  header h1{margin:0 0 6px;font-size:20px;letter-spacing:.2px;}
+  header p{margin:0;color:var(--ink-2);font-size:13px;max-width:640px;margin:0 auto;}
+  .toolbar{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;padding:12px 20px;position:sticky;top:0;background:rgba(15,17,21,.94);backdrop-filter:blur(6px);z-index:20;border-bottom:1px solid var(--line);}
+  .toolbar button{background:var(--panel-2);color:var(--ink);border:1px solid var(--line);padding:6px 12px;border-radius:7px;font-size:12px;cursor:pointer;}
+  .toolbar button:hover{border-color:var(--accent);color:var(--accent);}
+  .progress{font-size:11.5px;color:var(--ink-3);align-self:center;}
+
+  .layout{display:flex;max-width:1240px;margin:0 auto;align-items:flex-start;}
+  .sidebar{width:230px;flex-shrink:0;position:sticky;top:53px;max-height:calc(100vh - 53px);overflow-y:auto;padding:18px 10px 40px;border-right:1px solid var(--line);}
+  .navlink{display:block;width:100%;text-align:left;background:transparent;border:none;color:var(--ink-2);padding:8px 10px;border-radius:7px;font-size:12.5px;cursor:pointer;margin-bottom:2px;}
+  .navlink:hover{background:var(--panel-2);color:var(--ink);}
+  .navlink.active{background:var(--panel-2);color:var(--accent);font-weight:600;}
+  .navlink .count{float:right;color:var(--ink-3);font-size:10.5px;}
+  .navlink.active .count{color:var(--accent);}
+  .nav-heading{font-size:9.5px;letter-spacing:.6px;text-transform:uppercase;color:var(--ink-3);font-family:'DM Mono',monospace;padding:14px 10px 6px;}
+  .nav-heading:first-child{padding-top:0;}
+
+  main{flex:1;min-width:0;padding:20px 20px 80px;max-width:920px;}
+  .section{scroll-margin-top:64px;}
+  .grid{display:grid;grid-template-columns:1fr;gap:14px;margin-bottom:8px;}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow:hidden;transition:border-color .15s;}
+  .card.mastered{border-color:var(--accent-2);}
+  .card-head{padding:16px 18px;display:flex;justify-content:space-between;align-items:flex-start;gap:12px;cursor:pointer;}
+  .card-head:hover{background:var(--panel-2);}
+  .tag{display:inline-block;font-size:9.5px;letter-spacing:.5px;text-transform:uppercase;color:var(--ink-3);font-family:'DM Mono',monospace;margin-bottom:4px;}
+  .q{font-size:14.5px;font-weight:600;color:var(--ink);}
+  .chev{color:var(--ink-3);font-size:13px;flex-shrink:0;transition:transform .15s;margin-top:2px;}
+  .card.open .chev{transform:rotate(90deg);color:var(--accent);}
+  .body{max-height:0;overflow:hidden;transition:max-height .2s ease;}
+  .card.open .body{max-height:900px;}
+  .body-inner{padding:0 18px 18px;border-top:1px solid var(--line);}
+  .diagram{background:var(--panel-2);border:1px solid var(--line);border-radius:9px;padding:12px;margin:14px 0;display:flex;justify-content:center;}
+  .diagram svg{max-width:100%;height:auto;}
+  .a{font-size:13.5px;color:var(--ink-2);margin-top:12px;}
+  .a strong{color:var(--ink);}
+  .mark{margin-top:12px;background:transparent;border:1px solid var(--line);color:var(--ink-3);font-size:11.5px;padding:5px 10px;border-radius:6px;cursor:pointer;}
+  .mark:hover{color:var(--accent-2);border-color:var(--accent-2);}
+  .card.mastered .mark{color:var(--accent-2);border-color:var(--accent-2);}
+  .lbl{fill:var(--ink);font-size:11px;font-family:-apple-system,sans-serif;}
+  .lbl-sm{fill:var(--ink-2);font-size:9.5px;font-family:-apple-system,sans-serif;}
+  .box{fill:var(--panel);stroke:var(--line);stroke-width:1.2;}
+  .box-accent{fill:#1a2540;stroke:var(--accent);stroke-width:1.2;}
+  .box-red{fill:#2b1a1a;stroke:var(--red);stroke-width:1.2;}
+  .box-green{fill:#12271f;stroke:var(--accent-2);stroke-width:1.2;}
+  .arrow{stroke:var(--ink-3);stroke-width:1.4;fill:none;marker-end:url(#arrow);}
+  .intro-card{background:linear-gradient(135deg,#1a2540,#161a22);border:1px solid var(--accent);border-radius:12px;padding:18px 20px;margin-bottom:18px;font-size:13.5px;color:var(--ink-2);}
+  .intro-card strong{color:var(--ink);}
+  .intro-label{display:inline-block;font-size:9.5px;letter-spacing:.6px;text-transform:uppercase;color:var(--accent);font-family:'DM Mono',monospace;margin-bottom:8px;}
+  .intro-toggle{margin-top:14px;background:transparent;border:1px solid var(--accent);color:var(--accent);font-size:12px;padding:6px 12px;border-radius:6px;cursor:pointer;}
+  .intro-toggle:hover{background:rgba(91,141,239,.12);}
+  .full-intro{max-height:0;overflow:hidden;transition:max-height .25s ease;}
+  .full-intro.open{max-height:2200px;margin-top:16px;}
+  .full-intro-inner{border-top:1px solid rgba(91,141,239,.3);padding-top:14px;}
+  .story-beat{margin-bottom:14px;padding-left:14px;border-left:2px solid var(--accent);}
+  .story-beat b{color:var(--ink);}
+  .story-num{display:inline-block;background:var(--accent);color:#0f1115;font-weight:700;font-size:11px;padding:1px 7px;border-radius:10px;margin-right:6px;}
+  .section-title{font-size:15px;font-weight:700;margin:0 0 12px;color:var(--ink);display:flex;align-items:center;gap:8px;}
+  .section-title .line{flex:1;height:1px;background:var(--line);}
+  footer{text-align:center;color:var(--ink-3);font-size:11.5px;padding:20px;}
+
+  @media (max-width: 860px){
+    .layout{display:block;}
+    .sidebar{width:auto;position:sticky;top:53px;max-height:none;height:auto;display:flex;overflow-x:auto;overflow-y:hidden;border-right:none;border-bottom:1px solid var(--line);padding:10px 12px;background:var(--bg);white-space:nowrap;gap:4px;}
+    .nav-heading{display:none;}
+    .navlink{width:auto;flex-shrink:0;margin-bottom:0;}
+    .navlink .count{float:none;margin-left:4px;}
+    main{max-width:100%;}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Interview Study Deck</h1>
+  <p>Click a question to reveal the concise answer + diagram. Mark cards "got it" to track what still needs review.</p>
+</header>
+
+<div class="toolbar">
+  <button onclick="expandAll()">Expand all</button>
+  <button onclick="collapseAll()">Collapse all</button>
+  <button onclick="shuffleCards()">Shuffle order</button>
+  <button onclick="showUnmastered()">Show only unmastered</button>
+  <button onclick="resetMastery()">Reset progress</button>
+  <span class="progress" id="progress"></span>
+</div>
+
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+
+  <main>
+    <div class="intro-card">
+      <span class="intro-label">30-second hook</span><br>
+      I'm Rais, a full stack engineer with 6+ years turning around software that's stuck — a year-late compliance project I delivered in two months, a "nobody understands this codebase anymore" mobile rescue I reverse-engineered and shipped in half the remaining time, a legacy police emergency-dispatch system I kept alive after the vendor walked away. I work across <strong>.NET, Flutter, and enterprise integrations</strong> (SAP, LDAP, GIS) in regulated, high-stakes environments — insurance (Etiqa/BNM), utilities (TNB), and government (PDRM). I'm excited about this role because it's another chance to walk into something hard and make it work.
+
+      <button class="intro-toggle" onclick="toggleIntro()">Show full 3-minute version ▾</button>
+
+      <div class="full-intro" id="fullIntro">
+        <div class="full-intro-inner">
+          <div class="story-beat">
+            <span class="story-num">1</span><b>Etiqa — AMLA compliance turnaround.</b> Joined an AMLA watchlist screening project already <b>1 year behind schedule</b>. Fixed and delivered it within my <b>first 2 months</b>, then spent the next <b>6 months</b> building out new BNM requirements on top of it, delivering every one on time.
+          </div>
+          <div class="story-beat">
+            <span class="story-num">2</span><b>JuruQuest → atQuest — reverse-engineering + security hardening.</b> At JuruQuest (sibling of atQuest), inherited a project estimated at <b>4 months</b> with SAP integration nobody understood. Reverse-engineered it and used <b>FlutterFlow</b> to accelerate rebuild, delivering in <b>2 months</b>. Moved into atQuest's ERP SaaS, enhancing modules against user requirements plus a security hardening pass: SQL injection fixes, RBAC, workflow engine.
+          </div>
+          <div class="story-beat">
+            <span class="story-num">3</span><b>PDRM / Vector Intelligence — legacy system survival.</b> Reverse-engineered <b>MCAD</b>, an old Motorola call-taker system (telephony + CCTV) for police patrol dispatch, on legacy <b>.NET Framework</b>. Got the emergency system running reliably — then, after the <b>original maintenance contract ended</b>, self-hosted integrations broke; reworked and patched them back into service.
+          </div>
+          <p style="font-size:12.5px;color:var(--ink-3);margin-top:14px;">Pattern: handed something broken, delayed, or unowned — I make it work, properly, not just patched over. Full script with delivery notes lives in <code>Interview.md</code>.</p>
+        </div>
+      </div>
+    </div>
+
+    <div id="sections"></div>
+  </main>
+</div>
+
+<footer>Study deck for interview prep · not part of the public site</footer>
+
+<svg width="0" height="0" style="position:absolute">
+  <defs>
+    <marker id="arrow" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#6b7383"/>
+    </marker>
+  </defs>
+</svg>
+
+<script>
+const cards = [
+{
+  tag: "My Story",
+  q: "Etiqa — how did you turn around the AMLA compliance project?",
+  a: "I joined an AMLA watchlist screening project that was already 1 year behind schedule — a compliance-critical system BNM was expecting. I diagnosed and fixed it within my first 2 months, then spent the next 6 months building out new BNM requirements on top of it, delivering every one on time.",
+  svg: `<svg viewBox="0 0 420 130" width="420">
+    <rect x="10" y="20" width="180" height="30" rx="6" class="box-red"/>
+    <text x="100" y="39" text-anchor="middle" class="lbl-sm">Project stalled — 1 YEAR late</text>
+    <path d="M10 65 L100 65" class="arrow"/>
+    <rect x="10" y="75" width="100" height="30" rx="6" class="box-accent"/>
+    <text x="60" y="94" text-anchor="middle" class="lbl-sm">Rais joins</text>
+    <path d="M110 90 L210 90" class="arrow"/>
+    <rect x="212" y="75" width="100" height="30" rx="6" class="box-green"/>
+    <text x="262" y="94" text-anchor="middle" class="lbl-sm">Fixed — 2 months</text>
+    <path d="M312 90 L410 90" class="arrow"/>
+    <rect x="330" y="20" width="80" height="30" rx="6" class="box-green"/>
+    <text x="370" y="39" text-anchor="middle" class="lbl-sm" font-size="8">+6mo new BNM reqs, on time</text>
+  </svg>`
+},
+{
+  tag: "My Story",
+  q: "JuruQuest → atQuest — what did the reverse-engineering + hardening work look like?",
+  a: "At JuruQuest (sibling of atQuest), I inherited a project estimated at 4 months, with SAP integration nobody on the team understood. I reverse-engineered the whole thing and used FlutterFlow to accelerate the mobile rebuild, delivering in 2 months instead of 4. I then moved into atQuest's ERP SaaS platform, enhancing modules against live user requirements and pushing a security hardening pass: SQL injection fixes, RBAC tightening, and workflow engine improvements.",
+  svg: `<svg viewBox="0 0 420 150" width="420">
+    <rect x="10" y="15" width="160" height="30" rx="6" class="box-red"/>
+    <text x="90" y="34" text-anchor="middle" class="lbl-sm">Estimated: 4 months</text>
+    <rect x="190" y="15" width="160" height="30" rx="6" class="box-green"/>
+    <text x="270" y="34" text-anchor="middle" class="lbl-sm">Delivered: 2 months</text>
+    <path d="M170 30 L188 30" class="arrow"/>
+    <text x="90" y="65" text-anchor="middle" class="lbl-sm">reverse-engineer SAP + FlutterFlow rebuild</text>
+    <path d="M40 75 L40 100" class="arrow"/>
+    <rect x="10" y="105" width="120" height="34" rx="7" class="box-accent"/>
+    <text x="70" y="126" text-anchor="middle" class="lbl-sm">atQuest ERP</text>
+    <rect x="150" y="105" width="90" height="34" rx="7" class="box-green"/>
+    <text x="195" y="120" text-anchor="middle" class="lbl-sm" font-size="8">SQLi fix</text>
+    <text x="195" y="132" text-anchor="middle" class="lbl-sm" font-size="8">RBAC</text>
+    <rect x="250" y="105" width="90" height="34" rx="7" class="box-green"/>
+    <text x="295" y="126" text-anchor="middle" class="lbl-sm" font-size="8">Workflow engine</text>
+    <path d="M130 122 L148 122" class="arrow"/>
+    <path d="M240 122 L248 122" class="arrow"/>
+  </svg>`
+},
+{
+  tag: "My Story",
+  q: "PDRM / Vector Intelligence — what happened with the MCAD legacy system?",
+  a: "I reverse-engineered MCAD, an old Motorola call-taker system handling telephony and CCTV integration for police patrol dispatch, built on legacy .NET Framework. I fixed and enhanced it enough that the emergency system ran reliably. The harder problem came after the original maintenance contract ended — self-hosted integrations had quietly stopped working or updating, so I went back in to rework and patch the pieces that had drifted out of support.",
+  svg: `<svg viewBox="0 0 420 150" width="420">
+    <rect x="10" y="15" width="130" height="30" rx="6" class="box"/>
+    <text x="75" y="34" text-anchor="middle" class="lbl-sm">MCAD (Motorola)</text>
+    <path d="M140 30 L180 30" class="arrow"/>
+    <rect x="182" y="15" width="130" height="30" rx="6" class="box-green"/>
+    <text x="247" y="34" text-anchor="middle" class="lbl-sm">Reverse-engineered</text>
+    <path d="M312 30 L360 30" class="arrow"/>
+    <rect x="330" y="15" width="80" height="30" rx="6" class="box-green"/>
+    <text x="370" y="34" text-anchor="middle" class="lbl-sm" font-size="8">Stable</text>
+    <path d="M75 45 L75 80" class="arrow"/>
+    <rect x="10" y="85" width="150" height="34" rx="7" class="box-red"/>
+    <text x="85" y="106" text-anchor="middle" class="lbl-sm" font-size="9">Maintenance contract ends</text>
+    <path d="M160 102 L200 102" class="arrow"/>
+    <rect x="202" y="85" width="150" height="34" rx="7" class="box-accent"/>
+    <text x="277" y="100" text-anchor="middle" class="lbl-sm" font-size="8">Self-hosted integrations</text>
+    <text x="277" y="112" text-anchor="middle" class="lbl-sm" font-size="8">break silently → reworked/patched</text>
+  </svg>`
+},
+{
+  tag: "Architecture",
+  q: "What is Clean Architecture?",
+  a: "A way of structuring an app into layers — Domain, Application, Infrastructure, Presentation — where dependencies only point inward toward the Domain. Business logic doesn't know about the database or web framework, so I can swap SQL Server for something else without touching business rules. At Etiqa I use it to keep policy/underwriting logic isolated from Oracle/SQL Server and API concerns.",
+  svg: `<svg viewBox="0 0 400 260" width="400">
+    <circle cx="200" cy="130" r="115" class="box"/>
+    <circle cx="200" cy="130" r="85" class="box-accent"/>
+    <circle cx="200" cy="130" r="55" class="box-red"/>
+    <circle cx="200" cy="130" r="26" class="box-green"/>
+    <text x="200" y="134" text-anchor="middle" class="lbl" font-weight="600">Domain</text>
+    <text x="200" y="94" text-anchor="middle" class="lbl-sm">Application</text>
+    <text x="200" y="66" text-anchor="middle" class="lbl-sm">Infrastructure</text>
+    <text x="200" y="38" text-anchor="middle" class="lbl-sm">Presentation / API</text>
+    <path d="M200 26 L200 100" class="arrow"/>
+    <text x="255" y="18" class="lbl-sm">dependencies point inward →</text>
+  </svg>`
+},
+{
+  tag: "Architecture",
+  q: "What is CQRS?",
+  a: "Command Query Responsibility Segregation — splitting write operations (Commands, e.g. CreatePolicy) from read operations (Queries, e.g. GetPolicyById) into separate models/handlers instead of one bloated service class. Keeps each handler small and single-purpose, and lets reads and writes evolve independently.",
+  svg: `<svg viewBox="0 0 420 200" width="420">
+    <rect x="10" y="85" width="110" height="34" rx="7" class="box"/>
+    <text x="65" y="106" text-anchor="middle" class="lbl">Controller</text>
+    <path d="M120 95 L190 55" class="arrow"/>
+    <path d="M120 110 L190 150" class="arrow"/>
+    <rect x="192" y="30" width="120" height="34" rx="7" class="box-accent"/>
+    <text x="252" y="51" text-anchor="middle" class="lbl">Command</text>
+    <rect x="192" y="136" width="120" height="34" rx="7" class="box-green"/>
+    <text x="252" y="157" text-anchor="middle" class="lbl">Query</text>
+    <path d="M312 47 L370 47" class="arrow"/>
+    <path d="M312 153 L370 153" class="arrow"/>
+    <rect x="330" y="28" width="80" height="34" rx="7" class="box-red"/>
+    <text x="370" y="49" text-anchor="middle" class="lbl-sm">Write DB</text>
+    <rect x="330" y="134" width="80" height="34" rx="7" class="box-red"/>
+    <text x="370" y="155" text-anchor="middle" class="lbl-sm">Read DB</text>
+  </svg>`
+},
+{
+  tag: "Architecture",
+  q: "What is MediatR and why use it?",
+  a: "A .NET library implementing the mediator pattern — controllers send a Command/Query object into MediatR, and MediatR routes it to the matching handler. Decouples the controller from business logic and lets me add cross-cutting behavior (logging, validation) as pipeline steps without touching every handler.",
+  svg: `<svg viewBox="0 0 420 220" width="420">
+    <circle cx="210" cy="110" r="34" class="box-accent"/>
+    <text x="210" y="115" text-anchor="middle" class="lbl">MediatR</text>
+    <rect x="10" y="90" width="110" height="34" rx="7" class="box"/>
+    <text x="65" y="111" text-anchor="middle" class="lbl-sm">Controller</text>
+    <path d="M120 107 L176 107" class="arrow"/>
+    <rect x="300" y="20" width="110" height="30" rx="7" class="box-green"/>
+    <text x="355" y="40" text-anchor="middle" class="lbl-sm">Handler A</text>
+    <rect x="300" y="90" width="110" height="30" rx="7" class="box-green"/>
+    <text x="355" y="110" text-anchor="middle" class="lbl-sm">Handler B</text>
+    <rect x="300" y="160" width="110" height="30" rx="7" class="box-green"/>
+    <text x="355" y="180" text-anchor="middle" class="lbl-sm">Handler C</text>
+    <path d="M244 100 L296 35" class="arrow"/>
+    <path d="M244 108 L296 105" class="arrow"/>
+    <path d="M244 118 L296 172" class="arrow"/>
+  </svg>`
+},
+{
+  tag: "Architecture",
+  q: "What is DDD (Domain-Driven Design)?",
+  a: "Designing code around the business domain — modeling entities, value objects, and aggregates that mirror how the business actually thinks (e.g. a Policy, a Claim), rather than modeling around database tables. Keeps business rules inside domain objects instead of scattered across services.",
+  svg: `<svg viewBox="0 0 420 180" width="420">
+    <rect x="20" y="60" width="130" height="60" rx="8" class="box-accent"/>
+    <text x="85" y="85" text-anchor="middle" class="lbl">Policy</text>
+    <text x="85" y="102" text-anchor="middle" class="lbl-sm">(Aggregate Root)</text>
+    <rect x="180" y="15" width="110" height="40" rx="7" class="box"/>
+    <text x="235" y="39" text-anchor="middle" class="lbl-sm">Premium (Value Obj)</text>
+    <rect x="180" y="70" width="110" height="40" rx="7" class="box"/>
+    <text x="235" y="94" text-anchor="middle" class="lbl-sm">Endorsement</text>
+    <rect x="180" y="125" width="110" height="40" rx="7" class="box"/>
+    <text x="235" y="149" text-anchor="middle" class="lbl-sm">Beneficiary</text>
+    <path d="M150 75 L178 35" class="arrow"/>
+    <path d="M150 90 L178 90" class="arrow"/>
+    <path d="M150 105 L178 140" class="arrow"/>
+    <rect x="320" y="70" width="90" height="40" rx="7" class="box-green"/>
+    <text x="365" y="94" text-anchor="middle" class="lbl-sm">Business Rules</text>
+  </svg>`
+},
+{
+  tag: "Architecture",
+  q: "What's the Repository pattern / Unit of Work?",
+  a: "Repository abstracts data access behind an interface (e.g. IPolicyRepository) so business code isn't coupled to EF Core directly — easier to test and swap. Unit of Work wraps multiple repository operations in a single transaction, so either everything commits or nothing does.",
+  svg: `<svg viewBox="0 0 420 180" width="420">
+    <rect x="10" y="20" width="130" height="34" rx="7" class="box-accent"/>
+    <text x="75" y="41" text-anchor="middle" class="lbl-sm">IPolicyRepository</text>
+    <rect x="10" y="70" width="130" height="34" rx="7" class="box-accent"/>
+    <text x="75" y="91" text-anchor="middle" class="lbl-sm">IClaimRepository</text>
+    <rect x="160" y="45" width="120" height="34" rx="7" class="box-green"/>
+    <text x="220" y="66" text-anchor="middle" class="lbl-sm">Unit of Work</text>
+    <path d="M140 37 L158 55" class="arrow"/>
+    <path d="M140 87 L158 68" class="arrow"/>
+    <rect x="320" y="45" width="90" height="34" rx="7" class="box-red"/>
+    <text x="365" y="66" text-anchor="middle" class="lbl-sm">DB Transaction</text>
+    <path d="M280 62 L318 62" class="arrow"/>
+    <text x="220" y="120" text-anchor="middle" class="lbl-sm">SaveChanges() → commit all or rollback all</text>
+  </svg>`
+},
+{
+  tag: "Data",
+  q: "What is EF Core?",
+  a: "Entity Framework Core — .NET's ORM. Maps C# classes to database tables and generates SQL, so I write LINQ instead of raw SQL for most operations, while still dropping to raw SQL/stored procs when needed (common with Oracle).",
+  svg: `<svg viewBox="0 0 420 130" width="420">
+    <rect x="20" y="45" width="110" height="40" rx="7" class="box-accent"/>
+    <text x="75" y="69" text-anchor="middle" class="lbl-sm">C# Entity</text>
+    <path d="M130 65 L190 65" class="arrow"/>
+    <rect x="192" y="45" width="110" height="40" rx="7" class="box-green"/>
+    <text x="247" y="69" text-anchor="middle" class="lbl-sm">EF Core (LINQ)</text>
+    <path d="M302 65 L362 65" class="arrow"/>
+    <rect x="364" y="45" width="46" height="40" rx="7" class="box-red"/>
+    <text x="387" y="69" text-anchor="middle" class="lbl-sm">SQL</text>
+  </svg>`
+},
+{
+  tag: "Security",
+  q: "What is JWT authentication?",
+  a: "JSON Web Token — a signed token issued after login containing user claims (id, roles). The client sends it on every request in the Authorization header; the API verifies the signature and reads claims instead of hitting the database each time. Used this to secure the TNB TOMAS REST API.",
+  svg: `<svg viewBox="0 0 420 170" width="420">
+    <rect x="10" y="20" width="90" height="34" rx="7" class="box"/>
+    <text x="55" y="41" text-anchor="middle" class="lbl-sm">Client</text>
+    <rect x="170" y="20" width="90" height="34" rx="7" class="box-accent"/>
+    <text x="215" y="41" text-anchor="middle" class="lbl-sm">Auth API</text>
+    <path d="M100 37 L168 37" class="arrow"/>
+    <text x="134" y="28" text-anchor="middle" class="lbl-sm">login</text>
+    <path d="M168 55 L100 55" class="arrow"/>
+    <text x="134" y="70" text-anchor="middle" class="lbl-sm">JWT</text>
+    <rect x="10" y="110" width="90" height="34" rx="7" class="box"/>
+    <text x="55" y="131" text-anchor="middle" class="lbl-sm">Client</text>
+    <rect x="330" y="110" width="80" height="34" rx="7" class="box-green"/>
+    <text x="370" y="131" text-anchor="middle" class="lbl-sm">API</text>
+    <path d="M100 127 L328 127" class="arrow"/>
+    <text x="215" y="118" text-anchor="middle" class="lbl-sm">request + Bearer JWT (verified, no DB hit)</text>
+  </svg>`
+},
+{
+  tag: "Identity",
+  q: "What's LDAP / Active Directory integration?",
+  a: "LDAP is the protocol used to query a company's directory (usernames, groups, org structure) — Active Directory is Microsoft's implementation of it. I integrate against it so users log in with existing corporate credentials (SSO) and I can pull group membership to drive role-based access.",
+  svg: `<svg viewBox="0 0 420 150" width="420">
+    <rect x="10" y="55" width="100" height="34" rx="7" class="box"/>
+    <text x="60" y="76" text-anchor="middle" class="lbl-sm">My App</text>
+    <path d="M110 72 L180 72" class="arrow"/>
+    <rect x="182" y="30" width="120" height="84" rx="7" class="box-accent"/>
+    <text x="242" y="60" text-anchor="middle" class="lbl-sm">LDAP / AD</text>
+    <text x="242" y="80" text-anchor="middle" class="lbl-sm">users · groups</text>
+    <text x="242" y="98" text-anchor="middle" class="lbl-sm">org structure</text>
+    <path d="M302 72 L360 72" class="arrow"/>
+    <text x="365" y="68" class="lbl-sm">SSO +</text>
+    <text x="365" y="82" class="lbl-sm">roles</text>
+  </svg>`
+},
+{
+  tag: "Integration",
+  q: "How did you integrate with SAP?",
+  a: "SAP exposes data (HR records, asset master data) via APIs/RFC or intermediate tables. At TNB ESS I synced employee/payroll data from SAP HR into ESS; at TNB TOMAS I pulled asset master data from SAP ERP to keep the field app's asset list consistent with the source of truth.",
+  svg: `<svg viewBox="0 0 420 130" width="420">
+    <rect x="10" y="45" width="110" height="40" rx="7" class="box-red"/>
+    <text x="65" y="69" text-anchor="middle" class="lbl-sm">SAP HR/ERP</text>
+    <path d="M120 65 L190 65" class="arrow"/>
+    <text x="155" y="55" text-anchor="middle" class="lbl-sm">sync</text>
+    <rect x="192" y="45" width="110" height="40" rx="7" class="box-accent"/>
+    <text x="247" y="69" text-anchor="middle" class="lbl-sm">Integration Layer</text>
+    <path d="M302 65 L370 65" class="arrow"/>
+    <rect x="372" y="45" width="40" height="40" rx="7" class="box-green"/>
+    <text x="392" y="69" text-anchor="middle" class="lbl-sm">App</text>
+  </svg>`
+},
+{
+  tag: "GIS",
+  q: "What is Esri ArcGIS and how did you use it?",
+  a: "ArcGIS is Esri's GIS platform for storing, rendering, and analyzing geospatial data. On PDRM C4i I used it to plot live incident locations and unit positions on a map for real-time dispatch — the .NET backend fed location/incident data into ArcGIS layers that dispatch operators viewed on screen.",
+  svg: `<svg viewBox="0 0 420 140" width="420">
+    <rect x="10" y="50" width="120" height="40" rx="7" class="box"/>
+    <text x="70" y="74" text-anchor="middle" class="lbl-sm">.NET Backend</text>
+    <path d="M130 70 L190 70" class="arrow"/>
+    <text x="160" y="60" text-anchor="middle" class="lbl-sm">geo data</text>
+    <rect x="192" y="50" width="120" height="40" rx="7" class="box-accent"/>
+    <text x="252" y="74" text-anchor="middle" class="lbl-sm">Esri ArcGIS</text>
+    <path d="M312 70 L370 70" class="arrow"/>
+    <rect x="372" y="50" width="40" height="40" rx="7" class="box-green"/>
+    <text x="392" y="74" text-anchor="middle" class="lbl-sm">Map</text>
+  </svg>`
+},
+{
+  tag: "Mobile",
+  q: "What is FlutterFlow vs Flutter?",
+  a: "Flutter is Google's cross-platform UI framework (one Dart codebase → iOS/Android/web). FlutterFlow is a visual builder on top of Flutter — generates real Flutter/Dart code from drag-and-drop UI, which I export and extend by hand for custom logic. Used it to rebuild TNB TOMAS faster than hand-coding every screen.",
+  svg: `<svg viewBox="0 0 420 130" width="420">
+    <rect x="10" y="45" width="120" height="40" rx="7" class="box-accent"/>
+    <text x="70" y="69" text-anchor="middle" class="lbl-sm">FlutterFlow (visual)</text>
+    <path d="M130 65 L190 65" class="arrow"/>
+    <text x="160" y="55" text-anchor="middle" class="lbl-sm">generates</text>
+    <rect x="192" y="45" width="110" height="40" rx="7" class="box-green"/>
+    <text x="247" y="69" text-anchor="middle" class="lbl-sm">Flutter/Dart code</text>
+    <path d="M302 65 L370 65" class="arrow"/>
+    <text x="335" y="55" text-anchor="middle" class="lbl-sm">→</text>
+    <rect x="372" y="20" width="40" height="30" rx="6" class="box"/>
+    <text x="392" y="39" text-anchor="middle" class="lbl-sm">iOS</text>
+    <rect x="372" y="60" width="40" height="30" rx="6" class="box"/>
+    <text x="392" y="79" text-anchor="middle" class="lbl-sm">And.</text>
+  </svg>`
+},
+{
+  tag: "Architecture",
+  q: "What is a microservices architecture, and did you build one?",
+  a: "Splitting a system into independently deployable services, each owning its own data/responsibility, communicating over APIs/events. My work has been closer to well-layered modular monoliths (Clean Architecture) with some independently deployed services (e.g. AMLA batch job as its own scheduled process) rather than a full microservices fleet — I frame it honestly as modular, service-oriented.",
+  svg: `<svg viewBox="0 0 420 150" width="420">
+    <rect x="10" y="50" width="150" height="50" rx="8" class="box"/>
+    <text x="85" y="80" text-anchor="middle" class="lbl-sm">Modular Monolith</text>
+    <text x="220" y="30" class="lbl-sm">vs</text>
+    <rect x="250" y="30" width="55" height="30" rx="6" class="box-green"/>
+    <text x="277" y="49" text-anchor="middle" class="lbl-sm" font-size="8.5">Svc A</text>
+    <rect x="250" y="70" width="55" height="30" rx="6" class="box-green"/>
+    <text x="277" y="89" text-anchor="middle" class="lbl-sm" font-size="8.5">Svc B</text>
+    <rect x="320" y="30" width="55" height="30" rx="6" class="box-green"/>
+    <text x="347" y="49" text-anchor="middle" class="lbl-sm" font-size="8.5">Svc C</text>
+    <rect x="320" y="70" width="55" height="30" rx="6" class="box-green"/>
+    <text x="347" y="89" text-anchor="middle" class="lbl-sm" font-size="8.5">Svc D</text>
+    <text x="310" y="118" text-anchor="middle" class="lbl-sm">true microservices</text>
+  </svg>`
+},
+{
+  tag: "Docs",
+  q: "What's an HLD/LLD?",
+  a: "High-Level Design documents overall system architecture — components, data flow, integrations (e.g. how ArcGIS, SIP/PBX, and the API backend fit together in C4i). Low-Level Design drills into implementation detail per component — class structure, API contracts, DB schema. Produced both for PDRM C4i for stakeholder sign-off before build.",
+  svg: `<svg viewBox="0 0 420 130" width="420">
+    <rect x="20" y="20" width="170" height="40" rx="7" class="box-accent"/>
+    <text x="105" y="44" text-anchor="middle" class="lbl-sm">HLD — system overview</text>
+    <path d="M105 60 L105 80" class="arrow"/>
+    <rect x="20" y="82" width="170" height="40" rx="7" class="box-green"/>
+    <text x="105" y="106" text-anchor="middle" class="lbl-sm">LLD — class/API/schema</text>
+    <text x="260" y="70" class="lbl-sm">drills into detail →</text>
+  </svg>`
+},
+{
+  tag: "Infra",
+  q: "What is HCI (Hyperconverged Infrastructure) and why VMware ESXi?",
+  a: "HCI combines compute, storage, and networking into one virtualized platform instead of separate physical servers/SAN/switches — easier to manage and scale for on-prem deployments. Used VMware ESXi as hypervisor to run C4i's VMs with high availability, since PDRM required on-premise (not cloud) deployment for security.",
+  svg: `<svg viewBox="0 0 420 140" width="420">
+    <rect x="30" y="20" width="360" height="90" rx="10" class="box"/>
+    <rect x="45" y="35" width="100" height="30" rx="6" class="box-accent"/>
+    <text x="95" y="54" text-anchor="middle" class="lbl-sm">Compute</text>
+    <rect x="160" y="35" width="100" height="30" rx="6" class="box-green"/>
+    <text x="210" y="54" text-anchor="middle" class="lbl-sm">Storage</text>
+    <rect x="275" y="35" width="100" height="30" rx="6" class="box-red"/>
+    <text x="325" y="54" text-anchor="middle" class="lbl-sm">Network</text>
+    <text x="210" y="90" text-anchor="middle" class="lbl-sm">VMware ESXi — one virtualized platform</text>
+  </svg>`
+},
+{
+  tag: "Comms",
+  q: "What's the difference between SIP/PBX and XMPP/Jitsi/Openfire?",
+  a: "SIP/PBX handled telephony — actual phone call routing for emergency dispatch. XMPP (via Openfire) handled real-time messaging/presence between operators, and Jitsi handled video conferencing. Together they formed the unified communications layer of the C4i command center alongside GIS mapping.",
+  svg: `<svg viewBox="0 0 420 140" width="420">
+    <rect x="10" y="20" width="120" height="34" rx="7" class="box-red"/>
+    <text x="70" y="41" text-anchor="middle" class="lbl-sm">SIP / PBX</text>
+    <text x="150" y="41" class="lbl-sm">→ phone/dispatch calls</text>
+    <rect x="10" y="65" width="120" height="34" rx="7" class="box-accent"/>
+    <text x="70" y="86" text-anchor="middle" class="lbl-sm">XMPP/Openfire</text>
+    <text x="150" y="86" class="lbl-sm">→ messaging/presence</text>
+    <rect x="10" y="105" width="120" height="30" rx="7" class="box-green"/>
+    <text x="70" y="124" text-anchor="middle" class="lbl-sm">Jitsi</text>
+    <text x="150" y="124" class="lbl-sm">→ video conferencing</text>
+  </svg>`
+},
+{
+  tag: "Compliance",
+  q: "What is the AMLA Watchlist Batch Job you built?",
+  a: "A scheduled background job that pulls external sanctions/watchlist data sources, runs entity-matching against Etiqa's customer/policyholder records, flags high-risk matches for compliance review, and logs an audit trail — built to satisfy BNM anti-money-laundering screening requirements.",
+  svg: `<svg viewBox="0 0 420 130" width="420">
+    <rect x="10" y="45" width="100" height="40" rx="7" class="box-red"/>
+    <text x="60" y="69" text-anchor="middle" class="lbl-sm">Watchlist</text>
+    <path d="M110 65 L165 65" class="arrow"/>
+    <rect x="167" y="45" width="100" height="40" rx="7" class="box-accent"/>
+    <text x="217" y="69" text-anchor="middle" class="lbl-sm">Match Engine</text>
+    <path d="M267 65 L322 65" class="arrow"/>
+    <rect x="324" y="45" width="90" height="40" rx="7" class="box-green"/>
+    <text x="369" y="63" text-anchor="middle" class="lbl-sm">Flag +</text>
+    <text x="369" y="77" text-anchor="middle" class="lbl-sm">Audit Log</text>
+    <text x="217" y="105" text-anchor="middle" class="lbl-sm">runs on schedule, not user-triggered</text>
+  </svg>`
+},
+{
+  tag: "Observability",
+  q: "What is Serilog / Application Insights used for?",
+  a: "Serilog is structured logging for .NET — logs come out as structured data instead of plain text, so they're queryable by field (e.g. filter by PolicyId). Application Insights is Azure's monitoring service — ingests logs plus request/dependency telemetry so I can trace a failed request end-to-end and see performance/error trends.",
+  svg: `<svg viewBox="0 0 420 130" width="420">
+    <rect x="10" y="45" width="110" height="40" rx="7" class="box"/>
+    <text x="65" y="69" text-anchor="middle" class="lbl-sm">.NET App</text>
+    <path d="M120 65 L185 65" class="arrow"/>
+    <rect x="187" y="45" width="100" height="40" rx="7" class="box-accent"/>
+    <text x="237" y="69" text-anchor="middle" class="lbl-sm">Serilog</text>
+    <path d="M287 65 L352 65" class="arrow"/>
+    <rect x="354" y="45" width="56" height="40" rx="7" class="box-green"/>
+    <text x="382" y="63" text-anchor="middle" class="lbl-sm" font-size="8">App</text>
+    <text x="382" y="76" text-anchor="middle" class="lbl-sm" font-size="8">Insights</text>
+  </svg>`
+},
+{
+  tag: "Process",
+  q: "What does UAT mean and what's your role in it?",
+  a: "User Acceptance Testing — the business/end-user validates a built feature meets the requirement before it goes live. In BNM-regulated environments like Etiqa, I prepare test plans and traceability matrices mapping requirements to test cases, so there's a documented, auditable trail proving each requirement was verified before release.",
+  svg: `<svg viewBox="0 0 420 100" width="420">
+    <rect x="10" y="30" width="90" height="34" rx="7" class="box"/>
+    <text x="55" y="51" text-anchor="middle" class="lbl-sm">Build</text>
+    <path d="M100 47 L145 47" class="arrow"/>
+    <rect x="147" y="30" width="90" height="34" rx="7" class="box-accent"/>
+    <text x="192" y="51" text-anchor="middle" class="lbl-sm">Test Plan</text>
+    <path d="M237 47 L282 47" class="arrow"/>
+    <rect x="284" y="30" width="60" height="34" rx="7" class="box-green"/>
+    <text x="314" y="51" text-anchor="middle" class="lbl-sm">UAT</text>
+    <path d="M344 47 L390 47" class="arrow"/>
+    <rect x="392" y="30" width="20" height="34" rx="7" class="box-red"/>
+    <text x="402" y="51" text-anchor="middle" class="lbl-sm" font-size="8">✓</text>
+  </svg>`
+},
+{
+  tag: "Process",
+  q: "What's a traceability matrix?",
+  a: "A table linking each business requirement to the test case(s) that verify it, and the test result. Proves nothing shipped untested and nothing was missed — regulators and auditors ask for it directly in BNM-governed releases.",
+  svg: `<svg viewBox="0 0 300 100" width="300">
+    <rect x="10" y="10" width="90" height="30" class="box"/><text x="55" y="29" text-anchor="middle" class="lbl-sm">Req #1</text>
+    <rect x="10" y="45" width="90" height="30" class="box"/><text x="55" y="64" text-anchor="middle" class="lbl-sm">Req #2</text>
+    <path d="M100 25 L150 25" class="arrow"/>
+    <path d="M100 60 L150 60" class="arrow"/>
+    <rect x="152" y="10" width="90" height="30" class="box-green"/><text x="197" y="29" text-anchor="middle" class="lbl-sm">TC-01 ✓</text>
+    <rect x="152" y="45" width="90" height="30" class="box-green"/><text x="197" y="64" text-anchor="middle" class="lbl-sm">TC-02 ✓</text>
+  </svg>`
+},
+{
+  tag: "Process",
+  q: "Agile vs Waterfall — where have you used each?",
+  a: "Waterfall for regulated, sign-off-heavy delivery (Etiqa, TNB ESS) where requirements, design, and UAT need formal documentation before release. Agile/sprint-based for faster-moving rebuild work (TNB TOMAS mobile rescue) where requirements evolved as I reverse-engineered the broken system.",
+  svg: `<svg viewBox="0 0 420 110" width="420">
+    <path d="M10 20 L70 20 L70 45 L130 45 L130 70 L190 70 L190 95" class="arrow"/>
+    <text x="100" y="15" text-anchor="middle" class="lbl-sm">Waterfall — linear phases</text>
+    <circle cx="330" cy="55" r="42" class="box-accent"/>
+    <text x="330" y="30" text-anchor="middle" class="lbl-sm" font-size="8">Plan</text>
+    <text x="365" y="55" text-anchor="middle" class="lbl-sm" font-size="8">Build</text>
+    <text x="330" y="82" text-anchor="middle" class="lbl-sm" font-size="8">Review</text>
+    <text x="295" y="55" text-anchor="middle" class="lbl-sm" font-size="8">Sprint</text>
+    <text x="330" y="112" text-anchor="middle" class="lbl-sm">Agile — iterative loop</text>
+  </svg>`
+},
+{
+  tag: "DevOps",
+  q: "What CI/CD tooling have you used?",
+  a: "GitLab CI/CD for automated build/test/deploy pipelines, and Azure DevOps for pipeline + work-item tracking. Pipelines run on merge/PR to catch build breaks early rather than at manual deploy time.",
+  svg: `<svg viewBox="0 0 420 100" width="420">
+    <rect x="10" y="30" width="80" height="34" rx="7" class="box"/><text x="50" y="51" text-anchor="middle" class="lbl-sm">Commit</text>
+    <path d="M90 47 L125 47" class="arrow"/>
+    <rect x="127" y="30" width="80" height="34" rx="7" class="box-accent"/><text x="167" y="51" text-anchor="middle" class="lbl-sm">Build</text>
+    <path d="M207 47 L242 47" class="arrow"/>
+    <rect x="244" y="30" width="80" height="34" rx="7" class="box-accent"/><text x="284" y="51" text-anchor="middle" class="lbl-sm">Test</text>
+    <path d="M324 47 L359 47" class="arrow"/>
+    <rect x="361" y="30" width="50" height="34" rx="7" class="box-green"/><text x="386" y="51" text-anchor="middle" class="lbl-sm" font-size="8">Deploy</text>
+  </svg>`
+},
+{
+  tag: "Infra",
+  q: "Why Cloudflare Workers/Pages for some projects?",
+  a: "Serverless edge platform — no servers to manage, deploys globally, scales automatically, effectively free at low traffic. Used for lighter-weight sites/APIs (my portfolio, freelance work) where a full VM/container setup would be overkill.",
+  svg: `<svg viewBox="0 0 420 110" width="420">
+    <circle cx="210" cy="55" r="18" class="box-green"/>
+    <text x="210" y="59" text-anchor="middle" class="lbl-sm" font-size="8">Origin</text>
+    <circle cx="80" cy="25" r="14" class="box-accent"/><text x="80" y="29" text-anchor="middle" class="lbl-sm" font-size="7">Edge</text>
+    <circle cx="340" cy="25" r="14" class="box-accent"/><text x="340" y="29" text-anchor="middle" class="lbl-sm" font-size="7">Edge</text>
+    <circle cx="80" cy="90" r="14" class="box-accent"/><text x="80" y="94" text-anchor="middle" class="lbl-sm" font-size="7">Edge</text>
+    <circle cx="340" cy="90" r="14" class="box-accent"/><text x="340" y="94" text-anchor="middle" class="lbl-sm" font-size="7">Edge</text>
+    <path d="M92 30 L195 50" class="arrow"/>
+    <path d="M328 30 L225 50" class="arrow"/>
+    <path d="M92 85 L195 60" class="arrow"/>
+    <path d="M328 85 L225 60" class="arrow"/>
+  </svg>`
+},
+{
+  tag: "API",
+  q: "What's the difference between REST API design done \"cleanly\" vs not?",
+  a: "Clean REST design means resource-based URLs (/policies/{id} not /getPolicyById), correct HTTP verbs and status codes, versioning, and consistent error response shapes — so any client can predict behavior without reading the source. At TNB TOMAS I rebuilt the API from an inconsistent legacy design into this pattern as part of the rescue.",
+  svg: `<svg viewBox="0 0 420 100" width="420">
+    <rect x="10" y="15" width="180" height="30" rx="6" class="box-red"/>
+    <text x="100" y="34" text-anchor="middle" class="lbl-sm" font-size="9">GET /getPolicyById?id=1</text>
+    <text x="210" y="34" text-anchor="middle" class="lbl-sm">✗ messy</text>
+    <rect x="10" y="55" width="180" height="30" rx="6" class="box-green"/>
+    <text x="100" y="74" text-anchor="middle" class="lbl-sm" font-size="9">GET /policies/1</text>
+    <text x="210" y="74" text-anchor="middle" class="lbl-sm">✓ clean</text>
+  </svg>`
+},
+{
+  tag: "Deep-Dive",
+  q: "How do you implement FluentValidation? Do you run it through a pipeline?",
+  a: "One AbstractValidator<T> per Command/Query (RuleFor(x => x.Field).NotEmpty()...), registered via AddValidatorsFromAssembly. Instead of calling Validate() inside every handler, I plug it into the MediatR pipeline as a ValidationBehavior<TRequest,TResponse> — it resolves all validators for the request, runs before the handler, and short-circuits with a ValidationException (→ 400) if anything fails. Every command/query is validated automatically; no handler can skip it.",
+  svg: `<svg viewBox="0 0 420 130" width="420">
+    <rect x="10" y="48" width="90" height="34" rx="7" class="box"/>
+    <text x="55" y="69" text-anchor="middle" class="lbl-sm">Request</text>
+    <path d="M100 65 L155 65" class="arrow"/>
+    <rect x="157" y="48" width="130" height="34" rx="7" class="box-accent"/>
+    <text x="222" y="69" text-anchor="middle" class="lbl-sm">ValidationBehavior</text>
+    <path d="M287 65 L342 65" class="arrow"/>
+    <rect x="344" y="48" width="66" height="34" rx="7" class="box-green"/>
+    <text x="377" y="69" text-anchor="middle" class="lbl-sm" font-size="8">Handler</text>
+    <path d="M222 82 L222 105" class="arrow"/>
+    <rect x="167" y="107" width="110" height="20" rx="5" class="box-red"/>
+    <text x="222" y="121" text-anchor="middle" class="lbl-sm" font-size="8">invalid → 400, short-circuit</text>
+  </svg>`
+},
+{
+  tag: "Deep-Dive",
+  q: "How do you approach unit testing?",
+  a: "Small CQRS handlers are naturally easy to unit test in isolation — xUnit + Moq for mocking dependencies + FluentAssertions, Arrange-Act-Assert. Pure domain/business logic gets fast unit tests with no DB. Integration tests (in-memory or Testcontainers) are reserved for things that actually need EF Core, like verifying a query maps correctly or a transaction rolls back. Validators get unit tested directly too since FluentValidation rules are pure logic.",
+  svg: `<svg viewBox="0 0 420 140" width="420">
+    <path d="M210 15 L120 60 L300 60 Z" class="box-green"/>
+    <text x="210" y="45" text-anchor="middle" class="lbl-sm" font-size="8">Unit (fast, most)</text>
+    <path d="M120 60 L90 100 L330 100 L300 60 Z" class="box-accent"/>
+    <text x="210" y="85" text-anchor="middle" class="lbl-sm" font-size="8">Integration (EF Core, DB)</text>
+    <path d="M90 100 L60 135 L360 135 L330 100 Z" class="box-red"/>
+    <text x="210" y="122" text-anchor="middle" class="lbl-sm" font-size="8">E2E (fewest)</text>
+  </svg>`
+},
+{
+  tag: "Deep-Dive",
+  q: "How do you use EF Core — do you work with more than one database?",
+  a: "Yes — at Etiqa I integrate SQL Server, Oracle, MDM, and PolisyM in the same system, so each data source gets its own DbContext/connection scoped to its own provider rather than one context for everything. Cross-source data isn't joined at the SQL level across providers — I fetch from each source independently and compose the result in the application/infrastructure layer. For simple lookups EF Core generates the SQL; for complex or performance-sensitive Oracle queries I drop to raw SQL / stored procs via FromSqlRaw.",
+  svg: `<svg viewBox="0 0 420 140" width="420">
+    <rect x="150" y="10" width="120" height="34" rx="7" class="box"/>
+    <text x="210" y="31" text-anchor="middle" class="lbl-sm">App / Infra Layer</text>
+    <path d="M180 44 L100 90" class="arrow"/>
+    <path d="M225 44 L225 90" class="arrow"/>
+    <path d="M255 44 L330 90" class="arrow"/>
+    <rect x="30" y="92" width="110" height="34" rx="7" class="box-accent"/>
+    <text x="85" y="113" text-anchor="middle" class="lbl-sm" font-size="8">SQL Server ctx</text>
+    <rect x="170" y="92" width="90" height="34" rx="7" class="box-accent"/>
+    <text x="215" y="113" text-anchor="middle" class="lbl-sm" font-size="8">Oracle ctx</text>
+    <rect x="290" y="92" width="110" height="34" rx="7" class="box-accent"/>
+    <text x="345" y="113" text-anchor="middle" class="lbl-sm" font-size="8">MDM / PolisyM</text>
+  </svg>`
+},
+{
+  tag: "Deep-Dive",
+  q: "What are the different types of SQL Server index scanning?",
+  a: "Table Scan (no useful index, worst case), Index Scan (reads the whole index, still touches every row), Index Seek (B-tree jump straight to matches — what you want). Clustered index physically orders the table by key; non-clustered index is a separate structure pointing back to the clustered key (or RID on a heap) — if it doesn't cover the query, that triggers a Key/RID Lookup per row. I design covering indexes (INCLUDE columns) to avoid that lookup, and respect left-to-right column order for composite index seeks.",
+  svg: `<svg viewBox="0 0 420 130" width="420">
+    <rect x="10" y="15" width="120" height="30" rx="6" class="box-red"/>
+    <text x="70" y="34" text-anchor="middle" class="lbl-sm" font-size="8">Table Scan (worst)</text>
+    <rect x="150" y="15" width="120" height="30" rx="6" class="box-accent"/>
+    <text x="210" y="34" text-anchor="middle" class="lbl-sm" font-size="8">Index Scan (all rows)</text>
+    <rect x="290" y="15" width="120" height="30" rx="6" class="box-green"/>
+    <text x="350" y="34" text-anchor="middle" class="lbl-sm" font-size="8">Index Seek (best)</text>
+    <path d="M10 55 L410 55" class="arrow"/>
+    <text x="210" y="50" text-anchor="middle" class="lbl-sm" font-size="8">worse ————————————————————→ better</text>
+    <rect x="80" y="75" width="120" height="30" rx="6" class="box"/>
+    <text x="140" y="94" text-anchor="middle" class="lbl-sm" font-size="8">Non-clustered idx</text>
+    <path d="M200 90 L235 90" class="arrow"/>
+    <rect x="237" y="75" width="120" height="30" rx="6" class="box-red"/>
+    <text x="297" y="94" text-anchor="middle" class="lbl-sm" font-size="8">Key Lookup (if not covering)</text>
+  </svg>`
+},
+{
+  tag: "Deep-Dive",
+  q: "How do you use a SQL profiler?",
+  a: "To see actual runtime behavior an execution plan alone won't show — Duration, CPU, Reads/Writes per statement to spot expensive queries under real load, filtered by application/database. I specifically watch for repeated near-identical SELECTs, the signature of an N+1 query from lazy-loaded EF Core navigation properties. Worth noting: SQL Server Profiler itself is deprecated in favor of Extended Events, which I use for the same investigative approach with lower overhead.",
+  svg: `<svg viewBox="0 0 420 110" width="420">
+    <rect x="10" y="15" width="130" height="30" rx="6" class="box"/>
+    <text x="75" y="34" text-anchor="middle" class="lbl-sm" font-size="8">App issues 1 request</text>
+    <path d="M140 30 L180 30" class="arrow"/>
+    <rect x="182" y="10" width="220" height="70" rx="7" class="box-red"/>
+    <text x="292" y="30" text-anchor="middle" class="lbl-sm" font-size="8">Profiler / XEvents trace:</text>
+    <text x="292" y="46" text-anchor="middle" class="lbl-sm" font-size="8">200x SELECT ... WHERE Id=@p</text>
+    <text x="292" y="62" text-anchor="middle" class="lbl-sm" font-size="8">→ N+1 from lazy loading</text>
+  </svg>`
+},
+{
+  tag: "Deep-Dive",
+  q: "What's the performance benefit of CQRS splitting reads from writes?",
+  a: "Writes stay focused purely on transactional correctness — normalized schema, minimal indexes, fast commits, no lock contention from reporting queries. Reads get optimized independently — denormalized models, indexes tuned to query patterns, even a separate read replica or reporting database — without either side compromising the other. A heavy report hitting the write DB causes lock waits that slow writes; splitting means I can scale reads (cache, replicas, materialized views) without touching how writes are validated and committed.",
+  svg: `<svg viewBox="0 0 420 130" width="420">
+    <rect x="10" y="20" width="140" height="34" rx="7" class="box-accent"/>
+    <text x="80" y="41" text-anchor="middle" class="lbl-sm">Write model</text>
+    <text x="80" y="70" text-anchor="middle" class="lbl-sm" font-size="8">normalized · minimal idx</text>
+    <text x="80" y="84" text-anchor="middle" class="lbl-sm" font-size="8">fast commits</text>
+    <rect x="270" y="20" width="140" height="34" rx="7" class="box-green"/>
+    <text x="340" y="41" text-anchor="middle" class="lbl-sm">Read model</text>
+    <text x="340" y="70" text-anchor="middle" class="lbl-sm" font-size="8">denormalized · replicas</text>
+    <text x="340" y="84" text-anchor="middle" class="lbl-sm" font-size="8">cache · materialized views</text>
+    <text x="210" y="41" text-anchor="middle" class="lbl-sm">↔ no shared lock contention</text>
+  </svg>`
+},
+{
+  tag: "Deep-Dive",
+  q: "Beyond pagination, what strategies handle a billion-row table?",
+  a: "Keyset/cursor pagination (WHERE Id > @lastId) instead of OFFSET, which avoids scanning-and-discarding rows. Table partitioning by date/range so queries and maintenance hit only relevant partitions. Covering & filtered indexes tuned to real query patterns. Denormalized read models (CQRS). Columnstore indexes for analytical scans. Caching hot data (Redis). Bulk operations (SqlBulkCopy) instead of row-by-row saves. Archiving cold data out of the primary table. I'd profile first to know whether the bottleneck is read, write, or both before applying any of these.",
+  svg: `<svg viewBox="0 0 420 150" width="420">
+    <rect x="10" y="10" width="120" height="28" rx="6" class="box-accent"/><text x="70" y="29" text-anchor="middle" class="lbl-sm" font-size="8">Keyset paging</text>
+    <rect x="150" y="10" width="120" height="28" rx="6" class="box-accent"/><text x="210" y="29" text-anchor="middle" class="lbl-sm" font-size="8">Partitioning</text>
+    <rect x="290" y="10" width="120" height="28" rx="6" class="box-accent"/><text x="350" y="29" text-anchor="middle" class="lbl-sm" font-size="8">Covering index</text>
+    <rect x="10" y="48" width="120" height="28" rx="6" class="box-green"/><text x="70" y="67" text-anchor="middle" class="lbl-sm" font-size="8">Read model</text>
+    <rect x="150" y="48" width="120" height="28" rx="6" class="box-green"/><text x="210" y="67" text-anchor="middle" class="lbl-sm" font-size="8">Columnstore</text>
+    <rect x="290" y="48" width="120" height="28" rx="6" class="box-green"/><text x="350" y="67" text-anchor="middle" class="lbl-sm" font-size="8">Redis cache</text>
+    <rect x="10" y="86" width="120" height="28" rx="6" class="box-red"/><text x="70" y="105" text-anchor="middle" class="lbl-sm" font-size="8">SqlBulkCopy</text>
+    <rect x="150" y="86" width="120" height="28" rx="6" class="box-red"/><text x="210" y="105" text-anchor="middle" class="lbl-sm" font-size="8">Archiving</text>
+    <text x="290" y="105" class="lbl-sm" font-size="8">← profile first</text>
+  </svg>`
+},
+{
+  tag: "API",
+  q: "What's the difference between an API's read and write operations?",
+  a: "Reads (GET) fetch data with no side effects — safe and idempotent, freely cacheable and retryable, never change state. Writes (POST/PUT/PATCH/DELETE) mutate state — create, update, or delete a resource — so they carry side effects, generally aren't safe to retry blindly (PUT/DELETE are idempotent by spec, POST usually isn't), and need transaction/validation handling. This maps directly onto CQRS: read = Query, write = Command, and I keep them on separate handler paths from the controller down.",
+  svg: `<svg viewBox="0 0 420 120" width="420">
+    <rect x="10" y="15" width="180" height="34" rx="7" class="box-green"/>
+    <text x="100" y="36" text-anchor="middle" class="lbl-sm">GET — Read</text>
+    <text x="100" y="70" text-anchor="middle" class="lbl-sm" font-size="8">no side effects</text>
+    <text x="100" y="84" text-anchor="middle" class="lbl-sm" font-size="8">safe · cacheable · idempotent</text>
+    <rect x="230" y="15" width="180" height="34" rx="7" class="box-red"/>
+    <text x="320" y="36" text-anchor="middle" class="lbl-sm">POST/PUT/PATCH/DELETE — Write</text>
+    <text x="320" y="70" text-anchor="middle" class="lbl-sm" font-size="8">mutates state</text>
+    <text x="320" y="84" text-anchor="middle" class="lbl-sm" font-size="8">needs validation · transaction</text>
+  </svg>`
+},
+{
+  tag: "API",
+  q: "How does the frontend know which endpoint is read vs write?",
+  a: "By HTTP method convention baked into the API contract and documented in Swagger/OpenAPI — GET is always read, POST/PUT/PATCH/DELETE always write. The frontend doesn't infer intent, the verb declares it; it just calls the documented endpoint with the right method. I keep URL naming resource-based and consistent (/policies vs /policies/{id}) so the shape of the call itself signals collection-fetch vs single-fetch vs mutation, and response codes reinforce it — 200/206 for reads, 201/204 for successful writes.",
+  svg: `<svg viewBox="0 0 420 120" width="420">
+    <rect x="10" y="15" width="120" height="34" rx="7" class="box"/>
+    <text x="70" y="36" text-anchor="middle" class="lbl-sm">Frontend</text>
+    <path d="M130 32 L185 32" class="arrow"/>
+    <rect x="187" y="15" width="130" height="34" rx="7" class="box-accent"/>
+    <text x="252" y="36" text-anchor="middle" class="lbl-sm" font-size="8">OpenAPI contract</text>
+    <path d="M317 32 L372 32" class="arrow"/>
+    <rect x="330" y="15" width="80" height="34" rx="7" class="box-green"/>
+    <text x="370" y="36" text-anchor="middle" class="lbl-sm" font-size="8">GET/POST</text>
+    <text x="252" y="70" text-anchor="middle" class="lbl-sm" font-size="8">verb + URL shape + status code declare intent</text>
+    <text x="252" y="86" text-anchor="middle" class="lbl-sm" font-size="8">— frontend never has to guess</text>
+  </svg>`
+},
+{
+  tag: "Process",
+  q: "How is your team agile — what does that mean day-to-day?",
+  a: "In the environments where we actually run agile — the TNB TOMAS rescue at JuruQuest, and atQuest's ERP enhancement work — it's concrete daily/weekly components, not just a label: a 15-minute daily stand-up (what I did, what's next, blockers), sprint planning at the start of each ~2-week sprint to size and commit backlog items, a Jira board tracked To Do → In Progress → Code Review → UAT → Done, a sprint review/demo for stakeholders, and a retro to adjust process. Backlog grooming happens mid-sprint so the next sprint's items are ready to go. The point of all of it is short feedback loops — catching scope or requirement drift within days instead of finding out at the end of a multi-month cycle.",
+  svg: `<svg viewBox="0 0 420 150" width="420">
+    <circle cx="210" cy="75" r="55" class="box-accent"/>
+    <text x="210" y="40" text-anchor="middle" class="lbl-sm" font-size="8">Daily stand-up</text>
+    <text x="270" y="60" text-anchor="middle" class="lbl-sm" font-size="8">Code Review</text>
+    <text x="270" y="95" text-anchor="middle" class="lbl-sm" font-size="8">UAT</text>
+    <text x="210" y="118" text-anchor="middle" class="lbl-sm" font-size="8">Review/Demo</text>
+    <text x="150" y="95" text-anchor="middle" class="lbl-sm" font-size="8">Retro</text>
+    <text x="150" y="60" text-anchor="middle" class="lbl-sm" font-size="8">Sprint plan</text>
+    <text x="210" y="140" text-anchor="middle" class="lbl-sm">~2-week sprint loop</text>
+  </svg>`
+},
+{
+  tag: "Infra",
+  q: "What's your hands-on experience with Azure or AWS cloud?",
+  a: "Honestly — I haven't directly provisioned or managed Azure/AWS infrastructure. In the enterprise environments I've worked in (Etiqa, TNB), cloud infra, scaling, and deployment pipelines are owned by a dedicated infra/migration/DevOps team; my day-to-day touchpoint with Azure is application-level — Azure DevOps for CI/CD pipelines and work tracking, and Application Insights for monitoring/telemetry. I consume those services, I don't provision the underlying resources. Where I do have genuine end-to-end cloud experience is Cloudflare — for my own projects I've set up Workers, Pages, R2 storage, and DNS myself from scratch, so I understand serverless/edge deployment models, environment config, and CI-triggered deploys firsthand. I'd expect the underlying concepts — IAM, scaling, networking — to transfer, but I want to be upfront that it's Cloudflare where I've been hands-on, not Azure/AWS infrastructure itself.",
+  svg: `<svg viewBox="0 0 420 150" width="420">
+    <rect x="10" y="15" width="120" height="30" rx="6" class="box"/>
+    <text x="70" y="34" text-anchor="middle" class="lbl-sm" font-size="8">My app code</text>
+    <path d="M130 30 L185 30" class="arrow"/>
+    <rect x="187" y="15" width="130" height="30" rx="6" class="box-accent"/>
+    <text x="252" y="34" text-anchor="middle" class="lbl-sm" font-size="8">Azure DevOps CI/CD</text>
+    <path d="M317 30 L372 30" class="arrow"/>
+    <rect x="330" y="15" width="80" height="30" rx="6" class="box-red"/>
+    <text x="370" y="30" text-anchor="middle" class="lbl-sm" font-size="7">Azure infra</text>
+    <text x="370" y="40" text-anchor="middle" class="lbl-sm" font-size="7">(owned by infra team)</text>
+    <rect x="10" y="75" width="120" height="30" rx="6" class="box"/>
+    <text x="70" y="94" text-anchor="middle" class="lbl-sm" font-size="8">My project code</text>
+    <path d="M130 90 L185 90" class="arrow"/>
+    <rect x="187" y="75" width="215" height="30" rx="6" class="box-green"/>
+    <text x="295" y="94" text-anchor="middle" class="lbl-sm" font-size="8">Cloudflare Workers/Pages/R2 — set up end-to-end by me</text>
+  </svg>`
+},
+{
+  tag: "Deep-Dive",
+  q: "Can you test a static method? Is it \"testable\"?",
+  a: "Yes — a pure static method (no side effects, no hidden dependencies, same input always gives the same output, e.g. a math/string utility) is actually the easiest thing to unit test: call it directly, assert the return value, no mocking needed since there's no state to isolate. The real problem is when a static call is a hidden dependency INSIDE another class — e.g. DateTime.Now, a static Logger, a static DB helper — because Moq can't mock static/non-virtual members, so that class can't be isolated in a test. Fix: wrap the static dependency behind an interface (e.g. IDateTimeProvider), inject that instead, and mock the interface. Pure statics = trivially testable on their own; statics-as-hidden-dependency = solved with a thin wrapper, not by avoiding statics altogether.",
+  svg: `<svg viewBox="0 0 420 160" width="420">
+    <rect x="10" y="15" width="180" height="34" rx="7" class="box-green"/>
+    <text x="100" y="36" text-anchor="middle" class="lbl-sm">Pure static (e.g. Math.Max)</text>
+    <text x="100" y="65" text-anchor="middle" class="lbl-sm" font-size="8">call directly → assert result</text>
+    <text x="100" y="79" text-anchor="middle" class="lbl-sm" font-size="8">✓ trivially testable, no mock needed</text>
+    <rect x="230" y="15" width="180" height="34" rx="7" class="box-red"/>
+    <text x="320" y="36" text-anchor="middle" class="lbl-sm" font-size="9">Static as hidden dependency</text>
+    <text x="320" y="65" text-anchor="middle" class="lbl-sm" font-size="8">DateTime.Now / static Logger</text>
+    <text x="320" y="79" text-anchor="middle" class="lbl-sm" font-size="8">✗ can't be mocked by Moq</text>
+    <path d="M320 90 L320 110" class="arrow"/>
+    <rect x="230" y="112" width="180" height="34" rx="7" class="box-accent"/>
+    <text x="320" y="129" text-anchor="middle" class="lbl-sm" font-size="8">Wrap in IDateTimeProvider</text>
+    <text x="320" y="143" text-anchor="middle" class="lbl-sm" font-size="8">→ inject &amp; mock the interface</text>
+  </svg>`
+},
+{
+  tag: "Data",
+  q: "What's your experience with caching?",
+  a: "My hands-on experience is built-in, in-process caching — .NET's IMemoryCache — holding frequently-read, rarely-changing data (reference/lookup tables, config) with sliding/absolute expiration, following the cache-aside pattern: check cache first, miss → fetch DB → populate cache, hit → return from memory. I haven't implemented distributed caching (Redis) in production — IMemoryCache lives inside one process/instance, so a multi-instance scale-out needs a shared store like Redis to avoid stale/inconsistent caches per instance. I understand the concept (shared store, invalidation on write, TTL tuning) — it's a natural next step, just not something I've wired up yet.",
+  svg: `<svg viewBox="0 0 420 130" width="420">
+    <rect x="10" y="45" width="90" height="34" rx="7" class="box"/>
+    <text x="55" y="66" text-anchor="middle" class="lbl-sm">Request</text>
+    <path d="M100 62 L155 62" class="arrow"/>
+    <rect x="157" y="45" width="110" height="34" rx="7" class="box-accent"/>
+    <text x="212" y="66" text-anchor="middle" class="lbl-sm" font-size="8">IMemoryCache?</text>
+    <path d="M267 55 L330 30" class="arrow"/>
+    <text x="300" y="25" class="lbl-sm" font-size="8">hit</text>
+    <rect x="330" y="15" width="70" height="28" rx="6" class="box-green"/>
+    <text x="365" y="33" text-anchor="middle" class="lbl-sm" font-size="8">Return</text>
+    <path d="M267 72 L330 95" class="arrow"/>
+    <text x="300" y="98" class="lbl-sm" font-size="8">miss</text>
+    <rect x="330" y="80" width="70" height="28" rx="6" class="box-red"/>
+    <text x="365" y="98" text-anchor="middle" class="lbl-sm" font-size="8">DB → cache</text>
+  </svg>`
+},
+{
+  tag: "Comms",
+  q: "How do you use message bus / RabbitMQ-type technology?",
+  a: "On PDRM C4i I used a message-queue pattern to ingest live GPS location data from patrol vehicles. GPS units publish location updates onto a queue continuously and unreliably; instead of the backend polling every device or needing a synchronous connection, a consumer picks up those messages asynchronously and updates live unit position on the Esri ArcGIS map. The value: it decouples producer from consumer — the GPS device doesn't need the backend to be up or fast at that instant, it just publishes, and the queue absorbs bursts (many units checking in at once) so the consumer drains them at its own pace without anything getting overwhelmed or blocked.",
+  svg: `<svg viewBox="0 0 420 120" width="420">
+    <rect x="10" y="43" width="100" height="34" rx="7" class="box"/>
+    <text x="60" y="64" text-anchor="middle" class="lbl-sm" font-size="8">GPS units</text>
+    <path d="M110 60 L165 60" class="arrow"/>
+    <rect x="167" y="35" width="110" height="50" rx="7" class="box-accent"/>
+    <text x="222" y="56" text-anchor="middle" class="lbl-sm" font-size="8">Message Queue</text>
+    <text x="222" y="72" text-anchor="middle" class="lbl-sm" font-size="8">(buffers bursts)</text>
+    <path d="M277 60 L332 60" class="arrow"/>
+    <rect x="334" y="43" width="76" height="34" rx="7" class="box-green"/>
+    <text x="372" y="60" text-anchor="middle" class="lbl-sm" font-size="7">Consumer</text>
+    <text x="372" y="72" text-anchor="middle" class="lbl-sm" font-size="7">→ ArcGIS</text>
+  </svg>`
+},
+{
+  tag: "Architecture",
+  q: "What's the difference between synchronous and asynchronous, and where do you use each?",
+  a: "Synchronous: the calling code blocks — waits, doing nothing else, until the operation finishes. Asynchronous: the code kicks off the operation and the thread is freed to do other work, resuming via await once it completes. I use async for anything I/O-bound — DB calls (await SaveChangesAsync/ToListAsync), HTTP calls to external systems (SAP), file access, every ASP.NET Core controller action (async Task<IActionResult>) — because the thread isn't doing CPU work while waiting on network/disk, so it can serve other requests instead. The GPS message-bus consumer on PDRM is the same idea at a different layer. I'd only use sync for trivial in-memory CPU logic with no I/O, where async just adds overhead.",
+  svg: `<svg viewBox="0 0 420 130" width="420">
+    <text x="10" y="18" class="lbl-sm">Synchronous — thread blocked</text>
+    <rect x="10" y="25" width="100" height="24" rx="5" class="box"/><text x="60" y="41" text-anchor="middle" class="lbl-sm" font-size="8">Call DB</text>
+    <rect x="110" y="25" width="180" height="24" rx="5" class="box-red"/><text x="200" y="41" text-anchor="middle" class="lbl-sm" font-size="8">…thread idle, waiting…</text>
+    <rect x="290" y="25" width="100" height="24" rx="5" class="box"/><text x="340" y="41" text-anchor="middle" class="lbl-sm" font-size="8">Continue</text>
+    <text x="10" y="80" class="lbl-sm">Asynchronous — thread freed</text>
+    <rect x="10" y="87" width="100" height="24" rx="5" class="box"/><text x="60" y="103" text-anchor="middle" class="lbl-sm" font-size="8">await DB call</text>
+    <rect x="110" y="87" width="180" height="24" rx="5" class="box-green"/><text x="200" y="103" text-anchor="middle" class="lbl-sm" font-size="8">thread serves other requests</text>
+    <rect x="290" y="87" width="100" height="24" rx="5" class="box"/><text x="340" y="103" text-anchor="middle" class="lbl-sm" font-size="8">Resume</text>
+  </svg>`
+}
+];
+
+let masteredIds = new Set(JSON.parse(localStorage.getItem('interview-mastered') || '[]'));
+let order = cards.map((_, i) => i);
+
+function saveMastery(){ localStorage.setItem('interview-mastered', JSON.stringify([...masteredIds])); updateProgress(); }
+function updateProgress(){ document.getElementById('progress').textContent = masteredIds.size + ' / ' + cards.length + ' mastered'; }
+
+function buildCardEl(i){
+  const c = cards[i];
+  const el = document.createElement('div');
+  el.className = 'card' + (masteredIds.has(i) ? ' mastered' : '');
+  el.dataset.id = i;
+  el.innerHTML = `
+    <div class="card-head" onclick="this.parentElement.classList.toggle('open')">
+      <div>
+        <span class="tag">${c.tag}</span>
+        <div class="q">${c.q}</div>
+      </div>
+      <div class="chev">▶</div>
+    </div>
+    <div class="body"><div class="body-inner">
+      ${c.svg ? `<div class="diagram">${c.svg}</div>` : ''}
+      <div class="a">${c.a}</div>
+      <button class="mark" onclick="event.stopPropagation(); toggleMastered(${i})">${masteredIds.has(i) ? '✓ Mastered' : 'Mark as mastered'}</button>
+    </div></div>
+  `;
+  return el;
+}
+
+const GROUP_ORDER = [
+  'My Story', 'Architecture', 'Data', 'Security', 'Identity', 'Integration',
+  'Mobile', 'GIS', 'API', 'Process', 'Infra', 'DevOps', 'Comms',
+  'Compliance', 'Observability', 'Docs', 'Deep-Dive'
+];
+const GROUP_LABEL = {
+  'My Story': 'My Story — Turnaround Cases',
+  'Deep-Dive': 'Deep-Dive — Architecture, Data & Performance'
+};
+function slug(s){ return s.toLowerCase().replace(/[^a-z0-9]+/g, '-'); }
+
+function groupedTags(){
+  const present = [...new Set(cards.map(c => c.tag))];
+  const ordered = GROUP_ORDER.filter(t => present.includes(t));
+  const leftover = present.filter(t => !GROUP_ORDER.includes(t));
+  return ordered.concat(leftover);
+}
+
+function renderSidebar(){
+  const sidebar = document.getElementById('sidebar');
+  sidebar.innerHTML = '';
+  const introBtn = document.createElement('button');
+  introBtn.className = 'navlink';
+  introBtn.textContent = 'Intro / Hook';
+  introBtn.onclick = () => document.querySelector('.intro-card').scrollIntoView({behavior:'smooth', block:'start'});
+  sidebar.appendChild(introBtn);
+
+  const heading = document.createElement('div');
+  heading.className = 'nav-heading';
+  heading.textContent = 'Study Sections';
+  sidebar.appendChild(heading);
+
+  groupedTags().forEach(tag => {
+    const count = cards.filter(c => c.tag === tag).length;
+    const btn = document.createElement('button');
+    btn.className = 'navlink';
+    btn.dataset.section = slug(tag);
+    btn.innerHTML = `${GROUP_LABEL[tag] || tag}<span class="count">${count}</span>`;
+    btn.onclick = () => document.getElementById('sec-' + slug(tag)).scrollIntoView({behavior:'smooth', block:'start'});
+    sidebar.appendChild(btn);
+  });
+}
+
+function render(filterUnmastered){
+  const container = document.getElementById('sections');
+  container.innerHTML = '';
+  const byTag = {};
+  order.forEach(i => {
+    if(filterUnmastered && masteredIds.has(i)) return;
+    const tag = cards[i].tag;
+    (byTag[tag] = byTag[tag] || []).push(i);
+  });
+  groupedTags().forEach(tag => {
+    const ids = byTag[tag];
+    if(!ids || !ids.length) return;
+    const section = document.createElement('div');
+    section.className = 'section';
+    section.id = 'sec-' + slug(tag);
+    section.innerHTML = `<div class="section-title"><span>${GROUP_LABEL[tag] || tag}</span><span class="line"></span></div>`;
+    const grid = document.createElement('div');
+    grid.className = 'grid';
+    ids.forEach(i => grid.appendChild(buildCardEl(i)));
+    section.appendChild(grid);
+    container.appendChild(section);
+  });
+  updateProgress();
+  observeSections();
+}
+
+let sectionObserver = null;
+function observeSections(){
+  if(sectionObserver) sectionObserver.disconnect();
+  sectionObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if(!entry.isIntersecting) return;
+      const id = entry.target.id.replace('sec-', '');
+      document.querySelectorAll('.navlink[data-section]').forEach(b => b.classList.remove('active'));
+      const active = document.querySelector(`.navlink[data-section="${id}"]`);
+      if(active) active.classList.add('active');
+    });
+  }, { rootMargin: '-80px 0px -70% 0px', threshold: 0 });
+  document.querySelectorAll('.section').forEach(s => sectionObserver.observe(s));
+}
+
+function toggleIntro(){
+  const el = document.getElementById('fullIntro');
+  const btn = document.querySelector('.intro-toggle');
+  el.classList.toggle('open');
+  btn.textContent = el.classList.contains('open') ? 'Hide full 3-minute version ▴' : 'Show full 3-minute version ▾';
+}
+
+function toggleMastered(i){
+  if(masteredIds.has(i)) masteredIds.delete(i); else masteredIds.add(i);
+  saveMastery();
+  render(document.getElementById('progress').dataset.filtered === '1');
+}
+
+function expandAll(){ document.querySelectorAll('.card').forEach(c => c.classList.add('open')); }
+function collapseAll(){ document.querySelectorAll('.card').forEach(c => c.classList.remove('open')); }
+function shuffleCards(){ order = order.sort(() => Math.random() - 0.5); render(document.getElementById('progress').dataset.filtered === '1'); }
+function showUnmastered(){
+  const p = document.getElementById('progress');
+  const filtered = p.dataset.filtered === '1';
+  p.dataset.filtered = filtered ? '0' : '1';
+  render(!filtered);
+}
+function resetMastery(){ masteredIds.clear(); saveMastery(); render(document.getElementById('progress').dataset.filtered === '1'); }
+
+renderSidebar();
+render(false);
+</script>
+</body>
+</html>

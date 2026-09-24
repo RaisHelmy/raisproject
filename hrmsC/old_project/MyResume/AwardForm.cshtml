@@ -1,0 +1,95 @@
+﻿@model OJA.Models.Award
+@{
+    Layout = null;
+
+    var readType = string.Empty;
+    if(!string.IsNullOrEmpty(Model.AwardID))
+    {
+        readType = "readonly";
+    }
+}
+
+<form id="awardForm">
+    @Html.HiddenFor(m => m.AwardID)
+    <div class="row">
+        <div class="col-md-12">
+            <div class="portlet box blue">
+                <div class="mini-triangle"><img src="../Assets/img/menu-red-triangle.png" /></div>
+                <div class="portlet-title">
+                    <div class="caption">
+                        <i class="fa fa-reorder"></i>@(string.IsNullOrEmpty(Model.AwardID) ? "Add Award" : "Edit Award")
+                    </div>
+                </div>
+
+                <div class="portlet-body form">
+                    <div class="form-body">
+                        <div class="form-horizontal" id="workExperienceForm">
+                            <div class="form-group">
+                                <label class="control-label col-md-3">
+                                    Honours and Awards <span style="color:red;" class="star-span @(readType == "readonly" ? "hidden" : "")">*</span>
+                                </label>
+                                <div class="col-md-6 form-control-static">
+                                    <input class="form-control editable" id="AwardName" name="AwardName" value="@Model.AwardName" @readType />
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label col-md-3">
+                                    Grantor <span style="color:red;" class="star-span @(readType == "readonly" ? "hidden" : "")">*</span>
+                                </label>
+                                <div class="col-md-6 form-control-static">
+                                    <input class="form-control editable" id="Grantor" name="Grantor" value="@Model.Grantor" @readType />
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="control-label col-md-3">
+                                    Year Earned <span style="color:red;" class="star-span @(readType == "readonly" ? "hidden" : "")">*</span>
+                                </label>
+                                <div class="col-md-6 form-control-static">
+                                    <input class="form-control editable" id="YearEarned" type="number" name="YearEarned" value="@(readType == "readonly" ? Model.YearEarned.ToString() : "")" @readType />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+ 
+<script>
+    $("#YearEarned").keydown(function (e) {
+        if (e.shiftKey || e.ctrlKey || e.altKey) { // if shift, ctrl or alt keys held down
+            e.preventDefault();         // Prevent character input
+        } else {
+            var n = e.keyCode;
+            if (!((n == 8)              // backspace
+                || (n == 46)                // delete
+                || (n >= 35 && n <= 40)     // arrow keys/home/end
+                || (n >= 48 && n <= 57)     // numbers on keyboard
+                || (n >= 96 && n <= 105))   // number on keypad
+            ) {
+                e.preventDefault();     // Prevent character input
+            }
+        }
+    });
+    //$('#YearEarned').on('keypress', function (e) {
+    //    return e.metaKey || // cmd/ctrl
+    //        e.which <= 0 || // arrow keys
+    //        e.which == 8 || // delete key
+    //        /[0-9]/.test(String.fromCharCode(e.which)); // numbers
+    //});
+
+    //$('#YearEarned').keyup(function () {
+    //    var n = $(this).val();
+    //    if (!isNumeric(n))
+    //        return false;
+
+    //    return true;
+    //});
+
+    //function isNumeric(n) {
+    //    return !isNaN(parseFloat(n)) && isFinite(n);
+    //}
+
+</script>

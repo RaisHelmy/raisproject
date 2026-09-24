@@ -1,0 +1,625 @@
+﻿
+@{
+    ViewBag.Title = "MedicalBoardViewForm";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    DateTime d1 = DateTime.Now.AddYears(-20);
+    string dtStrStart = d1.ToString("dd MMM yyyy");
+}
+
+<style type="text/css">
+    .hidden_1 {
+        display: none;
+    }
+
+    .LabelDisplay{
+        border: 1px #e5e5e5 solid;
+        padding: 6px;
+        width: 100%;
+        background-color: #F9F9F9;
+    }
+</style>
+
+
+
+
+<div class="form-section">
+    <div class="row">
+        <div class="col-md-12">
+            <h1 class="page-title">
+               Medical Board Details
+                <span style="padding-left:20px;">
+                    <small></small>
+                </span>
+            </h1>
+        </div>
+    </div>
+</div>
+
+<input id="hfEmployeeID" type="hidden" value="@ViewBag.EmployeeID" />
+<input id="hfRequestID" type="hidden" value="@ViewBag.RequestID" />
+<input id="hfTaskID" type="hidden" value="@ViewBag.TaskID" />
+
+<!-- Employee Details -->
+@Html.Partial("_MedicalBoardEmployeeDetails")
+
+<!-- Medical Board Details -->
+@Html.Partial("_MedicalBoardDetails")
+
+<!-- Attachment -->
+@Html.Action("AttachmentControl", "Attachment", new { EmployeeID = ViewBag.EmployeeID, Mode = ViewBag.Mode, SourceType = "MedicalBoard", RequestID = ViewBag.RequestID })
+<div class="row" id="divAttachNote" style="display:none;">
+    <div class="col-md-12">
+        <label style="position: relative;top: -20px;">Note: COMPULSORY to attach latest Medical Report</label>
+    </div>
+</div>
+<!-- Audit Log -->
+@Html.Partial("_AuditLog")
+
+<!-- Approval Section-->
+@Html.Partial("_MedicalBoardApprovalDetails")
+
+<div class="row">
+    <input type="hidden" name="ctl00$ContentPlaceHolder1$hfDownloadSource" id="ContentPlaceHolder1_hfDownloadSource">
+    <div class="col-md-12">
+        <input type="button" class="btn green" value="Verify" id="btnVerify" style="display:none;" onclick="ConfirmAction('Verified');" />
+        <input type="button" class="btn green" value="MB Arranged" id="btnMBArranged" style="display:none;" onclick="ConfirmAction('MB Arranged');" />
+        <input type="button" class="btn green" value="MB Attended" id="btnMBAttended" style="display:none;" onclick="ConfirmAction('MB Attended');" />
+        <input type="button" class="btn green" value="Decline" id="btnDecline" style="display:none;" onclick="ConfirmAction('Declined');" />
+        <input type="button" class="btn green" value="Withdraw" id="btnWithdraw" style="display:none;" onclick="ConfirmAction('Withdrawn');" />
+        <input type="button" class="btn green" value="Fit To Work" id="btnFitToWork" style="display:none;" onclick="ConfirmAction('Fit To Work');" />
+        <input type="button" class="btn green" value="Unfit To Work" id="btnUnfitToWork" style="display:none;" onclick="ConfirmAction('Unfit To Work');" />
+        <input type="button" class="btn green" value="Back" id="btnBack" style="display:none;" onclick="window.history.back()" />
+    </div>
+</div>
+
+<!-- Success Message -->
+<div class="modal fade" id="SuccessSubmit" tabindex="-1" role="basic" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header Success-header">
+                @*<button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>*@
+                <h4 class="Success-title">Action Successfully Completed</h4>
+            </div>
+            <div class="modal-body Success-body">
+                <div class="well">
+                    Your Medical Board application has been successfully submitted.
+                </div>
+            </div>
+            <div class="modal-footer Success-footer">
+                <button type="submit" class="btn default blue" id="btnOK">
+                    <i class="fa fa-check"></i>
+                    OK
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Confirmation Message -->
+<div class="modal fade" id="ConfirmUpdate" tabindex="-1" role="basic" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                <h4 class="modal-title">Confirmation</h4>
+            </div>
+            <div class="modal-body">
+                <div class="well">
+                    Are you sure you want to Submit this Loan application?\n\rPress Confirm to proceed, or Close to stay on the current page.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="submit" class="btn default blue" id="btnSubmitVerified" onclick="javascript: ApproverAction(this,'Verified')">
+                    <i class="fa fa-check"></i>
+                    Confirm Verify
+                </button>
+                <button type="submit" class="btn default blue" id="btnSubmitDeclined" onclick="javascript: ApproverAction(this,'Declined')">
+                    <i class="fa fa-check"></i>
+                    Confirm decline
+                </button>
+                <button type="submit" class="btn default blue" id="btnSubmitWithdrawn" onclick="javascript: ApproverAction(this,'Withdrawn')">
+                    <i class="fa fa-check"></i>
+                    Confirm withdraw
+                </button>
+                <button type="submit" class="btn default blue" id="btnSubmitMBArranged" onclick="javascript: ApproverAction(this,'MB Arranged')">
+                    <i class="fa fa-check"></i>
+                    Confirm MB Arranged
+                </button>
+                <button type="submit" class="btn default blue" id="btnSubmitMBAttended" onclick="javascript: ApproverAction(this,'MB Attended')">
+                    <i class="fa fa-check"></i>
+                    Confirm MB Attended
+                </button>
+
+                <button type="submit" class="btn default blue" id="btnSubmitFitToWork" onclick="javascript: ApproverAction(this,'Fit To Work')">
+                    <i class="fa fa-check"></i>
+                    Confirm Fit to work
+                </button>
+                <button type="submit" class="btn default blue" id="btnSubmitUnfitToWork" onclick="javascript: ApproverAction(this,'Unfit To Work')">
+                    <i class="fa fa-check"></i>
+                    Confirm UnFitToWork
+                </button>
+
+                <button type="button" class="btn default" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Loading Gif -->
+<div id="divLoading" style="margin: 0px; padding: 0px; position: fixed; right: 0px;
+    top: 0px; width: 100%; height: 100%; background-color:gainsboro; z-index: 30001;
+    opacity: .8; filter: alpha(opacity=70);display:none">
+    <p style="position: absolute; top: 30%; left: 30%; color: black;">
+        Loading, please wait...<img src="../Assets/img/ajax-loading.gif" />
+
+    </p>
+</div>
+
+<script type="text/javascript">
+    // Variable
+    //var Path = '/_layouts/15/tnbess';
+    //var Path = '/_layouts/15/essv2';
+    var Path = 'http://localhost:49773';
+    var EmployeeID = '';
+    var RequestID = '';
+
+    // Helper function
+    function convertDate(inputFormat) {
+        function pad(s) { return (s < 10) ? '0' + s : s; }
+        var d = new Date(inputFormat);
+        return [pad(d.getDate()), pad(d.getMonth() + 1), d.getFullYear()].join('/');
+    }
+
+    function getParameterByName(name) {
+        name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
+        var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
+        results = regex.exec(location.search);
+        return results === null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
+    }
+
+    //  Logical function (AJAX)
+    function GetMedicalBoardDetails(_RequestID)
+    {
+        jQuery.support.cors = true;
+
+        $.ajax({
+            url: Path + '/api/MedicalBoardWebApi/GetMedicalBoardDetails?RequestID=' + _RequestID,
+            type: 'GET',
+            contentType: "application/json;charset=utf-8",
+            success: function (result) {
+                if (result !== null) {
+                    SetMedicalBoardDetails(result, _RequestID);
+                }
+                else
+                    console.log('failed!');
+            },
+            error: function (x, y, z) {
+                alert(x + '\n' + y + '\n' + z);
+            }
+        });
+    }
+
+    function SetEmployeeDetails(result)
+    {
+        document.getElementById('ct00_EmployeeCodeRO').innerHTML = result.EmployeeCode;
+        document.getElementById('ct00_EmployeeNameRO').innerHTML = result.EmployeeName;
+        document.getElementById('ct00_NewICRO').innerHTML = result.NewIC;
+        document.getElementById('ct00_PayScaleGroupRO').innerHTML = result.PayScaleGroup;
+        document.getElementById('ct00_CostCenterRO').innerHTML = (result.CostCenterCode + " - " + result.CostCenterName);
+
+        document.getElementById('ct00_JoinedDateRO').innerHTML = result.JoinedDate;
+        document.getElementById('ct00_DepartmentRO').innerHTML = result.DepartmentName;
+        document.getElementById('ct00_UnitSectionRO').innerHTML = result.UnitSectionName;
+        document.getElementById('ct00_PositionRO').innerHTML = result.PositionName;
+        document.getElementById('ct00_ManagerRO').innerHTML = result.ManagerName;
+    }
+
+    function SetMedicalBoardDetails(result, _RequestID) {
+        document.getElementById('btnBack').style.display = '';
+    
+        SetEmployeeDetails(result);
+        document.getElementById('ct01_ReferenceNo').value = result.ReferenceNo;
+        document.getElementById('ct01_Status').value = result.Status;
+        document.getElementById('ct01_CreatedBy').value = result.CreatedBy;
+        document.getElementById('ct01_ApplicantName').value = result.ApplicantName;
+        document.getElementById('ct01_ApplicantID').value = result.ApplicantID;
+        document.getElementById('ct01_Location').value = result.Location;
+        document.getElementById('ct01_DetailsID').value = result.DetailsID;
+        var _AppointmentDate = "";
+        if (result.AppointmentDate != null)
+        {
+            _AppointmentDate=convertDate(result.AppointmentDate);
+        }
+        document.getElementById('ct01_AppointmentDate').value = _AppointmentDate;
+        document.getElementById('ct01_AppointmentDateRO').value = _AppointmentDate;
+        var _CurrentApprover =result.CurrentApprover;
+        if (result.CurrentApprover == "")
+        {
+            _CurrentApprover="-";
+        }
+        document.getElementById('ct01_CurrentApprover').innerHTML = _CurrentApprover;
+
+        document.getElementById('trRefNo').style.display = '';
+        document.getElementById('trAuditLog').style.display = '';
+        document.getElementById('divPeoplePicker').style.display = 'none';
+        document.getElementById('divApplicant').style.display = '';
+        document.getElementById('divCurrentApprover').style.display = '';
+
+        GetAuditLog(_RequestID);
+
+        var _Source = getParameterByName('Source');
+        if (_Source != "Report") {
+            GetButtonConfiguration(_RequestID);
+            
+        }
+
+        var _Status = document.getElementById('ct01_Status').value;
+        var _TaskID = document.getElementById('hfTaskID').value;
+
+        if (_TaskID == "") {
+            document.getElementById('ct01_Location').readOnly = true;
+            document.getElementById('divAppointmentDate').style.display = 'none';
+            document.getElementById('divAppointmentDateRO').style.display = '';
+            
+        }
+        else
+        {
+            document.getElementById('trApprovalComments').style.display = '';
+            document.getElementById('divAppointmentDate').style.display = '';
+            document.getElementById('divAppointmentDateRO').style.display = 'none';
+            document.getElementById('lvLocationMan').style.display = '';
+            document.getElementById('lvADMan').style.display = '';
+            document.getElementById('divAttachNote').style.display = '';
+            if (_Status == "Pending")
+            {
+                document.getElementById('trLocation').style.display = 'none';
+                document.getElementById('trAppDate').style.display = 'none';
+            }
+
+        }
+    }
+
+    function GetAuditLog(_RequestID) {
+        jQuery.support.cors = true;
+
+        $.ajax({
+            url: Path + '/api/MedicalBoardWebApi/GetAuditLog?id=' + _RequestID,
+            type: 'GET',
+            contentType: "application/json;charset=utf-8",
+            success: function (result) {
+                if (result != null) {
+                  
+                    SetAuditLog(result);
+                }
+                else
+                    console.log('failed!');
+            },
+            error: function (x, y, z) {
+                alert(x + '\n' + y + '\n' + z);
+            }
+        });
+    }
+
+    function SetAuditLog(result) {
+        var _AuditTrailBody = '';
+
+        for (var i = 0; i < result.length; i++) {
+            var _AuditTrail = "<tr><td>" + result[i].EmployeeName + "</td><td>" +
+                result[i].FormattedDate + "</td><td>" + result[i].ActivityName + "</td><td>" +
+                result[i].ActivityAction + "</td><td>" + result[i].Comment + "</td></tr>";
+            _AuditTrailBody += _AuditTrail;
+        }
+
+        $('#tblAuditLog').find('tbody').html(_AuditTrailBody);
+    }
+
+    function GetButtonConfiguration(_RequestID) {
+        jQuery.support.cors = true;
+
+        $.ajax({
+            url: Path + '/api/MedicalBoardWebApi/GetActionButtons?RequestID=' + _RequestID + '&CurrentEmployeeID=' + EmployeeID,
+            type: 'GET',
+            contentType: "application/json;charset=utf-8",
+            success: function (result) {
+                if (result != null) {
+                    SetButtonConfiguration(result);
+                }
+                else
+                    console.log('failed!');
+            },
+            error: function (x, y, z) {
+                alert(x + '\n' + y + '\n' + z);
+            }
+        });
+    }
+
+    function SetButtonConfiguration(result) {
+
+        var ButtonVerity = document.getElementById('btnVerify');
+        var ButtonDecline = document.getElementById('btnDecline');
+        var ButtonWithdraw = document.getElementById('btnWithdraw');
+        var ButtonMBArranged = document.getElementById('btnMBArranged');
+        var ButtonMBAttended = document.getElementById('btnMBAttended');
+        var ButtonFitToWork = document.getElementById('btnFitToWork');
+        var ButtonUnfitToWork = document.getElementById('btnUnfitToWork');
+
+
+        if (result.CanDecline == '1') {
+            ButtonDecline.style.display = '';
+        }
+        else {
+            ButtonDecline.style.display = 'none';
+        }
+
+        if (result.CanWithdraw == '1') {
+            ButtonWithdraw.style.display = '';
+        }
+        else {
+            ButtonWithdraw.style.display = 'none';
+        }
+
+        if (result.CanVerify == '1') {
+            ButtonVerity.style.display = '';
+        }
+        else {
+            ButtonVerity.style.display = 'none';
+        }
+
+        if (result.CanMBArrange == '1') {
+            ButtonMBArranged.style.display = '';
+        }
+        else {
+            ButtonMBArranged.style.display = 'none';
+        }
+
+        if (result.CanMBAttend == '1') {
+            ButtonMBAttended.style.display = '';
+        }
+        else {
+            ButtonMBAttended.style.display = 'none';
+        }
+
+        if (result.CanFitToWork == '1') {
+            ButtonFitToWork.style.display = '';
+        }
+        else {
+            ButtonFitToWork.style.display = 'none';
+        }
+
+        if (result.CanUnfitToWork == '1') {
+            ButtonUnfitToWork.style.display = '';
+        }
+        else {
+            ButtonUnfitToWork.style.display = 'none';
+        }
+
+    }
+
+    function ConfirmAction(_Status) {
+
+        var ValidationMsg = '';
+        var _AppointmentDate = document.getElementById("ct01_AppointmentDate").value;
+        var _Location = document.getElementById("ct01_Location").value;
+        var _Comment = document.getElementById("txtApprovalComment").value;
+
+        if (_Status == "Declined" || _Status == "Unfit To Work") {
+            if (_Comment == "") {
+                ValidationMsg += '- Comment is required.\n'
+            }
+  
+        }
+
+        if (_Status != "Declined" && _Status != "Withdrawn" && _Status != "Verified")
+        {
+            if (_Location == "") {
+                ValidationMsg += '- Location is required.\n'
+            }
+
+            if (_AppointmentDate == "") {
+                ValidationMsg += '- Appointment Date is required.\n'
+            }
+        }
+
+        // Consolidate Message
+        if (ValidationMsg != null && ValidationMsg != '') {
+            alert(ValidationMsg);
+        }
+        else
+        {
+            if (_Status == "Withdrawn") {
+                $("#btnSubmitVerified").addClass("hidden_1");
+                $("#btnSubmitDeclined").addClass("hidden_1");
+                $("#btnSubmitMBArranged").addClass("hidden_1");
+                $("#btnSubmitMBAttended").addClass("hidden_1");
+                $("#btnSubmitFitToWork").addClass("hidden_1");
+                $("#btnSubmitUnfitToWork").addClass("hidden_1");
+                $("#btnSubmitWithdrawn").removeClass("hidden_1");
+                $(".modal-body .well").html('Are you sure you want to Withdraw this Medical board application?\n\rPress Confirm to proceed, or Close to stay on the current page.');
+                $("#btnOK").click(function () { RedirectTo('Withdraw'); });
+                $("#ConfirmUpdate").modal('show');
+            }
+
+            if (_Status == "Verified") {
+                $("#btnSubmitVerified").removeClass("hidden_1");
+                $("#btnSubmitDeclined").addClass("hidden_1");
+                $("#btnSubmitMBArranged").addClass("hidden_1");
+                $("#btnSubmitMBAttended").addClass("hidden_1");
+                $("#btnSubmitFitToWork").addClass("hidden_1");
+                $("#btnSubmitUnfitToWork").addClass("hidden_1");
+                $("#btnSubmitWithdrawn").addClass("hidden_1");
+                $(".modal-body .well").html('Are you sure you want to Verify this Medical board application?\n\rPress Confirm to proceed, or Close to stay on the current page.');
+                $("#btnOK").click(function () { RedirectTo('Verify'); });
+                $("#ConfirmUpdate").modal('show');
+            }
+
+            if (_Status == "MB Arranged") {
+                $("#btnSubmitVerified").addClass("hidden_1");
+                $("#btnSubmitDeclined").addClass("hidden_1");
+                $("#btnSubmitMBArranged").removeClass("hidden_1");
+                $("#btnSubmitMBAttended").addClass("hidden_1");
+                $("#btnSubmitFitToWork").addClass("hidden_1");
+                $("#btnSubmitUnfitToWork").addClass("hidden_1");
+                $("#btnSubmitWithdrawn").addClass("hidden_1");
+                $(".modal-body .well").html('Are you sure you want to change this Medical board application status to MB Arranged?\n\rPress Confirm to proceed, or Close to stay on the current page.');
+                $("#btnOK").click(function () { RedirectTo('MBArranged'); });
+                $("#ConfirmUpdate").modal('show');
+            }
+
+            if (_Status == "MB Attended") {
+                $("#btnSubmitVerified").addClass("hidden_1");
+                $("#btnSubmitDeclined").addClass("hidden_1");
+                $("#btnSubmitMBArranged").addClass("hidden_1");
+                $("#btnSubmitMBAttended").removeClass("hidden_1");
+                $("#btnSubmitFitToWork").addClass("hidden_1");
+                $("#btnSubmitUnfitToWork").addClass("hidden_1");
+                $("#btnSubmitWithdrawn").addClass("hidden_1");
+                $(".modal-body .well").html('Are you sure you want to change this Medical board application status to MB Attended?\n\rPress Confirm to proceed, or Close to stay on the current page.');
+                $("#btnOK").click(function () { RedirectTo('MBAttended'); });
+                $("#ConfirmUpdate").modal('show');
+            }
+
+            if (_Status == "Fit To Work") {
+                $("#btnSubmitVerified").addClass("hidden_1");
+                $("#btnSubmitDeclined").addClass("hidden_1");
+                $("#btnSubmitMBArranged").addClass("hidden_1");
+                $("#btnSubmitMBAttended").addClass("hidden_1");
+                $("#btnSubmitFitToWork").removeClass("hidden_1");
+                $("#btnSubmitUnfitToWork").addClass("hidden_1");
+                $("#btnSubmitWithdrawn").addClass("hidden_1");
+                $(".modal-body .well").html('Are you sure you want to change this Medical board application status to Fit To Work?\n\rPress Confirm to proceed, or Close to stay on the current page.');
+                $("#btnOK").click(function () { RedirectTo('Fit To Work'); });
+                $("#ConfirmUpdate").modal('show');
+            }
+
+            if (_Status == "Unfit To Work") {
+                $("#btnSubmitVerified").addClass("hidden_1");
+                $("#btnSubmitDeclined").addClass("hidden_1");
+                $("#btnSubmitMBArranged").addClass("hidden_1");
+                $("#btnSubmitMBAttended").addClass("hidden_1");
+                $("#btnSubmitFitToWork").addClass("hidden_1");
+                $("#btnSubmitUnfitToWork").removeClass("hidden_1");
+                $("#btnSubmitWithdrawn").addClass("hidden_1");
+                $(".modal-body .well").html('Are you sure you want to change this Medical board application status to Unfit To Work?\n\rPress Confirm to proceed, or Close to stay on the current page.');
+                $("#btnOK").click(function () { RedirectTo('Unfit To Work'); });
+                $("#ConfirmUpdate").modal('show');
+            }
+
+            if (_Status == "Declined") {
+                $("#btnSubmitVerified").addClass("hidden_1");
+                $("#btnSubmitDeclined").removeClass("hidden_1");
+                $("#btnSubmitMBArranged").addClass("hidden_1");
+                $("#btnSubmitMBAttended").addClass("hidden_1");
+                $("#btnSubmitFitToWork").addClass("hidden_1");
+                $("#btnSubmitUnfitToWork").addClass("hidden_1");
+                $("#btnSubmitWithdrawn").addClass("hidden_1");
+                $(".modal-body .well").html('Are you sure you want to decline this Medical board application?\n\rPress Confirm to proceed, or Close to stay on the current page.');
+                $("#btnOK").click(function () { RedirectTo('Declined'); });
+                $("#ConfirmUpdate").modal('show');
+            }
+        }
+    }
+
+    function RedirectTo(_Action) {
+        switch (_Action) {
+            case "Verify":
+            case "Declined":
+            case "MBArranged":
+            case "MBAttended":
+            case "Fit To Work":
+            case "Unfit To Work":
+                window.location.href = Path + '/MSS/MedicalBoardInTray';
+                break;
+            case "Submit":
+            case "Withdraw":
+                window.location.href = Path + '/MedicalBoard/MedicalBoardHistory';
+                break;
+            default:
+                window.location.href = '/Pages/default.aspx';
+        }
+    }
+
+    function ApproverAction(btn, _Action)
+    {
+        btn.disabled = true;
+        $("#divLoading").show();
+        $(".Success-body .well").html('Your Medical Board Application has been successfully submitted. Status:' + _Action);
+        var myVar = setTimeout(function () { ApproverActionFunction(btn, _Action); }, 3000);
+    }
+
+    function ApproverActionFunction(btn, _Action)
+    {
+        var _ID =document.getElementById('hfRequestID').value;
+        var _TaskID = document.getElementById('hfTaskID').value;
+        var _CurrentUserID = EmployeeID;
+        var _ApproverComment = document.getElementById('txtApprovalComment').value;
+        var _ActivityName = "";
+        var _OptionalApprover = "";
+        var _Status = _Action;
+        var _AppointmentDate = document.getElementById("ct01_AppointmentDate").value;
+        var _Location = document.getElementById("ct01_Location").value;
+        var _DetailsID = document.getElementById("ct01_DetailsID").value;
+        
+        var form = {
+            ID: _ID,
+            CurrentUserID: _CurrentUserID,
+            Status: _Status,
+            ApproverComment: _ApproverComment,
+            TaskID: _TaskID,
+            ActivityName: _ActivityName,
+            OptionalApprover: _OptionalApprover,
+            NewAppointmentDate: _AppointmentDate,
+            NewLocation: _Location,
+            DetailsID:_DetailsID
+        };
+
+
+        $.ajax({
+            type: "POST",
+            url: '@Url.Content("~/MedicalBoard/PostApproverAction")',
+            cache: false,
+            async: false,
+            dataType: "json",
+            data: form,
+            success: function (result) {
+                if (result.Success) {
+                    $("#ConfirmUpdate").modal('toggle');
+                    $("#divLoading").hide();
+                    $("#SuccessSubmit").modal();
+                }
+                else {
+                    $("#ConfirmUpdate").modal('toggle');
+                    $("#divLoading").hide();
+                    alert('PostApproverAction   ' + result.errorMsg);
+                    btn.disabled = false;
+                }
+            },
+            error: function (e) {
+
+            }
+        });
+    }
+
+    //Page Load
+    function FormConfiguration() {
+        RequestID = document.getElementById('hfRequestID').value;
+        EmployeeID = document.getElementById('hfEmployeeID').value;
+
+        if (RequestID != "")
+        {
+            GetMedicalBoardDetails(RequestID);
+        }
+    }
+
+    $(document).ready(function () {
+        FormConfiguration();
+
+        // Form plugin function
+        $('.date-picker').datepicker({
+            format: 'dd/mm/yyyy',
+            autoclose: true,
+            setStartDate: '@dtStrStart',
+        });
+
+    });
+
+</script>
+
+

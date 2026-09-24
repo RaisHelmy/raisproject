@@ -1,0 +1,234 @@
+﻿@model LeaveApplication.Models.LeaveApplicationVM
+
+@*Brand new form*@
+@if ((Model.LeaveStatus == "Draft" || Model.LeaveStatus == "DR")
+    && Model.LeaveID == Guid.Empty)
+{
+    <div class="row iring-keluarga-sakit">
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="control-label col-md-4">Hospital Name <span style="color:red;"> *</span></label>
+                    <div class="col-md-8 form-control-static">
+                        <input type="text" class="form-control"
+                               name="HospitalName">
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="control-label col-md-4">Location <span style="color:red;"> *</span></label>
+                    <div class="col-md-8 form-control-static">
+                        <input type="text" class="form-control"
+                               name="HospitalLoc">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row iring-keluarga-sakit">
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="control-label col-md-4">Distance (KM) <span style="color:red;"> *</span></label>
+                    <div class="col-md-8 form-control-static">
+                        <input type="text" class="form-control number-only"
+                               name="Distance">
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="control-label col-md-4">Appointment Date <span style="color:red;"> *</span></label>
+                    <div class="col-md-8 form-control-static">
+                        <div class="input-group date date-picker" data-date-format="dd/mm/yyyy">
+                            <input type="text" class="form-control AppointmentDate" id="AppointmentDate" name="AppointmentDate" />
+                            <span class="input-group-btn">
+                                <button type="button" class="btn default"><i class="fa fa-calendar"></i></button>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row iring-keluarga-sakit">
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="control-label col-md-4">Repetition Case?<span style="color:red;"> *</span></label>
+                    <input type="hidden" name="IsRepeat" />
+                    <div class="col-md-8 form-control-static">
+                        <select id="ddlIsRepeat" class="form-control" onchange="_IringKeluargaSakitDetails_IsRepeatChanged()">
+                            <option value="" selected="selected">- Please Select -</option>
+                            <option value="Yes">Yes</option>
+                            <option value="No">No</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+@*Opening a draft*@
+else if ((Model.LeaveStatus == "Draft" || Model.LeaveStatus == "DR" ||
+          Model.LeaveStatus == "Cancelled" || Model.LeaveStatus == "CA" ||
+          Model.LeaveStatus == "Withdrawn" || Model.LeaveStatus == "WD")
+          && Model.LeaveID != Guid.Empty)
+{
+    <div class="row iring-keluarga-sakit">
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="control-label col-md-4">Hospital Name <span style="color:red;"> *</span></label>
+                    <div class="col-md-8 form-control-static">
+                        <input type="text" class="form-control"
+                               name="HospitalName" value="@Model.HospitalName">
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="control-label col-md-4">Location <span style="color:red;"> *</span></label>
+                    <div class="col-md-8 form-control-static">
+                        <input type="text" class="form-control"
+                               name="HospitalLoc" value="@Model.HospitalLoc">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row iring-keluarga-sakit">
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="control-label col-md-4">Distance (KM) <span style="color:red;"> *</span></label>
+                    <div class="col-md-8 form-control-static">
+                        <input type="text" class="form-control"
+                               name="Distance" value="@Model.Distance">
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="control-label col-md-4">Appointment Date <span style="color:red;"> *</span></label>
+                    <div class="col-md-8 form-control-static">
+                        <div class="input-group date date-picker" data-date-format="dd/mm/yyyy">
+                            <input type="text" class="form-control AppointmentDate" id="AppointmentDate" name="AppointmentDate" 
+                                   value="@Model.AppointmentDate" />
+                            <span class="input-group-btn">
+                                <button type="button" class="btn default"><i class="fa fa-calendar"></i></button>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row iring-keluarga-sakit">
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="control-label col-md-4">Repetition Case?<span style="color:red;"> *</span></label>
+                    <input type="hidden" name="IsRepeat" value="@Model.IsRepeat" />
+                    <div class="col-md-8 form-control-static">
+                        <select id="ddlIsRepeat" class="form-control" onchange="_IringKeluargaSakitDetails_IsRepeatChanged()">
+                            <option value="">- Please Select -</option>
+                            <option value="Yes">Yes</option>
+                            <option value="No">No</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+else
+{
+    <div class="row iring-keluarga-sakit">
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="control-label col-md-4">Hospital Name</label>
+                    <div class="col-md-8 form-control-static">
+                        <input type="text" class="form-control" readonly
+                               name="HospitalName" value="@Model.HospitalName">
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="control-label col-md-4">Location</label>
+                    <div class="col-md-8 form-control-static">
+                        <input type="text" class="form-control" readonly
+                               name="HospitalLoc" value="@Model.HospitalLoc">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row iring-keluarga-sakit">
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="control-label col-md-4">Distance (KM)</label>
+                    <div class="col-md-8 form-control-static">
+                        <input type="text" class="form-control" readonly
+                               name="Distance" value="@Model.Distance">
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="control-label col-md-4">Appointment Date</label>
+                    <div class="col-md-8 form-control-static">
+                        <input type="text" class="form-control" readonly
+                               name="AppointmentDate" value="@Model.AppointmentDate">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row iring-keluarga-sakit">
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="control-label col-md-4">Repetition Case?</label>
+                    <div class="col-md-8 form-control-static">
+                        <input type="text" class="form-control" readonly
+                               name="IsRepeat" value="@Model.IsRepeat">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<script>
+    function _IringKeluargaSakitDetails_IsRepeatChanged() {
+        $('input[name="IsRepeat"]').val($('#ddlIsRepeat').val());
+    }
+
+    $(function () {
+        InitializeCommonControls();
+        $('#ddlIsRepeat').val($('input[name="IsRepeat"]').val());
+    });
+</script>

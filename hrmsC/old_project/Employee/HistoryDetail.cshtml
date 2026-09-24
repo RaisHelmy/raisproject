@@ -1,0 +1,991 @@
+﻿@model ESS.Employee.Models.EmployeeRequest
+@{
+    string Title = ViewBag.Title;
+    ViewBag.Title = "TNB Employee Profile -" + Title;
+
+    bool closeDisclaimer = false;
+    if (ViewBag.CloseDisclaimer != null)
+    {
+        closeDisclaimer = ViewBag.CloseDisclaimer == "1";
+    }
+
+}
+<style>
+    .refno {
+        color: #0000CC;
+        font-weight: bold;
+    }
+</style>
+
+@using (Html.BeginForm("HistoryDetail", "Employee", FormMethod.Post))
+{
+    <div class="form-section">
+        <div class="row">
+            <div class="col-md-12">
+                <h1 class="page-title">
+                    @Title
+                    <span style="padding-left:20px;">
+                        <small></small>
+                    </span>
+                </h1>
+                <input type="hidden" name="RequestID" value="@Model.RequestID" />
+            </div>
+        </div>
+    </div>
+
+    <!-- Employee Details -->
+    @Html.Partial("_ApplicationEmployeeInfo", Model.Submiter)
+    @Html.Partial("_ApplicationRequest", Model)
+
+    @Html.Action("_ApplicationAuditLog", "Employee", new { SourceID = Model.RequestID })
+
+    @Html.Action("_ApplicationActionButtons", "Employee", new { vm = Model })
+}
+
+<div id="divEPM_Modal">
+    <div class="modal fade" id="FormModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                    <h4 id="ConfirmationDialog_Title" class="modal-title"></h4>
+                </div>
+                <div class="modal-body">
+                    <div class="row hidden">
+                        <div class="col-md-12 btnModeEdit hidden">
+                            <a class="btn green pull-right" style="margin: 5px;" href="javascript:AllowRefresh(this);">Refresh</a>
+                        </div>
+                    </div>
+                    <div id="_Form">
+
+                    </div>
+                    <div id="_Attachment" class="divAttachment hidden">
+
+                    </div>
+                    <div id="FormInformation" class="hidden divEPMSecretForm">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <label class="control-label col-md-4">
+                                            Employee ID
+                                        </label>
+                                        <div class="col-md-8 form-control-static">
+                                            <input type="text" class="form-control"
+                                                   name="EmployeeID" value="@Model.EmployeeID" id="EmployeeID">
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="control-label col-md-4">
+                                            Employee Code
+                                        </label>
+                                        <div class="col-md-8 form-control-static">
+                                            <input type="text" class="form-control"
+                                                   name="EmployeeCode" value="@Model.EmployeeCode" id="EmployeeCode">
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="control-label col-md-4">
+                                            Actioner ID (Created By)
+                                        </label>
+                                        <div class="col-md-8 form-control-static">
+                                            <input type="text" class="form-control"
+                                                   name="ActionerID" value="@Model.ActionerID" id="ActionerID">
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="control-label col-md-4">
+                                            Form Category
+                                        </label>
+                                        <div class="col-md-8 form-control-static">
+                                            <input type="text" class="form-control"
+                                                   name="FormCategory" value="" id="FormCategory">
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="control-label col-md-4">
+                                            Form Action
+                                        </label>
+                                        <div class="col-md-8 form-control-static">
+                                            <input type="text" class="form-control"
+                                                   name="FormAction" value="" id="FormAction">
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="control-label col-md-4">
+                                            Form Url
+                                        </label>
+                                        <div class="col-md-8 form-control-static">
+                                            <input type="text" class="form-control"
+                                                   name="FormUrl" value="" id="FormUrl">
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="control-label col-md-4">
+                                            Attachment Session Name
+                                        </label>
+                                        <div class="col-md-8 form-control-static">
+                                            <input type="text" class="form-control"
+                                                   name="AttachmentSessionName" value="" id="AttachmentSessionName">
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="control-label col-md-4">
+                                            Attachment Source Type
+                                        </label>
+                                        <div class="col-md-8 form-control-static">
+                                            <input type="text" class="form-control"
+                                                   name="AttachmentSourceType" value="" id="AttachmentSourceType">
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="control-label col-md-4">
+                                            Section Visible
+                                        </label>
+                                        <div class="col-md-8 form-control-static">
+                                            <textarea id="SettingSection" class="form-control" name="SettingSection" Rows="6"></textarea>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="control-label col-md-4">
+                                            Form On Load
+                                        </label>
+                                        <div class="col-md-8 form-control-static">
+                                            <textarea id="SettingFormLoad" class="form-control" name="SettingFormLoad" Rows="6"></textarea>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="control-label col-md-4">
+                                            Form On Change
+                                        </label>
+                                        <div class="col-md-8 form-control-static">
+                                            <textarea id="SettingFormChange" class="form-control" name="SettingFormChange" Rows="6"></textarea>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn default blue btnModeAllowEdit hidden" onclick="AllowEdit(this)">
+                        Edit
+                    </button>
+                    <button type="button" class="btn default blue btnModeInsert hidden" id="PanelFormAdd" onclick="FormValidation(this)">
+                        Add
+                    </button>
+                    <button type="button" class="btn default blue btnModeEdit hidden" id="PanelFormEdit" onclick="FormValidation(this)">
+                        Update
+                    </button>
+                    <button type="button" class="btn default" data-dismiss="modal">
+                        Close
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Confirmation Message -->
+    <div class="modal fade" id="ConfirmationDialog" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                    <h4 id="ConfirmationDialog_Title" class="modal-title"></h4>
+                </div>
+                <div class="modal-body">
+                    <div id="ConfirmationDialog_Message" class="well">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button id="ConfirmationDialog_PositiveButton" type="button" class="btn default blue">
+                        <i class="fa fa-check"></i>
+                    </button>
+                    <button id="ConfirmationDialog_NegativeButton" type="button" class="btn default" data-dismiss="modal">
+                        Close
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Confirmation Message -->
+    <div class="modal fade" id="ConfirmUpdate" tabindex="-1" aria-hidden="true" style="z-index: 27000!important;">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true" onclick="ClosedivLoading2()"></button>
+                    <h4 class="modal-title">Confirmation</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="well">
+
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn default blue btnModeInsert hidden" id="btnSubmit" onclick="javascript: ApproverAction(this)">
+                        <i class="fa fa-check"></i>
+                        Confirm
+                    </button>
+                    <button type="submit" class="btn default blue btnModeEdit hidden" id="btnEdit" onclick="javascript: ApproverAction(this)">
+                        <i class="fa fa-check"></i>
+                        Confirm
+                    </button>
+                    <button type="submit" class="btn default blue btnModeEscalate hidden" id="btnEscalate" onclick="javascript: Escalate(this)">
+                        <i class="fa fa-check"></i>
+                        Confirm
+                    </button>
+                    <button type="button" class="btn default" data-dismiss="modal" onclick="ClosedivLoading2()">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Success Message -->
+    <div class="modal fade" id="SuccessDialog" tabindex="-1" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header Success-header">
+                    <h4 id="SuccessDialog_Title" class="Success-title">
+                        Action Successfully Completed
+                    </h4>
+                </div>
+                <div class="modal-body Success-body">
+                    <div class="well" id="SuccessDialog_Message">
+                        Employee Profile Maintenance has been successfully submitted.
+                    </div>
+                </div>
+                <div class="modal-footer Success-footer">
+                    <a class="btn default blue" id="SuccessDialog_OkButton" data-dismiss="modal">
+                        <i class="fa fa-check"></i>
+                        OK
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="SuccessSubmit" tabindex="-1" aria-hidden="true" data-backdrop="static" data-keyboard="false" style="z-index: 27003!important;">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header Success-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true" style="display: none;"></button>
+                    <h4 class="Success-title">Action Successfully Completed</h4>
+                </div>
+                <div class="modal-body Success-body">
+                    <div class="well">
+                        Your Application has been successfully submitted.
+                    </div>
+                </div>
+                <div class="modal-footer Success-footer">
+                    <button type="submit" class="btn default blue" id="btnOK">
+                        <i class="fa fa-check"></i>
+                        OK
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="divLoading" style="margin: 0px; padding: 0px; position: fixed;
+		right: 0px; top: 0px; width: 100%; height: 100%; background-color: gainsboro; z-index: 30001; opacity: .8; filter: alpha(opacity=70); display: none; ">
+        <p style="position: absolute; top: 30%; left: 30%; color: black;">
+            Performing action, please wait...<img src="/_layouts/15/TNBESS/Assets/img/ajax-loading.gif">
+        </p>
+    </div>
+
+</div>
+
+<script>
+    $(function () {
+        InitializeCommonControls();
+    });
+
+    function InitializeCommonControls() {
+        $('.date-picker').datepicker({
+            format: 'dd/mm/yyyy',
+            autoclose: true
+        });
+
+        $('.timeinput').inputmask("mask", {
+            "mask": "99:99"
+        });
+
+        $('.timeinput').inputmask("h:s", {
+            "placeholder": "__/__",
+            onincomplete: function () {
+                // replace placeholder with zero
+                $(this).val($(this).val().replace(/_/g, '0'));
+            }
+        });
+
+        $('.number-only').keyup(function () {
+            if (this.value != this.value.replace(/[^0-9\.]/g, '')) {
+                this.value = this.value.replace(/[^0-9\.]/g, '');
+            }
+        });
+	}
+
+	$('#Escalate').click(function (e) {
+		e.preventDefault();
+
+		var promptMessage = "Are you sure you want to Escalate this Employee Profile Maintenance Application?\n\r Press Confirm to proceed, or Close to stay on the current page.";
+
+		var _ApproverComment = $("#txtAppComment").val();
+		var _ValidationMsg = "";
+
+		if (_ApproverComment.length <= 0)
+			_ValidationMsg += "- Comment is mandatory.\n";
+
+		if (_ValidationMsg != null && _ValidationMsg != '') {
+			alert(_ValidationMsg);
+			return false;
+		}
+
+		$("#ConfirmUpdate").modal();
+        $('.btnModeEscalate').removeClass('hidden');
+        $('.btnModeEdit').addClass('hidden');
+		$(".well").text(promptMessage);
+	});
+
+	$('#EditPersonal').click(function (e) {
+        e.preventDefault();
+
+        var EmployeeCode = $("#EmployeeCode").val();
+        var EmployeeID = $("#EmployeeID").val();
+		var Action = 'EDIT';
+        var TaskID = "@Model.TaskID";
+
+		$("#divEPM_Modal #FormCategory").val("Personal");
+		$("#divEPM_Modal #FormAction").val(Action);
+
+        var url = "@Url.Content("~/Employee/_Personal")";
+        var data = {
+            EmployeeCode: EmployeeCode,
+            EmployeeID: EmployeeID,
+            PhotoID:"",
+            Mode: Action,
+            TaskID: TaskID
+		};
+		console.log(data)
+		$('#FormModal').modal();
+		$("#ConfirmationDialog_Title").html('Edit Personal Info');
+		$("#divLoading").show();
+
+		$.ajax({
+            type: "GET",
+            url: url,
+            cache: false,
+            dataType: "html",
+            data: data,
+			success: function (content) {
+				$("#_Form").html(content);
+				$('.btnModeEdit').removeClass('hidden');
+            },
+            error: function (e) {
+                console.log(e);
+            }
+		});
+
+		setTimeout(function () { $("#divLoading").hide(); }, 2500);
+    });
+
+    $('#EditFamily').click(function (e) {
+        e.preventDefault();
+
+        var EmployeeCode = "@Model.EmployeeCode";
+        var EmployeeID = "@Model.EmployeeID";
+		var RequestID = "@Model.RequestID";
+        var TaskID = "@Model.TaskID";
+
+        var Action = 'EDIT';
+        $("#_Form").html("LOADING...");
+        $("#divEPM_Modal #FormCategory").val("Family");
+        $("#divEPM_Modal #FormAction").val(Action);
+
+        var url="@Url.Content("~/Employee/_FamilyFormByRequestID")";
+        var data = {
+            EmployeeCode: EmployeeCode,
+            EmployeeID: EmployeeID,
+            RequestID: RequestID,
+            Mode: Action,
+            TaskID: TaskID
+        };
+
+        $('#FormModal').modal();
+        $("#ConfirmationDialog_Title").html('Edit Family Info');
+        $("#divLoading").show();
+
+        $.ajax({
+            type: "GET",
+            url: url,
+            cache: false,
+            dataType: "html",
+            data: data,
+			success: function (content) {
+                $("#_Form").html(content);
+                $('.btnModeEdit').removeClass('hidden');
+            },
+            error: function (e) {
+                console.log(e);
+            }
+        });
+        setTimeout(function () { $("#divLoading").hide(); }, 8000);
+    });
+
+
+	function Escalate(btn) {
+		btn.disabled = true;
+		$("#divLoading").show();
+
+		var ActionerID = "@Model.ActionerID";
+		var RequestID = "@Model.RequestID";
+		var TaskID = "@Model.TaskID";
+		var _ApproverComment = $("#txtAppComment").val();
+		var data = { ActionerID: ActionerID, RequestID: RequestID, TaskID: TaskID, Comment: _ApproverComment };
+		var url = '@Url.Action("TaskEscalate", "Employee")';
+		var _RedirectUrl = '@ViewBag.BackUrl';
+
+		$.ajax({
+			type: "POST",
+			url: url,
+			cache: false,
+			dataType: "json",
+			data: data,
+			success: function (result) {
+				console.log(result)
+				if (result.Success) {
+					$("#divLoading").hide();
+					$("#ConfirmUpdate").modal('hide');
+
+                    ShowDialog({
+                          title: "Action Successfully Completed",
+                          message: "This Employee Profile Application was escalated successfully.",
+                          okCallback: function () {
+                              if (_RedirectUrl) {
+                                 window.location.href = _RedirectUrl;
+                              }
+                              else {
+                                 window.location.href = '@ViewBag.BackUrl';
+                              }
+                          }
+                    });
+                }
+                else {
+					ShowDialog({
+                         title: "Action not completed.",
+                         message: "Error Message : " + result.errorMsg,
+                         okCallback: function () {
+                            HideDialog();
+                         }
+                    });
+				}
+			},
+			error: function (e) {
+				console.log(e);
+			}
+		});
+	}
+
+    function ApproverAction(btn) {
+        btn.disabled = true;
+        $("#divLoading").show();
+
+        var FormCategory = $("#FormCategory").val();
+        var FormAction = $("#FormAction").val();
+
+        setTimeout(function () {
+            switch (FormCategory) {
+				case "Personal":
+					var myVar = ConfirmAction_Personal(btn, FormAction, '@Model.RequestID');
+                    break;
+                case "Family":
+                    var myVar = ConfirmAction_Family(btn, FormAction, '@Model.RequestID');
+                    //setTimeout(function () { ConfirmAction_Family(btn, FormAction); }, 50);
+                    //function () { ConfirmAction_Family(btn, FormAction); };
+                    break;
+            }
+        }, 2500);
+    }
+
+    function ApproverAction2(action) {
+        var _ApproverInfo = {};
+        var _ApproverAction = "";
+        var _ApproverComment = $("#txtAppComment").val();
+        var _DeclineReason = "";
+        var _NewStartDate = $('#StartDate').val();
+        var _NewEndDate = $('#EndDate').val();
+        var _ValidationMsg = "";
+
+        @{
+            if (!closeDisclaimer)
+            {
+                <text>
+                    var _Disclaimer = document.getElementById('disclaimer');
+                    var _Disclaimer2 = $('#disclaimer').parent().hasClass('checked');
+
+                    if (action == "Approve" || action == "Verify")
+                    {
+                        if (!_Disclaimer.checked && !_Disclaimer2)
+                            _ValidationMsg += '- Please read and check the Disclaimer section before proceed.\n';
+                    }
+                </text>
+            }
+        }
+
+        if ($("#txtAppComment").length > 0 && !_ApproverComment && (action == "Decline" || action == "Approve" || action == "Verify"))
+            _ValidationMsg += "- Comment is mandatory.\n";
+
+        if (_ValidationMsg != null && _ValidationMsg != '') {
+            alert(_ValidationMsg);
+            return;
+        }
+
+        var _RedirectUrl = '@ViewBag.BackUrl';
+
+        switch (action) {
+            case "Verify":
+                _ApproverAction = "Verified";
+                break;
+            case "Approve":
+                _ApproverAction = "Approved";
+                break;
+            case "Decline":
+                _ApproverAction = "Declined";
+                break;
+            case "Withdraw":
+                _ApproverAction = "Withdrawn";
+                _ApproverComment = "";
+                break;
+        }
+
+        var promptMessage = "Are you sure you want to " + action + " this Employee Profile Maintenance Application?\n\r Press Confirm to proceed, or Close to stay on the current page.";
+        var notifyMessage = "";
+        if (_ApproverAction == "Approved") {
+            notifyMessage = "This Employee Profile Application was Approved successfully.";
+        }
+        else if (_ApproverAction == "Declined") {
+            notifyMessage = "This Employee Profile Application was Declined successfully.";
+        }
+        else if (_ApproverAction == "Withdrawn") {
+            notifyMessage = "This Employee Profile Application was Withdrawn successfully.";
+        }
+        else if (_ApproverAction == "Verified") {
+            notifyMessage = "This Employee Profile Application was Verified successfully.";
+        }
+
+        ShowConfirmationDialog({
+            message: promptMessage,
+            positiveCallback: function () {
+                HideConfirmationDialog();
+                ShowLoadingScreen();
+
+                $.post('@Url.Action("PostApproverAction", "Employee")',
+                    {
+                        Status: _ApproverAction,
+                        RequestID:  "@Model.RequestID",
+                        Category: "@Model.RequestCategory",
+                        CategoryCode: "@Model.RequestCategoryCode",
+                        Comment: _ApproverComment,
+                        CurrentStatus: "@Model.RequestStatus",
+                        CurrentStatusCode: "@Model.RequestStatusCode",
+                        TaskID : "@Model.TaskID"
+                    },
+                    function (result) {
+                        HideLoadingScreen();
+
+                        if (result.Success) {
+                            ShowDialog({
+                                title: "Action Successfully Completed",
+                                message: notifyMessage,
+                                okCallback: function () {
+                                    if (_RedirectUrl) {
+                                        window.location.href = _RedirectUrl;
+                                    }
+                                    else {
+                                        window.location.href = '@ViewBag.BackUrl';
+                                    }
+                                }
+                            });
+                        }
+                        else {
+                            ShowDialog({
+                                title: "Action not completed.",
+                                message: "Error Message : " + result.errorMsg,
+                                okCallback: function () {
+                                    HideDialog();
+                                }
+                            });
+                        }
+                    });
+            }
+        });
+    }
+
+    // Dialog with Confirm/Close
+    function ShowConfirmationDialog(data) {
+        if (!data) {
+            data = {};
+        }
+
+        var dialog = $('#ConfirmationDialog'),
+            title = data.title || "Confirmation",
+            message = data.message || "Are you sure you want to submit this Employee Profile Maintenance Application?\n\r Press Confirm to proceed, or Close to stay on the current page.",
+            positiveButtonText = data.positiveButtonText || "Confirm",
+            positiveCallback = data.positiveCallback,
+            negativeButtonText = data.negativeButtonText || "Close",
+            negativeCallback = data.negativeCallback;
+
+        dialog.find("#ConfirmationDialog_Title").html(title);
+        dialog.find("#ConfirmationDialog_Message").html(message);
+        var ePositiveButton = dialog.find("#ConfirmationDialog_PositiveButton");
+        var eNegativeButton = dialog.find("#ConfirmationDialog_NegativeButton");
+
+        ePositiveButton.html(positiveButtonText);
+        ePositiveButton.off('click');
+        ePositiveButton.one('click', function () {
+            if (positiveCallback)
+                positiveCallback(dialog);
+        });
+
+        eNegativeButton.html(negativeButtonText);
+        eNegativeButton.off('click');
+        eNegativeButton.one('click', function () {
+            if (negativeCallback)
+                negativeCallback(dialog);
+        });
+
+        dialog.modal();
+    }
+
+    function HideConfirmationDialog() {
+        var dialog = $('#ConfirmationDialog');
+        dialog.modal("hide");
+    }
+
+    // Dialog with OK
+    function ShowDialog(data) {
+        if (!data) {
+            data = {};
+        }
+
+        var dialog = $('#SuccessDialog'),
+            title = data.title,
+            message = data.message || "The operation was success.",
+            okCallback = data.okCallback;
+
+        var okButton = dialog.find("#SuccessDialog_OkButton");
+
+        dialog.find("#SuccessDialog_Title").html(title);
+        dialog.find("#SuccessDialog_Message").html(message);
+
+        okButton.off('click');
+        okButton.one('click', function () {
+            if (okCallback)
+                okCallback();
+        });
+
+        dialog.modal();
+    }
+
+    function HideDialog() {
+        var dialog = $('#SuccessDialog');
+        dialog.modal("hide");
+    }
+
+    function ShowLoadingScreen() {
+        $("#divLoading").show();
+    }
+
+    function HideLoadingScreen() {
+        $('#divLoading').hide();
+    }
+
+    function BackToHistory() {
+        window.location.href = '@ViewBag.BackUrl';
+    }
+
+    function PopulateSetting(divMode, divMain, LogDiv, Setting_FieldVisible, Setting_FieldEnable, Setting_FieldChecked, Setting_FieldValue) {
+        divMain = $.trim(divMain);
+        divMode = $.trim(divMode);
+        var PopulateSettingLog = "";
+        PopulateSettingLog += "DivMode: " + divMode + "; ";
+        PopulateSettingLog += "DivMain: " + divMain + "; ";
+        PopulateSettingLog += "Log: " + LogDiv + "; " + "\n";
+
+        //var ddlRelationshipType = $('#ddlRelationshipType');
+        if (Setting_FieldVisible != null) {
+            var i = 0;
+            PopulateSettingLog += "Setting: Setting_FieldVisible" + "\n";
+            PopulateSettingLog += "-----------Start---------------" + "\n";
+            for (i = 0; i < Setting_FieldVisible.length; i++) {
+
+                var checkdivMode = divMode;
+                var checkConfirmation = Setting_FieldVisible[i].ConfirmationButton + "";
+                var checkVisible = Setting_FieldVisible[i].Visible + "";
+                var checkVisibleName = Setting_FieldVisible[i].Name;
+                checkVisibleName = $.trim(checkVisibleName);
+
+                PopulateSettingLog += "No: " + i + "; "
+                PopulateSettingLog += "Name: " + Setting_FieldVisible[i].Name + "; "
+                PopulateSettingLog += "Visible: " + Setting_FieldVisible[i].Visible + "; ";
+                PopulateSettingLog += "ConfirmationButton: " + Setting_FieldVisible[i].ConfirmationButton + "; ";
+
+                if (checkConfirmation.toUpperCase() == "TRUE") {
+                    checkdivMode = "";
+                }
+
+                PopulateSettingLog += "Final divMode: " + checkdivMode + "; ";
+                PopulateSettingLog += "Final Name: " + divMain + " ." + checkVisibleName + checkdivMode + "; ";
+
+                if (checkVisible.toUpperCase() == "TRUE") {
+                    //show it
+                    // check if the hidden properties is added before
+                    // if yes, remove hidden class
+                    PopulateSettingLog += "Check Visible: TRUE" + "; ";
+
+                    $(divMain + " ." + checkVisibleName + checkdivMode).each(function (i, obj) {
+                        PopulateSettingLog += "HAS CLASS HIDDEN: " + $(this).hasClass("hidden") + "; ";
+                        if ($(this).hasClass("hidden")) {
+                            $(this).removeClass("hidden");
+                            PopulateSettingLog += "Remove Hidden Class" + "; ";
+                        }
+                    });
+                }
+                else {
+                    //hide it.
+
+                    PopulateSettingLog += "Check Visible: False" + "; ";
+                    // check if the hidden properties is added before
+                    // if not, add hidden class
+                    $(divMain + " ." + checkVisibleName + checkdivMode).each(function (i, obj) {
+                        PopulateSettingLog += "DO NOT HAS CLASS HIDDEN: " + $(this).hasClass("hidden") + "; ";
+                        if (!($(this).hasClass("hidden"))) {
+                            $(this).addClass("hidden");
+                            //alert("False-OK");
+                            PopulateSettingLog += "Add Hidden Class" + "; ";
+                        }
+                    });
+                }
+
+                PopulateSettingLog += "\n";
+            }
+
+            PopulateSettingLog += "\n" + "-----------End------------------" + "\n \n";
+        }
+
+        if (Setting_FieldEnable != null) {
+            var j = 0;
+            PopulateSettingLog += "Setting: Setting_FieldEnable" + "\n";
+            PopulateSettingLog += "-----------Start---------------" + "\n";
+            for (j = 0; j < Setting_FieldEnable.length; j++) {
+
+                var checkdivMode = divMode;
+                var checkEnable = Setting_FieldEnable[j].Enable + "";
+                var checkEnableName = Setting_FieldEnable[j].Name;
+                checkEnableName = $.trim(checkEnableName);
+                var FinalName1 = divMain + " #" + checkEnableName;
+                var FinalName2 = divMain + " #uniform-" + checkEnableName;
+
+                PopulateSettingLog += "No: " + j + "; "
+                PopulateSettingLog += "Name: " + Setting_FieldEnable[j].Name + "; "
+                PopulateSettingLog += "Enable: " + Setting_FieldEnable[j].Enable + "; ";
+
+                PopulateSettingLog += "Final divMode: " + checkdivMode + "; ";
+                PopulateSettingLog += "Final Name1: " + FinalName1 + "; ";
+                PopulateSettingLog += "Final Name2: " + FinalName2 + "; ";
+
+                if (checkEnable.toUpperCase() == "TRUE") {
+                    //enable it
+                    // check if the enable properties is added before
+                    // if yes, remove enable class
+                    PopulateSettingLog += "Check Enable: TRUE" + "; ";
+
+                    PopulateSettingLog += "Check Has Disabled Attribute (YES):" + $(FinalName1).is(':disabled') + "; ";
+
+                    if ($(FinalName1).is(':disabled')) {
+                        $(FinalName1).removeAttr("disabled");
+                        PopulateSettingLog += "Remove Main Disabled Attribute" + "; ";
+                    }
+
+                    if ($(FinalName2).hasClass("disabled")) {
+                        $(FinalName2).removeClass("disabled");
+                        PopulateSettingLog += "Remove Sub Disabled Attribute" + "; ";
+                    }
+                }
+                else {
+                    //hide it.
+
+                    PopulateSettingLog += "Check Enable: False" + "; ";
+                    PopulateSettingLog += "Check Has Disabled Attribute (NO):" + $(FinalName1).is(':disabled') + "; ";
+                    // check if the enable properties is added before
+                    // if not, add enable class
+                    if (!$(FinalName1).is(':disabled')) {
+                        $(FinalName1).attr('disabled', 'disabled');
+                        PopulateSettingLog += "Add Main Disabled Attribute" + "; ";
+                    }
+
+                    if (!$(FinalName2).hasClass("disabled")) {
+                        $(FinalName2).addClass("disabled");
+                        PopulateSettingLog += "Add Sub Disabled Attribute" + "; ";
+                    }
+                }
+
+                PopulateSettingLog += "\n";
+            }
+
+            PopulateSettingLog += "\n" + "-----------End------------------" + "\n \n";
+        }
+
+        if (Setting_FieldChecked != null) {
+            var k = 0;
+
+            for (k = 0; k < Setting_FieldChecked.length; k++) {
+                var checkChecked = Setting_FieldChecked[k].Checked + "";
+				var checkCheckedName = Setting_FieldChecked[k].Name;
+				checkCheckedName = $.trim(checkCheckedName);
+
+                if (checkChecked.toUpperCase() == "TRUE") {
+                    $(divMain + " #" + checkCheckedName).prop('checked', true);
+                }
+                else {
+                    $(divMain + " #" + checkCheckedName).prop('checked', false);
+                }
+                //if (checkChecked.toUpperCase() == "TRUE") {
+                //    //is checked
+
+                //    // check if the checked properties is added before
+                //    // if not, checked it
+                //    if (!$(divMain + " #" + checkCheckedName).is(":checked")) {
+                //        $(divMain + " #" + checkCheckedName).attr('checked');
+                //    }
+                //    else {
+                //        // is not checked
+                //        // check if the checked properties is added before
+                //        // if yes, remove enable class
+                //        if ($(divMain + " #" + checkCheckedName).is(":checked")) {
+                //            $(divMain + " #" + checkCheckedName).removeAttr("checked");
+                //        }
+                //    }
+                //}
+            }
+        }
+
+        if (Setting_FieldValue != null) {
+            var m = 0;
+            PopulateSettingLog += "Setting: Setting_FieldValue" + "\n";
+            PopulateSettingLog += "-----------Start---------------" + "\n";
+            for (m = 0; m < Setting_FieldValue.length; m++) {
+
+                var checkName = Setting_FieldValue[m].Name;
+                var checkValue = Setting_FieldValue[m].Value + "";
+                var checkType = Setting_FieldValue[m].Type + "";
+
+                checkName = $.trim(checkName);
+                var FinalName = divMain + " #" + checkName;
+                PopulateSettingLog += "No: " + m + "; "
+                PopulateSettingLog += "Name: " + checkName + "; "
+                PopulateSettingLog += "Value: " + checkValue + "; ";
+                PopulateSettingLog += "Type: " + checkType + "; ";
+                PopulateSettingLog += "Final Name: " + FinalName + "; ";
+
+                if (checkType.toUpperCase() == "DROPDOWNLIST") {
+                    PopulateSettingLog += "DROPDOWNLIST : TRUE" + "; ";
+
+                    $(FinalName).val(checkValue).change();
+                }
+                else if (checkType.toUpperCase() == "TEXTBOX") {
+                    PopulateSettingLog += "TEXTBOX : TRUE" + "; ";
+
+                    $(FinalName).val(checkValue);
+                }
+
+                PopulateSettingLog += "\n";
+            }
+
+            PopulateSettingLog += "\n" + "-----------End------------------" + "\n \n";
+        }
+
+        $(LogDiv).val(PopulateSettingLog);
+    }
+
+    function AllowEdit(btn) {
+        btn.disabled = true;
+        $("#divLoading2").hide();
+        $("#divLoading").show();
+
+        var FormCategory = $("#FormCategory").val();
+        var FormAction = $("#FormAction").val();
+
+        if ($('#divLoading').is(':visible')) {
+            switch (FormCategory) {
+                case "Personal":
+                //Dint have
+
+                case "CurrentEmployment":
+                //case "CurrentEmployment"
+
+                case "Family":
+                    var myVar = AllowEdit_Family(btn, FormAction);
+                    break;
+
+                case "EmergencyContact":
+                    //
+                    var myVar = AllowEdit_EmergencyContact(btn, FormAction);
+                    break;
+
+                case "Address":
+                    //
+                    var myVar = AllowEdit_Address(btn, FormAction);
+                    break;
+
+                case "PreviousEmployer":
+                    //
+                    var myVar = AllowEdit_PreviousEmployer(btn, FormAction);
+                    break;
+
+                case "Education":
+                    //
+                    var myVar = AllowEdit_Education(btn, FormAction);
+                    break;
+            }
+        }
+    }
+
+    function SearchGet_AttachmentInfo(Category, Criteria, RequestID) {
+        var FormCategory = $("#FormCategory").val();
+
+        if ($('.divAttachment').css('display') != 'none')
+        {
+            $("#_Attachment").html("Loading...");
+
+            //value might be overight by user if choose not to attached
+            $("#" + FormCategory + "AttachMandatory").val("true");
+            //force attachment
+            $("#Hidden" + FormCategory + "AttachMandatory").val("true");
+            var A = "@Model.EmployeeID'";
+            var AttachmentSessionName = $("#AttachmentSessionName").val();
+            var AttachmentSourceType = $("#AttachmentSourceType").val();
+            $.ajax({
+                type: "GET",
+                url: '@Url.Content("~/Employee/_Attachment")',
+                cache: false,
+                dataType: "html",
+                data: { EmployeeID: '@Model.EmployeeID', Category: Category, Criteria: Criteria, RequestID: RequestID, SessionName: AttachmentSessionName, SourceType: AttachmentSourceType },
+                success: function (content) {
+                    $("#_Attachment").html(content);
+                },
+                error: function (e) {
+                    console.log(e);
+                }
+            });
+        }
+        else
+        {
+            $("#" + FormCategory + "AttachMandatory").val("false");
+        }
+    }
+
+    function ClosedivLoading2() {
+        $("#divLoading2").hide();
+    }
+</script>
+

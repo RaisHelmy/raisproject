@@ -1,0 +1,100 @@
+﻿
+@{
+    Layout = null;
+    string PickMode = ViewData["Mode"] + "";
+    string CourseTitle = ViewData["CourseTitle"] + "";
+
+}
+
+<div>
+    <div class=" input-group col-md-12">
+        @if (string.IsNullOrEmpty(PickMode) || PickMode == "Draft")
+        {
+            <input type="text" class="form-control" id="CPCourseTitle" style="width:100%;float:left;" value="@CourseTitle" readonly />
+            <span class="input-group-btn" id="btnLookUp" style="">
+                <a data-toggle="modal" href="#CoursePicker" class="btn default"><i class="fa fa-search"></i></a>
+            </span>
+        }
+        else
+        {
+            <input type="text" class="form-control" id="CPCourseTitle" style="width:100%;" readonly/>
+        }
+
+        <input type="hidden" id="hfCourseID" name="hfCourseID" />
+        <input type="hidden" id="hfCourseSessionID" name="hfCourseSessionID" />
+    </div>
+</div>
+
+
+<div class="modal fade" id="CoursePicker" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                <h4 class="modal-title">Course Picker</h4>
+            </div>
+            <div class="modal-body">
+                <div>
+                    @Html.Action("CourseTitleEvaluation", "CoursePicker", new {})
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn default green" onclick="SetSelectedCourse()">Select</button>
+                <button type="button" class="btn default" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script type="text/javascript">
+
+    function SetSelectedCourse() {
+        $("#tblCoursePicker td input[type=radio]").each(function () {
+            var _selected = $(this).prop("checked");
+
+            if (_selected) {
+                $("#CPCourseTitle").val($(this).attr("CourseTitle"));
+                $("#hfCourseID").val($(this).val());
+                $("#hfCourseSessionID").val($(this).attr("CourseSessionID"));
+
+                $('#CoursePicker').modal('toggle');
+
+                SetDetails();
+            }
+        });
+    }
+
+    function SetDetails() {
+        var _CourseID = $("#hfCourseID").val();
+        var _CourseSessionID = $("#hfCourseSessionID").val();
+
+        $.ajax({
+            url: '@Url.Content("~/CoursePicker/GetAttendedCourseInfo")',
+            type: 'POST',
+            cache: false,
+            async: false,
+            dataType: "json",
+            data: { 'CourseID': _CourseID, 'CourseSessionID': _CourseSessionID },
+            success: function (result) {
+                //console.log(result);
+                $("#Item2_CourseSessionID").val($("#hfCourseSessionID").val());
+                var startdate = result.StrStartDate + "";
+                $("#Item2_StartDate").val(startdate);
+                $("#Item2_EndDate").val(result.StrEndDate);
+                $("#Item2_CourseVenue").val(result.Venue);
+                $('#Item2_CourseProvider').val(result.Provider);
+                $("#Item2_TrainingTypeDesc").val(result.Type);
+                $("#Item2_TrainingCategoryDesc").val(result.Category);
+                //console.log(result.StrStartDate);
+            },
+            error: function (x, y, z) {
+               // alert('asdas');
+                $("#ConfirmUpdate").modal('toggle');
+                $("#divLoading").css("display", "none");
+                console.log(x + '\n' + y + '\n' + z);
+            }
+        });
+
+    }
+</script>

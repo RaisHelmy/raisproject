@@ -1,0 +1,252 @@
+﻿@model List<OJA.Models.Award>
+@{
+    Layout = null;
+}
+<div class="portlet box blue">
+    <div class="mini-triangle"><img src="../Assets/img/menu-red-triangle.png" /></div>
+    <div class="portlet-title">
+        <div class="caption">
+            <i class="fa fa-reorder"></i> Individual Honours & Awards Received
+        </div>
+        <div class="tools">
+            <a style="margin-left:10px" href="javascript:;" class="expand arrow-down">
+            </a>
+        </div>
+    </div>
+
+    <div class="portlet-body form" style="display:none">
+        <div class="form-body">
+            <div class="form-horizontal">
+                <table id="tblAwards" class="table table-striped table-bordered table-hover table-full-width">
+                    <thead>
+                        <tr>
+                            <th>Honours and Awards</th>
+                            <th>Grantor</th>
+                            <th>Year Earned</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td>
+                                    <a href="javascript: ShowEditAward('@item.AwardID')">@item.AwardName</a>
+                                </td>
+                                <td>@item.Grantor</td>
+                                <td>@item.YearEarned</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            @if (ViewBag.CanEdit)
+            {
+                <div class="row">
+                    <div class="col-md-12">
+                        <a class="btn btn-primary" onclick="AddAward()">Add <i class="fa fa-plus"></i></a>
+                    </div>
+                </div>
+            }
+
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="AwardsModal" role="dialog">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal"></button>
+                <h4 class="modal-title">Individual Honours & Awards Received</h4>
+            </div>
+            <div class="modal-body">
+                <div class="form-horizontal">
+                    <div class="row">
+                        <div class="form-body" id="AwardsModalBody">
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                @if (ViewBag.CanEdit)
+                {
+                    <button type="button" class="btn blue add-award hidden" id="btnSubmitAward">Submit</button>
+                    <button type="button" class="btn blue edit-award hidden" id="btnEditAward">Edit</button>
+                    <button type="button" class="btn blue edit-award hidden" id="btnDeleteAward">Delete</button>
+                    <button type="button" class="btn blue update-award hidden" id="btnUpdateAward">Update</button>
+                }
+
+                <button type="button" class="btn default" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+
+    $(document).ready(function () {
+        $('#tblAwards').dataTable({
+            "aLengthMenu": [[10, 25, 50, 100, 1000], [10, 25, 50, 100, 1000]],
+            "bPaginate": false
+        });
+
+        var tableWrapper = "#tblAwards_wrapper";
+
+        jQuery(tableWrapper + ' .dataTables_filter input').addClass("form-control input-medium input-inline"); // modify table search input
+        jQuery(tableWrapper + ' .dataTables_length select').addClass("form-control input-small"); // modify table per page dropdown
+        jQuery(tableWrapper + ' .dataTables_length select').select2({
+            showSearchInput: false //hide search box with special css class
+        });
+    });
+
+    function AddAward() {
+        $('.edit-award, .update-award').addClass('hidden');
+        $('.add-award, .star-span').removeClass('hidden');
+
+         
+        ShowLoading();
+        $.ajax({
+            url: '@Url.Action("AwardForm")',
+            success: function (content) {
+                $('#AwardsModalBody').html(content);
+                $('#AwardsModal').modal();
+            },
+            error: function (err) {
+                alert('Error in displaying award form');
+            }
+        });
+    }
+
+    function ShowEditAward(Id) {
+        $('.add-award, .update-award, .star-span').addClass('hidden');
+        $('.edit-award').removeClass('hidden');
+
+        ShowLoading();
+        $.ajax({
+            url: '@Url.Action("EditAward")',
+            data: { Id: Id },
+            success: function (content) {
+                $('#AwardsModalBody').html(content);
+                $('#AwardsModal').modal();
+            },
+            error: function (err) {
+                alert('Error in displaying award form');
+            }
+        });
+    }
+
+    $(document).on('click', '#btnEditAward', function () {
+        $('.add-award, .edit-award').addClass('hidden');
+        $('.update-award, .star-span').removeClass('hidden');
+        $('.editable').removeAttr('readonly');
+    });
+
+    $(document).on('click', '#btnSubmitAward', function () {
+
+        if (!IsValid()) {
+            return false;
+        }
+        confirmationModal('add Award', submitAward);
+    });
+
+    function submitAward(confirmed) {
+        if (!confirmed)
+            return false;
+
+        var data = $("#awardForm").serialize();
+        ShowLoading();
+        $.ajax({
+            url: '@Url.Action("AddAward")',
+            data: data,
+            success: function (response) {
+                if (response.Success) {
+                    displaySuccessModal(response.Message);
+                }
+                else {
+                    alert(response.Message);
+                }
+            },
+            error: function (err) {
+                alert('Error in adding award');
+            }
+        });
+    }
+
+    $(document).on('click', '#btnUpdateAward', function () {
+
+        if (!IsValid()) {
+            return false;
+        }
+
+        confirmationModal('update Award', updateAward);
+    });
+
+    function updateAward(confirmed) {
+        if (!confirmed)
+            return;
+
+        var data = $("#awardForm").serialize();
+        ShowLoading();
+         $.ajax({
+            url: '@Url.Action("UpdateAward")',
+            data: data,
+            success: function (response) {
+                if (response.Success) {
+                    displaySuccessModal(response.Message);
+                }
+                else {
+                    alert(response.Message);
+                }
+            },
+            error: function (err) {
+                alert('Error in updating award');
+            }
+        });
+    }
+
+    $(document).on('click', '#btnDeleteAward', function () {
+        confirmationModal('delete Award', deleteAward);
+    });
+
+    function deleteAward(confirmed) {
+        if (!confirmed)
+            return;
+        var Id = $("#AwardID").val();
+        ShowLoading();
+         $.ajax({
+             url: '@Url.Action("DeleteAward")',
+             data: { Id: Id },
+            success: function (response) {
+                if (response.Success) {
+                    displaySuccessModal(response.Message);
+                }
+                else {
+                    alert(response.Message);
+                }
+            }
+        });
+    }
+
+
+    function IsValid() {
+        var errorMessage = "";
+        errorMessage += $("#AwardName").val() == "" ? "Award is required \n" : "";
+        errorMessage += $("#Grantor").val() == "" ? "Grantor is required \n" : "";
+        errorMessage += $("#YearEarned").val() == "" ? "Year earned is required \n" : "";
+        errorMessage += $("#YearEarned").val().length != 4 ? "Year Earned must be 4 digit number \n" : "";
+        errorMessage += isNaN($("#YearEarned").val()) ? "Year Earned must be a number \n" : "";
+        errorMessage += Number($("#YearEarned").val()) > 1900 && Number($("#YearEarned").val()) <= new Date().getFullYear() ? "" : "Year Earned must be a valid year (between 1900 and " + new Date().getFullYear() + ").\n";
+            
+        if (errorMessage != "") {
+            alert(errorMessage);
+            return false;
+        }
+
+        return true;
+    }
+
+
+</script>

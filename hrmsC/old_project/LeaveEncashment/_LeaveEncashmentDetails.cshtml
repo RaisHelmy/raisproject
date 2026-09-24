@@ -1,0 +1,222 @@
+﻿@model LeaveApplication.Models.LeaveEncashmentVM
+@{
+    bool? isEditable = Model.IsEditable;
+    bool? isApproval = Model.IsApproval;
+}
+
+@if (Model.Details != null && Model.Details.Count > 0)
+{
+    <style>
+        .centeralign {
+            text-align: center;
+            vertical-align: middle !important;
+        }
+
+        .highlight-row {
+            background-color: rgba(241, 234, 164, 0.5) !important;
+        }
+    </style>
+
+    @ViewBag.ErrorMessage
+
+    <div class="portlet box blue">
+        <div class="mini-triangle"><img src="../Assets/img/menu-red-triangle.png" /></div>
+        <div class="portlet-title">
+            <div class="caption">
+                <i class="fa fa-reorder"></i>Leave Details
+            </div>
+            <div class="tools">
+                <a id="subtypeToggle" title="" data-original-title="" href="javascript:;" class="collapse"> </a>
+            </div>
+        </div>
+        <div class="portlet-body form">
+            <div class="form-body">
+                <div class="form-horizontal">
+                    <div class="table-toolbar">
+                        <table id="tblLeaveDetails" class="table table-striped table-bordered table-hover table-full-width">
+                            <thead>
+                                <tr>
+                                    <th>Leave Type</th>
+                                    <th>Period</th>
+                                    <th>No. Of Days</th>
+                                    <th>Opsyen</th>
+                                    <th>Leave Taken</th>
+                                    <th>Requested Days</th>
+                                    <th>Approved Days</th>
+                                    <th>Leave Balance</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @{
+                                    int count = 0;
+                                    string[] highlightRowCond = { "2", "52" };
+                                    foreach (var item in Model.Details.OrderBy(m => m.Index))
+                                    {
+                                        var isGantian = highlightRowCond.Any(h => h == item.LeaveTypeCode);
+                                        var highlightClass = isGantian ? "highlight-row" : "";
+                                        <tr>
+                                            <td class="@highlightClass">
+                                                <input type="hidden" name="Details[@count].Index" value="@item.Index" />
+                                                <input type="hidden" name="Details[@count].DetailID" value="@item.DetailID" />
+                                                <input type="hidden" name="Details[@count].EncashmentID" value="@item.EncashmentID" />
+                                                <input type="hidden" name="Details[@count].LeaveType" value="@item.LeaveType" />
+                                                <input type="hidden" name="Details[@count].LeaveTypeCode" value="@item.LeaveTypeCode" />
+                                                <input type="hidden" name="Details[@count].IsCrossYear" value="@item.IsCrossYear" />
+                                                <input type="hidden" class="@item.LeaveType LeaveBalance" name="Details[@count].LeaveBalance" value="@item.LeaveBalance" />
+
+                                                @item.LeaveType
+                                            </td>
+                                            <td class="@highlightClass">
+                                                <input type="hidden" name="Details[@count].Period" value="@item.Period" />
+                                                @item.Period
+                                            </td>
+                                            <td id="Entitlement_@item.LeaveTypeCode" class="centeralign @highlightClass">
+                                                @*@if (isGantian)
+        {
+            <input type="text" class="form-control Gantian centeralign NoOfDays" name="Details[@count].NoOfDays" value="@item.NoOfDays" readonly
+                   onload="FormatQuota(this)" onblur="FormatQuota(this); CalculateTotal();"/>
+        }
+        else
+        {
+            <input type="hidden" class="NoOfDays" name="Details[@count].NoOfDays" value="@item.NoOfDays" />
+            @item.NoOfDays
+        }*@
+                                                <input type="hidden" class="NoOfDays" name="Details[@count].NoOfDays" value="@item.NoOfDays" />
+                                                @item.NoOfDays
+                                            </td>
+                                            <td id="Entitlement_@item.LeaveTypeCode" class="centeralign @highlightClass">
+                                                <input type="hidden" class="Opsyen" name="Details[@count].Opsyen" value="@(item.IsOpsyenValid ? item.Opsyen : 0)" readonly />
+                                                @if (item.IsOpsyenValid)
+                                                {
+                                                    @item.Opsyen
+                                                }
+                                                else
+                                                {
+                                                    @(" - ")
+                                                }
+                                            </td>
+                                            <td id="LeaveTaken_@item.LeaveTypeCode" class="centeralign @highlightClass">
+                                                @*@if (isGantian)
+        {
+            <input type="text" class="form-control Gantian centeralign LeaveTaken" name="Details[@count].LeaveTaken" value="@item.LeaveTaken"
+                   onload="FormatQuota(this)" onblur="FormatQuota(this); CalculateTotal();" readonly />
+        }
+        else
+        {
+            <input type="hidden" class="LeaveTaken" name="Details[@count].LeaveTaken" value="@item.LeaveTaken" />
+            @item.LeaveTaken
+        }*@
+                                                <input type="hidden" class="LeaveTaken" name="Details[@count].LeaveTaken" value="@item.LeaveTaken" />
+                                                @item.LeaveTaken
+                                            </td>
+                                            <td id="RequestedDays_@item.LeaveTypeCode" class="centeralign @highlightClass">
+                                                <input type="text" class="centeralign form-control RequestedDays" name="Details[@count].RequestedDays" readonly
+                                                       value="@item.RequestedDays" onload="FormatQuota(this)" onblur="FormatQuota(this); CalculateTotal();" />
+                                            </td>
+                                            <td id="ApprovedDays_@item.LeaveTypeCode" class="centeralign @highlightClass">
+                                                <input type="text" class="centeralign form-control ApprovedDays" name="Details[@count].ApprovedDays" readonly
+                                                       value="@item.ApprovedDays" onload="FormatQuota(this)" onblur="FormatQuota(this); CalculateTotal();" />
+                                            </td>
+                                            <td id="Balance_@item.LeaveTypeCode" class="LeaveBalanceView centeralign @highlightClass">
+                                                @item.LeaveBalance
+                                            </td>
+                                        </tr>
+
+                                        count++;
+                                    }
+                                }
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <td colspan="2">
+                                        Jumlah
+                                    </td>
+                                    <td class="centeralign NoOfDays">0.00</td>
+                                    <td class="centeralign Opsyen">0.00</td>
+                                    <td class="centeralign LeaveTaken">0.00</td>
+                                    <td class="centeralign RequestedDays">0.00</td>
+                                    <td class="centeralign ApprovedDays">0.00</td>
+                                    <td class="centeralign LeaveBalance">0.00</td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        $(function () {
+            $('.RequestedDays').each(function (i, v) { FormatQuota(v); });
+            $('.ApprovedDays').each(function (i, v) { FormatQuota(v); });
+
+            @if (isEditable == true)
+            {
+                <text>
+            //$('.Gantian').prop('readonly', false);
+            //$('.RequestedDays').prop('readonly', false);
+            $('#RequestedDays_12 .RequestedDays').prop('readonly', false);
+                </text>
+            }
+
+            @if (isApproval == true)
+            {
+                <text>
+            //$('.ApprovedDays').prop('readonly', false);
+            $('#ApprovedDays_12 .ApprovedDays').prop('readonly', false);
+                </text>
+            }
+
+            CalculateTotal();
+        });
+
+        function FormatQuota(x) {
+            if (x != undefined) {
+                var myNumeric52 = parseFloat($(x).val().replace(/,/g, ''));
+                if (!myNumeric52) {
+                    $(x).val('0.00');
+                }
+                else {
+                    if (myNumeric52 < 0) {
+                        $(x).val('0.00');
+                    } else {
+                        $(x).val(myNumeric52.toFixed(2));
+                    }
+
+                    if (myNumeric52 > 999.99) {
+                        $(x).val('0.00');
+                    }
+                }
+            }
+        }
+
+        function CalculateTotal() {
+            var columns = ["NoOfDays", "Opsyen", "LeaveTaken", "RequestedDays", "ApprovedDays", "LeaveBalance"];
+            $('#tblLeaveDetails tbody tr').each(CalculateRow);
+
+            for (var i = 0; i < columns.length; i++) {
+                CalculateColumn(columns[i]);
+            }
+        }
+
+        function CalculateRow(i, v) {
+            var noOfDays = parseFloat($(v).find('.NoOfDays').val() || 0);
+            var leaveTaken = parseFloat($(v).find('.LeaveTaken').val() || 0);
+            var opsyen = parseFloat($(v).find('.Opsyen').val() || 0);
+
+            var leaveBalance = noOfDays - leaveTaken - opsyen;
+
+            $(v).find('.LeaveBalanceView').text(leaveBalance.toFixed(2));
+        }
+
+        function CalculateColumn(c) {
+            var total = 0;
+            $('#tblLeaveDetails tbody .' + c).each(function (i, v) {
+                total += (parseFloat($(v).val()) || 0);
+            });
+
+            $('#tblLeaveDetails tfoot .' + c).text(total.toFixed(2));
+        }
+    </script>
+}

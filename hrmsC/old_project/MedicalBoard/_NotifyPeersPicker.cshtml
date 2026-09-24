@@ -1,0 +1,62 @@
+﻿@{
+    Layout = null;
+    string CurrEmpID = string.Empty;
+    string SearchType = "";
+}
+
+<div class="row" onkeypress="return event.keyCode!=13;">
+    <div class="col-md-12">
+        <div class="form-horizontal">
+            <div class="form-body">
+                <div class="form-group">
+                    <label class="control-label col-md-2 ">
+                        Employee Number
+                    </label>
+                    <div class="col-md-4 form-control-static">
+                        <input type="text" id="txtEmpCodeSearchPeer" />
+                    </div>
+                    <label class="control-label col-md-2 ">
+                        Employee Name
+                    </label>
+                    <div class="col-md-4  form-control-static">
+                        <input type="text" id="txtEmpNameSearchPeer" />
+                    </div>
+                </div>
+                <div class="form-group ">
+                    <div class="text-right">
+                        <input id="btn-Search" type="button" value="Search" class="btn green btn-Search" onclick="SearchPPForPeers();">
+                    </div>
+                </div>
+            </div>
+            <br />
+            <div id="NotifyPeerPeoplePickerResult">
+
+            </div>
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+    $(document).ready(function () {
+       // SearchPP();
+    });
+
+    function SearchPPForPeers() {
+        var _EmpCode = $('#txtEmpCodeSearchPeer').val();
+        var _EmpName = $('#txtEmpNameSearchPeer').val();
+        var _SearchType = '@SearchType';
+        var _CurrEmpID = '@CurrEmpID';
+        var _Peers = GetPeers();
+
+        var data = {
+            EmpCode: _EmpCode,
+            EmpName: _EmpName,
+            SearchType: _SearchType,
+            Peers: GetPeers()
+        };
+
+        $("#NotifyPeerPeoplePickerResult").html("LOADING...");
+        $.post('@Url.Action("_NotifyPeersPickerResult", "MedicalBoard")', data, function (content) {
+            $("#NotifyPeerPeoplePickerResult").html(content);
+        });
+    }
+</script>

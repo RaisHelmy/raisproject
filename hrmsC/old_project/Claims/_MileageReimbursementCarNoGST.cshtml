@@ -1,0 +1,574 @@
+﻿@model ESS.Claim.ViewModels.ClaimsSubtype
+
+@{
+    Layout = null;
+    string ClaimsSubtypeName = ViewBag.MileageReimbursementCarNoGST_ClaimsSubtypeName;
+    string dtStrStart = ViewBag.MileageReimbursementCarNoGST_StartDate;
+    string dtStrEnd = ViewBag.MileageReimbursementCarNoGST_EndDate;
+    string Status = ViewBag.MileageReimbursementCarNoGST_Status;
+    string GSTEnabled = (ViewBag.MileageReimbursementCarNoGST_GSTEnabled + "").ToLower();
+    string GSTMaxValue = ViewBag.MileageReimbursementCarNoGST_GSTMaxValue;
+    string UnitPriceCar = ViewBag.MileageReimbursementCarNoGST_UnitPriceCar;
+    string UnitPriceMotor = ViewBag.MileageReimbursementCarNoGST_UnitPriceMotor;
+    string UnitPriceMotorButCar = ViewBag.MileageReimbursementCarNoGST_UnitPriceMotorButCar;
+
+    string DataTableID = "tbl" + Model.FormInterface + "_" + Model.categoryIndex + "_" + Model.subtypeIndex;
+}
+
+<div class="portlet box blue subtypeportlet" id="dTable_@(DataTableID)">
+    <div class="mini-triangle"><img src="../Assets/img/menu-red-triangle.png" /></div>
+    <div class="portlet-title">
+        <div class="caption">
+            <i class="fa fa-reorder"></i>@Model.ClaimSubTypeCategory - @Model.ClaimsSubtypeName
+        </div>
+        @if (Status == "Draft" || Status == "Withdrawn" || Status == "Declined" || Status =="Returned")
+        {
+            <div class="tools">
+                <a href="javascript:;" onclick="RemoveSubtype('@Model.categoryIndex','@Model.subtypeIndex')">
+                    <img style=" vertical-align: initial;" src="../Assets/img/portlet-remove-icon-white.png" />
+                </a>
+            </div>
+        }
+        <div class="tools">
+            <a title="" data-original-title="" href="javascript:;" class="collapse"></a>
+        </div>
+    </div>
+    <div class="portlet-body form">
+        <div class="form-body">
+            <div class="form-horizontal">
+                <div class="table-toolbar">
+                    <table class="table table-striped table-bordered table-hover table-full-width" id="tbl@(DataTableID)">
+                        <thead>
+                            <tr>
+                                <th scope="col" width="5%"></th>
+                                <th scope="col">Charge Code *</th>
+                                <th scope="col">Date *</th>
+                                <th scope="col">Start Time *</th>
+                                <th scope="col">End Time *</th>
+                                <th scope="col">Mileage Type</th>
+                                <th scope="col">Description</th>
+                                <th scope="col">Distance (KM) *</th>
+                                <th scope="col">Unit Price (RM)</th>
+                                <th scope="col">Amount (RM)</th>
+                                <th scope="col">GST Amount (RM)</th>
+                                <th scope="col">Total Amount (RM)</th>
+                            </tr>
+                        </thead>
+                        @*@if (@Status == "Draft" || Status == "Withdrawn")*@
+                        @if (Status == "Draft" || Status == "Withdrawn" || Status == "Declined" || Status == "Returned")
+
+                        {
+                            if (Model.SubTypeDetails == null)
+                            {
+                                <tbody>
+                                    <tr>
+                                        <td><input type="checkbox" class="@(DataTableID)RemoveCheckbox" /></td>
+                                        <td>
+                                            <input type="hidden" class="hfChargeCode" />
+                                            <select class="form-control ddlChargeCode SubTypeColumn0" style="min-width:130px" onchange="ChargeCodeChange(this); CalculateChargeCodeSummary();"
+                                                    name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[0].SubTypeColumn0">
+                                                <option value="">Select One</option>
+                                            </select>
+                                        </td>
+                                        <td>
+                                            <div class="input-group date date-picker" data-date-format="dd MM yyyy" style="min-width:150px">
+                                                <input type="text" class="form-control SubTypeColumn1"
+                                                       name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[0].SubTypeColumn1" />
+                                                <span class="input-group-btn">
+                                                    <button type="button" class="btn default"><i class="fa fa-calendar"></i></button>
+                                                </span>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <input type="text" class="form-control timeinput StartTime" name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[0].StartTime" />
+                                        </td>
+                                        <td>
+                                            <input type="text" class="form-control timeinput EndTime" name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[0].EndTime" />
+                                        </td>
+                                        <td>
+                                            <input type="text" class="form-control SubTypeColumn2" style="min-width:130px" value="Car" readonly
+                                                   name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[0].SubTypeColumn2" />
+                                        </td>
+                                        <td>
+                                            <input type="text" class="form-control SubTypeColumn3" style="min-width:200px" maxlength="1000"
+                                                   name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[0].SubTypeColumn3" />
+                                        </td>
+                                        <td>
+                                            <input type="text" class="form-control SubTypeColumn4 numericinput" style="min-width:130px" maxlength="10" value="0"
+                                                   name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[0].SubTypeColumn4"
+                                                   onblur="@(DataTableID)Calculation(this);" />
+                                        </td>
+                                        <td>
+                                            <input type="text" class="form-control text-right SubTypeColumn5" style="min-width:130px" readonly
+                                                   name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[0].SubTypeColumn5" />
+                                        </td>
+                                        <td>
+                                            <input type="text" class="form-control text-right Amount" style="min-width:130px" maxlength="10" value="0.00" readonly
+                                                   name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[0].Amount" />
+                                        </td>
+                                        <td>
+                                            <input type="text" class="form-control text-right GSTAmount" style="min-width:130px" value="0.00"
+                                                   name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[0].GSTAmount" />
+                                        </td>
+                                        <td>
+                                            <input type="text" class="form-control text-right TotalAmount" style="min-width:130px" value="0.00" readonly
+                                                   name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[0].TotalAmount" />
+                                        </td>
+                                    </tr>
+                                </tbody>
+                                <tfoot>
+                                    <tr>
+                                        <td colspan="9"></td>
+                                        <td><input type="text" class="form-control text-right GrandAmount" value="0.00" readonly /></td>
+                                        <td><input type="text" class="form-control text-right GrandGSTAmount" value="0.00" readonly /></td>
+                                        <td><input type="text" class="form-control text-right GrandTotalAmount" value="0.00" readonly /></td>
+                                    </tr>
+                                </tfoot>
+                            }
+                            else
+                            {
+                                int count = 0;
+
+                                <tbody>
+                                    @foreach (var thisDetail in Model.SubTypeDetails)
+                                    {
+                                        <tr>
+                                            <td><input type="checkbox" class="@(DataTableID)RemoveCheckbox" /></td>
+                                            <td>
+                                                <input type="hidden" class="hfChargeCode" value="@thisDetail.SubTypeColumn0" />
+                                                <select class="form-control ddlChargeCode SubTypeColumn0" style="min-width:130px" onchange="ChargeCodeChange(this); CalculateChargeCodeSummary();"
+                                                        name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[@count].SubTypeColumn0">
+                                                    <option value="">Select One</option>
+                                                </select>
+                                            </td>
+                                            <td>
+                                                <div class="input-group date date-picker" data-date-format="dd MM yyyy" style="min-width:150px">
+                                                    <input type="text" class="form-control SubTypeColumn1" value="@thisDetail.SubTypeColumn1"
+                                                           name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[@count].SubTypeColumn1" />
+                                                    <span class="input-group-btn">
+                                                        <button type="button" class="btn default"><i class="fa fa-calendar"></i></button>
+                                                    </span>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <input type="text" class="form-control timeinput StartTime" name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[@count].StartTime" value="@thisDetail.StartTime" />
+                                            </td>
+                                            <td>
+                                                <input type="text" class="form-control timeinput EndTime" name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[@count].EndTime" value="@thisDetail.EndTime" />
+                                            </td>
+                                            <td>
+                                                <input type="text" class="form-control SubTypeColumn2" style="min-width:130px" value="@thisDetail.SubTypeColumn2" readonly
+                                                       name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[@count].SubTypeColumn2" />
+                                            </td>
+                                            <td>
+                                                <input type="text" class="form-control SubTypeColumn3" style="min-width:200px" maxlength="1000" value="@thisDetail.SubTypeColumn3"
+                                                       name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[@count].SubTypeColumn3" />
+                                            </td>
+                                            <td>
+                                                <input type="text" class="form-control SubTypeColumn4 numericinput" style="min-width:130px" maxlength="10" value="@thisDetail.SubTypeColumn4"
+                                                       name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[@count].SubTypeColumn4"
+                                                       onblur="@(DataTableID)Calculation(this);" />
+                                            </td>
+                                            <td>
+                                                <input type="text" class="form-control text-right SubTypeColumn5" style="min-width:130px" value="@thisDetail.SubTypeColumn5" readonly
+                                                       name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[@count].SubTypeColumn5" />
+                                            </td>
+                                            <td>
+                                                <input type="text" class="form-control text-right Amount" style="min-width:130px" value="@thisDetail.Amount" readonly
+                                                       name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[@count].Amount" />
+                                            </td>
+                                            <td>
+                                                <input type="text" class="form-control text-right GSTAmount" style="min-width:130px" value="@thisDetail.GSTAmount"
+                                                       name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[@count].GSTAmount" />
+                                            </td>
+                                            <td>
+                                                <input type="text" class="form-control text-right TotalAmount" style="min-width:130px" value="@thisDetail.TotalAmount" readonly
+                                                       name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[@count].TotalAmount" />
+                                            </td>
+                                        </tr>
+
+                                        count++;
+                                    }
+                                </tbody>
+                                <tfoot>
+                                    <tr>
+                                        <td colspan="9"></td>
+                                        <td><input type="text" class="form-control text-right GrandAmount" value="@String.Format("{0:0.00}", Model.SubTypeDetails.Sum(m => (String.IsNullOrEmpty(m.Amount) ? 0.00 : Convert.ToDouble(m.Amount))))" readonly /></td>
+                                        <td><input type="text" class="form-control text-right GrandGSTAmount" value="@String.Format("{0:0.00}", Model.SubTypeDetails.Sum(m => (String.IsNullOrEmpty(m.GSTAmount) ? 0.00 : Convert.ToDouble(m.GSTAmount))))" readonly /></td>
+                                        <td><input type="text" class="form-control text-right GrandTotalAmount" value="@String.Format("{0:0.00}", Model.SubTypeDetails.Sum(m => (String.IsNullOrEmpty(m.TotalAmount) ? 0.00 : Convert.ToDouble(m.TotalAmount))))" readonly /></td>
+                                    </tr>
+                                </tfoot>
+                            }
+                        }
+                        else
+                        {
+                            int count = 0;
+
+                            <tbody>
+                                @foreach (var thisDetail in Model.SubTypeDetails)
+                                {
+                                    <tr>
+                                        <td></td>
+                                        <td>
+                                            <input type="text" class="form-control SubTypeColumn0" style="min-width:130px" value="@thisDetail.SubTypeColumn0" readonly
+                                                   name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[@count].SubTypeColumn0" />
+                                        </td>
+                                        <td>
+                                            <input type="text" class="form-control SubTypeColumn1" style="min-width:150px" value="@thisDetail.SubTypeColumn1" readonly
+                                                   name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[@count].SubTypeColumn1" />
+                                        </td>
+                                        <td>
+                                            <input type="text" class="form-control timeinput StartTime" readonly name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[@count].StartTime" value="@thisDetail.StartTime" />
+                                        </td>
+                                        <td>
+                                            <input type="text" class="form-control timeinput EndTime" readonly name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[@count].EndTime" value="@thisDetail.EndTime" />
+                                        </td>
+                                        <td>
+                                            <input type="text" class="form-control SubTypeColumn2" style="min-width:130px" value="@thisDetail.SubTypeColumn2" readonly
+                                                   name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[@count].SubTypeColumn2" />
+                                        </td>
+                                        <td>
+                                            <input type="text" class="form-control SubTypeColumn3" style="min-width:200px" value="@thisDetail.SubTypeColumn3" readonly
+                                                   name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[@count].SubTypeColumn3" />
+                                        </td>
+                                        <td>
+                                            <input type="text" class="form-control SubTypeColumn4" style="min-width:130px" value="@thisDetail.SubTypeColumn4" readonly
+                                                   name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[@count].SubTypeColumn4" />
+                                        </td>
+                                        <td>
+                                            <input type="text" class="form-control text-right SubTypeColumn5" style="min-width:130px" value="@thisDetail.SubTypeColumn5" readonly
+                                                   name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[@count].SubTypeColumn5" />
+                                        </td>
+                                        <td>
+                                            <input type="text" class="form-control text-right Amount" style="min-width:130px" value="@thisDetail.Amount" readonly
+                                                   name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[@count].Amount" />
+                                        </td>
+                                        <td>
+                                            <input type="text" class="form-control text-right GSTAmount" style="min-width:130px" value="@thisDetail.GSTAmount" readonly
+                                                   name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[@count].GSTAmount" />
+                                        </td>
+                                        <td>
+                                            <input type="text" class="form-control text-right TotalAmount" style="min-width:130px" value="@thisDetail.TotalAmount" readonly
+                                                   name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[@count].TotalAmount" />
+                                        </td>
+                                    </tr>
+
+                                    count++;
+                                }
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <td colspan="9"></td>
+                                    <td><input type="text" class="form-control text-right GrandAmount" value="@String.Format("{0:0.00}", Model.SubTypeDetails.Sum(m => (String.IsNullOrEmpty(m.Amount) ? 0.00 : Convert.ToDouble(m.Amount))))" readonly /></td>
+                                    <td><input type="text" class="form-control text-right GrandGSTAmount" value="@String.Format("{0:0.00}", Model.SubTypeDetails.Sum(m => (String.IsNullOrEmpty(m.GSTAmount) ? 0.00 : Convert.ToDouble(m.GSTAmount))))" readonly /></td>
+                                    <td><input type="text" class="form-control text-right GrandTotalAmount" value="@String.Format("{0:0.00}", Model.SubTypeDetails.Sum(m => (String.IsNullOrEmpty(m.TotalAmount) ? 0.00 : Convert.ToDouble(m.TotalAmount))))" readonly /></td>
+                                </tr>
+                            </tfoot>
+                        }
+                    </table>
+                </div>
+            </div>
+            @if (Status == "Draft" || Status == "Withdrawn" || Status == "Declined" || Status =="Returned")
+            {
+                <div class="form-horizontal">
+                    <div class="table-toolbar">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="btn-group">
+                                    <a class="BtnPlus btn green" title="dTable_@(DataTableID)" href="javascript:@(DataTableID)_addRow();">
+                                        Add Row
+                                        <i class="fa fa-plus"></i>
+                                    </a>
+                                </div>
+                                <div class="btn-group">
+                                    <a class="BtnPlus5 btn green" title="dTable_@(DataTableID)" href="javascript:@(DataTableID)_add5Row();">
+                                        Add 5 Rows
+                                        <i class="fa fa-plus"></i>
+                                    </a>
+                                </div>
+                                <div class="btn-group">
+                                    <a class="deleteall btn red" title="dTable_@(DataTableID)" href="javascript:@(DataTableID)_removeRow();">
+                                        Delete Row
+                                        <i class="fa fa-minus"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+    var _@(DataTableID)Table = $('#tbl@(DataTableID)').DataTable({
+        "bLengthChange": false,
+        "bFilter": false,
+        "bPaginate": false,
+        "bInfo": false,
+        "bSort": false
+    });
+
+    function dTable_@(DataTableID)Validation() {
+        var _ValidationMsg = '';
+
+        var thisTable = $('#tbl@(DataTableID)');
+        var _MileageLimit = parseFloat($('#MileageLimit').val());
+        var thisSubTypeMileage = 0;
+        thisTable.find(".Amount").each(function () {
+            var $row = $(this).closest("tr");
+
+            var _ChargeCode = $row.find(".SubTypeColumn0").val();
+            var _Date = $row.find(".SubTypeColumn1").val();
+            var _Distance = $row.find(".SubTypeColumn4").val();
+            var _Type = $row.find(".SubTypeColumn2").val();
+            var _Amount = $row.find(".Amount").val();
+
+            var _StartTime = $row.find(".StartTime").val();
+            var _EndTime = $row.find(".EndTime").val();
+            thisSubTypeMileage += parseFloat(_Distance);
+            
+            if (_ChargeCode == null || _ChargeCode == '') {
+                _ValidationMsg += '- @ClaimsSubtypeName (Charge Code) is required.\n'
+            }
+
+            if (_Date == null || _Date == '') {
+                _ValidationMsg += '- @ClaimsSubtypeName (Date) is required.\n'
+            }
+
+            if (_StartTime == null || _StartTime == '') {
+                _ValidationMsg += '- @ClaimsSubtypeName (Start Time) is required.\n'
+            }
+
+            if (_EndTime == null || _EndTime == '') {
+                _ValidationMsg += '- @ClaimsSubtypeName (End Time) is required.\n'
+            }
+ 
+            if (!(_StartTime == null || _StartTime == '') && !(_EndTime == null || _EndTime == '')) {
+                var startDateString = "01-01-2000 " + _StartTime;
+                var endDateString = "01-01-2000 " + _EndTime;
+
+                var StartDate = moment(startDateString, "DD/MM/YYYY HH:mm")._d;
+                var EndDate = moment(endDateString, "DD/MM/YYYY HH:mm")._d;
+                 
+                if (EndDate <= StartDate) {
+                    _ValidationMsg += ('- @ClaimsSubtypeName End Time has to be later than Start Time.\n');                    
+                }
+            }
+
+
+
+            if (_Distance == null || _Distance == '') {
+                _ValidationMsg += '- @ClaimsSubtypeName (Distance) is required.\n'
+            }
+
+            if (_Amount == null || _Amount == '0' || _Amount == '') {
+                _ValidationMsg += '- @ClaimsSubtypeName (Amount) is required.\n'
+            }
+
+            if (_Amount == 'Infinity') {
+                _ValidationMsg += '- @ClaimsSubtypeName (Amount) is invalid.\n'
+            }
+
+            var _GSTAmount = $row.find(".GSTAmount").val();
+            var gstAmt = 0;
+            if ('@GSTEnabled' != 'false') {
+                if (_GSTAmount == null || _GSTAmount == '') {
+                    _ValidationMsg += '- @ClaimsSubtypeName (GST Amount) is required.\n'
+                }
+
+                var gstMaxValue = '@GSTMaxValue';
+                gstAmt = parseFloat(_Amount) * (parseFloat(gstMaxValue) / 100);
+                if ((parseFloat(_GSTAmount) || 0) > (parseFloat(gstAmt.toFixed(2)) || 0)) {
+                    _ValidationMsg += '- @ClaimsSubtypeName - The GST Amount (highlighted in yellow) has exceeded the maximum value.Please edit or delete the record to proceed.\n'
+                    $row.find(".GSTAmount").css("background-color", "yellow");
+                }
+                else {
+                    $row.find(".GSTAmount").css("background-color", "white");
+                }
+            }
+        });
+
+        //console.log(thisSubTypeMileage);
+        if (thisSubTypeMileage > _MileageLimit)
+        {
+            _ValidationMsg += '- Total Mileage of @ClaimsSubtypeName cannot exceed ' + _MileageLimit + 'KM .\n'
+        }
+        return _ValidationMsg;
+    }
+
+    function @(DataTableID)_removeRow() {
+        $.each($('input[class="@(DataTableID)RemoveCheckbox"]:checked'), function (i, val) {
+            var currLength = $('#tbl@(DataTableID) tr').length - 2;
+            var row = $(this).closest("tr").get(0);
+            if (currLength > 1) {
+                _@(DataTableID)Table.fnDeleteRow(mytable.fnGetPosition(row));
+            }
+        });
+
+        reorderTable('#tbl@(DataTableID)');
+        @(DataTableID)_CalculateSubtotal();
+    }
+
+    function @(DataTableID)_add5Row() {
+        @(DataTableID)_addRow_noinit();
+        @(DataTableID)_addRow_noinit();
+        @(DataTableID)_addRow_noinit();
+        @(DataTableID)_addRow_noinit();
+        @(DataTableID)_addRow_noinit();
+
+        @(DataTableID)_Initialize();
+    }
+
+    function @(DataTableID)_addRow_noinit() {
+        _@(DataTableID)Table.fnAddData([
+            '<input type="checkbox" class="@(DataTableID)RemoveCheckbox" />',
+            '<input type="hidden" class="hfChargeCode" /><select class="form-control ddlChargeCode SubTypeColumn0" style="min-width:130px" onchange="ChargeCodeChange(this); CalculateChargeCodeSummary();" name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[' + _@(DataTableID)Table.fnSettings().fnRecordsTotal() + '].SubTypeColumn0"><option value="">Select One</option></select>',
+            '<div class="input-group date date-picker" data-date-format="dd MM yyyy" style="min-width:150px"><input type="text" class="form-control SubTypeColumn1" name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[' + _@(DataTableID)Table.fnSettings().fnRecordsTotal() + '].SubTypeColumn1" /><span class="input-group-btn"><button type="button" class="btn default"><i class="fa fa-calendar"></i></button></span></div>',
+            '<input type="text" class="form-control timeinput StartTime"                                                                            name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[' + _@(DataTableID)Table.fnSettings().fnRecordsTotal() + '].StartTime"  />',
+            '<input type="text" class="form-control timeinput EndTime"                                                                              name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[' + _@(DataTableID)Table.fnSettings().fnRecordsTotal() + '].EndTime"  />',
+            '<input type="text" class="form-control SubTypeColumn2" style="min-width:130px" value="Car" readonly name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[' + _@(DataTableID)Table.fnSettings().fnRecordsTotal() + '].SubTypeColumn2" />',
+            '<input type="text" class="form-control SubTypeColumn3" style="min-width:200px" maxlength="1000" name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[' + _@(DataTableID)Table.fnSettings().fnRecordsTotal() + '].SubTypeColumn3" />',
+            '<input type="text" class="form-control SubTypeColumn4 numericinput" style="min-width:130px" maxlength="10" value="0" name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[' + _@(DataTableID)Table.fnSettings().fnRecordsTotal() + '].SubTypeColumn4" onblur="@(DataTableID)Calculation(this);" />',
+            '<input type="text" class="form-control text-right SubTypeColumn5" style="min-width:130px" readonly name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[' + _@(DataTableID)Table.fnSettings().fnRecordsTotal() + '].SubTypeColumn5" />',
+            '<input type="text" class="form-control text-right Amount" style="min-width:130px" maxlength="10" value="0.00" readonly name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[' + _@(DataTableID)Table.fnSettings().fnRecordsTotal() + '].Amount" />',
+            '<input type="text" class="form-control text-right GSTAmount" style="min-width:130px" value="0.00" name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[' + _@(DataTableID)Table.fnSettings().fnRecordsTotal() + '].GSTAmount" />',
+            '<input type="text" class="form-control text-right TotalAmount" style="min-width:130px" value="0.00" readonly name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[' + _@(DataTableID)Table.fnSettings().fnRecordsTotal() + '].TotalAmount" />'
+        ]);
+
+    }
+
+    function @(DataTableID)_addRow() {
+        _@(DataTableID)Table.fnAddData([
+            '<input type="checkbox" class="@(DataTableID)RemoveCheckbox" />',
+            '<input type="hidden" class="hfChargeCode" /><select class="form-control ddlChargeCode SubTypeColumn0" style="min-width:130px" onchange="ChargeCodeChange(this); CalculateChargeCodeSummary();" name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[' + _@(DataTableID)Table.fnSettings().fnRecordsTotal() + '].SubTypeColumn0"><option value="">Select One</option></select>',
+            '<div class="input-group date date-picker" data-date-format="dd MM yyyy" style="min-width:150px"><input type="text" class="form-control SubTypeColumn1" name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[' + _@(DataTableID)Table.fnSettings().fnRecordsTotal() + '].SubTypeColumn1" /><span class="input-group-btn"><button type="button" class="btn default"><i class="fa fa-calendar"></i></button></span></div>',
+            '<input type="text" class="form-control timeinput StartTime"                                                                             name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[' + _@(DataTableID)Table.fnSettings().fnRecordsTotal() + '].StartTime"  />',
+            '<input type="text" class="form-control timeinput EndTime"                                                                               name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[' + _@(DataTableID)Table.fnSettings().fnRecordsTotal() + '].EndTime"  />',
+            '<input type="text" class="form-control SubTypeColumn2" style="min-width:130px" value="Car" readonly name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[' + _@(DataTableID)Table.fnSettings().fnRecordsTotal() + '].SubTypeColumn2" />',
+            '<input type="text" class="form-control SubTypeColumn3" style="min-width:200px" maxlength="1000" name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[' + _@(DataTableID)Table.fnSettings().fnRecordsTotal() + '].SubTypeColumn3" />',
+            '<input type="text" class="form-control SubTypeColumn4 numericinput" style="min-width:130px" maxlength="10" value="0" name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[' + _@(DataTableID)Table.fnSettings().fnRecordsTotal() + '].SubTypeColumn4" onblur="@(DataTableID)Calculation(this);" />',
+            '<input type="text" class="form-control text-right SubTypeColumn5" style="min-width:130px" readonly name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[' + _@(DataTableID)Table.fnSettings().fnRecordsTotal() + '].SubTypeColumn5" />',
+            '<input type="text" class="form-control text-right Amount" style="min-width:130px" maxlength="10" value="0.00" readonly name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[' + _@(DataTableID)Table.fnSettings().fnRecordsTotal() + '].Amount" />',
+            '<input type="text" class="form-control text-right GSTAmount" style="min-width:130px" value="0.00" name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[' + _@(DataTableID)Table.fnSettings().fnRecordsTotal() + '].GSTAmount" />',
+            '<input type="text" class="form-control text-right TotalAmount" style="min-width:130px" value="0.00" readonly name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[' + _@(DataTableID)Table.fnSettings().fnRecordsTotal() + '].TotalAmount" />'
+        ]);
+
+        @(DataTableID)_Initialize();
+    }
+
+    function @(DataTableID)_Initialize() {
+        $('#tbl@(DataTableID) .date-picker').datepicker({
+            format: 'dd/mm/yyyy',
+            autoclose: true,
+        });
+        $('#tbl@(DataTableID) .date-picker').datepicker('setStartDate', '@dtStrStart');
+        $('#tbl@(DataTableID) .date-picker').datepicker('setEndDate', '@dtStrEnd');
+
+        if ('@GSTEnabled' == 'false') {
+            $('#tbl@(DataTableID) tbody tr').each(function () {
+                var _UnitPrice = $(this).children('td:eq(8)').children('input[type=text]');
+                var _GSTAmount = $(this).children('td:eq(10)').children('input[type=text]');
+
+                _UnitPrice.val((parseFloat('@UnitPriceCar') || 0).toFixed(2));
+                _GSTAmount.prop('readonly', true);
+                _GSTAmount.val('0.00');
+            });
+        }
+
+        $("#tbl@(DataTableID) .numericinput").inputmask("integer", {
+            min: 0,
+            max: 10000,
+            allowMinus: false,
+            rightAlign: false
+        });
+        $("#tbl@(DataTableID) .numericinput").css("textAlign", "left");
+
+        $(".@(DataTableID)RemoveCheckbox").uniform();
+        BindtoDDL();
+        CalculateSummary();
+    }
+
+    function @(DataTableID)GetDDLListInputValues() {
+        $('#tbl@(DataTableID) tbody tr').each(function () {
+            var _CCSelect = $(this).children('td:eq(3)').children('select');
+            var _CCHidden = $(this).children('td:eq(3)').children('input[type=hidden]');
+            _CCSelect.val(_CCHidden.val());
+        });
+    }
+
+    function @(DataTableID)Calculation(x) {
+        if (x != undefined) {
+            var myNumeric = parseFloat($(x).val().replace(/,/g, ''));
+            if (!myNumeric) {
+                $(x).val('0');
+            }
+            else {
+                $(x).val(myNumeric);
+                //$(this).val(ThousandSeparator(myNumeric.toFixed(2)));
+            }
+        }
+
+        var $row = $(x).closest("tr");
+        var _Distance = parseFloat($row.find(".SubTypeColumn4").val()) || 0;
+        var _UnitPrice = parseFloat($row.find(".SubTypeColumn5").val()) || 0;
+
+
+        var _MileageLimit = parseFloat($('#MileageLimit').val());
+        if (_Distance > _MileageLimit && _MileageLimit != 0)
+        {
+            _Distance = _MileageLimit;
+            $row.find(".SubTypeColumn4").val(_MileageLimit.toFixed(2));
+            alert('Approved Claimable Mileage Limit is ' + _MileageLimit + ' KM.');
+        }
+
+        var amount = 0;
+        var gstAmt = 0;
+        var TotalAmount = 0;
+
+        amount = _Distance * _UnitPrice;
+        $row.find(".Amount").val(amount.toFixed(2));
+
+        if ('@GSTEnabled' != 'false') {
+            var gstMaxValue = '@GSTMaxValue';
+            gstAmt = parseFloat(amount) * (parseFloat(gstMaxValue) / 100);
+        }
+        $row.find(".GSTAmount").val(gstAmt.toFixed(2));
+
+        TotalAmount = amount + parseFloat(gstAmt.toFixed(2));
+        $row.find(".TotalAmount").val(TotalAmount.toFixed(2));
+
+        @(DataTableID)_CalculateSubtotal();
+    }
+
+    function @(DataTableID)_CalculateSubtotal() {
+        var grandAmount = 0;
+        var grandGST = 0;
+        var grandTotal = 0;
+
+        var thisTable = $('#tbl@(DataTableID)');
+
+        thisTable.find(".Amount").each(function () {
+            var $row = $(this).closest("tr");
+            var _Amount = $row.find(".Amount").val();
+            var _GSTAmount = $row.find(".GSTAmount").val();
+
+            if (!isNaN(_Amount) && _Amount.length != 0) {
+                grandAmount = (grandAmount + (_Amount * 1));
+                grandGST = (grandGST + (_GSTAmount * 1));
+                grandTotal = grandAmount + grandGST;
+            }
+        });
+
+        thisTable.find(".GrandAmount").val(grandAmount.toFixed(2));
+        thisTable.find(".GrandGSTAmount").val(grandGST.toFixed(2));
+        thisTable.find(".GrandTotalAmount").val(grandTotal.toFixed(2));
+
+        CalculateSummary();
+    }
+
+    $(document).ready(function () {
+        @(DataTableID)_Initialize();
+        @(DataTableID)GetDDLListInputValues();
+    });
+</script>

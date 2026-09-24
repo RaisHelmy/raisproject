@@ -1,0 +1,82 @@
+﻿@model IEnumerable<OJA.Models.JobReport>
+@using OJA.Models
+@{
+    Layout = null;
+}
+<div class="portlet box blue">
+    <div class="mini-triangle"><img src="~/Assets/img/menu-red-triangle.png" /></div>
+    <div class="portlet-title">
+        <div class="caption">
+            <i class="fa fa-reorder"></i>Request Listing
+        </div>
+    </div>
+
+    <div class="portlet-body form">
+        <div class="form-body">
+            <div class="form-horizontal">
+                <table id="tblResult" class="table table-striped table-bordered table-hover table-full-width">
+                    <thead>
+                        <tr> 
+                            <th>Transfer Type</th>
+                            <th>Company</th>
+                            <th>Division / Department</th>
+                            <th>Unit / Section</th>
+                            <th>Position</th>
+                            <th>Vacancy No</th> 
+                            <th>Closing Date</th>
+                            <th>Advertisement Ref. No.</th>
+                            <th>Total Submitted</th>
+                            <th>No. of Applications</th>
+                            <th>Status</th>
+                            <th>Recommendation</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            string css = "green";
+                            if (item.Status == JobStatusType.Withdrawn || item.Status == JobStatusType.Declined)
+                            {
+                                css = "red";
+                            }
+                            <tr> 
+                                <td>@item.ApplicationType</td> 
+                                <td>@item.Division</td>
+                                <td>@item.Department</td>
+                                <td>@item.UnitSection</td>
+                                <td>@item.Position</td>
+                                <td>@item.VacancyNumber</td>
+                                <td>@item.ClosingDate</td>
+                                <td>@item.AdvertisementNo</td>
+                                <td>@item.TotalSubmitted</td>
+                                <td>
+                                    <a  href="@Url.Action("JobApplicationSummary", "OJA", new { VacancyNo = item.VacancyNumber, Status = item.Status, ClosingDate = item.ClosingDate})">@item.NoOfApplications</a>
+                                    
+                                </td>
+                                <td style="color: @css; font-weight: bold">
+                                    @item.Status
+                                </td>
+                                <td>@item.Recommendation</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    $('#tblResult').dataTable({
+        "aLengthMenu": [[10, 25, 50, 100, 1000], [10, 25, 50, 100, 1000]]
+    });
+
+    var tableWrapper = "#tblResult_wrapper";
+
+    jQuery(tableWrapper + ' .dataTables_filter input').addClass("form-control input-medium input-inline"); // modify table search input
+    jQuery(tableWrapper + ' .dataTables_length select').addClass("form-control input-small"); // modify table per page dropdown
+    jQuery(tableWrapper + ' .dataTables_length select').select2({
+        showSearchInput: false //hide search box with special css class
+    });
+</script>

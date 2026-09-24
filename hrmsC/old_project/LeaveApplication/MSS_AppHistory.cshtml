@@ -1,0 +1,257 @@
+﻿@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewBag.Title = "Leave Application: My Approval History";
+    DateTime d1 = DateTime.Now.AddYears(-20);
+    DateTime d2 = DateTime.Now.AddYears(20);
+    string dtStrStart = d1.ToString("dd MMM yyyy");
+    string dtStrEnd = d2.ToString("dd MMM yyyy");
+}
+
+<div class="row">
+    <div class="col-md-12">
+        <br />
+        <h1 class="page-title">
+            Leave Application: My Approval History<span style="padding-left:20px;"><small></small></span>
+        </h1>
+    </div>
+</div>
+<br />
+<div class="form-body">
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-4 control-label">Employee</label>
+                    <div class="col-md-8 form-control-static">
+                        <input id="SearchEmpID" name="SearchEmpID" class="form-control" type="text" />
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-4 control-label">Action Type</label>
+                    <div class="col-md-8 form-control-static">
+                        <select class="form-control" id="ActionType">
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-4 control-label">Leave Type</label>
+                    <div class="col-md-8 form-control-static">
+                        <select class="form-control" id="ddlLeaveType" onchange="PopulateLeaveSubtype();"></select>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-4 control-label">Leave Subtype</label>
+                    <div class="col-md-8 form-control-static">
+                        <select class="form-control" id="ddlLeaveSubtype"></select>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-4 control-label">Start Date</label>
+                    <div class="col-md-8 form-control-static">
+                        <div class="input-group date date-picker" data-date-format="dd MM yyyy">
+                            <input type="text" class="form-control" id="StartDate" name="StartDate" />
+                            <span class="input-group-btn">
+                                <button type="button" class="btn default"><i class="fa fa-calendar"></i></button>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-4 control-label">End Date</label>
+                    <div class="col-md-8 form-control-static">
+                        <div class="input-group date date-picker" data-date-format="dd MM yyyy">
+                            <input type="text" class="form-control" id="EndDate" name="EndDate" />
+                            <span class="input-group-btn">
+                                <button type="button" class="btn default"><i class="fa fa-calendar"></i></button>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">&nbsp;</div>
+    <div class="row">
+        <div class="col-md-12">
+            <div class="text-right">
+                <input type="button" id="btn-Search" class="btn green btn-Search" value="Search" onclick="SearchListing();">
+                <input id="btn-Clear" type="button" class="btn default " value="Clear" onclick="ClearFilter();">
+            </div>
+        </div>
+    </div>
+    <div class="row">&nbsp;</div>
+    <div class="row">
+        <div class="col-md-12">
+            <div id="SearchResult">
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+    function SearchListing() {
+        var _DateFrom = $('#StartDate').val();
+        var _DateTo = $('#EndDate').val();
+        var _EmpID = $('#SearchEmpID').val();
+        var _LeaveType = $('#ddlLeaveType').val();
+        var _LeaveSubtype = $('#ddlLeaveSubtype').val();
+        var _ActionType = $('#ActionType').val();
+
+
+        $("#SearchResult").html("LOADING...");
+
+        $.ajax({
+            type: "GET",
+            url: '@Url.Content("~/LeaveApplication/_AppHistoryResult")',
+            cache: false,
+            dataType: "html",
+            data: {
+                SubDateFrom: _DateFrom, SubDateTo: _DateTo, ActionType: _ActionType,
+                SearchEmpID: _EmpID, LeaveType: _LeaveType, LeaveSubtype: _LeaveSubtype
+            },
+            success: function (content) {
+                $("#SearchResult").html(content);
+            },
+            error: function (e) {
+                console.log(e);
+            }
+        });
+    }
+
+    jQuery.extend(jQuery.fn.dataTableExt.oSort, {
+        "date-dmy-pre": function (a) {
+            if (a == null || a == "") {
+                return 0;
+            }
+            var date = a.split('-');
+            return (date[2] + date[1] + date[0]) * 1;
+        },
+
+        "date-dmy-asc": function (a, b) {
+            return ((a < b) ? -1 : ((a > b) ? 1 : 0));
+        },
+
+        "date-dmy-desc": function (a, b) {
+            return ((a < b) ? 1 : ((a > b) ? -1 : 0));
+        }
+    });
+
+    jQuery(document).ready(function () {
+        $('.date-picker').datepicker({
+            format: 'dd/mm/yyyy',
+            autoclose: true,
+            setStartDate: '@dtStrStart',
+            setEndDate: '@dtStrEnd'
+        });
+
+        RetrieveLeaveTypeOptions();
+        PopulateLeaveStatus();
+        SearchListing();
+    });
+
+
+    function ClearFilter() {
+        $('#StartDate').val('');
+        $('#EndDate').val('');
+        $('#SearchEmpID').val('');
+        $('#ClaimCategory').val('');
+        $('#Status').val('');
+        SearchListing();
+    }
+
+    var LeaveTypes = null;
+    var LeaveSubtypes = null;
+
+    function PopulateLeaveStatus() {
+        $.get('@Url.Action("GetAllLeaveStatus", "LeaveApplication")', function (result) {
+            var ddlLeaveStatus = $('#ActionType');
+
+            var i = 0;
+            ddlLeaveStatus.empty();
+            ddlLeaveStatus.append('<option value=""> - All - </option>');
+            for (i = 0; i < result.length; i++) {
+                if (result[i].StatusDesc == "Draft")
+                    continue;
+
+                ddlLeaveStatus.append('<option value="' + result[i].StatusDesc + '">' + result[i].StatusDesc + '</option>');
+            }
+
+            ddlLeaveStatus.prop("selectedIndex", 0);
+            ddlLeaveStatus.change();
+        });
+    }
+
+    function RetrieveLeaveTypeOptions() {
+        $.get('@Url.Action("GetLeaveTypeOptions", "LeaveApplication")', function (result) {
+            LeaveTypes = result;
+            PopulateLeaveType();
+        });
+    }
+
+    function PopulateLeaveType() {
+        var ddlLeaveType = $('#ddlLeaveType');
+
+        var i = 0;
+        ddlLeaveType.empty();
+        ddlLeaveType.append('<option value=""> - All - </option>');
+        for (i = 0; i < LeaveTypes.length; i++) {
+            ddlLeaveType.append('<option value="' + LeaveTypes[i].LeaveTypeCode + '">' + LeaveTypes[i].LeaveTypeName + '</option>');
+        }
+
+        ddlLeaveType.prop("selectedIndex", 0);
+        ddlLeaveType.change();
+    }
+
+    function PopulateLeaveSubtype() {
+        var ddlLeaveSubtype = $('#ddlLeaveSubtype');
+        var selectedLeaveTypeIndex = $('#ddlLeaveType').prop("selectedIndex") - 1;
+        var leaveType = LeaveTypes[selectedLeaveTypeIndex];
+
+        if (leaveType) {
+            LeaveSubtypes = leaveType["LeaveSubtypes"];
+        }
+        else {
+            LeaveSubtypes = null;
+        }
+
+        var i = 0;
+        ddlLeaveSubtype.empty();
+        ddlLeaveSubtype.append('<option value=""> - All - </option>');
+
+        if (LeaveSubtypes) {
+            for (i = 0; i < LeaveSubtypes.length; i++) {
+                ddlLeaveSubtype.append('<option value="' + LeaveSubtypes[i].LeaveSubtypeCode + '">' + LeaveSubtypes[i].LeaveSubtypeName + '</option>');
+            }
+        }
+
+        ddlLeaveSubtype.prop("selectedIndex", 0);
+    }
+</script>

@@ -1,0 +1,382 @@
+﻿@model TNB_ESS_MVC.Controllers.WorkScheduleController.WorkScheduleForm
+
+@{
+    Layout = null;
+
+    //System.Globalization.CultureInfo culture = new System.Globalization.CultureInfo("en-US");
+    //System.Threading.Thread.CurrentThread.CurrentCulture = culture;
+    //System.Threading.Thread.CurrentThread.CurrentUICulture = culture;
+
+    var EffDateFrom = Model.EffDateFrom;
+    var EffDateTo = Model.EffDateTo;
+    var WorkScheduleType = Model.WorkScheduleType;
+}
+
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="portlet box blue">
+            <div class="mini-triangle"><img src="../Assets/img/menu-red-triangle.png" /></div>
+            <div class="portlet-title">
+                <div class="caption">
+                    <i class="fa fa-reorder"></i>Current Work Schedule Details
+                </div>
+            </div>
+            <div class="portlet-body form">
+                <div class="form-body" id="ct00_CustomFieldFormView">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-horizontal">
+                                <div class="form-group">
+                                    <label class="control-label col-md-4">
+                                        Work Schedule Rule
+                                    </label>
+                                    <div class="col-md-8 form-control-static">
+                                        <input class="form-control" type="text" id="CurWorkScheduleRule" value="@Model.CurWorkScheduleRule" readonly />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-horizontal">
+                                <div class="form-group">
+                                    <label class="control-label col-md-4">
+                                        Holiday Calendar
+                                    </label>
+                                    <div class="col-md-8 form-control-static">
+                                        <input class="form-control" type="text" id="WS_HolidayCalendar" value="@Model.HolidayCalendarDesc" readonly />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-horizontal">
+                                <div class="form-group">
+                                    <label class="control-label col-md-4">
+                                        View Work Schedule
+                                    </label>
+                                    <div class="col-md-8 form-control-static">
+                                        <a href="@Url.Action("WorkSchedule","TimeAttendance")" target="_blank" class="icon-btn">
+                                            <i class="fa fa-calendar"></i>
+                                            <div>
+                                                Calendar
+                                            </div>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="portlet box blue">
+            <div class="mini-triangle"><img src="../Assets/img/menu-red-triangle.png" /></div>
+            <div class="portlet-title">
+                <div class="caption">
+                    <i class="fa fa-reorder"></i>Application Details
+                </div>
+            </div>
+            <div class="portlet-body form">
+                <div class="form-body" id="ct00_CustomFieldFormView">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-horizontal">
+                                <div class="form-group">
+                                    <label class="control-label col-md-4">
+                                        Reference No
+                                    </label>
+                                    <div class="col-md-8 form-control-static">
+                                        @if (string.IsNullOrEmpty(Model.ReferenceNo))
+                                        {
+                                            <input class="form-control" type="text" id="ReferenceNo" value="@Model.ReferenceNo" readonly />
+
+                                        }
+                                        else
+                                        {
+                                            <input class="form-control" style="font-weight:bold" type="text" id="ReferenceNo" value="@Model.ReferenceNo" readonly />
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-horizontal">
+                                <div class="form-group">
+                                    <label class="control-label col-md-4">
+                                        Status
+                                    </label>
+                                    <div class="col-md-8 form-control-static">
+                                        @if (Model.Status == "Draft" || Model.Status == "Pending" || Model.Status == "Approved")
+                                        {
+                                            <input class="form-control" style="color:green; font-weight:bold" type="text" id="WS_Status" value="@Model.Status" readonly />
+                                        }
+                                        else if (Model.Status == "Withdrawn" || Model.Status == "Declined" || Model.Status == "Error" || Model.Status == "Failed")
+                                        {
+                                            <input class="form-control" style="color:red; font-weight:bold" type="text" id="WS_Status" value="@Model.Status" readonly />
+                                        }
+                                        else
+                                        {
+                                            <input class="form-control" type="text" id="WS_Status" value="@Model.Status" readonly />
+                                        }
+                                        @*@Html.TextBoxFor(m => m.Status, new { @class = "form-control", @readonly = "readonly" })*@
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-horizontal">
+                                <div class="form-group">
+                                    <label class="control-label col-md-4">
+                                        Work Schedule
+                                    </label>
+                                    <div class="col-md-8 form-control-static">
+                                        <input class="form-control" id="WorkScheduleType" value="@Model.WorkScheduleType" readonly="readonly" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-horizontal">
+                                <div class="form-group">
+                                    <label class="control-label">
+                                        Click <a href="#WorkHoursTable" data-toggle="modal">here</a> to view actual working hours.
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-horizontal">
+                                <div class="form-group">
+                                    @*@Resources.Common.EffectiveDateFrom*@
+                                    <label class="control-label col-md-4">Effective Date From</label>
+                                    <div class="col-md-8 form-control-static">
+                                        <input class="form-control" value="@EffDateFrom" readonly="readonly" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 EffectiveDateTo">
+                            <div class="form-horizontal">
+                                <div class="form-group">
+                                    <label class="control-label col-md-4">Effective Date To</label>
+                                    <div class="col-md-8 form-control-static">
+                                        <input class="form-control" value="@EffDateTo" readonly="readonly" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row StaggeredOption" style="display:none">
+                        <div class="col-md-6">
+                            <div class="form-horizontal">
+                                <div class="form-group">
+                                    <label class="control-label col-md-4">
+                                        Option
+                                    </label>
+                                    <div class="col-md-8 form-control-static">
+                                        <input class="form-control" id="StaggeredOption" value="@Model.Option" readonly="readonly" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="workScheduleTotalCumulativeDays">
+                        @Html.Action("_WorkScheduleTotalCumulativeDays", "WorkSchedule", new { WST = "Flexible Working Arrangement", EmployeeID = Model.EmployeeID })
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="form-horizontal">
+                                <div class="form-group">
+                                    <label class="control-label col-md-2">
+                                        Reason
+                                    </label>
+                                    <div class="col-md-10 form-control-static">
+                                        @*<textarea class="form-control" id="Reason"></textarea>*@
+                                        @Html.TextAreaFor(m => m.Reason, new { @class = "form-control", @readonly = "readonly", @rows = "5" })
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Working Hours -->
+<div class="modal fade modal" id="WorkHoursTable" tabindex="-1" role="basic" aria-hidden="true">
+    <form action="" method="post" id="WorkHoursForm" class="form-horizontal">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                </div>
+                <div class="modal-body">
+                    @Html.Action("_WorkScheduleActualWorkingHoursList", "WorkSchedule", new { })
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn default" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<script>
+    jQuery(document).ready(function () {
+
+        if ('@EffDateFrom' != "") {
+            $("#EffDateFrom").val('@EffDateFrom');
+            $("#EffDateTo").val('@EffDateTo');
+            $("#WorkScheduleType").val('@WorkScheduleType');
+
+            $("#hfStartDate").val('@EffDateFrom');
+            $("#hfEndDate").val('@EffDateTo');
+        }
+
+        if ('@WorkScheduleType' == "Normal Working Hours") {
+
+            //remove disable
+            $(".datepick-btn").css("display", "block");
+            $('#EffDateFrom').removeAttr('disabled', 'disabled');
+            $('#EffDateTo').removeAttr('disabled', 'disabled');
+
+            //hide EffectiveDateTo
+            $(".EffectiveDateTo").css("display", "none");
+
+            //hide StaggeredOption
+            $(".StaggeredOption").css("display", "none");
+        }
+        else if ('@WorkScheduleType' == "Staggered Working Hours") {
+
+            //remove disable
+            $(".datepick-btn").css("display", "block");
+            $('#EffDateFrom').removeAttr('disabled', 'disabled');
+            $('#EffDateTo').removeAttr('disabled', 'disabled');
+
+
+            //hide EffectiveDateTo
+            $(".EffectiveDateTo").css("display", "none");
+
+            // 01.10.2024 Hide
+            ////show StaggeredOption
+            //$(".StaggeredOption").css("display", "block");
+
+            // 19.12.2024 Re-enabled, but with additional criteria
+            if (AllowStaggeredOptions || $('#WS_HolidayCalendar').val() == "Perak") {
+                //show StaggeredOption
+                $(".StaggeredOption").css("display", "block");
+            }
+        }
+        else if ('@WorkScheduleType' == "Staggered Ramadhan") {
+
+            $(".EffectiveDateTo").css("display", "block");
+
+            //Disabled input field & hide input btn
+            $('#EffDateFrom').attr('disabled', 'disabled');
+            $('#EffDateTo').attr('disabled', 'disabled');
+            $(".datepick-btn").css("display", "none");
+
+            //hide StaggeredOption
+            $(".StaggeredOption").css("display", "none");
+        } else if ('@WorkScheduleType' == "Staggered Ramadhan (7.30 Pagi hingga 4.15 Petang)") {
+            $("#AttachmentControl").hide();
+            $(".EffectiveDateTo").css("display", "block");
+
+            //Disabled input field & hide input btn
+            $('#EffDateFrom').attr('disabled', 'disabled');
+            $('#EffDateTo').attr('disabled', 'disabled');
+            $(".datepick-btn").css("display", "none");
+
+            //hide StaggeredOption
+            $(".StaggeredOption").css("display", "none");
+        }
+        else if ('@WorkScheduleType' == "Staggered Ramadhan (8.00 Pagi hingga 4.45 Petang") {
+            $("#AttachmentControl").hide();
+            $(".EffectiveDateTo").css("display", "block");
+
+            //Disabled input field & hide input btn
+            $('#EffDateFrom').attr('disabled', 'disabled');
+            $('#EffDateTo').attr('disabled', 'disabled');
+            $(".datepick-btn").css("display", "none");
+
+            //hide StaggeredOption
+            $(".StaggeredOption").css("display", "none");
+        }
+        else if ('@WorkScheduleType' == "Staggered Ramadhan (8.30 Pagi hingga 5.15 Petang)") {
+            $("#AttachmentControl").hide();
+            $(".EffectiveDateTo").css("display", "block");
+
+            //Disabled input field & hide input btn
+            $('#EffDateFrom').attr('disabled', 'disabled');
+            $('#EffDateTo').attr('disabled', 'disabled');
+            $(".datepick-btn").css("display", "none");
+
+            //hide StaggeredOption
+            $(".StaggeredOption").css("display", "none");
+        }
+
+    });
+
+    @*function ApplicationDetails() {
+
+        $('#Comment').val('@Model.Comment');
+
+        if ('@EffDateFrom' != "") {
+            $("#EffDateFrom").val('@EffDateFrom');
+            $("#EffDateTo").val('@EffDateTo');
+            $("#WorkScheduleType").val('@WorkScheduleType');
+
+            $("#hfStartDate").val('@EffDateFrom');
+            $("#hfEndDate").val('@EffDateTo');
+        }
+
+        if ('@WorkScheduleType' == "Normal Working Hours") {
+
+            //remove disable
+            $(".datepick-btn").css("display", "block");
+            $('#EffDateFrom').removeAttr('disabled', 'disabled');
+            $('#EffDateTo').removeAttr('disabled', 'disabled');
+
+            //hide EffectiveDateTo
+            $(".EffectiveDateTo").css("display", "none");
+        }
+        else if ('@WorkScheduleType' == "Staggered Working Hours") {
+
+            //remove disable
+            $(".datepick-btn").css("display", "block");
+            $('#EffDateFrom').removeAttr('disabled', 'disabled');
+            $('#EffDateTo').removeAttr('disabled', 'disabled');
+
+
+            //hide EffectiveDateTo
+            $(".EffectiveDateTo").css("display", "none");
+        }
+        else if ('@WorkScheduleType' == "Staggered Ramadhan") {
+
+            $(".EffectiveDateTo").css("display", "block");
+
+            //Disabled input field & hide input btn
+            $('#EffDateFrom').attr('disabled', 'disabled');
+            $('#EffDateTo').attr('disabled', 'disabled');
+            $(".datepick-btn").css("display", "none");
+
+        }
+    }*@
+
+</script>

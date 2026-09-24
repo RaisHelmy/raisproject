@@ -1,0 +1,133 @@
+﻿@model ETKEMS.Models.PositionPickerConfig
+@{
+    List<string> PositionOptions = ViewBag.PositionOptions;
+}
+
+<div class="modal fade" id="CodPositionPicker" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                <h4 id="ConfirmationDialog_Title" class="modal-title">Employee Position</h4>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="form-horizontal">
+                            <div class="form-body">
+                                @if (!Model.PositionOnly)
+                                {
+                                    <div class="form-group">
+                                        <label class="control-label col-md-2 ">
+                                            Employee Number
+                                        </label>
+                                        <div class="col-md-4 form-control-static">
+                                            <input type="text" class="form-control" name="txtEmpCodeSearch" id="txtPositionPickerEmpCodeSearch" />
+                                        </div>
+                                        <label class="control-label col-md-2 ">
+                                            Employee Name
+                                        </label>
+                                        <div class="col-md-4  form-control-static">
+                                            <input type="text" class="form-control" name="txtEmpNameSearch" id="txtPositionPickerEmpNameSearch" />
+                                        </div>
+                                    </div>
+                                }
+
+                                <div class="form-group">
+                                    <label class="control-label col-md-2 ">
+                                        Position Name
+                                    </label>
+                                    <div class="col-md-4 form-control-static">
+                                        <select id="txtPositionPickerPositionNameSearch" class="form-control">
+                                            <option value="">-  All -</option>
+                                            @foreach (var opt in PositionOptions)
+                                            {
+                                                <option value="@opt">@opt</option>
+                                            }
+                                        </select>
+                                    </div>
+                                    <label class="control-label col-md-2 ">
+                                        Position Code
+                                    </label>
+                                    <div class="col-md-4  form-control-static">
+                                        <input type="text" class="form-control" name="txtEmpNameSearch" id="txtPositionPickerPositionCodeSearch" />
+                                    </div>
+                                </div>
+                                <br />
+                                <div class="form-group ">
+                                    <div class="text-right">
+                                        <input id="btn-Search" type="button" value="Search" class="btn green btn-Search" onclick="SearchCodPositionPicker();">
+                                    </div>
+                                </div>
+                            </div>
+                            <br />
+                            <div id="CodPositionPickerResult">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" id="btnCodPositionPickerSelect" class="btn default blue">
+                    Select
+                </button>
+                <button type="button" id="btnCodPositionPickerClose" class="btn default" data-dismiss="modal">
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function OpenCodPositionPicker(onPositionSelected) {
+        $('#btnCodPositionPickerSelect').on('click', function () {
+            var _Selected = $('input[name="PositionPickerSelection"]:checked');
+            var selectedPosition = {
+                PositionID : _Selected.attr("PositionID"),
+                Position: _Selected.attr("Position"),
+                PositionCode: _Selected.attr("PositionCode"),
+                PositionName: _Selected.attr("PositionName"),
+                VacancyStatus: _Selected.attr("VacancyStatus"),
+                EmployeeID: _Selected.attr("EmployeeID"),
+                EmployeeName: _Selected.attr("EmployeeName"),
+                EmployeeCode: _Selected.attr("EmployeeCode"),
+                SalaryGrade: _Selected.attr("SalaryGrade"),
+                Job: _Selected.attr("Job"),
+                PositionGrade: _Selected.attr("PositionGrade")
+            };
+
+            var shouldClose = onPositionSelected(selectedPosition);
+            if (shouldClose) {
+                $('#CodPositionPicker').modal("hide");
+                $('#btnCodPositionPickerSelect').off("click");
+            }
+        });
+
+        $('#CodPositionPicker').modal();
+    }
+
+    function SearchCodPositionPicker() {
+        var _EmpCode = $('#txtPositionPickerEmpCodeSearch').val();
+        var _EmpName = $('#txtPositionPickerEmpNameSearch').val();
+        var _PositionCode = $('#txtPositionPickerPositionCodeSearch').val();
+        var _PositionName = $('#txtPositionPickerPositionNameSearch').val();
+        var _Selection = '@Model.Selection';
+        var _PositionOnly = @Model.PositionOnly.ToString().ToLower();
+
+        var data = {
+            Selection: '@Model.Selection',
+            EmployeeNo: _EmpCode,
+            EmployeeName: _EmpName,
+            PositionCode: _PositionCode,
+            PositionName: _PositionName,
+            Selection: _Selection,
+            PositionOnly: _PositionOnly
+        };
+
+        $("#CodPositionPickerResult").html("LOADING...");
+        $.post('@Url.Action("__CodPositionPickerResult", "ETKEMS")', data, function (content) {
+            $("#CodPositionPickerResult").html(content);
+        });
+    }
+</script>

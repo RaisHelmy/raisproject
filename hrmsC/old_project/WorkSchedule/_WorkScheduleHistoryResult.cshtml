@@ -1,0 +1,82 @@
+﻿@model List<ESS.Core.WorkScheduleHistory>
+
+@{
+    Layout = null;
+}
+
+<div class="portlet box blue">
+    <div class="portlet-title">
+        <div class="caption">
+            <i class="fa fa-reorder"></i>My Work Schedule History
+        </div>
+        <div class="tools">
+        </div>
+    </div>
+    <div class="portlet-body form">
+        <div class="form-body">
+            <div class="form-horizontal">
+                <div class="table-toolbar">
+                    <table id="tblResult" class="table table-striped table-bordered table-hover table-full-width">
+                        <thead>
+                            <tr>
+                                <th></th>
+                                <th>Reference No.</th>
+                                <th>Employee Number</th>
+                                <th>Employee Name</th>
+                                <th>Work Schedule Type</th>
+                                <th>Submission Date</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in @Model)
+                            {
+                                <tr>
+                                    <td>
+
+                                        @if (item.Status == "Withdrawn")
+                                        {
+                                            <a class="btn blue btn-sm" href="@Url.Content("~/WorkSchedule/WorkScheduleApplicationEdit")?ID=@item.ID&RefNo=@item.ReferenceNo">
+                                                <i class="fa fa-edit"></i>
+                                            </a>
+                                        }
+                                        else
+                                        {
+                                            <a class="btn blue btn-sm" href="@Url.Content("~/WorkSchedule/WorkScheduleApplication")?ID=@item.ID&Source=History&RefNo=@item.ReferenceNo">
+                                                <i class="fa fa-edit"></i>
+                                            </a>
+                                        }
+
+                                    </td>
+                                    <td>@item.ReferenceNo</td>
+                                    <td>@item.EmployeeNo</td>
+                                    <td>@item.EmployeeName</td>
+                                    <td>@item.WorkScheduleType</td>
+                                    @if (item.SubmissionDate.HasValue)
+                                    {
+                                        <td>@item.SubmissionDate.Value.ToString("dd-MM-yyyy")</td>
+                                    }
+                                    else
+                                    {
+                                        <td>-</td>
+                                    }
+                                    @if (item.Status == "Declined" || item.Status == "Withdrawn")
+                                    {
+                                        <td style="color:red;"><b>@item.Status</b></td>
+                                    }
+                                    else
+                                    {
+                                        <td style="color:green;"><b>@item.Status</b></td>
+                                    }
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+    transformTable("#tblResult");
+</script>

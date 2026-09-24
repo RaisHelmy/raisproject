@@ -1,0 +1,127 @@
+﻿@{
+    ViewBag.Title = "Perisytiharan Harta: Approval History";
+
+    String start = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1).AddMonths(-2).ToString("dd/MM/yyyy");
+    String today = DateTime.Today.ToString("dd/MM/yyyy");
+}
+<div class="row">
+    <div class="col-md-12">
+        <br />
+        <h1 class="page-title">
+            @ViewBag.Title
+            <span style="padding-left:20px;">
+                <small></small>
+            </span>
+        </h1>
+    </div>
+</div>
+<br />
+<form>
+    <div class="form-body">
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-horizontal">
+                    <div class="form-group">
+                        <label class="col-md-4 control-label">Submission Date</label>
+                        <div class="col-md-8 form-control-static">
+                            <div id="SubmissionDateStart" class="input-group date date-picker" data-date-format="dd/MM/yyyy">
+                                <input type="text" class="form-control" name="SubmissionDateStart" />
+                                <span class="input-group-btn">
+                                    <button type="button" class="btn default"><i class="fa fa-calendar"></i></button>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-horizontal">
+                    <div class="form-group">
+                        <label class="col-md-4 control-label">To</label>
+                        <div class="col-md-8 form-control-static">
+                            <div id="SubmissionDateEnd" class="input-group date date-picker" data-date-format="dd/MM/yyyy">
+                                <input type="text" class="form-control" name="SubmissionDateEnd" />
+                                <span class="input-group-btn">
+                                    <button type="button" class="btn default"><i class="fa fa-calendar"></i></button>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-horizontal">
+                    <div class="form-group">
+                        <label class="col-md-4 control-label">Action Date</label>
+                        <div class="col-md-8 form-control-static">
+                            <div id="ActionDateStart" class="input-group date date-picker" data-date-format="dd/MM/yyyy">
+                                <input type="text" class="form-control" name="ActionDateStart" />
+                                <span class="input-group-btn">
+                                    <button type="button" class="btn default"><i class="fa fa-calendar"></i></button>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-horizontal">
+                    <div class="form-group">
+                        <label class="col-md-4 control-label">To</label>
+                        <div class="col-md-8 form-control-static">
+                            <div id="ActionDateEnd" class="input-group date date-picker" data-date-format="dd/MM/yyyy">
+                                <input type="text" class="form-control" name="ActionDateEnd" />
+                                <span class="input-group-btn">
+                                    <button type="button" class="btn default"><i class="fa fa-calendar"></i></button>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">&nbsp;</div>
+        <div class="row">
+            <div class="col-md-12">
+                <div class="text-right">
+                    <input type="button" id="btn-Search" class="btn green btn-Search" value="Search" onclick="SearchListing();">
+                </div>
+            </div>
+        </div>
+        <div class="row">&nbsp;</div>
+        <div class="row">
+            <div class="col-md-12">
+                <div id="SearchResult">
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+<script type="text/javascript">
+    $(function () {
+        $('.date-picker').datepicker({
+            format: 'dd/mm/yyyy',
+            autoclose: true
+        });
+
+        $('#SubmissionDateStart').datepicker('setDate', '@start');
+        $('#SubmissionDateEnd').datepicker('setDate', '@today');
+        $('#ActionDateStart').datepicker('setDate', '@start');
+        $('#ActionDateEnd').datepicker('setDate', '@today');
+
+        SearchListing();
+    });
+
+    function SearchListing() {
+        var data = $('form').serializeArray();
+        $("#SearchResult").html("LOADING...");
+
+        $.get('@Url.Action("AppHistoryResult", "Asset")', data, function (result) {
+            $("#SearchResult").html(result);
+        });
+    }
+</script>

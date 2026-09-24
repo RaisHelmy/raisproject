@@ -1,0 +1,125 @@
+﻿@model IEnumerable<TNB_ESS_MVC.Controllers.ILSASApproval>
+
+@{
+    Layout = null;
+}
+
+<div class="portlet box blue">
+    <div class="mini-triangle"><img src="../Assets/img/menu-red-triangle.png"></div>
+    <div class="portlet-title">
+        <div class="caption">
+            <i class="fa fa-reorder"></i>ILSAS Approval Maintenance
+        </div>
+        <a href="@Url.Action("CreateILSASApproval", "Role")" class="btn btn-xs green  pull-right"><i class="fa fa-plus"></i> Add New Approval</a>
+        <div class="tools">
+        </div>
+    </div>
+    <div class="portlet-body form">
+        <div class="form-body">
+            <div class="form-horizontal">
+                <div class="table-toolbar">
+                    <table id="tblILSASListing" class="table table-striped table-bordered table-hover table-full-width">
+                        <thead>
+                            <tr>
+                                <td></td>
+                                <th>Coordinator</th>
+                                <th>Department</th>
+                                <th>Head of Unit</th>
+                                @*<th>Chief Coordinator</th>*@
+                                <th>Head of Department</th>
+                                @*<th>General Manager</th>*@
+                                <th>Managing Director</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model)
+                            {
+                                <tr>
+                                    <td>
+                                        <a href="@Url.Action("EditILSASApproval", "Role", new { ID = item.ID})" class="btn blue">
+                                            <i class="fa fa-edit"></i>
+                                        </a>
+                                    </td>
+                                    <td>
+                                        @Html.DisplayFor(modelItem => item.CoordinatorName)
+                                    </td>
+                                    <td>
+                                        @Html.DisplayFor(modelItem => item.Department)
+                                    </td>
+                                    <td>
+                                        @Html.DisplayFor(modelItem => item.CCName)
+                                    </td>
+                                    <td>
+                                        @Html.DisplayFor(modelItem => item.HODName)
+                                    </td>
+                                    <td>
+                                        @Html.DisplayFor(modelItem => item.GMName)
+                                    </td>
+                                    @if (item.Status == "Active")
+                                    {
+                                        <td style="color:green"><b>@Html.DisplayFor(modelItem => item.Status)</b></td>
+                                    }
+                                    else
+                                    {
+                                        <td style="color:red"><b>@Html.DisplayFor(modelItem => item.Status)</b></td>
+                                    }
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!--START MODAL-->
+        <div class="modal fade" id="deleteModal" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                        <h4 class="modal-title" id="deleteText">Delete Approval Item</h4>
+                    </div>
+                    <div class="modal-body">
+                        <div class="well">
+                            Clicking Delete will remove this record from the database completely. If you want to cancel the deletion, click Close.
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="submit" class="btn default red" name="submitType" onclick="" id="btnDelete">
+                            Delete
+                        </button>
+
+                        <button type="button" class="btn default" data-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!--END MODAL-->
+
+    </div>
+</div>
+
+<script>
+
+    $(document).ready(function () {
+        $("#tblILSASListing").dataTable();
+        var tableWrapper = "#tblILSASListing_wrapper";
+        jQuery(tableWrapper + ' .dataTables_filter input').addClass("form-control input-medium input-inline"); // modify table search input
+        jQuery(tableWrapper + ' .dataTables_length select').addClass("form-control input-small"); // modify table per page dropdown
+        jQuery(tableWrapper + ' .dataTables_length select').select2({
+            showSearchInput: false //hide search box with special css class
+        });
+        jQuery(tableWrapper + ' .dataTables_filter').addClass("pull-right");
+    });
+
+    function ShowModal(ID) {
+        $("#btnDelete").attr("onclick", "DeleteApproval('" + ID + "');");
+        $("#deleteModal").modal();
+    }
+
+    function DeleteApproval(ID) {
+        $("#deleteModal").modal('hide');
+        window.location.href = '@Url.Action("DeleteApproval")?ID=' + ID;
+    }
+</script>

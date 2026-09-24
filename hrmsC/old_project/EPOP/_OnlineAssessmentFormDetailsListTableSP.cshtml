@@ -1,0 +1,237 @@
+﻿@model List<ESS.EPop.Models.EPopOnlineAssessmentDetailsVM>
+@{
+    Layout = null;
+    int CountRow = 0;
+}
+
+<style>
+    .table-scrollable > .table > thead > tr > th,
+    .table-scrollable > .table > tbody > tr > th,
+    .table-scrollable > .table > tfoot > tr > th,
+    .table-scrollable > .table > thead > tr > td,
+    .table-scrollable > .table > tbody > tr > td,
+    .table-scrollable > .table > tfoot > tr > td {
+        white-space: normal;
+    }
+
+    .table-scrollable > .table > tbody > tr > td {
+        white-space: normal;
+    }
+
+        .table-scrollable > .table > tbody > tr > td.WrapTextColumn {
+            white-space: normal;
+        }
+
+    .NoWrapColumn {
+        white-space: nowrap;
+    }
+</style>
+
+@if (@Model.Count > 0)
+{
+    <div class="form-horizontal EdittableContent">
+        <div class="table-toolbar">
+            <table id="tblResult1" class="table table-striped table-bordered table-hover table-full-width">
+                <thead>
+                    <tr>
+                        <th class="hidden">Order No</th>
+                        <th>Assessment Factor</th>
+                        <th class="hidden">Assessment Factor2</th>
+                        <th>Rating</th>
+                        <th>Comment</th>
+                    </tr>
+                </thead>
+                <tbody>
+
+                    @foreach (var item in @Model)
+                    {
+                        <tr>
+                            <td class="hidden"><label class="reqOrder" id="optionsTitle_@CountRow">@item.OrderNo</label></td>
+                            <td class="WrapTextColumn" style="min-width:200px;"><label class="reqAssessment WrapTextColumn" id="optionAssessment_@CountRow">@item.Title</label></td>
+                            <td class="hidden"><label class="reqAssessment2" id="optionAssessment2_@CountRow">@item.AssessmentFactor2</label></td>
+                            <td class="WrapTextColumn">
+                                <div class="radio-list reqRadioDiv NoWrapColumn" style="text-align:center;">
+                                    <label class="radio-inline">
+                                        <span id="DivRadio_1_@CountRow"><input type="radio" class="reqRadio" name="optionsRadios_@CountRow" id="radio_1_@CountRow" value="1"></span> 1
+                                    </label>
+                                    <label class="radio-inline">
+                                        <span id="DivRadio_2_@CountRow"><input type="radio" class="reqRadio" name="optionsRadios_@CountRow" id="radio_2_@CountRow" value="2"></span> 2
+                                    </label>
+                                    <label class="radio-inline">
+                                        <span id="DivRadio_3_@CountRow"><input type="radio" class="reqRadio" name="optionsRadios_@CountRow" id="radio_3_@CountRow" value="3"></span> 3
+                                    </label>
+                                    <label class="radio-inline">
+                                        <span id="DivRadio_4_@CountRow"><input type="radio" class="reqRadio" name="optionsRadios_@CountRow" id="radio_4_@CountRow" value="4"></span> 4
+                                    </label>
+                                    <label class="radio-inline">
+                                        <span id="DivRadio_5_@CountRow"><input type="radio" class="reqRadio" name="optionsRadios_@CountRow" id="radio_5_@CountRow" value="5"></span> 5
+                                    </label>
+                                </div>
+                            </td>
+                            <td class="WrapTextColumn" style="min-width:400px;">
+                                <textarea name="optionsRemarks_@CountRow" class="reqComment" style="width:100%;" rows="2" id="remarks_@CountRow">@Html.Raw(@item.Remarks)</textarea>
+                                @if (ViewBag.Category == "Non-Executive")
+                                {
+                                    <span id="wordCount_@CountRow" class="label label-info"></span>
+                                    <span id="ErrorMsg_@CountRow">*Please enter minimum 10 words</span>
+                                }
+                            </td>
+                        </tr>
+                        CountRow++;
+                    }
+
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="form-horizontal NonEdittableContent">
+        <div class="table-toolbar">
+            <table id="tblResult2" class="table table-striped table-bordered table-hover table-full-width">
+                <thead>
+                    <tr>
+                        <th class="hidden">Order No</th>
+                        <th style="width:40%;">Assessment Factor</th>
+                        <th style="width:10%;">Rating</th>
+                        <th style="width:50%;">Comment</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in @Model)
+                    {
+
+                        <tr>
+                            <td class="hidden">@item.OrderNo</td>
+                            <td class="">
+                                <span class="WrapTextColumn">
+                                    @item.Title
+                                </span>
+                            </td>
+                            <td class="NoWrapColumn">
+                                @if (item.Rate == null || item.Rate.ToString() == "")
+                                {
+                                    <span>
+                                        N/A
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span>
+                                        @item.Rate
+                                    </span>
+                                }
+                            </td>
+                            <td class="WrapTextColumn">
+                                @if (item.Remarks == null || item.Remarks.ToString() == "")
+                                {
+                                    <span>
+                                        N/A
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="WrapTextColumn">
+                                        @item.Remarks
+                                    </span>
+                                }
+                            </td>
+
+                        </tr>
+                    }
+
+                </tbody>
+            </table>
+        </div>
+    </div>
+    CountRow = 0;
+    foreach (var item in @Model)
+    {
+        <script>
+            var a = "@item.Rate.ToString()"+ "_"+ "@CountRow.ToString()";
+            $("#radio_"+ a).attr("checked", "checked");
+            $("#DivRadio_" + a).addClass("checked");
+        </script>
+        CountRow++;
+    }
+}
+@if (ViewBag.Category == "Non-Executive")
+{
+    for (var i = 0; i < Model.Count; i++)
+    {
+        <script>
+            var item = "#remarks_" + @i;
+            var totalWords = 0;
+
+            totalWords = $(item).val().split(/[^\s]+/).length-1;
+
+            if (totalWords > 1) {
+                $('#wordCount_' + @i).html(totalWords + " words");
+            }
+            else {
+                if ($(item).val().trim().length > 1) {
+                    $('#wordCount_' + @i).html(totalWords + " word");
+                }
+                else {
+                    $('#wordCount_' + @i).html("0 word");
+                }
+            }
+
+            $(item).keyup(function () {
+                var noOfChar = $(this).val().trim().length;
+                var noOfWord = $(this).val().split(/[^\s]+/).length-1;
+                if (noOfChar > 0) {
+                     if (noOfWord > 1) {
+                        $('#wordCount_' + @i).html(noOfWord + " words");
+                    } else {
+                        $('#wordCount_' + @i).html(noOfWord + " word");
+                    }
+                }
+                else{
+                     $('#wordCount_' + @i).html("0 word");
+                }
+            });
+        </script>
+    }
+}
+
+<script>
+
+    $(document).ready(function () {
+        $(".reqComment").height($("textarea")[0].scrollHeight + 50);
+        @*console.log('Sharepoint table');
+        console.log('@Model.Count');*@
+    });
+
+    //$('#tblResult1').dataTable(
+    //  {
+    //      "bLengthChange": false,
+    //      "bFilter": false,
+    //      "bPaginate": false,
+    //      "bInfo": false,
+    //      "bSortable": false,
+    //      aoColumnDefs: [
+    //      {
+    //          bSortable: false,
+    //          aTargets: ['_all']
+    //      }]
+
+    //  });
+    $('#tblResult2').dataTable(
+       {
+           "bLengthChange": false,
+           "bFilter": false,
+           "bPaginate": false,
+           "bInfo": false,
+           "bSortable": false,
+           aoColumnDefs: [
+           {
+               bSortable: false,
+               aTargets: ['_all']
+           }]
+
+       });
+</script>
+
+
+
+

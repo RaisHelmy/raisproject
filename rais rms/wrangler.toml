@@ -1,0 +1,37 @@
+name = "rais-rms"
+compatibility_date = "2025-05-01"
+compatibility_flags = ["nodejs_compat"]
+pages_build_output_dir = "dist"
+
+[[hyperdrive]]
+binding = "HYPERDRIVE"
+id = "7a7777560d434c2b91ff37c52ab1b2c9"
+
+[[r2_buckets]]
+binding = "BUCKET"
+bucket_name = "rais-assets"
+
+[vars]
+APP_ENV = "development"
+# Public base URL of this deployment, used to build guest-facing links in emails
+# (booking confirmations, reminders, feedback requests). Safe to keep here — not a secret.
+PUBLIC_APP_URL = "https://rais.app"
+
+# --- Secrets — set via `wrangler pages secret put <NAME>` or the Cloudflare dashboard,
+# --- NEVER committed here. All are optional; unset features degrade gracefully
+# --- (payments 501, email/campaigns log-and-skip) rather than failing hard.
+#
+# JWT_SECRET              (required) — session signing key. Generate with `openssl rand -hex 32`.
+# CRON_SECRET             — shared secret required on X-Cron-Secret for /api/cron/*.
+#                           Point an external scheduler (Cloudflare Cron on a companion
+#                           Worker, or any hourly/daily HTTP caller) at those endpoints —
+#                           Pages Functions can't declare Cron Triggers directly.
+# RESEND_API_KEY          — enables transactional/marketing email via Resend.
+# NOTIFY_FROM_EMAIL       — e.g. "Rais RMS <notifications@yourdomain.com>".
+# STRIPE_SECRET_KEY       — enables deposits/pre-auth/prepaid/cancellation-fee charges.
+# STRIPE_WEBHOOK_SECRET   — required alongside STRIPE_SECRET_KEY to verify /api/webhooks/stripe.
+#
+# --- Build-time (not a runtime secret, but do NOT put a live secret key in it —
+# --- it ships in the client JS bundle): set in the Cloudflare Pages project's build
+# --- environment variables.
+# VITE_STRIPE_PUBLISHABLE_KEY — Stripe publishable key, enables the deposit-collection UI.

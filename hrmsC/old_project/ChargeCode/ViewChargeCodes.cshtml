@@ -1,0 +1,108 @@
+﻿
+@{
+    ViewBag.Title = "View Charge Codes";
+}
+<h3>View and Search Charge Codes</h3>
+<div class="form-body">
+    <div class="row">
+        <div class="col-md-2">
+            @Html.Label("Search Type :", new { @class = "control-label" })
+        </div>
+        <div class="col-md-4">
+            <select id="chargecodesearchtype" class="form-control">
+                <option selected="selected" value="All">All</option>
+                <option value="Favorite">Favorite</option>
+            </select>
+        </div>
+        <div class="col-md-4">
+
+
+        </div>
+    </div>
+    <div id="chargecoderow">
+        <div class="row" style="margin-top:10px">
+            <div class="col-md-2">
+
+                @Html.Label("Charge Type :", new { @class = "control-label" })
+            </div>
+            <div class="col-md-4">
+                <select id="chargecodedll" class="form-control">
+                    <option selected="selected" value="ALL">All</option>
+                    <option value="CC">Cost Center</option>
+                    <option value="PM">Order Number (Plant Maintenance)</option>
+                    <option value="JO">Order Number (Job Order)</option>
+                    <option value="WB">WBS Element</option>
+                    <option value="">Network Number And Operation Activity Number</option>
+                    <option value="DI">DIC</option>
+                </select>
+            </div>
+            <div class="col-md-4">
+
+
+            </div>
+        </div>
+        <div class="row" style="margin-top:10px">
+            <div class="col-md-2">
+                @Html.Label("Search :", new { @class = "control-label" })
+            </div>
+            <div class="col-md-4">
+                <input type="text" id="chargecodevalue" class="form-control" />
+            </div>
+            <div class="col-md-4">
+                <a class="btn green" href="javascript:SearchChargeCode()">
+                    Search
+                </a>
+
+            </div>
+        </div>
+    </div>
+    <div id="favoriterow" class="row" style="display:none;margin-top:10px">
+        <div class="col-md-2">
+            @Html.Label("Favorite Group :", new { @class = "control-label" })
+        </div>
+        <div class="col-md-4">
+            <select name="favGroup" id="favGroup" class="form-control"></select>
+        </div>
+        <div class="col-md-4">
+            <a class="btn green" href="javascript:SearchFavGroupChargeCode()">
+                Search
+            </a>
+        </div>
+    </div>
+
+    <hr />
+
+    @*<input type="hidden" name="SourceID" value="@ViewBag.SourceID" />*@
+    <div class="row" style="margin-top:10px;">
+        <div class="col-md-12">
+            <div id="ChargeCodeResult">
+                @Html.Action("ViewSearchedChargeCodes", "ChargeCode", new { Type = "", Value = "" })
+            </div>
+        </div>
+    </div>
+
+
+</div>
+
+<script>
+    function SearchChargeCode(value) {
+        var ChargeType = $('#chargecodedll').val();
+        var CCValue = $('#chargecodevalue').val();
+        var CurrentCC = $('#ChargeCodeList').val();
+
+        if (value == 'EMPTY') {
+            ChargeType = 'EMPTY';
+        }
+
+        $.ajax({
+            url: '@Url.Content("~/ChargeCode/ViewSearchedChargeCodes")',
+            type: 'POST',
+            data: { Type: ChargeType, Value: CCValue, CurrentChargeCode: CurrentCC },
+            success: function (result) {
+
+                $('#ChargeCodeResult').html(result);
+                // ... Process the result ...
+            }
+        });
+    }
+</script>

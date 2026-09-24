@@ -1,0 +1,942 @@
+﻿@model  List<SEP.RoutingManagement.Service.AllowAction>
+@{
+    ViewBag.Title = "Work Schedule Application Form";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+    //var StartDate = ViewBag.StartDate;
+    //var EndDate = ViewBag.EndDate;
+    //var IsNonExec = ViewBag.IsNonExec;
+    //var IsShiftStaff = ViewBag.IsShiftStaff;
+
+    DateTime dtStart = DateTime.Now;
+    string dtStrStart = dtStart.ToString("dd/MM/yyyy");
+    //string dtEndStart = dtStart.AddDays(30).ToString("dd/MM/yyyy");
+
+    string CommentsTitle = "Comments";
+}
+
+<div class="form-section">
+    <div class="row">
+        <div class="col-md-12">
+            <h1 class="page-title">
+                Work Schedule Application Form
+                <span style="padding-left:20px;">
+                    <small></small>
+                </span>
+            </h1>
+        </div>
+    </div>
+</div>
+
+@using (Html.BeginForm("", "WorkSchedule", FormMethod.Post, new { @class = "form-horizontal", @id = "MainForm" }))
+{
+    <input id="hfEmployeeID" type="hidden" value="@ViewBag.EmployeeID" />
+    <input id="hfStartDate" type="hidden" value="@ViewBag.StartDate" />
+    <input id="hfEndDate" type="hidden" value="@ViewBag.EndDate" />
+    <input id="hfWorkScheduleID" type="hidden" value="@ViewBag.WorkScheduleID" />
+    <input id="hfTaskID" type="hidden" value="@ViewBag.TaskID" />
+    <input id="hfReferenceNo" type="hidden" value="@ViewBag.ReferenceNo" />
+
+    @*Requestor Details*@
+    @Html.Action("_RequestorDetails", "WorkSchedule", new { ID = ViewBag.WorkScheduleID })
+
+    @*WorkScheduleApplicationDetails*@
+    if (ViewBag.Status == "Pending" || ViewBag.Status == "Agreed" || ViewBag.Status == "Approved" || ViewBag.Status == "Declined" || ViewBag.Status == "Withdrawn" || ViewBag.Status == "Acknowledged" || ViewBag.Status == "Recommended")
+    {
+        @Html.Action("_WorkScheduleAppplicationDetailsView", "WorkSchedule", new { ID = ViewBag.WorkScheduleID })
+    }
+    else
+    {
+        @Html.Action("_WorkScheduleAppplicationDetails", "WorkSchedule", new { ID = ViewBag.WorkScheduleID })
+    }
+
+
+    @*Attachments*@
+    if (string.IsNullOrEmpty(ViewBag.WorkScheduleID))
+    {
+        @Html.Action("AttachmentControl", "Attachment", new { EmployeeID = ViewBag.EmployeeID, Mode = "New", SourceType = "WorkSchedule" })
+    }
+    else if (ViewBag.Status == "Pending" || ViewBag.Status == "Agreed" || ViewBag.Status == "Approved" || ViewBag.Status == "Declined" || ViewBag.Status == "Withdrawn" || ViewBag.Status == "Acknowledged" || ViewBag.Status == "Recommended")
+    {
+        @Html.Action("AttachmentControl", "Attachment", new { EmployeeID = ViewBag.EmployeeID, Mode = "View", SourceType = "WorkSchedule", RequestID = ViewBag.WorkScheduleID })
+    }
+    else
+    {
+        @Html.Action("AttachmentControl", "Attachment", new { EmployeeID = ViewBag.EmployeeID, Mode = "Add", SourceType = "WorkSchedule", RequestID = ViewBag.WorkScheduleID })
+    }
+
+    //Workflow History
+    if (ViewBag.Status == "Pending" || ViewBag.Status == "Agreed" || ViewBag.Status == "Approved" || ViewBag.Status == "Declined" || ViewBag.Status == "Withdrawn" || ViewBag.Status == "Acknowledged" || ViewBag.Status == "Recommended")
+    {
+        @Html.Action("_WorkScheduleWorkflowHistory", "WorkSchedule", new { ID = ViewBag.WorkScheduleID })
+    }
+    @*Comment*@
+    //ViewBag.Status == "" || ViewBag.Status == "Draft" ||
+    if (string.IsNullOrEmpty(ViewBag.Source))
+    {
+        if (ViewBag.Status == "Pending" || ViewBag.Status == "Agreed" || ViewBag.Status == "Acknowledged" || ViewBag.Status == "Recommended")
+        {
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="portlet box blue">
+                        <div class="mini-triangle"><img src="../Assets/img/menu-red-triangle.png" /></div>
+                        <div class="portlet-title">
+                            <div class="caption">
+                                @if (Model != null)
+                                {
+
+
+                                    foreach (var m in Model)
+                                    {
+                                        if (m.CanWithdraw == "1")
+                                        {
+                                            CommentsTitle = "Comments";
+                                        }
+                                        if (m.CanApprove == "1")
+                                        {
+                                            CommentsTitle = "Approval Comments";
+                                        }
+                                    }
+                                }
+                                <i class="fa fa-reorder"></i>@CommentsTitle
+                            </div>
+                        </div>
+                        <div class="portlet-body form">
+                            <div class="form-body" id="ct00_CustomFieldFormView">
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <div class="form-horizontal">
+                                            <div class="form-group">
+                                                <label class="control-label col-md-2">
+                                                    Comments
+                                                </label>
+                                                <div class="col-md-10 form-control-static">
+                                                    <textarea class="form-control" id="Comment"></textarea>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    }
+
+
+    <!-- Button -->
+    if (string.IsNullOrEmpty(ViewBag.Source) || ViewBag.Source == "History")
+    {
+        if (ViewBag.hasManager == "true")
+        {
+            if (ViewBag.Status == "Draft" || string.IsNullOrEmpty(ViewBag.Status))
+            {
+                <input type="button" class="btn green" value="Save As Draft" id="btnDraft" onclick="ConfirmAction('Draft');" />
+                <input type="button" class="btn green" value="Submit" id="btnAttach" onclick="ConfirmAction('Submit');" />
+            }
+            if (ViewBag.Status == "Draft")
+            {
+                <input type="button" class="btn red" value="Delete" id="btnDraft" onclick="ConfirmAction('Delete');" />
+            }
+        }
+
+        if (Model != null)
+        {
+            foreach (var m in Model)
+            {
+                if (m.CanWithdraw == "1")
+                {
+                    <input type="button" class="btn green" value="Withdraw" id="btnWithdraw" onclick="ConfirmAction('Withdraw')" />
+                }
+                if (m.CanAgree == "1")
+                {
+                    <input type="button" class="btn green" value="Agree" id="btnAgree" onclick="ConfirmAction('Agreed')" />
+                }
+
+                if (m.CanApprove == "1")
+                {
+                    <input type="button" class="btn green" value="Approve" id="btnApprove" onclick="ConfirmAction('Approved')" />
+                }
+
+                if (m.CanAcknowledge == "1")
+                {
+                    <input type="button" class="btn green" value="Acknowledge" id="btnAcknowledge" onclick="ConfirmAction('Acknowledge')" />
+                }
+
+                if (m.CanRecommend == "1")
+                {
+                    <input type="button" class="btn green" value="Recommend" id="btnRecommend" onclick="ConfirmAction('Recommend')" />
+                }
+
+                if (m.CanDecline == "1")
+                {
+                    <input type="button" class="btn red" value="Decline" id="btnReject" onclick="ConfirmAction('Declined')" />
+                }
+            }
+        }
+    }
+    <input type="button" class="btn green" value="Back" id="btnBack" onclick="window.history.back()" />
+
+    <!-- Confirmation Message -->
+    <div class="modal fade" id="ConfirmUpdate" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                    <h4 class="modal-title">Confirmation</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="well">
+                        Are you sure you want to Submit this Work Schedule Application?\n\rPress Confirm to proceed, or Close to stay on the current page.
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    @*<button type="button" class="btn default blue" id="btnSubmitForm" value="Submit" onclick="javascript: SaveForm('Pending');">*@
+                    <button type="button" class="btn default blue" id="btnSubmitForm" value="Submit" onclick="javascript: ShowAcceptancePage('Pending');">
+                        <i class="fa fa-check"></i>
+                        Confirm
+                    </button>
+                    <button type="button" class="btn default blue" id="btnSubmitSave" value="Draft" onclick="javascript: SaveForm('Draft');">
+                        <i class="fa fa-check"></i>
+                        Confirm
+                    </button>
+                    <button type="button" class="btn default" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Acceptance Page -->
+    <div class="modal fade" id="AcceptancePage" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog" style="min-width: 800px;">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                    <h4 class="modal-title">Acceptance</h4>
+                </div>
+                <div class="modal-body">
+                    <div>
+                        @Html.Raw(File.ReadAllText(Server.MapPath("~/Views/WorkSchedule/_AcceptancePageContent.html")))
+                    </div>
+                </div>
+                <div class="modal-body">
+                    <div class="well">
+                        Are you sure you want to proceed with applying for "Staggered Working Hours"?
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn default blue" id="btnSubmitForm" value="Submit" onclick="javascript: SaveForm('Pending');">
+                        <i class="fa fa-check"></i>
+                        Yes
+                    </button>
+                    <button type="button" class="btn default" data-dismiss="modal">No</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Success Message -->
+    <div class="modal fade" id="SuccessSubmit" tabindex="-1" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header Success-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true" style="display: none;"></button>
+                    <h4 class="Success-title">Action Successfully Completed</h4>
+                </div>
+                <div class="modal-body Success-body">
+                    <div class="well">
+                        Your Work Schedule Application has been successfully submitted.
+                    </div>
+                </div>
+                <div class="modal-footer Success-footer">
+                    <button type="button" class="btn default blue" id="btnOK">
+                        <i class="fa fa-check"></i>
+                        OK
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Gif -->
+    <div id="divLoading" style="margin: 0px; padding: 0px; position: fixed; right: 0px; top: 0px; width: 100%; height: 100%; background-color: gainsboro; z-index: 30001; opacity: .8; filter: alpha(opacity=70); display: none; ">
+        <p style="position: absolute; top: 30%; left: 30%; color: black;">
+            Performing action, please wait...<img src="/_layouts/15/TNBESS/Assets/img/ajax-loading.gif">
+        </p>
+    </div>
+}
+
+<script>
+    //var Path = 'http://localhost:49773';
+    var Path = '/_layouts/15/tnbess';
+    var SubmitStatus = "";
+
+    // 19.12.2024 New criteria to enable/disable Staggered Option
+    var AllowStaggeredOptions = false;
+
+    jQuery(document).ready(function () {
+        //Temp Solution 18/05/2017
+        $('#WorkScheduleType').find('option[type="Staggered Ramadhan (7.30 Pagi hingga 4.15 Petang)"]').text('Staggered ramadhan (mula 7.30 pagi)');
+        $('#WorkScheduleType').find('option[type="Staggered Ramadhan (8.00 Pagi hingga 4.45 Petang)"]').text('Staggered ramadhan (mula 8.00 pagi)');
+        $('#WorkScheduleType').find('option[type="Staggered Ramadhan (8.30 Pagi hingga 5.15 Petang)"]').text('Staggered ramadhan (mula 8.30 pagi)');
+
+        $('.date-picker').datepicker({
+            format: 'dd/mm/yyyy',
+            autoclose: true
+        });
+
+        if ($("#WorkScheduleType").val() == "Flexible Working Arrangement") {
+            $("#workScheduleTotalCumulativeDays").css("display", "block");
+        } else {
+            $("#workScheduleTotalCumulativeDays").css("display", "none");
+        }
+
+        if ($("#hfWorkScheduleID").val() == "" || $("#hfWorkScheduleID").val() == null) {
+            $("#EffDateTo").val('@dtStrStart');
+            WorkScheduleChange();
+        } else if ($("#WorkScheduleType").val() == "Flexible Working Arrangement") {
+            $("#workScheduleTotalCumulativeDays").css("display", "block");
+        }
+
+
+
+        @*$('.date-picker').datepicker('setStartDate', '@dtStrStart');
+        $('.date-picker').datepicker('setEndDate', '@dtEndStart');*@
+    });
+
+    function convertDate(inputFormat) {
+        function pad(s) { return (s < 10) ? '0' + s : s; }
+        var d = new Date(inputFormat);
+        return [pad(d.getDate()), pad(d.getMonth() + 1), d.getFullYear()].join('/');
+    }
+
+    function resetDatePicker() {
+        // Reset the datepicker's startDate and endDate to allow all dates
+        $(".date-picker").datepicker('setStartDate', null);
+        $(".date-picker").datepicker('setEndDate', null);
+    }
+
+    function fwaDatePicker() {
+        var firstDate = '01/01/' + new Date().getFullYear();
+        var lastDate = '31/12/' + new Date().getFullYear();
+
+        // Dynamically update the datepicker's start and end dates
+        $(".date-picker").datepicker('setStartDate', firstDate);
+        $(".date-picker").datepicker('setEndDate', lastDate);
+    }
+
+    function WorkScheduleChange() {
+        var WorkScheduleType = $('#WorkScheduleType option:selected').attr('type');
+        var enabledattachment = $('#WorkScheduleType option:selected').attr('enabledattachment');
+        var isfixeddate = $('#WorkScheduleType option:selected').attr('isfixeddate');
+
+        if (enabledattachment == "Yes") {
+            $("#AttachmentControl").show();
+        } else {
+            $("#AttachmentControl").hide();
+        }
+
+        $(".wfhMsg").addClass("hidden");
+        if (WorkScheduleType == "Normal Working Hours") {
+
+            if (isfixeddate == "Yes") {
+                $("#EffDateFrom").val($('#WorkScheduleType option:selected').attr('startdate'));
+                $("#EffDateTo").val($('#WorkScheduleType option:selected').attr('enddate'));
+                $(".EffectiveDateTo").css("display", "block");
+
+                //Disabled input field & hide input btn
+                $('#EffDateFrom').attr('disabled', 'disabled');
+                $('#EffDateTo').attr('disabled', 'disabled');
+                $(".datepick-btn").css("display", "none");
+            } else {
+                //remove disable
+                $(".datepick-btn").css("display", "block");
+                $('#EffDateFrom').removeAttr('disabled', 'disabled');
+                $('#EffDateTo').removeAttr('disabled', 'disabled');
+                //set default value
+                $("#EffDateFrom").val("");
+                $("#EffDateTo").val("31/12/9999");
+                //hide EffectiveDateTo
+                $(".EffectiveDateTo").css("display", "none");
+            }
+            //disable, reset & hide StaggeredOption ddl
+            $('#StaggeredOption').attr('disabled', 'disabled');
+            $('#StaggeredOption').val('');
+            $(".StaggeredOption").css("display", "none");
+
+            $("#workScheduleTotalCumulativeDays").css("display", "none");
+
+            resetDatePicker();
+        }
+        else if (WorkScheduleType == "Staggered Working Hours") {
+            if (isfixeddate == "Yes") {
+                $("#EffDateFrom").val($('#WorkScheduleType option:selected').attr('startdate'));
+                $("#EffDateTo").val($('#WorkScheduleType option:selected').attr('enddate'));
+                $(".EffectiveDateTo").css("display", "block");
+
+                //Disabled input field & hide input btn
+                $('#EffDateFrom').attr('disabled', 'disabled');
+                $('#EffDateTo').attr('disabled', 'disabled');
+                $(".datepick-btn").css("display", "none");
+            } else {
+                //remove disable
+                $(".datepick-btn").css("display", "block");
+                $('#EffDateFrom').removeAttr('disabled', 'disabled');
+                $('#EffDateTo').removeAttr('disabled', 'disabled');
+                //set default value
+                $("#EffDateFrom").val("");
+                $("#EffDateTo").val("31/12/9999");
+                //hide EffectiveDateTo
+                $(".EffectiveDateTo").css("display", "none");
+            }
+            //01.10.2024 Hide
+            ////enable, reset & show StaggeredOption ddl
+            //$('#StaggeredOption').removeAttr('disabled', 'disabled');
+            //$('#StaggeredOption').val('');
+            //$(".StaggeredOption").css("display", "block");
+
+            // 19.12.2024 Re-enabled, but with additional criteria
+            if (AllowStaggeredOptions || $('#hfHolidayCalendarCode').val() == "ZA") {
+            	//enable, reset & show StaggeredOption ddl
+            	$('#StaggeredOption').removeAttr('disabled', 'disabled');
+            	$('#StaggeredOption').val('');
+            	$(".StaggeredOption").css("display", "block");
+            }
+
+            $("#workScheduleTotalCumulativeDays").css("display", "none");
+
+            resetDatePicker();
+        }
+        else if (WorkScheduleType == "Staggered Ramadhan (7.30 Pagi hingga 4.15 Petang)") {
+
+            if (isfixeddate == "Yes") {
+                $("#EffDateFrom").val($('#WorkScheduleType option:selected').attr('startdate'));
+                $("#EffDateTo").val($('#WorkScheduleType option:selected').attr('enddate'));
+                $(".EffectiveDateTo").css("display", "block");
+
+                //Disabled input field & hide input btn
+                $('#EffDateFrom').attr('disabled', 'disabled');
+                $('#EffDateTo').attr('disabled', 'disabled');
+                $(".datepick-btn").css("display", "none");
+            } else {
+                $("#EffDateFrom").val("");
+                $("#EffDateTo").val("");
+                $(".datepick-btn").css("display", "block");
+                $('#EffDateFrom').removeAttr('disabled', 'disabled');
+                $('#EffDateTo').removeAttr('disabled', 'disabled');
+                $(".EffectiveDateTo").css("display", "block");
+            }
+            //disable, reset & hide StaggeredOption ddl
+            $('#StaggeredOption').attr('disabled', 'disabled');
+            $('#StaggeredOption').val('');
+            $(".StaggeredOption").css("display", "none");
+
+            $("#workScheduleTotalCumulativeDays").css("display", "none");
+
+            resetDatePicker();
+        }
+        else if (WorkScheduleType == "Staggered Ramadhan (8.00 Pagi hingga 4.45 Petang)") {
+            if (isfixeddate == "Yes") {
+                $("#EffDateFrom").val($('#WorkScheduleType option:selected').attr('startdate'));
+                $("#EffDateTo").val($('#WorkScheduleType option:selected').attr('enddate'));
+                $(".EffectiveDateTo").css("display", "block");
+
+                //Disabled input field & hide input btn
+                $('#EffDateFrom').attr('disabled', 'disabled');
+                $('#EffDateTo').attr('disabled', 'disabled');
+                $(".datepick-btn").css("display", "none");
+            } else {
+                $("#EffDateFrom").val("");
+                $("#EffDateTo").val("");
+                $(".datepick-btn").css("display", "block");
+                $('#EffDateFrom').removeAttr('disabled', 'disabled');
+                $('#EffDateTo').removeAttr('disabled', 'disabled');
+                $(".EffectiveDateTo").css("display", "block");
+            }
+            //disable, reset & hide StaggeredOption ddl
+            $('#StaggeredOption').attr('disabled', 'disabled');
+            $('#StaggeredOption').val('');
+            $(".StaggeredOption").css("display", "none");
+
+            $("#workScheduleTotalCumulativeDays").css("display", "none");
+
+            resetDatePicker();
+        }
+        else if (WorkScheduleType == "Staggered Ramadhan (8.30 Pagi hingga 5.15 Petang)") {
+            if (isfixeddate == "Yes") {
+                $("#EffDateFrom").val($('#WorkScheduleType option:selected').attr('startdate'));
+                $("#EffDateTo").val($('#WorkScheduleType option:selected').attr('enddate'));
+                $(".EffectiveDateTo").css("display", "block");
+
+                //Disabled input field & hide input btn
+                $('#EffDateFrom').attr('disabled', 'disabled');
+                $('#EffDateTo').attr('disabled', 'disabled');
+                $(".datepick-btn").css("display", "none");
+            } else {
+                $(".datepick-btn").css("display", "block");
+                $('#EffDateFrom').removeAttr('disabled', 'disabled');
+                $('#EffDateTo').removeAttr('disabled', 'disabled');
+                $(".EffectiveDateTo").css("display", "block");
+            }
+            //disable, reset & hide StaggeredOption ddl
+            $('#StaggeredOption').attr('disabled', 'disabled');
+            $('#StaggeredOption').val('');
+            $(".StaggeredOption").css("display", "none");
+
+            $("#workScheduleTotalCumulativeDays").css("display", "none");
+
+            resetDatePicker();
+        }
+        else if (WorkScheduleType == "Staggered Ramadhan") {
+            if (isfixeddate == "Yes") {
+                $("#EffDateFrom").val($('#WorkScheduleType option:selected').attr('startdate'));
+                $("#EffDateTo").val($('#WorkScheduleType option:selected').attr('enddate'));
+                $(".EffectiveDateTo").css("display", "block");
+
+                //Disabled input field & hide input btn
+                $('#EffDateFrom').attr('disabled', 'disabled');
+                $('#EffDateTo').attr('disabled', 'disabled');
+                $(".datepick-btn").css("display", "none");
+            } else {
+                $("#EffDateFrom").val("");
+                $("#EffDateTo").val("");
+                $(".datepick-btn").css("display", "block");
+                $('#EffDateFrom').removeAttr('disabled', 'disabled');
+                $('#EffDateTo').removeAttr('disabled', 'disabled');
+                $(".EffectiveDateTo").css("display", "block");
+            }
+            //disable, reset & hide StaggeredOption ddl
+            $('#StaggeredOption').attr('disabled', 'disabled');
+            $('#StaggeredOption').val('');
+            $(".StaggeredOption").css("display", "none");
+
+            $("#workScheduleTotalCumulativeDays").css("display", "none");
+
+            resetDatePicker();
+        }
+        else if (WorkScheduleType == "Flexible Working Arrangement") {
+            $("#EffDateFrom").val('');
+            $("#EffDateTo").val('');
+            $(".datepick-btn").css("display", "block");
+            $('#EffDateFrom').removeAttr('disabled', 'disabled');
+            $('#EffDateTo').removeAttr('disabled', 'disabled');
+            $(".EffectiveDateTo").css("display", "block");
+            $('.date-picker').datepicker({
+                format: 'dd/mm/yyyy',
+                autoclose: true
+            });
+            //disable, reset & hide StaggeredOption ddl
+            $('#StaggeredOption').attr('disabled', 'disabled');
+            $('#StaggeredOption').val('');
+            $(".StaggeredOption").css("display", "none");
+
+            $("#workScheduleTotalCumulativeDays").css("display", "block");
+
+            fwaDatePicker();
+        }
+        else if (WorkScheduleType == "Work From Home") {
+            $("#EffDateFrom").val('');
+            $("#EffDateTo").val('');
+            $(".datepick-btn").css("display", "block");
+            $('#EffDateFrom').removeAttr('disabled', 'disabled');
+            $('#EffDateTo').removeAttr('disabled', 'disabled');
+            $(".EffectiveDateTo").css("display", "block");
+            $('.date-picker').datepicker({
+                format: 'dd/mm/yyyy',
+                autoclose: true
+            });
+            $(".wfhMsg").removeClass("hidden");
+
+            //disable, reset & hide StaggeredOption ddl
+            $('#StaggeredOption').attr('disabled', 'disabled');
+            $('#StaggeredOption').val('');
+            $(".StaggeredOption").css("display", "none");
+
+            $("#workScheduleTotalCumulativeDays").css("display", "block");
+
+            resetDatePicker();
+        }
+    }
+
+    function ConfirmAction(_Action) {
+
+        var ValidationMsg = '';
+        var WorkScheduleType = $('#WorkScheduleType option:selected').attr('type');
+
+        if (_Action == 'Draft') {
+
+            if ($("#EffDateFrom").val() == "") {
+                ValidationMsg += '- Effective Date is required.\n'
+            }
+            // 01.10.2024 Hide
+            // 19.12.2024 Re-enabled, but with additional criteria
+            if (WorkScheduleType == "Staggered Working Hours" && $("#StaggeredOption").val() == "" && (AllowStaggeredOptions || $('#hfHolidayCalendarCode').val() == "ZA")) {
+                ValidationMsg += '- Option is required.\n'
+            }
+            if ($("#Item1_Reason").val() == "") {
+                ValidationMsg += '- Reason is required.\n'
+            }
+        }
+        else if (_Action == 'Submit') {
+            if ($("#EffDateFrom").val() == "") {
+                ValidationMsg += '- Effective Date is required.\n'
+            }
+            // 01.10.2024 Hide
+            // 19.12.2024 Re-enabled, but with additional criteria
+            if (WorkScheduleType == "Staggered Working Hours" && $("#StaggeredOption").val() == "" && (AllowStaggeredOptions || $('#hfHolidayCalendarCode').val() == "ZA")) {
+                ValidationMsg += '- Option is required.\n'
+            }
+            if ($("#Item1_Reason").val() == "") {
+                ValidationMsg += '- Reason is required.\n'
+            }
+        }
+        else {
+            //if ($("#Comment").val() == "") {
+            //    ValidationMsg += '- Comment is required.\n'
+            //}
+        }
+
+        if (ValidationMsg != "") {
+            alert(ValidationMsg);
+        }
+        else {
+            if (_Action == 'Draft') {
+                $('#btnSubmitForm').css("display", "none");
+                $('#btnSubmitSave').css("display", "initial");
+                $('.modal-body .well').html('Are you sure you want to Save this Work Schedule Application?\n\rPress Confirm to proceed, or Close to stay on the current page.');
+                $('#btnOK').click(function () { RedirectTo('Draft'); });
+                $('#ConfirmUpdate').modal('show');
+            }
+            else if (_Action == 'Submit') {
+                $('#btnSubmitForm').css("display", "initial");
+                $('#btnSubmitSave').css("display", "none");
+                $('.modal-body .well').html('Are you sure you want to Submit this Work Schedule Application?\n\rPress Confirm to proceed, or Close to stay on the current page.');
+                $('#btnOK').click(function () { RedirectTo('Submit'); });
+                $('#ConfirmUpdate').modal('show');
+            }
+            else if (_Action == 'Approved') {
+                $('#btnSubmitForm').css("display", "initial");
+                $('#btnSubmitSave').css("display", "none");
+
+                $("#btnSubmitForm").attr("onclick", "SaveForm('" + _Action + "')");
+
+                $('.modal-body .well').html('Are you sure you want to Approve this Work Schedule Application?\n\rPress Confirm to proceed, or Close to stay on the current page.');
+                $('#btnOK').click(function () { RedirectTo('Approve'); });
+                $('#ConfirmUpdate').modal('show');
+            }
+            else if (_Action == 'Acknowledge') {
+                $('#btnSubmitForm').css("display", "initial");
+                $('#btnSubmitSave').css("display", "none");
+
+                $("#btnSubmitForm").attr("onclick", "SaveForm('" + _Action + "')");
+
+                $('.modal-body .well').html('Are you sure you want to Acknowledge this Work Schedule Application?\n\rPress Confirm to proceed, or Close to stay on the current page.');
+                $('#btnOK').click(function () { RedirectTo('Approve'); });
+                $('#ConfirmUpdate').modal('show');
+            }
+            else if (_Action == 'Recommend') {
+                $('#btnSubmitForm').css("display", "initial");
+                $('#btnSubmitSave').css("display", "none");
+
+                $("#btnSubmitForm").attr("onclick", "SaveForm('" + _Action + "')");
+
+                $('.modal-body .well').html('Are you sure you want to Recommend this Work Schedule Application?\n\rPress Confirm to proceed, or Close to stay on the current page.');
+                $('#btnOK').click(function () { RedirectTo('Approve'); });
+                $('#ConfirmUpdate').modal('show');
+            }
+            else if (_Action == 'Declined') {
+                $('#btnSubmitForm').css("display", "initial");
+                $('#btnSubmitSave').css("display", "none");
+
+                $("#btnSubmitForm").attr("onclick", "SaveForm('" + _Action + "')");
+
+                $('.modal-body .well').html('Are you sure you want to Decline this Work Schedule Application?\n\rPress Confirm to proceed, or Close to stay on the current page.');
+                $('#btnOK').click(function () { RedirectTo('Approve'); });
+                $('#ConfirmUpdate').modal('show');
+            }
+            else if (_Action == 'Agreed') {
+                $('#btnSubmitForm').css("display", "initial");
+                $('#btnSubmitSave').css("display", "none");
+
+                $("#btnSubmitForm").attr("onclick", "SaveForm('" + _Action + "')");
+
+                $('.modal-body .well').html('Are you sure you want to Agree this Work Schedule Application?\n\rPress Confirm to proceed, or Close to stay on the current page.');
+                $('#btnOK').click(function () { RedirectTo('Submit'); });
+                $('#ConfirmUpdate').modal('show');
+            }
+            else if (_Action == 'Withdraw') {
+                $('#btnSubmitForm').css("display", "initial");
+                $('#btnSubmitSave').css("display", "none");
+
+                $("#btnSubmitForm").attr("onclick", "SaveForm('" + _Action + "')");
+
+                $('.modal-body .well').html('Are you sure you want to Withdraw this Work Schedule Application?\n\rPress Confirm to proceed, or Close to stay on the current page.');
+                $('#btnOK').click(function () { RedirectTo('Submit'); });
+                $('#ConfirmUpdate').modal('show');
+            }
+            else if (_Action == 'Delete') {
+                $('#btnSubmitForm').css("display", "initial");
+                $('#btnSubmitSave').css("display", "none");
+
+                $("#btnSubmitForm").attr("onclick", "SaveForm('" + _Action + "')");
+
+                $('.modal-body .well').html('Are you sure you want to delete this Work Schedule Application?\n\rPress Confirm to proceed, or Close to stay on the current page.');
+                $('#btnOK').click(function () { RedirectTo('Delete'); });
+                $('#ConfirmUpdate').modal('show');
+            }
+        }
+
+    }
+
+    function SubmitFormAction() {
+        if (SubmitStatus == 'Draft') {
+            $(".Success-body .well").html('Your Work Schedule Application has been successfully saved.');
+        }
+        else if (SubmitStatus == 'Approved') {
+            $(".Success-body .well").html('Work Schedule Application has been successfully approved.');
+        }
+        else if (SubmitStatus == 'Declined') {
+            $(".Success-body .well").html('Work Schedule Application has been successfully Declined.');
+        }
+        else if (SubmitStatus == 'Agreed') {
+            $(".Success-body .well").html('Work Schedule Application has been successfully submitted.');
+        }
+        else if (SubmitStatus == 'Withdraw') {
+            $(".Success-body .well").html('Your Work Schedule Application has been successfully withdrawn.');
+        }
+        else if (SubmitStatus == 'Delete'){
+            $(".Success-body .well").html('Your Work Schedule Application has been successfully deleted.');
+        }
+        else {
+            $(".Success-body .well").html('Your Work Schedule Application has been successfully submitted.');
+        }
+
+        jQuery.support.cors = true;
+
+        if (SubmitStatus == 'Draft' || SubmitStatus == 'Pending') {
+            var WST = $('#WorkScheduleType option:selected').attr('type');
+            console.log(WST);
+
+            if (WST == "Flexible Working Arrangement") {
+            var form = {
+                EmployeeID: $("#hfEmployeeID").val(),
+                Status: SubmitStatus,
+                WorkScheduleType: $('#WorkScheduleType option:selected').attr('type'),
+                EffDateFrom: $("#EffDateFrom").val(),
+                EffDateTo: $("#EffDateTo").val(),
+                Reason: $("#Item1_Reason").val(),
+                Comment: $("#Comment").val(),
+                WorkScheduleID: $("#hfWorkScheduleID").val(),
+                ReferenceNo: $("#hfReferenceNo").val(),
+                CurWorkScheduleRule: $("#CurWorkScheduleRule").val(),
+                HolidayCalendarID: $("#hfHolidayCalendarCode").val(),
+                HolidayCalendarDesc: $("#HolidayCalendarDesc").val(),
+                MaxAllowedPeriod: $('#WorkScheduleType option:selected').attr('allowperiod'),
+                LeadTime: $('#WorkScheduleType option:selected').attr('leadtime'),
+                EnabledAttachment: $('#WorkScheduleType option:selected').attr('enabledattachment'),
+                ApplicableFor: $('#WorkScheduleType option:selected').attr('applicablefor'),
+                IsShiftStaff: $('#WorkScheduleType option:selected').attr('isshiftstaff'),
+                IsFixedDate: $('#WorkScheduleType option:selected').attr('isfixeddate'),
+                TotalCumulativeDays: $('#WS_TotalCumulativeDays').val()
+
+                };
+            } else {
+                var form = {
+                    EmployeeID: $("#hfEmployeeID").val(),
+                    Status: SubmitStatus,
+                    WorkScheduleType: $('#WorkScheduleType option:selected').attr('type'),
+                    EffDateFrom: $("#EffDateFrom").val(),
+                    EffDateTo: $("#EffDateTo").val(),
+                    Reason: $("#Item1_Reason").val(),
+                    Comment: $("#Comment").val(),
+                    WorkScheduleID: $("#hfWorkScheduleID").val(),
+                    ReferenceNo: $("#hfReferenceNo").val(),
+                    CurWorkScheduleRule: $("#CurWorkScheduleRule").val(),
+                    HolidayCalendarID: $("#hfHolidayCalendarCode").val(),
+                    HolidayCalendarDesc: $("#HolidayCalendarDesc").val(),
+                    MaxAllowedPeriod: $('#WorkScheduleType option:selected').attr('allowperiod'),
+                    LeadTime: $('#WorkScheduleType option:selected').attr('leadtime'),
+                    EnabledAttachment: $('#WorkScheduleType option:selected').attr('enabledattachment'),
+                    ApplicableFor: $('#WorkScheduleType option:selected').attr('applicablefor'),
+                    IsShiftStaff: $('#WorkScheduleType option:selected').attr('isshiftstaff'),
+                    IsFixedDate: $('#WorkScheduleType option:selected').attr('isfixeddate'),
+                    Option: $("#StaggeredOption").val(),
+                    TotalCumulativeDays: '0'
+                };
+            }
+
+            $.ajax({
+                url: '@Url.Content("~/WorkSchedule/PerformInsertWorkSchedule")',
+                type: 'POST',
+                cache: false,
+                async: false,
+                dataType: "json",
+                data: form,
+                //contentType: "application/json;charset=utf-8",
+                success: function (result) {
+                    if (result.Success) {
+                        //$("#ConfirmUpdate").modal('toggle');
+                        $("#ConfirmUpdate").modal('hide');
+                        $('#AcceptancePage').modal('hide');
+                        $("#divLoading").css("display", "none");
+                        $("#SuccessSubmit").modal();
+
+                    } else {
+                        //$("#ConfirmUpdate").modal('toggle');
+                        $("#ConfirmUpdate").modal('hide');
+                        $('#AcceptancePage').modal('hide');
+                        $("#divLoading").css("display", "none");
+
+			if (result.ErrorMsg == 'Executive is not allow to submit Staggered Ramadhan (7.30 Pagi hingga 4.15 Petang).' || result.ErrorMsg == 'Executive is not allow to submit Staggered Ramadhan (8.00 Pagi hingga 4.45 Petang).' || result.ErrorMsg =='Executive is not allow to submit Staggered Ramadhan (8.30 Pagi hingga 5.15 Petang).')
+                        	alert('Executives are subject to flexi working hours.');
+			else
+				alert(result.ErrorMsg);
+                    }
+
+                },
+                error: function (x, y, z) {
+                    $("#ConfirmUpdate").modal('toggle');
+                    $("#divLoading").css("display", "none");
+                    console.log(x + '\n' + y + '\n' + z);
+                }
+            });
+        }
+        else if (SubmitStatus == 'Approved' || SubmitStatus == 'Declined' || SubmitStatus == 'Agreed' || SubmitStatus == 'Withdraw' || SubmitStatus == 'Acknowledge' || SubmitStatus == 'Recommend') {
+            var form = {
+                ID: $("#hfWorkScheduleID").val(),
+                TaskID: $("#hfTaskID").val(),
+                CurrentUserID: $("#hfEmployeeID").val(),
+                Status: "",
+                ApproverComment: $("#Comment").val(),
+                Reason: $("#Reason").val(),
+                ActivityName: "",
+                OptionalApprover: false
+
+            };
+
+            $.ajax({
+                url: '@Url.Content("~/WorkSchedule/PostApproverAction")',
+                type: 'POST',
+                cache: false,
+                async: false,
+                dataType: "json",
+                data: { 'info': form, 'ApproverAction': SubmitStatus },
+                success: function (result) {
+                    console.log(result);
+                    if (result.Success) {
+                        //alert('success');
+                        $("#ConfirmUpdate").modal('toggle');
+                        $("#divLoading").css("display", "none");
+                        $("#SuccessSubmit").modal();
+                    } else {
+                        //alert('error');
+                        $("#ConfirmUpdate").modal('toggle');
+                        $("#divLoading").css("display", "none");
+                        alert(result.ErrorMsg);
+                    }
+
+                },
+                error: function (x, y, z) {
+                    $("#ConfirmUpdate").modal('toggle');
+                    $("#divLoading").css("display", "none");
+                    console.log(x + '\n' + y + '\n' + z);
+                }
+            });
+
+        }
+        else if (SubmitStatus == 'Delete') {
+            var form = {
+                WorkScheduleID: $("#hfWorkScheduleID").val(),
+                TaskID: $("#hfTaskID").val(),
+                CurrentUserID: $("#hfEmployeeID").val(),
+                Status: SubmitStatus,
+                ApproverComment: $("#Comment").val(),
+                Reason: $("#Reason").val(),
+                ActivityName: "",
+                OptionalApprover: false
+
+            };
+
+            $.ajax({
+                url: '@Url.Content("~/WorkSchedule/DeleteDraftApplication")',
+                type: 'POST',
+                cache: false,
+                async: false,
+                dataType: "json",
+                data: form ,
+                success: function (result) {
+                    console.log(result);
+                    if (result.Success) {
+                        //alert('success');
+                        $("#ConfirmUpdate").modal('toggle');
+                        $("#divLoading").css("display", "none");
+                        $("#SuccessSubmit").modal();
+                    } else {
+                        //alert('error');
+                        $("#ConfirmUpdate").modal('toggle');
+                        $("#divLoading").css("display", "none");
+                        alert(result.ErrorMsg);
+                    }
+
+                },
+                error: function (x, y, z) {
+                    $("#ConfirmUpdate").modal('toggle');
+                    $("#divLoading").css("display", "none");
+                    console.log(x + '\n' + y + '\n' + z);
+                }
+            });
+
+        }
+    }
+    function SaveForm(_Status) {
+        $("#divLoading").css("display", "block");
+        SubmitStatus = _Status;
+        var myVar = setTimeout(SubmitFormAction, 3000);
+    }
+
+    function ShowAcceptancePage(_Status) {
+
+        var selectedWS = '';
+        selectedWS = $('#WorkScheduleType option:selected').attr('type');
+
+        if (_Status == 'Pending') {
+            // 01.10.2024 Disable Acceptance Page for Staggered Working Hours
+            // 19.12.2024 Re-enabled, but with additional criteria
+            if (selectedWS == "Staggered Working Hours" && (AllowStaggeredOptions || $('#hfHolidayCalendarCode').val() == "ZA")) {
+            //if (selectedWS == "Staggered Working Hours") {
+
+                $("#ConfirmUpdate").modal('hide');
+
+                $('.modal-body .well').html('Are you sure you want to proceed with applying for "Staggered Working Hours"?');
+                $('#btnOK').click(function () { RedirectTo('Submit'); });
+                $('#AcceptancePage').modal('show');
+            }
+            else {
+                SaveForm(_Status);
+            }
+        }
+    }
+
+    function RedirectTo(_Action) {
+
+        switch (_Action) {
+            case "Draft":
+                window.location.href = '/_layouts/15/TNBESS/WorkSchedule/WorkScheduleHistory';
+                break;
+            case "Submit":
+                window.location.href = '/_layouts/15/TNBESS/WorkSchedule/WorkScheduleHistory';
+                break;
+            case "Approve":
+                window.location.href = '/_layouts/15/TNBESS/MSS/WorkScheduleInTray';
+                break;
+            case "Delete":
+                window.location.href = '/_layouts/15/TNBESS/WorkSchedule/WorkScheduleHistory';
+                break;
+            default:
+                window.location.href = '/Pages/default.aspx';
+        }
+    }
+
+</script>

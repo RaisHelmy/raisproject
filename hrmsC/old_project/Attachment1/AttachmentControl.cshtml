@@ -1,0 +1,302 @@
+﻿@{
+    Layout = null;
+
+    string EmployeeID = ViewBag.EmployeeID;
+    string Mode = ViewBag.Mode;
+    string SourceType = ViewBag.SourceType;
+    string RequestID = ViewBag.RequestID;
+
+    string Mandatory = ViewBag.Mandatory;
+    var Path = string.Format("{0}://{1}{2}", Request.Url.Scheme, Request.Url.Authority, Url.Content("~"));
+
+    bool isAttachmentRequired = !string.IsNullOrEmpty(Mandatory) && Mandatory.ToUpper() == "TRUE";
+}
+
+<div id="Attachment1Control" class="row">
+    <div class="col-md-12">
+        <div class="portlet box blue">
+            <div class="mini-triangle"><img src="/_layouts/15/TNBESS/Assets/img/menu-red-triangle.png" /></div>
+            <div class="portlet-title">
+                <div class="caption">
+                    <i class="fa fa-reorder"></i>@(ViewBag.Title ?? "Admin Attachment")
+                </div>
+                <div class="tools">
+                    <a title="" data-original-title="" href="javascript:;" class="collapse"> </a>
+                </div>
+            </div>
+            <div class="portlet-body form">
+                <div class="form-body">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="form-horizontal col-md-12" style="overflow-x:auto;">
+                                <div id="divAddAttach1" style="display:block">
+                                    <div class="form-group">
+                                        <label class="control-label col-md-3">
+                                            Attachment <span style="color:red; display: @(isAttachmentRequired ? "" : "none")">*</span>
+                                        </label>
+                                        <div class="col-md-5">
+                                            <div class="input-group">
+                                                <input type="file" name="Attachment1" id="Attachment1" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <br />
+                                    <div class="form-group">
+                                        <label class="control-label col-md-3">Attachment Description</label>
+                                        <div class="col-md-8">
+                                            <textarea class="form-control" rows="2" style="width:100%;" id="Attach1Description"></textarea>
+                                        </div>
+                                    </div>
+                                    <br />
+                                    <div class="form-group">
+                                        <div class="col-md-3"></div>
+                                        <div class="col-md-8">
+                                            <span class="input-group-btn">
+                                                <button id="btnAttach1" class="btn default" type="button" onclick="FileValidation1()">Attach</button>
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div class="hidden" id="Attachment1Hidden">
+                                        <input id="hfFileSize1" type="text" value="@ViewBag.MaximumFileSize" />
+                                        <input id="hfFileExtension1" type="text" value="@ViewBag.AllowedFileTypes" />
+                                        <input type="text" name="FileContents1" id="FileContents1" />
+                                        <input type="text" name="DocumentName1" id="DocumentName1" />
+                                        <input type="text" name="DocumentSize1" id="DocumentSize1" />
+                                        <input type="text" name="DocumentContentType1" id="DocumentContentType1" />
+                                        <input type="text" name="DocumentDescription1" id="DocumentDescription1" />
+                                        <input type="text" name="AttachEmployeeID1" id="AttachEmployeeID1" value="@EmployeeID" />
+                                        <input type="text" name="SourceType1" id="SourceType1" value="@SourceType" />
+                                        <input type="text" name="RequestID1" id="RequestID1" value="@RequestID" />
+                                        <input type="text" name="Mode1" id="Mode1" value="@Mode" />
+                                        <input type="text" name="ID1" id="ID1" value="@Guid.NewGuid().ToString()" />
+                                    </div>
+                                </div>
+                                <div id="Attachment1Listing">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+    var attach1 = "";
+
+    //Page Load
+    $(document).ready(function () {
+        var _Mode = '@Mode';
+        GetAttachmentList1();
+        if (_Mode == 'View') {
+            document.getElementById('divAddAttach1').style.display = 'none';
+        }
+    });
+
+    // helper function
+    function guid1() {
+        function s4() {
+            return Math.floor((1 + Math.random()) * 0x10000)
+              .toString(16)
+              .substring(1);
+        }
+        return s4() + s4() + '-' + s4() + '-' + s4() + '-' +
+          s4() + '-' + s4() + s4() + s4();
+    }
+
+    function EL1(id) { return document.getElementById(id); } // Get el by ID helper function
+
+    function readFile1() {
+        var _AllowedMaxSize = parseFloat(document.getElementById('hfFileSize1').value) || 0;//'1572864';//
+        var _AllowedExtensions = document.getElementById('hfFileExtension1').value;
+
+        if (this.files && this.files[0]) {
+            var FR = new FileReader();
+
+            FR.onload = function (e) {
+                var _ValidFile = false;
+                var _documentName = $('#Attachment1')[0].files[0].name;
+                var _documentSize = $('#Attachment1')[0].files[0].size;
+                var _fileExtension = _documentName.substring(_documentName.lastIndexOf('.') + 1).toLowerCase();
+
+                if (_AllowedExtensions.indexOf(_fileExtension) > -1) {
+                    var _docSize = parseFloat(_documentSize) || 0;
+                    if (_docSize > parseFloat(_AllowedMaxSize)) {
+                        document.getElementById('Attachment1').value = '';
+                        alert('- File size has exceeded the allowed limit of ' + _AllowedMaxSize + ' byte');
+                    }
+                    else {
+                        _ValidFile = true;
+                    }
+                }
+                else {
+                    document.getElementById('Attachment1').value = '';
+                    alert('- Invalid file type. Only files of the following extensions are allowed (' + _AllowedExtensions + ')');
+                }
+
+                if (_ValidFile) {
+                    var _fileContents = document.getElementById("FileContents1");
+                    _fileContents.value = e.target.result;
+                    attach1 = e.target.result;
+                    //console.log(attach1);
+                    var _documentContentType = _fileContents.value.split(",")[0].split(":")[1].split(";")[0];
+
+                    document.getElementById('DocumentName1').value = _documentName;
+                    document.getElementById('DocumentSize1').value = _documentSize;
+                    document.getElementById('DocumentContentType1').value = _documentContentType;
+                    //console.log(_fileContents.value + "====" + documentName + "====" + documentSize);
+                }
+                // console.log(e.target.result);
+            };
+
+            FR.readAsDataURL(this.files[0]);
+        }
+    }
+
+    EL1("Attachment1").addEventListener("change", readFile1, false);
+
+    function FileValidation1() {
+        var ValidationMsg = '';
+        var _selectedFile = document.getElementById('Attachment1').value;
+
+        if (_selectedFile == '') {
+            ValidationMsg += '- Please Select a file to upload.\n'
+        }
+
+        // Consolidate Message
+        if (ValidationMsg != null && ValidationMsg != '') {
+            alert(ValidationMsg);
+        }
+        else {
+            UploadAttachmentToSession1();
+        }
+    }
+
+    // Attach to Session
+    function UploadAttachmentToSession1() {
+        var Description = document.getElementById('Attach1Description').value;
+        var _ID = document.getElementById('ID1').value;
+        var _FileContents = attach1;
+        var _DocumentName = document.getElementById('DocumentName1').value;
+        var _DocumentSize = document.getElementById('DocumentSize1').value;
+        var _DocumentContentType = document.getElementById('DocumentContentType1').value;
+        var _DocumentDescription = Description;
+        var _AttachEmployeeID = document.getElementById('AttachEmployeeID1').value;
+        var _SourceType = document.getElementById('SourceType1').value;
+        var _RequestID = document.getElementById('RequestID1').value;
+        var _Mode = document.getElementById('Mode1').value;
+        var _CreatedDate = '@DateTime.Now';
+
+        var form = {
+            ID: _ID,
+            FileContents: _FileContents,
+            DocumentName: _DocumentName,
+            DocumentSize: _DocumentSize,
+            DocumentContentType: _DocumentContentType,
+            DocumentDescription: _DocumentDescription,
+            AttachEmployeeID: _AttachEmployeeID,
+            SourceType: _SourceType,
+            RequestID: _RequestID,
+            Mode: _Mode,
+            CreatedDate: _CreatedDate,
+        };
+
+        $("#divLoading").css("display", "block");
+
+        $.ajax({
+            url: '@Url.Content("~/Attachment1/UploadAttachmentToSession")',
+            type: 'POST',
+            data: form,
+            dataType: "text",
+            success: function (data) {
+                GetAttachmentList1();
+                $("#divLoading").hide();
+                attach1 = "";
+            },
+            error: function (x, y, z) {
+                alert(x + '\n' + y + '\n' + z);
+            }
+        });
+    }
+
+    function GetAttachmentList1() {
+        $.ajax({
+            type: "GET",
+            url: '@Url.Content("~/Attachment1/AttachmentListing/")',
+            cache: false,
+            dataType: "html",
+			data: { Mode: '@Mode', RequestID: '@RequestID', EmployeeID: '@EmployeeID', SourceType: '@SourceType'},
+            async: false,
+            success: function (content) {
+                $("#Attachment1Listing").html(content);
+                clearInput1();
+            },
+            error: function (e) {
+                alert(x + '\n' + y + '\n' + z);
+            }
+        });
+    }
+
+    function clearInput1() {
+        document.getElementById('Attach1Description').value = "";
+        document.getElementById('ID1').value = guid1();
+        document.getElementById('FileContents1').value = "";
+        document.getElementById('DocumentName1').value = "";
+        document.getElementById('DocumentSize1').value = "";
+        document.getElementById('DocumentContentType1').value = "";
+        document.getElementById('Attachment1').value = "";
+    }
+
+    function DeleteSessionDocument1(ID) {
+        $.ajax({
+            type: "GET",
+            url: '@Url.Content("~/Attachment1/RemoveSessionDocument")',
+            cache: false,
+            async: false,
+            dataType: "html",
+            data: { ID: ID, Mode: '@Mode', RequestID: '@RequestID' },
+            success: function (content) {
+                GetAttachmentList1();
+            },
+            error: function (e) {
+            }
+        });
+    }
+
+    function DeleteDocument1(ID) {
+        $.ajax({
+            type: "GET",
+            url: '@Url.Content("~/Attachment1/DeleteDBDocument")',
+            cache: false,
+            async: false,
+            dataType: "html",
+            data: { ID: ID, Mode: '@Mode', RequestID: '@RequestID' },
+            success: function (content) {
+                GetAttachmentList1();
+            },
+            error: function (e) {
+            }
+        });
+    }
+
+    function DownloadTempDocument1(ID) {
+        var url = '@Url.Content("~/Attachment1/DownloadDocument")';
+        window.open(url + '?ID=' + ID + '&Mode=' + '@Mode' + '&RequestID=' + '@RequestID');
+    }
+
+    $(document).on('click', '.btn-download-attachment', function () {
+        var id = $(this).data('id');
+        DownloadAttachment1(id);
+    });
+
+    function DownloadAttachment1(_AttachmentID) {
+        var AttachmentID = _AttachmentID;
+        //window.open('@Path' + '/api/FileWebApi2/' + AttachmentID);
+
+        var jqxhr = $.ajax('@Path' + '/ETKMS')
+            .done(function () {
+                window.open('@Path' + '/Attachment/DownloadFile/' + AttachmentID);
+            });
+    }
+</script>

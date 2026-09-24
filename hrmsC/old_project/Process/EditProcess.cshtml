@@ -1,0 +1,187 @@
+﻿@model ESS.ReRouting.Models.ProcessGroup
+
+@{
+    ViewBag.Title = "Edit Process";
+}
+<div class="row">
+    <div class="col-md-12">
+        <br />
+        <h1 class="page-title">
+            Edit Process<span style="padding-left:20px;"><small></small></span>
+        </h1>
+    </div>
+</div>
+<div class="portlet box blue">
+    <div class="mini-triangle"><img src="../Assets/img/menu-red-triangle.png"></div>
+    <div class="portlet-title">
+        <div class="caption">
+            <i class="fa fa-reorder"></i>Process: @Model.ProcessName - Roles
+        </div>
+        <a href="javascript:OpenRoleModal();" class="btn btn-xs green pull-right"><i class="fa fa-plus"></i> Add Role</a>
+    </div>
+    <div class="portlet-body form">
+        <div class="row">
+            <div class="col-md-12">
+                <div id="processRolesResult">
+                    @Html.Action("_ProcessRoles", "Process", new { processId = Model.ID })
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div class="portlet box blue">
+    <div class="mini-triangle"><img src="../Assets/img/menu-red-triangle.png"></div>
+    <div class="portlet-title">
+        <div class="caption">
+            <i class="fa fa-reorder"></i>Process: @Model.ProcessName - Routes
+        </div>
+        <a href="javascript:OpenRouteModal();" class="btn btn-xs green pull-right"><i class="fa fa-plus"></i> Add Route</a>
+    </div>
+    <div class="portlet-body form">
+        <div class="row">
+            <div class="col-md-12">
+                <div id="processRoutesResult">
+                    @Html.Action("_ProcessRoutes", "Process", new { processId = Model.ID })
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-12">
+        <a class="btn blue" onclick="location.href = '@Url.Action("Processes", "Process")'">Back</a>
+    </div>
+</div>
+<!--BEGIN MODAL FOR ROLE SEARCH-->
+<div class="modal fade" id="SearchRoleModal" tabindex="-1" role="basic" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                <h4 class="modal-title">Add Role</h4>
+            </div>
+            <div class="modal-body">
+                @Html.Action("SearchRole", "Process")
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn default blue" id="btnSubmitRole" onclick="AddRoleToDb(); return false;">
+                    <i class="fa fa-plus"></i>
+                    Add
+                </button>
+                <button type="button" class="btn default" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+<!--END SEARCH ROLE MODAL-->
+<!--BEGIN MODAL FOR ROUTE SEARCH-->
+<div class="modal fade" id="SearchRouteModal" tabindex="-1" role="basic" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                <h4 class="modal-title">Add Route</h4>
+            </div>
+            <div class="modal-body">
+                @Html.Action("SearchRoute", "Process")
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn default blue" id="btnSubmitRole" onclick="AddRouteToDb(); return false;">
+                    <i class="fa fa-plus"></i>
+                    Add
+                </button>
+                <button type="button" class="btn default" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+<!--END SEARCH ROUTE MODAL-->
+
+<script>
+
+    $(document).ready(function () {
+        $('#tblProcessRoles').dataTable()
+        var tableWrapper = "#tblProcessRoles_wrapper";
+
+        jQuery(tableWrapper + ' .dataTables_filter input').addClass("form-control input-medium input-inline"); // modify table search input
+        jQuery(tableWrapper + ' .dataTables_length select').addClass("form-control input-small"); // modify table per page dropdown
+        jQuery(tableWrapper + ' .dataTables_length select').select2({
+            showSearchInput: false //hide search box with special css class
+        });
+
+        $('#tblProcessRoutes').dataTable()
+        var tableWrapper = "#tblProcessRoutes_wrapper";
+
+        jQuery(tableWrapper + ' .dataTables_filter input').addClass("form-control input-medium input-inline"); // modify table search input
+        jQuery(tableWrapper + ' .dataTables_length select').addClass("form-control input-small"); // modify table per page dropdown
+        jQuery(tableWrapper + ' .dataTables_length select').select2({
+            showSearchInput: false //hide search box with special css class
+        });
+    });
+
+    function OpenRoleModal()
+    {
+        $("#SearchRoleModal").modal();
+        var rolesStrring = "";
+        $.each($("#tblProcessRoles tbody tr"), function (i, val) {
+            var item = $(this).find('.selectedRole').val();
+            if (item != null)
+                rolesStrring += $.trim(item) + ",";
+        });
+        $("#RolesList").val(rolesStrring);
+    }
+
+    function OpenRouteModal()
+    {
+        $("#SearchRouteModal").modal();
+        var routes = "";
+        $.each($("#tblProcessRoutes tbody tr"), function (i, val) {
+            var item = $(this).find('.selectedRoute').val();
+            if (item != null)
+                routes += $.trim(item) + ",";
+        });
+        $("#RoutesList").val(routes);
+    }
+
+    function AddRoleToDb()
+    {
+        var roles = [];
+        $("#tblRolesResult").find('input[type="checkbox"]:checked').each(function (i, val) { 
+            var item = $(this);
+            roles.push(item.attr("value"));
+        });
+
+        if (roles.length == 0)
+        {
+            alert("No roles selected to add.");
+            return false;
+        }
+
+        var processId = '@Model.ID';
+        var url = '@Url.Action("AddRolesToProcess")?processId=' + processId + '&roles=' + roles;
+        $("#SearchRoleModal").modal('hide');
+        window.location.href = url;     
+    }
+
+    function AddRouteToDb()
+    {
+        var routes = [];
+        $("#tblRoutesResult").find('input[type="checkbox"]:checked').each(function (i, val) {
+            var item = $(this);
+            routes.push(item.attr("value"));
+        });
+
+        if (routes.length == 0) {
+            alert("No routes selected to add.");
+            return false;
+        }
+
+        var processId = '@Model.ID';
+        var url = '@Url.Action("AddRoutesToProcess")?processId=' + processId + '&routes=' + routes;
+        $("#SearchRouteModal").modal('hide');
+        window.location.href = url;
+    }
+
+</script>

@@ -1,0 +1,438 @@
+﻿@model Tuple<ESS.Payroll.Models.PayrollDeductionVM, SEP.RoutingManagement.Models.RoutingRule>
+@{
+    ViewBag.Title = "PayrollViewForm";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+    string TaskID = ViewBag.TaskID + "";
+    string RequestID = ViewBag.RequestID + "";
+    string ApprovalLevel = ViewBag.ApprovalLevel + "";
+    string Source = ViewBag.Source + "";
+    string PaySlipUrl = ViewBag.PaySlipUrl + "";
+
+    var data = new ViewDataDictionary
+    {
+        new KeyValuePair<string, object>("TaskID", TaskID),
+        new KeyValuePair<string, object>("RequestID", RequestID),
+        new KeyValuePair<string, object>("ApprovalLevel",ApprovalLevel),
+        new KeyValuePair<string, object>("Source",Source),
+        new KeyValuePair<string, object>("PaySlipUrl",PaySlipUrl)
+    };
+    int applvl = String.IsNullOrEmpty(ApprovalLevel) ? 0 : Convert.ToInt32(ApprovalLevel);
+}
+
+<style type="text/css">
+    .hidden_1 {
+        display: none;
+    }
+
+    .LabelDisplay {
+        border: 1px #e5e5e5 solid;
+        padding: 6px;
+        width: 100%;
+        background-color: #F9F9F9;
+    }
+</style>
+
+<div class="form-section">
+    <div class="row">
+        <div class="col-md-12">
+            <h1 class="page-title">
+                Payroll Deduction Details Page
+                <span style="padding-left:20px;">
+                    <small></small>
+                </span>
+            </h1>
+        </div>
+    </div>
+</div>
+
+<!-- Hidden -->
+<input type="hidden" value="@ViewBag.CurrEmpID" id="hfCurrEmpID" />
+<input type="hidden" value="@ViewBag.TaskID" id="hfTaskID" />
+<input type="hidden" value="@ViewBag.RequestID" id="hfRequestID" />
+<input type="hidden" value="@ViewBag.ApprovalLevel" id="hfApprovalLevel" />
+
+<!-- ETransfer Details -->
+@Html.Partial("_PayrollViewDetails", Model, data)
+
+<!-- Attachment -->
+@Html.Action("AttachmentControl", "Attachment", new { EmployeeID = Model.Item1.CreatedBy, Mode = "View", SourceType = "Payroll", RequestID = Model.Item1.EntryID })
+
+<!-- Applicant History-->
+@*@if (Source != "History")
+{
+    @Html.Action("_ApplicantHistory", "Payroll", new { ApplicantID = Model.CreatedBy, Type = Model.RequestType, Status = Model.StatusCode })
+
+}*@
+
+<!-- Audit Log -->
+@Html.Action("_AuditLog", "Payroll", new { RequestID = Model.Item1.EntryID })
+
+<!-- Approval -->
+@if (Source == "InTray")
+{
+    @Html.Partial("_PayrollApproval", Model, data)
+}
+
+
+<!-- Buttons -->
+<div class="row">
+    <input type="hidden" name="ctl00$ContentPlaceHolder1$hfDownloadSource" id="ContentPlaceHolder1_hfDownloadSource">
+    <div class="col-md-12">
+        
+        <input type="button" class="btn green" value="@Model.Item2.YesLabel" id="btnAgree" style="display:none;" onclick="AgreeValidation('Agreed');" />
+        <input type="button" class="btn green" value="@Model.Item2.NoLabel" id="btnDecline" style="display:none;" onclick="DeclineValidation('Declined');" />
+
+        <input type="button" class="btn green" value="Withdraw" id="btnWithdraw" style="display:none;" onclick="ConfirmAction('Withdrawn');" />
+        <input type="button" class="btn green" value="Back" id="btnBack" style="" onclick="window.history.back()" />
+    </div>
+</div>
+
+<!-- Success Message -->
+<div class="modal fade" id="SuccessSubmit" tabindex="-1" role="basic" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header Success-header">
+                @*<button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>*@
+                <h4 class="Success-title">Action Successfully Completed</h4>
+            </div>
+            <div class="modal-body Success-body">
+                <div class="well">
+                    Your application has been successfully submitted.
+                </div>
+            </div>
+            <div class="modal-footer Success-footer">
+                <button type="button" class="btn default blue" id="btnOK">
+                    <i class="fa fa-check"></i>
+                    OK
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Confirmation Message -->
+<div class="modal fade" id="ConfirmUpdate" tabindex="-1" role="basic" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                <h4 class="modal-title">Confirmation</h4>
+            </div>
+            <div class="modal-body">
+                <div class="well">
+                    Are you sure you want to Submit this Payroll Deduction application?\n\rPress Confirm to proceed, or Close to stay on the current page.
+                </div>
+            </div>
+            <div class="modal-footer">
+                @if (Model.Item2 != null)
+                {
+                    <button type="button" class="btn default blue" id="btnSubmitAgreed" onclick="javascript: ApproverAction(this, '@Model.Item2.YesActionLogLabel','@Model.Item2.YesStatus')">
+                        <i class="fa fa-check"></i>
+                        Confirm
+                    </button>
+    <button type="button" class="btn default blue" id="btnSubmitDeclined" onclick="javascript: ApproverAction(this, '@Model.Item2.NoActionLogLabel','@Model.Item2.NoStatus')">
+        <i class="fa fa-check"></i>
+        Confirm
+    </button>
+                }
+                <button type="button" class="btn default blue" id="btnSubmitWithdrawn" onclick="javascript: ApproverAction(this, 'Withdrawn', 'Withdrawn')">
+                    <i class="fa fa-check"></i>
+                    Confirm
+                </button>
+                
+                <button type="button" class="btn default" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Loading Gif -->
+<div id="divLoading" style="margin: 0px; padding: 0px; position: fixed; right: 0px;
+    top: 0px; width: 100%; height: 100%; background-color:gainsboro; z-index: 30001;
+    opacity: .8; filter: alpha(opacity=70);display:none">
+    <p style="position: absolute; top: 30%; left: 30%; color: black;">
+        Loading, please wait...<img src="../Assets/img/ajax-loading.gif" />
+
+    </p>
+</div>
+
+<script>
+    var Path = '/_layouts/15/tnbess';
+    //var Path = '/_layouts/15/essv2';
+    //var Path = 'http://localhost:49773';
+    var RequestID = '';
+    var EmployeeID = '';
+    var TaskID = '';
+    var Source = '';
+
+    jQuery(document).ready(function () {
+        $('.date-picker').datepicker({
+            format: 'dd/mm/yyyy',
+            autoclose: true,
+        });
+
+        FormConfiguration();
+    });
+
+    $(window).load(function () {
+        $.uniform.restore(".cbDetailID");
+    });
+
+    // Helper function
+    function getParameterByName(name) {
+        name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
+        var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
+        results = regex.exec(location.search);
+        return results === null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
+    }
+
+    // Page Load
+    function FormConfiguration() {
+        EmployeeID = document.getElementById('hfCurrEmpID').value;
+        RequestID = document.getElementById('hfRequestID').value;
+        TaskID = document.getElementById('hfTaskID').value;
+        Source = getParameterByName('Source');
+        ShowHideSection(RequestID, TaskID, Source);
+        var DeductionTypeCode = '@Model.Item1.DeductionTypeCode.ToString()';
+        if (DeductionTypeCode == 'D020') {
+            $(".hidePayeeKey").removeClass("hidden_1");
+        }
+        else
+        {
+            $(".hidePayeeKey").addClass("hidden_1");
+        }
+        var ApprovalPerson = '@Model.Item1.CurrentApprover.ToString()';
+        
+        
+
+    }
+
+    function ShowHideSection(RequestID, TaskID, Source) {
+        GetButtonConfiguration(RequestID);
+    }
+
+    function ConfirmAction(_Status) {
+
+        if (_Status == "Withdrawn") {
+            $("#btnSubmitAgreed").addClass("hidden_1");
+            $("#btnSubmitDeclined").addClass("hidden_1");
+            $("#btnSubmitWithdrawn").removeClass("hidden_1");
+            $(".modal-body .well").html('Are you sure you want to Withdraw this application?\n\rPress Confirm to proceed, or Close to stay on the current page.');
+            $("#btnOK").click(function () { RedirectTo('Withdrawn'); });
+            $("#ConfirmUpdate").modal('show');
+        }
+
+        if (_Status == "Agreed") {
+            $("#btnSubmitAgreed").removeClass("hidden_1");
+            $("#btnSubmitDeclined").addClass("hidden_1");
+            $("#btnSubmitWithdrawn").addClass("hidden_1");
+            $(".modal-body .well").html('Are you sure you want to '+'@Model.Item2.YesLabel' + ' this application?\n\rPress Confirm to proceed, or Close to stay on the current page.');
+            $("#btnOK").click(function () { RedirectTo('Agreed'); });
+            $("#ConfirmUpdate").modal('show');
+        }
+
+        if (_Status == "Declined") {
+            $("#btnSubmitAgreed").addClass("hidden_1");
+            $("#btnSubmitDeclined").removeClass("hidden_1");
+            $("#btnSubmitWithdrawn").addClass("hidden_1");
+            $(".modal-body .well").html('Are you sure you want to ' + '@Model.Item2.NoLabel' + ' this Payroll Deduction application?\n\rPress Confirm to proceed, or Close to stay on the current page.');
+            $("#btnOK").click(function () { RedirectTo('Declined'); });
+            $("#ConfirmUpdate").modal('show');
+        }
+
+    }
+
+    function RedirectTo(_Action) {
+        switch (_Action) {
+            case "Agreed":
+                window.location.href = Path + '/Payroll/InTray';
+                break;
+            case "Declined":
+                window.location.href = Path + '/Payroll/InTray';
+                break;
+            case "Withdrawn":
+                window.location.href = Path + '/Payroll/PayrollHistory';
+                break;
+            default:
+                window.location.href = '/Pages/default.aspx';
+        }
+    }
+
+    function ApproverAction(btn, _ActionLabel, _Action) {
+        btn.disabled = true;
+        $("#divLoading").show();
+        $(".Success-body .well").html('The application has been successfully ' + _ActionLabel + '. Status:' + _Action);
+        var myVar = setTimeout(function () { ApproverActionFunction(btn, _ActionLabel); }, 3000);
+    }
+
+    function DeclineValidation(_Status) {
+        var _ApproverComment = document.getElementById('txtApprovalComment');
+
+        var _ValidationMsg = '';
+
+        //if (_ApproverComment.value == '')
+        //    _ValidationMsg += '- Approver Comment is required.\n';
+
+        if (_ValidationMsg != null && _ValidationMsg != '') {
+            alert(_ValidationMsg);
+        }
+        else {
+            ConfirmAction(_Status);
+        }
+
+    }
+
+    function AgreeValidation(_Status) {
+        var _ApproverComment = document.getElementById('txtApprovalComment');
+
+        var _ValidationMsg = '';
+
+        //if (_ApproverComment.value == '')
+        //    _ValidationMsg += '- Approver Comment is required.\n';
+
+        if (_ValidationMsg != null && _ValidationMsg != '') {
+            alert(_ValidationMsg);
+        }
+        else {
+            ConfirmAction(_Status);
+        }
+
+    }
+
+    function GetButtonConfiguration(_RequestID) {
+
+        if ('@Model.Item1.StatusName' == "Draft") {
+            $("#DivAuditLog").addClass("hidden_1");
+        }
+        else {
+            $("#DivAuditLog").removeClass("hidden_1");
+        }
+        jQuery.support.cors = true;
+        var form = {
+            RequestID: _RequestID,
+        };
+
+        $.ajax({
+            type: "POST",
+            url: '@Url.Content("~/Payroll/GetUserAllowAction")',
+            cache: false,
+            async: false,
+            dataType: "json",
+            data: form,
+            success: function (result) {
+                if (result.Success) {
+                    SetButtonConfiguration(result.AllowActions);
+                }
+                else {
+                    alert(result.ErrorMsg);
+                }
+            },
+            error: function (e) {
+
+            }
+        });
+    }
+
+    function SetButtonConfiguration(result) {
+
+        var ButtonAgree = document.getElementById('btnAgree');
+        var ButtonDecline = document.getElementById('btnDecline');
+        var ButtonWithdraw = document.getElementById('btnWithdraw');
+
+        if (result[0].CanWithdraw == '1') {
+            ButtonWithdraw.style.display = '';
+        }
+        else {
+            ButtonWithdraw.style.display = 'none';
+        }
+
+        if ('@Model.Item2.ID' != '@Guid.Empty') {
+            ButtonDecline.style.display = '';
+            ButtonAgree.style.display = '';
+        }
+        else {
+            ButtonDecline.style.display = 'none';
+            ButtonAgree.style.display = 'none';
+        }
+
+    }
+
+    //Logical function (AJAX)
+    function ApproverActionFunction(btn, _Action) {
+        EmployeeID = document.getElementById('hfCurrEmpID').value;
+
+        var _RequestID = '@RequestID';
+        var _TaskID = '@TaskID';
+        var _CurrentUserID = EmployeeID;
+        var _ApproverComment = "";
+        var _ApprovalLevel = '@ApprovalLevel';
+        var _SelectedDetailsID = "";
+        var _AcceptingHeadID = "";
+        var _Status = _Action;
+        var _Replacement = "";
+        var _PositionNo = "";
+        var _PositionStartDate = "";
+        var _approvallvl = document.getElementById('hfApprovalLevel').value;
+        var _Source = '@Source';
+
+        if (_Source == "InTray") {
+            _ApproverComment = document.getElementById('txtApprovalComment').value;
+        }
+
+
+        if (_TaskID != "") {
+            if (_ApprovalLevel == "2") {
+                var _chkReplacement = document.getElementById("cbAppReplacement_Perlu").checked;
+                if (_chkReplacement) {
+                    _Replacement = "Perlu";
+                }
+                else {
+                    _Replacement = "Tak Perlu";
+                }
+            }
+        }
+
+        var form = {
+            EntryID: _RequestID,
+            TaskID: _TaskID,
+            CurrentUserID: _CurrentUserID,
+            Status: _Status,
+            ApproverComment: _ApproverComment,
+            ApprovalLevel: _ApprovalLevel,
+        };
+
+
+        $.ajax({
+            type: "POST",
+            url: '@Url.Content("~/Payroll/PostApproverAction")',
+            cache: false,
+            async: false,
+            dataType: "json",
+            data: form,
+            success: function (result) {
+                if (result.Success) {
+                    $("#ConfirmUpdate").modal('toggle');
+                    $("#divLoading").hide();
+                    $("#SuccessSubmit").modal();
+                }
+                else {
+                    $("#ConfirmUpdate").modal('toggle');
+                    $("#divLoading").hide();
+                    alert('PostApproverAction   ' + result.errorMsg);
+                    btn.disabled = false;
+                }
+            },
+            error: function (e) {
+
+            }
+        });
+
+    }
+</script>
+
+
+
+
+
+

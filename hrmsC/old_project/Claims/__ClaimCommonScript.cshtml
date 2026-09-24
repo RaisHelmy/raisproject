@@ -1,0 +1,443 @@
+﻿@{ 
+    decimal _ClaimMileageThreshold = 0;
+    if (ViewBag.ClaimMileageThreshold != null)
+    {
+        _ClaimMileageThreshold = ViewBag.ClaimMileageThreshold;
+    }
+}
+<style>
+    .subtype-info-icon {
+        font-size: 15px !important;
+        position: relative !important;
+        float: right !important;
+        margin-left: 20px !important;
+    }
+
+    .popover {
+        max-width: 800px !important;
+    }
+</style>
+<script>
+    var __ExclusionColumns = [
+        "Mileage Type",
+        "Distance",
+        "Price",
+        "Amount",
+        "Tax Amount",
+        "GST Amount",
+        "Total Amount",
+        "Hour",
+        "Rate",
+        "Claimable",
+        "Interval",
+        "Day",
+        "Month",
+        "Year",
+        "Service Charge",
+        "No."
+    ];
+    var __Testing__ = {};
+    var __essClaim = {};
+    var SubtypeReadabilityEnhance_isEditMode = false;
+
+    __essClaim.RoundNum = function (num, length) {
+        var number = Math.round(num * Math.pow(10, length)) / Math.pow(10, length);
+        return number;
+    };
+
+    __essClaim.DisableDropdown = function (elem, persistValue) {
+        var $element = $(elem);
+
+        if (typeof persistValue == 'undefined' || typeof persistValue != 'boolean') {
+            persistValue = false;
+        }
+
+        if (persistValue) {
+            $element.prop('readonly', true);
+        }
+        else {
+            $element.val("");
+            $element.prop('disabled', true);
+            $element.prop('readonly', true);
+        }
+    };
+
+    __essClaim.EnableDropdown = function (elem) {
+        var $element = $(elem);
+
+        $element.prop('disabled', false);
+        $element.prop('readonly', false);
+    };
+
+    __essClaim.AddClaimSubtypeHeaderInfo = function () {
+        if (typeof __claimSubtypes == 'undefined') return;
+
+        var selectedSubtypes = [];
+        for (var i = 0; i < __claimSubtypes.length; i++) {
+            var category = __claimSubtypes[i].ClaimSubtype;
+
+            for (var j = 0; j < category.length; j++) {
+                if (category[j].IsChoosen) {
+                    selectedSubtypes.push(category[j]);
+                }
+            }
+        }
+
+        $('.subtypeportlet .portlet-title .caption').each(function () {
+            var title = $(this).text().trim();
+            var thisHeader = this;
+            selectedSubtypes.forEach(function (subtype) {
+                if ((subtype.ClaimSubTypeCategory + ' - ' + subtype.ClaimsSubtypeName) == title && (subtype.AdditionalInformation != null && subtype.AdditionalInformation != '')) {
+                    var element = $('<i class="fa fa-info-circle subtype-info-icon popovers"></i>');
+                    element.attr("data-html", "true");
+                    element.attr("data-trigger", "hover");
+                    element.attr("data-container", "body");
+                    element.attr("data-placement", "right");
+                    element.attr("data-content", subtype.AdditionalInformation);
+
+                    $(thisHeader).append(element);
+                }
+            });
+        });
+    };
+
+    $(function () {
+        SubtypeReadabilityEnhancement_Init();
+        __essClaim.AddClaimSubtypeHeaderInfo();
+
+        $('.timeinput').inputmask("h:s", {
+            //"mask" : "__:__",
+            "placeholder": "__/__",
+            onincomplete: function () {
+                // replace placeholder with zero
+                $(this).val($(this).val().replace(/_/g, '0'));
+
+                if ($(this).get(0).onblur) {
+                    $(this).get(0).onblur();
+                }
+
+                if ($(this).get(0).onchange) {
+                    $(this).get(0).onchange();
+                }
+            }
+        });
+    });
+
+    function SubtypeReadabilityEnhancement_Init() {
+        var currentClaimType = "";
+        var claimStatus = "";
+
+        if (window.location.pathname.indexOf('ILSAS') >= 0) {
+            claimStatus = $('#claimStatus').val();
+            currentClaimType = "ILSAS";
+        }
+        else if (window.location.pathname.indexOf("FlexiBenefits") >= 0) {
+            claimStatus = $('#txtStatus').val();
+            currentClaimType = "Flexi Benefits";
+        }
+        else {
+            claimStatus = $('#claimStatus').val();
+            currentClaimType = "Actual Claim";
+        }
+
+        // Only do this for edit mode
+        if (claimStatus == 'Draft' || claimStatus == '0' ||
+            claimStatus == 'Returned' || claimStatus == '4' ||
+            claimStatus == 'Withdrawn' || claimStatus == '5' ||
+            claimStatus == '' || claimStatus == null) {
+            SubtypeReadabilityEnhance_isEditMode = true;
+        }
+
+        $('.subtypeportlet').each(function () {
+            var subtypePortlet = $(this);
+
+            @* Flexi Benefit Leave Passage had subportlet require custom searching *@
+            if (currentClaimType == "Flexi Benefits" && subtypePortlet.prop('id') == "dTable_FBLeavePassage") {
+                subtypePortlet.find('.SubtypeTable').each(function () {
+                    var lpTable = $(this);
+                    RefineSubtypeReadability(lpTable, SubtypeReadabilityEnhance_isEditMode);
+
+                    var dataTable = lpTable.DataTable();
+                    dataTable.on('draw.dt', function () {
+                        RefineSubtypeReadability(lpTable, SubtypeReadabilityEnhance_isEditMode);
+                    });
+                });
+            }
+            else {
+                SubtypeHeaderCustomization(subtypePortlet, SubtypeReadabilityEnhance_isEditMode);
+                RefineSubtypeReadability(subtypePortlet, SubtypeReadabilityEnhance_isEditMode);
+
+                var dataTable = subtypePortlet.find("table").DataTable();
+                dataTable.on('draw.dt', function () {
+                    RefineSubtypeReadability(subtypePortlet, SubtypeReadabilityEnhance_isEditMode);
+                });
+            }
+        });
+    }
+
+    function SubtypeHeaderCustomization(subtypePortlet, editMode) {
+
+        $.each(subtypePortlet.find("th")
+            .filter(function () {
+                return $(this).text().indexOf('GST Amount') >= 0;
+
+            }), function (i, v) {
+                $(v).text($(v).text().replace("GST", "Tax"));
+            });
+    }
+
+    function RefineSubtypeReadability(subtypePortlet, editMode) {
+        var subtypeTitle = subtypePortlet.find('.portlet-title').find('.caption').text().toLowerCase();
+        var ignoredColumns = subtypePortlet.find("th").filter(
+            function () {
+                for (var i = 0; i < __ExclusionColumns.length; i++) {
+                    if ($(this).text().indexOf(__ExclusionColumns[i]) >= 0) {
+                        return true;
+                    }
+                }
+
+                return false;
+            }).map(function (context, element) {
+                return $(element).index();
+            });
+
+        var taxAmountColumnIndex = subtypePortlet.find("th").filter(
+            function () {
+                return $(this).text().indexOf('Tax Amount') >= 0;
+            }).index();
+
+        subtypePortlet.find("tbody tr").each(function () {
+            // Update all look and feel of checkbox
+            $(this).find("td").each(function () {
+                $(this).find('input[type="checkbox"]').uniform();
+
+                if ($(this).find('input[type="checkbox"]').length == 0) {
+                    $(this).css('padding', '1px');
+                }
+            });
+
+            $(this).find('select').each(function () {
+                if ($(this).css('min-width') == '0px') {
+                    $(this).css('min-width', '130px');
+                }
+            });
+
+            // Quick fix to disable all Tax Amount columns for without/no sst subtype
+            if (subtypeTitle.indexOf("no sst") >= 0 || subtypeTitle.indexOf("without sst") >= 0) {
+                $(this).find('td').eq(taxAmountColumnIndex).children().prop('readonly', true);
+            }
+
+            $(this).find('td').each(function () {
+                var targetTd = $(this);
+                var targetInput = targetTd.children();
+
+                if (targetInput.prop('tagName') == "TEXTAREA") {
+                    autosize(targetInput);
+                    return;
+                }
+
+                if (targetInput.hasClass("timeinput")) {
+                    targetInput.inputmask("h:s", {
+                        //"mask" : "__:__",
+                        "placeholder": "__/__",
+                        onincomplete: function () {
+                            // replace placeholder with zero
+                            $(this).val($(this).val().replace(/_/g, '0'));
+
+                            if ($(this).get(0).onblur) {
+                                $(this).get(0).onblur();
+                            }
+
+                            if ($(this).get(0).onchange) {
+                                $(this).get(0).onchange();
+                            }
+                        }
+                    });
+
+                    return;
+                }
+
+                if (targetInput.prop('tagName') != "INPUT" || targetInput.prop('type') != "text") {
+                    return;
+                }
+
+                if (targetInput.hasClass("Amount") || targetInput.hasClass("GSTAmount") || targetInput.hasClass("TotalAmount") ||
+                    !(targetInput.prop('name').indexOf('SubTypeColumn0') < 0) ||
+                    (targetInput.hasClass("timeinput") || targetInput.hasClass("EndTime") || targetInput.hasClass("StartTime"))) {
+                    return;
+                }
+
+                // Prevent some textbox from convert to textarea
+                if (ignoredColumns.index(targetTd.index()) >= 0) {
+                    return;
+                }
+
+                var originalHeight = targetInput.css('height');
+                var $txtarea = $("<textarea />");
+                $.each(targetInput.prop("attributes"), function () {
+                    $txtarea.attr(this.name, this.value);
+                });
+                //$txtarea.attr("id", targetInput.prop("id"));
+                //$txtarea.attr("name", targetInput.prop("name"));
+                //$txtarea.attr("class", targetInput.prop('class'));
+                $txtarea.prop('rows', 1);
+                $txtarea.css('white-space', 'pre-wrap');
+                $txtarea.css('min-width', '200px');
+
+                if (!editMode && !($txtarea.hasClass('ApprovedAmount') || $txtarea.hasClass('ApprovalRemarks'))) {
+                    $txtarea.prop('readonly', true);
+                }
+
+                //$txtarea.addClass('form-control');
+                $txtarea.val(targetInput.val());
+                $txtarea.css('min-height', originalHeight);
+
+                //targetInput.replaceWith($txtarea);
+                targetTd.html($txtarea);
+                autosize($txtarea);
+                $txtarea.css('resize', 'none');
+                //$txtarea.css('height', "+=20px");
+                //if ($txtarea.prop('textLength') <= $txtarea.prop('cols')) {
+                //    $txtarea.css('height', originalHeight);
+                //}
+
+                var textLength = $txtarea.val().length;
+                var colCount = $txtarea.prop('cols');
+                var totalRow = Math.floor(textLength / colCount);
+
+                // each line of text is 20px
+                //$txtarea.css('height', parseFloat(originalHeight) + (totalRow * 20))
+
+                if (textLength <= colCount) {
+                    $txtarea.css('height', originalHeight);
+                }
+            });
+        });
+
+        subtypePortlet.find("tfoot tr").each(function () {
+            $(this).find("td").css('padding', '2px');
+        });
+    }
+
+    function SubtypePopulateAdditionalData() {
+
+    }
+
+    function NumberInputOnly(evt) {
+        var theEvent = evt || window.event;
+
+        var field = evt.target;
+
+        if ($(field).prop('readonly')) {
+            return;
+        }
+
+        var input = parseInt($(field).val());
+        if (input) {
+            $(field).val(input);
+        }
+        else {
+            $(field).val("0");
+        }
+    }
+
+    function CurrencyOnly(evt) {
+        var theEvent = evt || window.event;
+
+        var field = evt.target;
+
+        var input = parseFloat($(field).val());
+        if (input) {
+            $(field).val(input.toFixed(2));
+        }
+        else {
+            $(field).val("0.00");
+        }
+    }
+
+    function FormatCurrency(field) {
+        var input = parseFloat($(field).val());
+        if (input) {
+            $(field).val(input.toFixed(2));
+        }
+        else {
+            $(field).val("0.00");
+        }
+    }
+
+    function NumberOnly(evt) {
+        $(evt.target).one('blur', function () {
+            NumberInputOnly(evt);
+        });
+        //var theEvent = evt || window.event;
+        //var key = theEvent.keyCode || theEvent.which;
+        //key = String.fromCharCode(key);
+        //var regex = /[0-9]/;
+        //if (!regex.test(key)) {
+        //    theEvent.returnValue = false;
+        //    if (theEvent.preventDefault) theEvent.preventDefault();
+        //}
+    }
+
+    function NumberFormatting(Number) {
+        return Number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    }
+
+    function RemoveComma(Number) {
+        return Number = Number.replace(',', '');
+    }
+
+    function FormatExchangeRate(evt) {
+
+    }
+
+    function CheckMileageThreshold() {
+        var MaxMileageThreshold = @_ClaimMileageThreshold;
+        var TotalMileageThreshold = 0;
+        var ClaimSubtypeList = [
+            "Mileage Reimbursement - Car RM0.55 (No SST)",
+            "Mileage Reimbursement - Motorcycle RM0.55 (No SST)",
+            "Mileage Reimbursement - Car (No SST)",
+            "Mileage Reimbursement - Motorcycle RM0.40 (No SST)"
+        ];
+
+        if (MaxMileageThreshold > 0) {
+            $('input[type="checkbox"].SubTypeCheckBox:checked').each(function () {
+                var subTypeName = $(this).attr('subtypename');
+
+                if (ClaimSubtypeList.includes(subTypeName)) {
+                    var subTypeIdxName = $(this).attr('name');
+                    subTypeIdxName = subTypeIdxName.slice(0, -9) //remove IsChoosen
+
+                    // refere to a particular totalAmount, find its parent table
+                    var tableElem = $('input[name^="' + subTypeIdxName + '"].TotalAmount').parents('table.dataTable');
+
+                    TotalMileageThreshold += parseFloat(parseFloat(tableElem.find('tfoot input.GrandTotalAmount').val()).toFixed(2));
+                }
+            })
+        }
+
+        if ($('input[type="checkbox"].SubTypeCheckBox:checked').length != 0) $('.ClaimMileageExceedWarning').hide();
+        if (MaxMileageThreshold != 0 && TotalMileageThreshold >= MaxMileageThreshold) {
+            $('.ClaimMileageExceedWarning').show();
+        }
+    }
+
+    __Testing__.FillTestData = function () {
+        $.each(subtypePortlet.find("tr"),
+            function (i, v) {
+                var $row = $(v);
+          });
+    };
+
+    function evenRound(num, decimalPlaces) {
+        var d = decimalPlaces || 0;
+        var m = Math.pow(10, d);
+        var n = +(d ? num * m : num).toFixed(8); // Avoid rounding errors
+        var i = Math.floor(n), f = n - i;
+        var e = 1e-8; // Allow for rounding errors in f
+        var r = (f > 0.5 - e && f < 0.5 + e) ?
+            ((i % 2 == 0) ? i : i + 1) : Math.round(n);
+        return d ? r / m : r;
+    }
+</script>

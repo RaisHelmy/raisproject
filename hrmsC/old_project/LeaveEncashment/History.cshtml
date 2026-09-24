@@ -1,0 +1,133 @@
+﻿@{
+    ViewBag.Title = "Leave Encashment (Retirement) - History";
+}
+
+@{
+    DateTime dStartDateTime = DateTime.Now.AddMonths(-3);
+    DateTime dEndDateTime = DateTime.Now;
+    string dtStart = new DateTime(dStartDateTime.Year, dStartDateTime.Month, 1).ToString("dd/MM/yyyy");
+    string dtDefault = dEndDateTime.ToString("dd/MM/yyyy");
+
+    var status = LeaveApplication.Service.GetAllLeaveStatus();
+}
+
+<div class="row">
+    <div class="col-md-12">
+        <br />
+        <h1 class="page-title">
+            @ViewBag.Title
+            <span style="padding-left:20px;">
+                <small>
+                </small>
+            </span>
+        </h1>
+    </div>
+</div>
+<br />
+
+<form>
+    <div class="form-body">
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-horizontal">
+                    <div class="form-group">
+                        <label class="col-md-4 control-label">Reference No</label>
+                        <div class="col-md-8 form-control-static">
+                            <input type="text" class="form-control ReferenceNo" name="ReferenceNo" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-horizontal">
+                    <div class="form-group">
+                        <label class="col-md-4 control-label">Status</label>
+                        <div class="col-md-8 form-control-static">
+                            <select id="ddlStatus" class="form-control" name="Status">
+                                <option value="">--  All --</option>
+                                @foreach (var s in status)
+                                {
+                                    <option value="@s.StatusCode">@s.StatusDesc</option>
+                                }
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        @*<div class="row">
+            <div class="col-md-6">
+                <div class="form-horizontal">
+                    <div class="form-group">
+                        <label class="col-md-4 control-label">Submission From</label>
+                        <div class="col-md-8 form-control-static">
+                            <div class="input-group date date-picker" data-date-format="dd/MM/yyyy">
+                                <input type="text" class="form-control" name="SubmissionFromDate" value="@dtStart" />
+                                <span class="input-group-btn">
+                                    <button type="button" class="btn default"><i class="fa fa-calendar"></i></button>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-horizontal">
+                    <div class="form-group">
+                        <label class="col-md-4 control-label">Submission To</label>
+                        <div class="col-md-8 form-control-static">
+                            <div class="input-group date date-picker" data-date-format="dd/MM/yyyy">
+                                <input type="text" class="form-control" name="SubmissionToDate" value="@dtDefault" />
+                                <span class="input-group-btn">
+                                    <button type="button" class="btn default"><i class="fa fa-calendar"></i></button>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>*@
+        <div class="row">&nbsp;</div>
+        <div class="row">
+            <div class="col-md-12">
+                <div class="text-right">
+                    <input type="button" class="btn green btn-Search"
+                           value="Search" onclick="SearchListing();">
+                </div>
+            </div>
+        </div>
+        <div class="row">&nbsp;</div>
+        <div class="row">
+            <div class="col-md-12">
+                <div id="SearchResult">
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+@Html.Partial("__Prompt")
+<script>
+    $(function () {
+        $('.date-picker').datepicker({
+            format: 'dd/mm/yyyy',
+            autoclose: true,
+        });
+
+        SearchListing();
+    });
+
+    function SearchListing() {
+        var option = $('form').serializeArray();
+        option.push({
+            name: "_",
+            value: (new Date()).getTime()
+        });
+
+        ShowLoadingScreen();
+        $.get('@Url.Action("HistoryResult", "LeaveEncashment")', option, function (result) {
+            HideLoadingScreen();
+            $('#SearchResult').html(result);
+        });
+    }
+</script>

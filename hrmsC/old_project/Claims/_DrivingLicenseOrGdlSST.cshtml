@@ -1,0 +1,81 @@
+﻿@using ESS.Claim.ClaimSubtype
+@using ESS.Claim.ViewModels
+@model ClaimsSubtype
+
+@{
+    Layout = null;
+    string TableID = "tbl" + Model.FormInterface + "_" + Model.categoryIndex + "_" + Model.subtypeIndex;
+    string Status = ViewBag.ClaimStatus;
+
+    Model.Template = new Template(Model);
+    Model.Template.TableID = TableID;
+    Model.Template.IsReadonly = !(Status == "Draft" || Status == "Withdrawn" || Status == "Declined" || Status == "Returned");
+
+    Model.Template.Columns.Add(ColumnTemplate.CheckboxWithLabel("", "").SetColumnClass("RemoveCheckbox"));
+
+    Model.Template.Columns.Add(ColumnTemplate.ChargeCodeDropdown("Charge Code", "SubTypeColumn0").SetIsMandatory(true));
+
+    Model.Template.Columns.Add(ColumnTemplate.DatePickerWithLabel("Start Date", "ReceiptDate").SetIsMandatory(true));
+
+    //License Typ DDL Items
+    List<SelectListItem> LicenseTypeDDL = new List<SelectListItem>
+{
+        new SelectListItem { Selected = true, Text = "Select One", Value = "" },
+        new SelectListItem { Selected = false, Text = "Driving License", Value = "Driving License" },
+        new SelectListItem { Selected = false, Text = "GDL", Value = "GDL" },
+        new SelectListItem { Selected = false, Text = "H", Value = "H" }
+    };
+
+    Model.Template.Columns.Add(ColumnTemplate.DropdownWithLabel("License Type", "SubTypeColumn2")
+        .SetDropdownItems(LicenseTypeDDL).SetIsMandatory(true));
+
+    //Duration DDL Items
+    List<SelectListItem> DurationDDL = new List<SelectListItem> { new SelectListItem { Selected = true, Text = "Select One", Value = "" } };
+    for (int i = 0; i < 2; i++)
+    {
+        DurationDDL.Add(new SelectListItem { Text = (i + 1) + ((i == 0) ? " year" : " years"), Value = (i + 1).ToString() });
+    }
+
+    Model.Template.Columns.Add(ColumnTemplate.DropdownWithLabel("Duration", "SubTypeColumn1")
+        .SetDropdownItems(DurationDDL).SetIsMandatory(true));
+
+    Model.Template.Columns.Add(ColumnTemplate.TextBoxWithLabel("Receipt No.", "ReceiptNo").SetIsMandatory(true));
+
+    Model.Template.Columns.Add(ColumnTemplate.TextBoxWithLabel("Description", "Description"));
+
+    Model.Template.Columns.Add(ColumnTemplate.CurrencyTextBoxWithLabel("Amount", "ActualAmount").SetIsMandatory(true).SetDefaultValue("0.00").SetOnBlur(TableID + "_subtype.calculateAmount(this);"));
+
+    Model.Template.Columns.Add(ColumnTemplate.CurrencyTextBoxWithLabel("Service Charge", "ServiceCharge").SetIsMandatory(true).SetDefaultValue("0.00").SetOnBlur(TableID + "_subtype.calculateAmount(this);"));
+
+    Model.Template.Columns.Add(ColumnTemplate.TextBoxForAmount(Model.Template, "Total Claimable (RM)", "Amount").SetReadonly(true));
+    Model.Template.Columns.Add(ColumnTemplate.TextBoxForTaxAmount(Model.Template, "Tax Amount (RM)", "GSTAmount").SetReadonly(true));
+    Model.Template.Columns.Add(ColumnTemplate.TextBoxForTotalAmount(Model.Template, "Total Amount (RM)", "TotalAmount"));
+}
+
+@Html.Partial("~/Views/ClaimsSubtype/SubtypeView.cshtml", Model)
+
+<script>
+    @(TableID)_subtype.OnReceiptChange = function (row) {
+        @(TableID)_subtype.calculateAmount(row);
+    };
+
+    @(TableID)_subtype.calculateAmount = function (row) {
+        var $row = $(row).closest("tr");
+
+        var _ActualAmount = $row.find('.ActualAmount');
+        var _ServiceCharge = $row.find('.ServiceCharge');
+        var _TotalClaimable = $row.find('.Amount');
+
+        var actualAmount = parseFloat(_ActualAmount.val());
+        var serviceCharge = parseFloat(_ServiceCharge.val());
+
+        var totalClaimable = actualAmount + serviceCharge;
+        _TotalClaimable.val(totalClaimable.toFixed(2));
+
+        @(TableID)_subtype.calculateTax($row);
+        @(TableID)_subtype.calculateSubtotal($row);
+    };
+
+    @(TableID)_subtype.subInitialize = function () {
+    };
+</script>

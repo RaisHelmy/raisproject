@@ -1,0 +1,185 @@
+﻿@model Tuple<OJA.Models.Specialization, OJA.Models.SpecializationForm>
+@{
+    Layout = null;
+    var updateFunction = "updateEdited_" + Model.Item2.DivName; 
+    var getUpdatedSpecializationFunction = "getUpdatedSpecializationData_" + Model.Item2.DivName;
+}
+
+@using (Html.BeginForm("UpdateSpecialization", "MyResume", FormMethod.Post, new { @id = "updateSpecializationForm" }))
+{
+    <div class="portlet box blue">
+        <div class="mini-triangle"><img src="../Assets/img/menu-red-triangle.png" /></div>
+        <div class="portlet-title">
+            <div class="caption">
+                <i class="fa fa-reorder"></i>@Model.Item2.Category
+            </div>
+        </div>
+
+        @Html.HiddenFor(m => m.Item1.SpecializationCode, new { @id = "SpecializationCode", @name = "SpecializationCode" })
+        @Html.HiddenFor(m => m.Item1.SpecializationName, new { @id = "SpecializationName", @name = "SpecializationName" }) 
+        @Html.HiddenFor(m => m.Item1.ProficiencyName, new { @id = "ProficiencyName", @name = "ProficiencyName" })
+        @Html.HiddenFor(m => m.Item1.SpecializationID, new { @id = "SpecializationID", @name = "SpecializationID" })
+        <div class="portlet-body form">
+            <div class="form-body">
+                <div class="form-horizontal">
+                    <div class="form-group hidden EducationTree">
+                        <label class="control-label col-md-3">
+                            @Model.Item2.CategoryFirstColumn <span style="color:red">*</span>
+                        </label>
+                        <div class="col-md-4" id="EducationTree">
+
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label col-md-3">@Model.Item1.Category</label>
+                        <div class="col-md-8 form-control-static">
+                            <input class="form-control" placeholder="- Please select from above -" value="@Model.Item1.SpecializationName" id="SpecializationName2" name="SpecializationName2" readonly />
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="control-label col-md-3">
+                            Start Date
+                            <span style="color: red">*</span>
+                        </label>
+                        <div class="col-md-8 form-control-static">
+                            <div class="input-group date date-picker" data-date-format="dd MM yyyy">
+                                <input type="text" class="form-control editable" id="StartDate" name="StartDate" value="@Model.Item1.StartDate"  readonly/>
+                                <span class="input-group-btn">
+                                    <button type="button" class="btn default"><i class="fa fa-calendar"></i></button>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label col-md-3">
+                            End Date
+                        </label>
+                        <div class="col-md-8 form-control-static">
+                            <div class="input-group date date-picker" data-date-format="dd MM yyyy">
+                                <input type="text" class="form-control editable" id="EndDate" name="EndDate" value="@Model.Item1.EndDate"  readonly/>
+                                <span class="input-group-btn">
+                                    <button type="button" class="btn default"><i class="fa fa-calendar"></i></button>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    @if (Model.Item2.ShowProficiency)
+                    {
+                        <div class="form-group">
+                            <label class="control-label col-md-3">
+                                @Model.Item2.ProficiencyName <span style="color:red">*</span>
+                            </label>
+                            <div class="col-md-8 form-control-static" id="EducationGradeResult">
+                                @Html.DropDownListFor(m => m.Item1.ProficiencyCode, Model.Item1.Grades, "- Please Select -", new { @class = "form-control ddlEditable", @disabled = "disabled", @id = "EducationGrade", @name = "EducationGrade" })
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-footer">
+
+        @if (ViewBag.CanEdit)
+        {
+            <button type="button" class="btn blue" id="btnEditSpecialization">Edit</button>
+            <button type="button" class="btn blue" id="btnDeleteSpecialization" onclick="DeleteSpecialization('@Model.Item1.SpecializationID')">Delete</button>
+            <button type="button" class="btn blue hidden" id="btnUpdateSpecialization">Update</button>
+        }
+        <button type="button" class="btn default" data-dismiss="modal">Close</button>
+    </div>
+
+}
+
+<script>
+
+    var tree = null;
+    $(document).ready(function () {
+        $('.date-picker').datepicker({
+            format: 'dd/mm/yyyy',
+            autoclose: true
+        });
+
+        PopulateTreeView('#@Model.Item2.DivName #EducationTree', '@Model.Item2.SpecializationType', nodeSelected);
+    });
+
+    //$(document).on('click', '#@Model.Item2.DivName #btnEditSpecialization', function () {
+    $('#@Model.Item2.DivName #btnEditSpecialization').click(function () {
+        $('.editable').removeAttr('readonly');
+        $('#@Model.Item2.DivName #EducationTree, .EducationTree').removeClass('hidden');
+        $('#@Model.Item2.DivName #btnUpdateSpecialization').removeClass('hidden');
+        $('#@Model.Item2.DivName #EducationGrade').removeAttr('disabled');
+        $("#@Model.Item2.DivName #btnDeleteSpecialization").addClass('hidden');
+        $(this).addClass('hidden');
+    });
+
+    //$(document).on('click', '#@Model.Item2.DivName #btnUpdateSpecialization', function () {
+    $('#@Model.Item2.DivName #btnUpdateSpecialization').click(function () {
+        @*var model = {
+            SpecializationCode: $("#@Model.Item2.DivName #SpecializationCode").val(),
+            SpecializationName: $("#@Model.Item2.DivName #SpecializationName").val(),
+            ProficiencyCode: $("#@Model.Item2.DivName #EducationGrade").val(),
+            ProficiencyName: $("#@Model.Item2.DivName #EducationGrade").children('option').filter(':selected').text(),
+            StartDate: $("#@Model.Item2.DivName #StartDate").val(),
+            EndDate: $("#@Model.Item2.DivName #EndDate").val(),
+            Category: '@Html.Raw(Model.Item2.Category)',
+            SpecializationID: $("#SpecializationID").val()
+        }*@
+        var model =  @(getUpdatedSpecializationFunction + "()");
+
+        var errorMessage = "";
+        errorMessage += model.StartDate == "" ? "Start Date is required \n" : "";
+        errorMessage += model.ProficiencyCode == "" ? "@Html.Raw(Model.Item2.ProficiencyName) is required \n" : "";
+        errorMessage += model.SpecializationCode == "" ? "@Html.Raw(Model.Item2.CategoryFirstColumn) is required\n" : "";
+
+        if (model.StartDate != "" && model.EndDate != "") {
+            errorMessage += moment(model.StartDate, "DD/MM/YYYY").isAfter(moment(model.EndDate, 'DD/MM/YYYY')) ? "Start Date must be earlier than End Date" : "";
+        }
+        if (errorMessage != "") {
+            alert(errorMessage);
+            return false;
+        }
+
+        confirmationModal('update @Html.Raw(Model.Item2.Category)',  @updateFunction);
+
+        //ShowLoading();
+        //UpdateSpecialization(model);
+        //console.log(model);
+    });
+
+    @("function " + updateFunction + " (confirm)") {
+        if (!confirm)
+            return false;
+
+        var model = @(getUpdatedSpecializationFunction + "()");
+        UpdateSpecialization(model);
+    }
+
+    function @(getUpdatedSpecializationFunction + "()") {
+        var model = {
+            SpecializationCode: $("#@Model.Item2.DivName #SpecializationCode").val(),
+            SpecializationName: $("#@Model.Item2.DivName #SpecializationName").val(),
+            ProficiencyCode: $("#@Model.Item2.DivName #EducationGrade").val(),
+            ProficiencyName: $("#@Model.Item2.DivName #EducationGrade").children('option').filter(':selected').text(),
+            StartDate: $("#@Model.Item2.DivName #StartDate").val(),
+            EndDate: $("#@Model.Item2.DivName #EndDate").val(),
+            Category: '@Html.Raw(Model.Item2.Category)',
+            SpecializationID: $("#SpecializationID").val()
+        };
+
+        return model;
+    }
+
+
+    function nodeSelected(data) {
+        $("#@Model.Item2.DivName #SpecializationCode").val(data.node.id);
+
+        var parentName = $('#@Model.Item2.DivName #EducationTree').jstree(true).get_node('' + data.node.parent + ', true').text;
+        $("#@Model.Item2.DivName #SpecializationName").val(parentName + ' - ' + data.node.text);
+        $("#@Model.Item2.DivName #SpecializationName2").val(data.node.text);
+
+        GradeChanged(data.node.parent, '#@Model.Item2.DivName');
+    }
+</script>

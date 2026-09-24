@@ -1,0 +1,547 @@
+﻿@model Tuple<ESS.Core.TrainingCourseApplicationDetail, List<SEP.RoutingManagement.Service.AllowAction>, List<ESS.Core.TrainingCourseAttendee>>
+@{
+    ViewBag.Title = "Training Course Application";
+}
+
+<div class="form-section">
+    <div class="row">
+        <div class="col-md-12">
+            <h1 class="page-title">
+                Training Course Application
+                <span style="padding-left:20px;">
+                    <small></small>
+                </span>
+            </h1>
+        </div>
+    </div>
+</div>
+
+
+@using (Html.BeginForm("", "Training", FormMethod.Post, new { @class = "form-horizontal", @id = "MainForm" }))
+{
+    <input id="hfEmployeeID" type="hidden" value="@ViewBag.EmployeeID" />
+    <input id="hfTaskID" type="hidden" value="@ViewBag.TaskID" />
+    <input id="hfCourseApplicationID" type="hidden" value="@ViewBag.SourceID" />
+
+    //Training Details
+    <div class="row">
+        <div class="col-md-12">
+            <div class="portlet box blue">
+                <div class="mini-triangle"><img src="../Assets/img/menu-red-triangle.png" /></div>
+                <div class="portlet-title">
+                    <div class="caption">
+                        <i class="fa fa-reorder"></i>Training Course Details
+                    </div>
+                </div>
+                <div class="portlet-body form">
+                    <div class="form-body" id="ct00_CustomFieldFormView">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <label class="control-label col-md-4 ">
+                                            Course Reference No.
+                                        </label>
+                                        <div class="col-md-8 form-control-static">
+                                            <input class="form-control" id="CourseName" value="@Model.Item1.ReferenceNo" readonly />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <label class="control-label col-md-4 ">
+                                            Course Status
+                                        </label>
+                                        <div class="col-md-8 form-control-static">
+                                            @{ 
+                                                var color = "";
+                                                if(Model.Item1.Status == "Declined"){
+                                                    color = "red";
+                                                }
+                                                else
+                                                {
+                                                    color = "green";
+                                                }
+                                            }
+                                            <input class="form-control" id="CourseName" value="@Model.Item1.Status" style="color:@color;font-weight:bold;" readonly />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <label class="control-label col-md-2 ">
+                                            Course Title
+                                        </label>
+                                        <div class="col-md-10 form-control-static">
+                                            <input class="form-control" id="CourseName" value="@Model.Item1.CourseName" readonly/>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <label class="control-label col-md-4">Course ID</label>
+                                        <div class="col-md-8 form-control-static">
+                                            <input class="form-control" type="text" id="CourseID" value="@Model.Item1.CourseID" readonly />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <label class="control-label col-md-4">Course Session ID</label>
+                                        <div class="col-md-8 form-control-static">
+                                            <input class="form-control" type="text" id="CourseSessionID" value="@Model.Item1.CourseSessionID" readonly />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <label class="control-label col-md-4">Start Date</label>
+                                        <div class="col-md-8 form-control-static">
+                                            @{ 
+                                                var StartDate = "";
+                                                if(Model.Item1.TrainingStartDate != "")
+                                                {
+                                                    StartDate = DateTime.Parse(Model.Item1.TrainingStartDate).ToString("dd/MM/yyyy");
+                                                }
+                                            }
+                                            <input class="form-control" type="text" id="StartDate" value="@StartDate" readonly/>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <label class="control-label col-md-4">End Date</label>
+                                        <div class="col-md-8 form-control-static">
+                                            @{
+                                                var EndDate = "";
+                                                if (Model.Item1.TrainingEndDate != "")
+                                                {
+                                                    EndDate = DateTime.Parse(Model.Item1.TrainingEndDate).ToString("dd/MM/yyyy");
+                                                }
+                                            }
+                                            <input class="form-control" type="text" id="EndDate" value="@EndDate" readonly/>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <label class="control-label col-md-2 ">
+                                            Course Venue
+                                        </label>
+                                        <div class="col-md-10 form-control-static">
+                                            <input class="form-control" id="CourseVenue" value="@Model.Item1.CourseVenue" readonly/>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <label class="control-label col-md-2 ">
+                                            Course Provider
+                                        </label>
+                                        <div class="col-md-10 form-control-static">
+                                            <input class="form-control" id="CourseProvider" value="@Model.Item1.CourseOrganizer" readonly/>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <label class="control-label col-md-4 ">
+                                            Currency
+                                        </label>
+                                        <div class="col-md-8 form-control-static">
+                                            <input class="form-control" id="CourseCurrency" value="@Model.Item1.CurrencyCode" readonly />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <label class="control-label col-md-4 ">
+                                            Course Fee
+                                        </label>
+                                        <div class="col-md-8 form-control-static">
+                                            @{
+                                                string Fee = (string.IsNullOrEmpty(Model.Item1.CourseFee)) ? "0.00" : (decimal.Parse(Model.Item1.CourseFee)).ToString("###,###,##0.00");
+                                            }
+                                            <input class="form-control" id="CourseFee" value="@Fee" readonly />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    //Requestor List
+    <div class="row">
+        <div class="col-md-12">
+            <div class="portlet box blue">
+                <div class="mini-triangle"><img src="../Assets/img/menu-red-triangle.png" /></div>
+                <div class="portlet-title">
+                    <div class="caption">
+                        <i class="fa fa-reorder"></i>Attendee List
+                    </div>
+                </div>
+                <div class="portlet-body form">
+                    <div class="form-body" id="ct01_CustomFieldFormView">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <div class="col-md-12">
+                                            <div class="table-toolbar">
+                                                <table id="AttendeeTable" class="table table-striped table-bordered table-hover table-full-width">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>Request Reference No.</th>
+                                                            <th>Attendee</th>
+                                                            <th>Submitted by</th>
+                                                            <th>Submitted date</th>
+                                                            @*<th>Pax</th>*@
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        @foreach (var item in Model.Item3)
+                                                        {
+                                                            <tr>
+                                                                <td>
+                                                                    <a href="~/Training/TrainingApplication?ID=@item.TrainingID&Category=@item.TrainingCategoryCode&Mode=View&Target=@item.Target" target="_blank">@item.TrainingReferenceNo</a>
+                                                                </td>
+                                                                <td>@item.AttendeeCode - @item.AttendeeName</td>
+                                                                <td>@item.SubmissionBy</td>
+                                                                <td>@item.SubmissionDate</td>
+                                                                @*<td>@item.Pax</td>*@
+                                                            </tr>
+                                                        }
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    
+
+    if (Model.Item1.Status == "Recommended" || Model.Item1.Status == "Endorsed")
+    {
+        //Comment
+        <div class="row">
+            <div class="col-md-12">
+                <div class="portlet box blue">
+                    <div class="mini-triangle"><img src="../Assets/img/menu-red-triangle.png" /></div>
+                    <div class="portlet-title">
+                        <div class="caption">
+                            <i class="fa fa-reorder"></i>Approval Comments
+                        </div>
+                    </div>
+                    <div class="portlet-body form">
+                        <div class="form-body" id="ct00_CustomFieldFormView">
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="form-horizontal">
+                                        <div class="form-group">
+                                            <label class="control-label col-md-2">
+                                                Comments
+                                            </label>
+                                            <div class="col-md-10 form-control-static">
+                                                <textarea class="form-control" id="Comment"></textarea>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        //Final Approval
+        foreach (var m in Model.Item2)
+        {
+            //If the approver can Approve, he should also be able to Endrose
+            //The YesLabel contains only "Approve", hence we cater for Endrose in here
+            if (m.CanEndorse == "1" || (m.CanApprove == "1" && Model.Item1.Status != "Endorsed"))
+            {
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="portlet box blue">
+                            <div class="mini-triangle"><img src="../Assets/img/menu-red-triangle.png" /></div>
+                            <div class="portlet-title">
+                                <div class="caption">
+                                    <i class="fa fa-reorder"></i>Final Approval
+                                </div>
+                            </div>
+                            <div class="portlet-body form">
+                                <div class="form-body" id="ct00_CustomFieldFormView">
+                                    <div class="row">
+                                        <div class="col-md-12">
+                                            <div class="form-group">
+                                                <label class="control-label col-md-2">
+                                                    Final Approval
+                                                </label>
+                                                <div class="col-md-4">
+                                                    @Html.Partial("_PeoplePicker")
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+    }
+
+    if (Model.Item1.Status != "Recommended")
+    {
+        //Audit Log
+        @Html.Action("_TrainingRequestWorkflowHistory", "Training", new { ID = ViewBag.SourceID })
+    }
+
+
+    <!-- Confirmation Message -->
+    <div class="modal fade" id="ConfirmUpdate" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                    <h4 class="modal-title">Confirmation</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="well">
+                        Are you sure you want to Submit this Training Course Application?\n\rPress Confirm to proceed, or Close to stay on the current page.
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn default blue" id="btnSubmit" value="Submit" onclick="javascript: SaveForm();">
+                        <i class="fa fa-check"></i>
+                        Confirm
+                    </button>
+                    <button type="button" class="btn default" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Success Message -->
+    <div class="modal fade" id="SuccessSubmit" tabindex="-1" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header Success-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true" style="display: none;"></button>
+                    <h4 class="Success-title">Action Successfully Completed</h4>
+                </div>
+                <div class="modal-body Success-body">
+                    <div class="well">
+                        Your Training Application has been successfully submitted.
+                    </div>
+                </div>
+                <div class="modal-footer Success-footer">
+                    <button type="button" class="btn default blue" id="btnOK">
+                        <i class="fa fa-check"></i>
+                        OK
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Gif -->
+    <div id="divLoading" style="margin: 0px; padding: 0px; position: fixed; right: 0px; top: 0px; width: 100%; height: 100%; background-color: gainsboro; z-index: 30001; opacity: .8; filter: alpha(opacity=70); display: none; ">
+        <p style="position: absolute; top: 30%; left: 30%; color: black;">
+            Performing action, please wait...<img src="/_layouts/15/TNBESS/Assets/img/ajax-loading.gif">
+        </p>
+    </div>
+
+    //Approval button
+    foreach (var m in Model.Item2)
+    {
+        if (m.CanWithdraw == "1")
+        {
+            <input type="button" class="btn green" value="Withdraw" id="btnWithdraw" onclick="SubmitApproval('Withdraw')" />
+        }
+        if (m.CanAgree == "1")
+        {
+            <input type="button" class="btn green" value="Agree" id="btnAgree" onclick="SubmitApproval('Agreed')" />
+        }
+
+        if (m.CanApprove == "1")
+        {
+            <input type="button" class="btn green" value="Approve" id="btnApprove" onclick="SubmitApproval('Approved')" />
+        }
+
+        //If the approver can Approve, he should also be able to Endrose
+        //The YesLabel contains only "Approve", hence we cater for Endrose in here
+        if (m.CanEndorse == "1" || (m.CanApprove == "1" && Model.Item1.Status != "Endorsed"))
+        {
+            <input type="button" class="btn green" value="Endorse" id="btnEndorse" onclick="SubmitApproval('Endorsed')" />
+        }
+
+        if (m.CanDecline == "1")
+        {
+            <input type="button" class="btn green" value="Decline" id="btnReject" onclick="SubmitApproval('Declined')" />
+        }
+    }
+    
+
+    <input type="button" class="btn green" value="Back" id="btnClose" onclick="window.history.back()"/>
+
+}
+<script>
+    transformTable("#AttendeeTable");
+    var SubmitStatus = "";
+
+    function SubmitApproval(_Status) {
+
+        var ValidationMsg = '';
+
+        if ($("#Comment").val() == '') {
+            ValidationMsg += '- Comment is required.\n';
+        }
+
+        if (_Status == "Endorsed" && $("#hfEmpID").val() == ""){
+            ValidationMsg += '- Final Approver is required.\n';
+        }
+
+        if (ValidationMsg != '') {
+            alert(ValidationMsg);
+        }
+        else
+        {
+            SubmitStatus = _Status;
+
+            if (_Status == "Approved") {
+                $('.modal-body .well').html('Are you sure you want to Approve this Application?\n\rPress Confirm to proceed, or Close to stay on the current page.');
+            } else if (_Status == "Declined") {
+                $('.modal-body .well').html('Are you sure you want to Decline this Application?\n\rPress Confirm to proceed, or Close to stay on the current page.');
+            } else if (_Status == "Withdrawn") {
+                $('.modal-body .well').html('Are you sure you want to Withdraw this Application?\n\rPress Confirm to proceed, or Close to stay on the current page.');
+            } else if (_Status == "Agreed") {
+                $('.modal-body .well').html('Are you sure you want to Agree this Application?\n\rPress Confirm to proceed, or Close to stay on the current page.');
+            } else if (_Status == "Endorsed") {
+                $('.modal-body .well').html('Are you sure you want to Endorse this Application?\n\rPress Confirm to proceed, or Close to stay on the current page.');
+            }
+
+            $('#ConfirmUpdate').modal('show');
+            $('#btnOK').click(function () { RedirectTo(); });
+        }
+
+        
+    }
+
+
+    function SaveForm() {
+        $("#ConfirmUpdate").modal('toggle');
+        $("#divLoading").css("display", "block");
+        var myVar = setTimeout(SubmitFormAction, 1000);
+    }
+
+    function SubmitFormAction() {
+        if (SubmitStatus == "Approved") {
+            $(".Success-body .well").html('Your Application has been successfully approved.');
+        }
+        else if (SubmitStatus == "Declined") {
+            $(".Success-body .well").html('Your Application has been successfully declined.');
+        }
+        else if (SubmitStatus == "Endorsed") {
+            $(".Success-body .well").html('Your Application has been successfully endorsed.');
+        }
+        else if (SubmitStatus == "Agreed") {
+            $(".Success-body .well").html('Your Application has been successfully agreed.');
+        }
+        else if (SubmitStatus == "Withdrawn") {
+            $(".Success-body .well").html('Your Application has been successfully withdrawn.');
+        }
+
+        var _CourseApplicationID = $("#hfCourseApplicationID").val();
+        var _TaskID = $("#hfTaskID").val();
+        var _EmployeeID = $("#hfEmployeeID").val();
+        var _Comments = $("#Comment").val();
+        var _EmpID = $("#hfEmpID").val();
+
+        var form = {
+            ID: _CourseApplicationID,
+            TaskID: _TaskID,
+            CurrentUserID: _EmployeeID,
+            Status: SubmitStatus,
+            ApproverComment: _Comments,
+            ActivityName: "",
+            OptionalApprover: false
+        }
+        $.ajax({
+            url: '@Url.Content("~/Training/PostApproverActionForCourse")',
+            type: 'POST',
+            cache: false,
+            async: false,
+            dataType: "json",
+            data: { 'info': form, 'ApproverAction': SubmitStatus, 'OptionalApproverID': _EmpID },
+            success: function (result) {
+                if (result.Success) {
+                    $("#divLoading").css("display", "none");
+                    $("#SuccessSubmit").modal();
+                } else {
+                    $("#divLoading").css("display", "none");
+                    alert(result.ErrorMsg);
+                }
+
+            },
+            error: function (x, y, z) {
+                $("#divLoading").css("display", "none");
+                console.log(x + '\n' + y + '\n' + z);
+            }
+        });
+    }
+
+    function RedirectTo() {
+        window.location.href = '@Url.Content("~/MSS/TrainingRequestInTray")';
+    }
+</script>
+
+

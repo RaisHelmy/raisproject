@@ -1,0 +1,66 @@
+﻿@using ESS.Core
+@{
+    ViewBag.Title = "FlexiBenefitApplication";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+    bool IsPA = SP.IsInGroup("Flexi Benefits - Personal Assistant");// 
+}
+
+<br />
+<div class="form-section">
+    <div class="row">
+        <div class="col-md-12">
+            <h1 class="page-title">
+                Flexi Benefits Application
+                <span style="padding-left:20px;">
+                    <small></small>
+                </span>
+            </h1>
+        </div>
+    </div>
+</div>
+
+<input id="hfEmployeeID" type="hidden" value="@ViewBag.EmployeeID" />
+
+@if (IsPA)
+{
+    using (Html.BeginForm("FlexiBenefitsIndex", "Claims", FormMethod.Post))
+     {
+        <div class="form-body">
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="form-horizontal">
+                        <div class="form-group">
+                            <label class="col-md-2 control-label">Employee</label>
+                            <div class="col-md-4 form-control-static">
+                                @Html.Action("_PeoplePickerExt", "PeoplePicker", new { CurrEmpID = ViewBag.EmployeeID, SearchType = "Top Management" })
+                                @*PeoplePicker hiddenfieldid = hfEmpID, textboxid =txtEmpName*@          
+                            </div>
+                            <div class="col-md-2 form-control-static">
+                                <input type="submit" id="btn-Search" class="btn green btn-Search" value="Next" />      
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+}
+else
+{  
+    <div class="form-body">
+       <div class="row">
+           <div class="col-md-12">
+               <div class="note note-danger">
+                   <h4 class="block">
+                       Access denied. Please contact administrator for assistance.<br />
+                   </h4>
+               </div>
+           </div>
+       </div>
+    </div>
+    
+}
+
+
+

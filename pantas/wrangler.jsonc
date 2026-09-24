@@ -1,0 +1,89 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "pantas",
+  "account_id": "6af8ff18a864c2b56f1a3aa78cb24f80",
+  "main": "src/worker/index.ts",
+  "compatibility_date": "2026-08-27",
+  "compatibility_flags": ["nodejs_compat"],
+
+  "vars": {
+    "ENVIRONMENT": "development"
+  },
+
+  "assets": {
+    "directory": "./dist/client",
+    "binding": "ASSETS",
+    "not_found_handling": "single-page-application",
+    "run_worker_first": ["/api/*"]
+  },
+
+  "routes": [
+    { "pattern": "pantas.raishelmy.uk", "custom_domain": true }
+  ],
+
+  "hyperdrive": [
+    {
+      "binding": "HYPERDRIVE",
+      "id": "7a7777560d434c2b91ff37c52ab1b2c9"
+    }
+  ],
+
+  "r2_buckets": [
+    {
+      "binding": "MEDIA",
+      "bucket_name": "pantas-media"
+    }
+  ],
+
+  "kv_namespaces": [
+    {
+      "binding": "SESSIONS",
+      "id": "33658be6ac234137b3238683037cee01"
+    }
+  ],
+
+  "durable_objects": {
+    "bindings": [
+      { "name": "LIVE_LOCATION", "class_name": "LiveLocationRoom" }
+    ]
+  },
+
+  "migrations": [
+    { "tag": "v1", "new_sqlite_classes": ["LiveLocationRoom"] }
+  ],
+
+  // Weekly payout batch generation (Step 11), daily ride_schedule spawner
+  // and daily vendor_contract meal-order spawner (Steps 17-18). Moved off
+  // Workers Cron Triggers to Ubuntu cron: POST /api/internal/cron/weekly-payout
+  // and /api/internal/cron/daily-spawner with the X-Cron-Secret header
+  // (must be under /api/* — see assets.run_worker_first above).
+
+  "observability": {
+    "enabled": true,
+    "head_sampling_rate": 1
+  },
+
+  "env": {
+    "staging": {
+      "name": "pantas-staging",
+      "vars": { "ENVIRONMENT": "staging" },
+      "hyperdrive": [
+        {
+          "binding": "HYPERDRIVE",
+          "id": "7a7777560d434c2b91ff37c52ab1b2c9"
+        }
+      ],
+      "r2_buckets": [
+        { "binding": "MEDIA", "bucket_name": "pantas-media-staging" }
+      ],
+      "kv_namespaces": [
+        { "binding": "SESSIONS", "id": "b072ddf9f8494a688ba9c8c09395590b" }
+      ],
+      "durable_objects": {
+        "bindings": [
+          { "name": "LIVE_LOCATION", "class_name": "LiveLocationRoom" }
+        ]
+      }
+    }
+  }
+}

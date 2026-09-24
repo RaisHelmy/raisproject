@@ -1,0 +1,168 @@
+﻿@model IntegrationStatus.Models.Setting
+@{
+	string label1 = "Every time the retry attempts failed";
+	string label2 = "Only when the final retry attempt failed";
+	string label3 = "Do not notify";
+}
+
+<div class="row">
+	<div class="col-md-12">
+		<br />
+        <h1 class="page-title">
+            Integration Failure Notification Setting<span style="padding-left:20px;"><small></small></span>
+        </h1>
+	</div>
+</div>
+
+<div class="form-body">
+    <form action="#" id="settingForm" name="settingForm">
+        <div class="row">
+            <div class="form-group">
+                <input type="hidden" name="ModifiedBy" value="@Model.ModifiedBy" />
+                <label class="col-md-12 control-label">Notify Employee via Email</label>
+                <div class="col-md-12">
+                    <div class="radio-list">
+                        <label>
+                            @Html.RadioButtonFor(model => model.NotifyEmployee, 1)
+                            @Html.Label(label1)
+                        </label>
+                        <label>
+                            @Html.RadioButtonFor(model => model.NotifyEmployee, 2)
+                            @Html.Label(label2)
+                        </label>
+                        <label>
+                            @Html.RadioButtonFor(model => model.NotifyEmployee, 0)
+                            @Html.Label(label3)
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">&nbsp;</div>
+        <div class="row">&nbsp;</div>
+
+        @*<div class="row">
+            <div class="form-group">
+                <label class="col-md-12 control-label">Notify Approvers via Email</label>
+                <div class="col-md-12">
+                    <div class="radio-list">
+                        <label>
+                            @Html.RadioButtonFor(model => model.NotifyApprover, 1)
+                            @Html.Label(label1)
+                        </label>
+                        <label>
+                            @Html.RadioButtonFor(model => model.NotifyApprover, 2)
+                            @Html.Label(label2)
+                        </label>
+                        <label>
+                            @Html.RadioButtonFor(model => model.NotifyApprover, 0)
+                            @Html.Label(label3)
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">&nbsp;</div>
+        <div class="row">&nbsp;</div>
+        *@
+
+        <div class="row">
+            <div class="form-group">
+                <label class="col-md-12 control-label">Notify ESS Admin via Email</label>
+                <div class="col-md-12">
+                    <div class="radio-list">
+                        <label>
+                            @Html.RadioButtonFor(model => model.NotifyAdmin, 1)
+                            @Html.Label(label1)
+                        </label>
+                        <label>
+                            @Html.RadioButtonFor(model => model.NotifyAdmin, 2)
+                            @Html.Label(label2)
+                        </label>
+                        <label>
+                            @Html.RadioButtonFor(model => model.NotifyAdmin, 0)
+                            @Html.Label(label3)
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+
+	<div class="row">&nbsp;</div>
+	<div class="row">&nbsp;</div>
+	<div class="row">
+		<div class="col-md-12">
+			<div class="form-horizontal">
+				<input type="button" class="btn blue" value="Update" data-target="#UpdateModel" data-toggle="modal" />
+			</div>
+		</div>
+	</div>
+</div>
+
+<div class="modal fade" id="UpdateModel" aria-hidden="true">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+				<h4 class="modal-title" id="title">Update Error Notification Settings</h4>
+			</div>
+			<div class="modal-body">
+				<div class="well">
+					<p>The selected settings will be updated. If you dont want to update, click the Close button.</p>
+				</div>
+			</div>
+			<div class="modal-footer">
+				<a class="btn default blue" id="btnUpdate" onclick="UpdateSetting();">Update</a>
+				<button type="button" class="btn default" data-dismiss="modal">Close</button>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div class="modal fade" id="ResultModal" aria-hidden="true">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+				<h4 class="modal-title" id="result">Update Error Notification Settings</h4>
+			</div>
+			<div class="modal-body">
+				<div class="well">
+					<p>Successfully update error notification settings.</p>
+				</div>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn default" data-dismiss="modal" onclick="location.reload()">Close</button>
+			</div>
+		</div>
+	</div>
+</div>
+
+<script>
+	function UpdateSetting() {
+		$("#btnUpdate").addClass('disable');
+		var form = $("#settingForm").serialize();
+	
+		$.ajax({
+			type: "POST",
+			url: "@Url.Action("UpdateErrorNotificationSettings", "IntegrationStatus")",
+			data: form,
+			success: function (response) {
+				console.log(response);
+				if (response != true) {
+					alert("- Error in update error notication settings.");
+				}
+				else {
+					$("#UpdateModel").modal("hide");
+					$("#ResultModal").modal();
+				}
+            },
+            error: function (err) {
+                alert("Error in the ajax call.");
+            }
+		})
+	}
+</script>

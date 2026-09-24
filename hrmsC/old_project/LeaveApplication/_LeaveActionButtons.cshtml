@@ -1,0 +1,236 @@
+﻿@model SEP.RoutingManagement.Service.AllowAction
+
+@{
+    LeaveApplication.Models.LeaveApplicationVM vm = ViewBag.LeaveApplicationVM;
+
+    bool isNewRecord = ViewBag.IsNewRecord;
+    bool isCurrentEmployeeRecord = ViewBag.IsCurrentEmployeeRecord;
+    String CurrentEmployeeID = ViewBag.CurrentEmployeeID;
+    String CurrentApproverID = ViewBag.CurrentApproverID;
+    String LeaveStatus = ViewBag.LeaveStatus;
+}
+
+@if (LeaveStatus != "Draft" && LeaveStatus != "Cancelled" &&
+     LeaveStatus != "DR" && LeaveStatus != "CA")
+{
+    if (Model.CanAcknowledge == "1" || Model.CanAgree == "1" || Model.CanApprove == "1" || Model.CanDecline == "1" ||
+        Model.CanEndorse == "1" || Model.CanProcess == "1" || Model.CanReceive == "1" || Model.CanRecommend == "1" ||
+        Model.CanRework == "1" || Model.CanVerify == "1" || Model.CanCancel == "1" || Model.CanAgreeCancel == "1")
+    {
+        <div id="portletComment" class="row">
+            <div class="col-md-12">
+                <div class="portlet box blue">
+                    <div class="mini-triangle"><img src="/_layouts/15/TNBESS/Assets/img/menu-red-triangle.png" /></div>
+                    <div class="portlet-title">
+                        <div class="caption">
+                            <i class="fa fa-reorder"></i>Comment
+                        </div>
+                        <div class="tools">
+                            <a title="" data-original-title="" href="javascript:;" class="collapse"> </a>
+                        </div>
+                    </div>
+                    <div class="portlet-body form">
+                        <div class="form-body">
+                            <div class="row hide" id="DeclineReason">
+                                <div class="col-md-12">
+                                    <div class="form-horizontal">
+                                        <div class="form-group">
+                                            <label class="control-label col-md-2">Reason</label>
+                                            <div class="col-md-10 form-control-static">
+                                                <select id="ddlDeclineReason" class="form-control">
+                                                    <option value=""> - Please Select - </option>
+                                                    <option value="Incomplete Document">Incomplete Document</option>
+                                                    <option value="Not Eligible">Not Eligible</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="form-horizontal">
+                                        <div class="form-group">
+                                            <label class="control-label col-md-2">Comment</label>
+                                            <div class="col-md-10 form-control-static">
+                                                <textarea class="form-control" id="txtAppComment" rows="5" cols="60"></textarea>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                @if (RoleMaintenance.RoleService.IsCurrentUserInRole("Leave", "HR SSC BA", "VP HR", "GM HR SSC"))
+                                {
+                                    <div class="col-md-offset-2 col-md-10" style="margin-top: 16px;">
+                                        <input type="checkbox" name="isApprovalCommentRestricted" checked="checked" />
+                                        Show this only for HR SSC BA, GM HR SSC, VP HR
+                                    </div>
+                                }
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+}
+
+<input type="hidden" value="@ViewBag.IsNewRecord.ToString()" />
+<div class="row hide" id="_Disclaimer">
+    <div class="col-md-12">
+        <input type="checkbox" id="disclaimer" class="form-control" />
+        no ETK or substitution is allowed
+    </div>
+</div>
+@if (LeaveStatus == "Draft" || LeaveStatus == "DR" ||
+        LeaveStatus == "Cancelled" || LeaveStatus == "CA" ||
+        LeaveStatus == "Withdrawn" || LeaveStatus == "WD")
+{
+    <div id="divDeclaration" class="row" style="display:none">
+        <div class="col-md-12">
+            <input type="checkbox" id="chkDeclaration">
+            <b>
+                Adalah dengan ini saya dengan nama di atas mengesahkan maklumat dan dokumen yang dilampirkan adalah benar. Saya juga akan bertanggungjawab untuk memajukan Borang 34 Asal dan dokumen berkaitan kepada PERKESO (sekiranya perlu) bagi tindakan selanjutnya. <span style="color:red;"> *</span>
+            </b>
+        </div>
+    </div>
+}
+
+@if (LeaveStatus == "Pending" || LeaveStatus == "PE")
+{
+    <div id="divDeclaration" class="row" style="display:none">
+        <div class="col-md-12">
+            <input type="checkbox" id="chkDeclaration">
+            <b>
+                Adalah dengan ini saya telah menyemak dan mengesahkan maklumat dan dokumen yang terlampirkan adalah lengkap benar selaras dengan Pekeliling Pengurusan Sumber Manusia Bilangan 5 Tahun 2019. Saya juga mengesahkan telah mengemaskini rekod kemalangan di dalam TSIS. <span style="color:red;"> *</span>
+            </b>
+        </div>
+    </div>
+}
+<br />
+<br />
+<div class="row">
+    @if (vm.IsEditable)
+    {
+        <div class="col-md-12">
+            @if ((LeaveStatus == "Cancelled" || LeaveStatus == "Withdrawn" ||
+                  LeaveStatus == "CA" || LeaveStatus == "WD") &&
+                  ViewBag.IsCurrentEmployeeRecord &&
+                  vm.HasApprover)
+            {
+                <input type="button" class="btn green" value="Submit" id="btnSubmit" onclick="SubmitApplication('Submit'); " />
+            }
+            else if ((LeaveStatus == "Draft" || LeaveStatus == "DR") && ViewBag.IsCurrentEmployeeRecord)
+            {
+                if (vm.HasApprover)
+                {
+                    <input type="button" class="btn green" value="Save as Draft" id="btnDraft" onclick="SubmitApplication('Draft'); " />
+                    <input type="button" class="btn green" value="Submit" id="btnSubmit" onclick="SubmitApplication('Submit'); " />
+                }
+
+                if (!isNewRecord)
+                {
+                    <input type="button" class="btn red" value="Delete" id="btnDelete" onclick="DeleteApplication(); " />
+                }
+            }
+
+            <input type="button" class="btn green" value="Back" id="btnBack" onclick="BackToHistory();" />
+        </div>
+    }
+    else
+    {
+        <div class="col-md-12">
+            @if (Model.CanVerify == "1")
+            {
+                <input type="button" class="btn green" value="Verify" id="btnVerify" onclick="ApproverAction('Verify')" />
+            }
+
+            @if (Model.CanAcknowledge == "1")
+            {
+                <input type="button" class="btn green" value="Acknowledge" id="btnAcknowledge" onclick="ApproverAction('Acknowledge')" />
+            }
+
+            @if (Model.CanAgree == "1")
+            {
+                <input type="button" class="btn green" value="Agree" id="btnAgree" onclick="ApproverAction('Agree')" />
+            }
+
+            @if (Model.CanApprove == "1")
+            {
+                <input type="button" class="btn green" value="Approve" id="btnApprove" onclick="ApproverAction('Approve')" />
+            }
+
+            @if (Model.CanProcess == "1")
+            {
+                <input type="button" class="btn green" value="Process" id="btnProcess" onclick="ApproverAction('Process')" />
+            }
+
+            @if (Model.CanProcessMemo == "1")
+            {
+                <input type="button" class="btn green" value="Process Memo" id="btnProcessMemo" onclick="ApproverAction('ProcessMemo')" />
+            }
+
+            @if (Model.CanReceive == "1")
+            {
+                <input type="button" class="btn green" value="Receive" id="btnReceive" onclick="ApproverAction('Receive')" />
+            }
+
+            @if (Model.CanRecommend == "1")
+            {
+                <input type="button" class="btn green" value="Recommend" id="btnRecommend" onclick="ApproverAction('Recommend')" />
+            }
+            @if (Model.CanEndorse == "1")
+            {
+                <input type="button" class="btn green" value="Endorse" id="btnEndorse" onclick="ApproverAction('Endorse')" />
+            }
+            @if (Model.CanAgreeCancel == "1")
+            {
+                @*<input type="button" class="btn green" value="Approve Cancel" id="btnAgreeCancel" onclick="ApproverAction('AgreeCancel')" />*@
+                <input type="button" class="btn green" value="Approve Cancellation" id="btnAgreeCancel" onclick="ApproverAction('ApproveCancel')" />
+            }
+            @if (Model.CanWithdraw == "1")
+            {
+                <input type="button" class="btn red" value="Withdraw" id="btnWithdraw" onclick="ApproverAction('Withdraw')" />
+            }
+            @if (Model.CanRework == "1")
+            {
+                <input type="button" class="btn red" value="Rework" id="btnRework" onclick="ApproverAction('Rework')" />
+            }
+            @if (Model.CanCancel == "1")
+            {
+                <input type="button" class="btn red" value="Cancel" id="btnCancel" title="Cancel this Leave" onclick="CancelThisLeave()" />
+            }
+
+            @if (Model.CanDecline == "1")
+            {
+                <input type="button" class="btn red" value="Decline" id="btnDecline" onclick="DeclineThisLeave();" />
+            }
+
+            <input type="button" class="btn green" value="Back" id="btnBack" onclick="BackToHistory()" />
+        </div>
+    }
+
+</div>
+<script>
+    $(function () {
+        var canCancel = '@Model.CanCancel';
+
+        if (canCancel == "1") {
+            $('#portletComment').hide();
+        }
+    });
+
+    function CancelThisLeave() {
+        if ($('#portletComment').is(":visible") == false) {
+            $('#portletComment').show();
+        }
+        else {
+            ApproverAction('Cancel');
+        }
+    }
+
+    function BackToHistory() {
+        window.location.href = '@ViewBag.BackUrl';
+    }
+</script>

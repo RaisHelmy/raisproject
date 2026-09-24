@@ -1,0 +1,73 @@
+﻿@{
+    ViewBag.Title = "Equivalent Grade Maintenance";
+}
+
+<div class="row">
+    <div class="col-md-12">
+        <br />
+        <h1 class="page-title">
+            @ViewBag.Title
+            <span style="padding-left:20px;">
+                <small>
+                </small>
+            </span>
+        </h1>
+    </div>
+</div>
+<br />
+
+<form>
+    <div class="form-body">
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-horizontal">
+                    <div class="form-group">
+                        <label class="col-md-4 control-label">Employee Code/Name</label>
+                        <div class="col-md-8 form-control-static">
+                            <input type="text" class="form-control EmployeeSearch" name="EmployeeSearch" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="">
+                    <input type="button" class="btn green btn-Search"
+                           value="Search" onclick="SearchListing();">
+
+                    <input type="button" class="btn btn-primary"
+                           value="Add New" onclick="AddRule()">
+                </div>
+            </div>
+        </div>
+        <div class="row">&nbsp;</div>
+        <div class="row">&nbsp;</div>
+        <div class="row">
+            <div class="col-md-12">
+                <div id="SearchResult">
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+@Html.Partial("__Prompt")
+<script>
+    $(function () {
+        SearchListing();
+    });
+
+    function SearchListing() {
+        var option = $('form').serializeArray();
+
+        ShowLoadingScreen();
+        $.get('@Url.Action("EquivalentGradeConfigurationListingResult", "ClaimsMaintenance")', option,
+               function (result) {
+            HideLoadingScreen();
+            $('#SearchResult').html(result);
+        });
+    }
+
+    function AddRule() {
+        location.href = '@Url.Action("EquivalentGradeMaintenance", "ClaimsMaintenance")';
+    }
+</script>

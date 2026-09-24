@@ -1,0 +1,129 @@
+﻿@model Integrity.ConflictOfInterest.Models.ConflictVM
+
+@{
+    /**/
+    var detailsOfConflict = Model.DetailsOfConflict;
+}
+
+<style>
+    .question-box-border {
+        border-bottom: grey solid 1px;
+        padding: 4px 0px;
+        margin: 4px 0px;
+    }
+
+    .question-box {
+        padding: 4px 0px;
+        margin: 4px 0px;
+    }
+</style>
+
+<div class="portlet box blue">
+    <div class="mini-triangle"><img src="/_layouts/15/TNBESS/Assets/img/menu-red-triangle.png" /></div>
+    <div class="portlet-title">
+        <div class="caption">
+            <i class="fa fa-reorder"></i>Details of Conflict
+        </div>
+        <div class="tools">
+            <a title="" data-original-title="" href="javascript:;" class="collapse"> </a>
+        </div>
+    </div>
+    <div class="portlet-body form">
+        <div class="form-body">
+            @for (int i = 0; i < detailsOfConflict.Count; i++)
+            {
+                var detail = detailsOfConflict[i];
+                
+            <div class="declaration-row row @(i == detailsOfConflict.Count - 1 ? "question-box" : "question-box-border")">
+                <input type="hidden" class="row-index" value="@i" />
+                <input type="hidden" name="DetailsOfConflict[@i].Index" value="@detail.Index" />
+                <input type="hidden" name="DetailsOfConflict[@i].Question" value="@detail.Question" />
+                <input type="hidden" name="DetailsOfConflict[@i].QuestionBM" value="@detail.QuestionBM" />
+
+                <div class="col-md-12">
+                    <div class="form-horizontal">
+                        <div class="form-group">
+                            <label class="col-md-10">
+                                <span>@(detail.Index).</span>
+                                <span class="BI">@Html.Raw(detail.Question) If yes, please provide details.</span>
+                                <span class="BM">@Html.Raw(detail.QuestionBM) Jika ya, sila nyatakan butiran.</span>
+                            </label>
+                            <div class="col-md-2 form-control-static">
+                                <div class="radio-list">
+                                    <div class="row">
+                                        <label class="col-md-6">
+                                            <input type="radio" name="DetailsOfConflict[@i].Answer" value="true" class="rBtnAnswer rBtnAnswerTrue"
+                                                   @(Model.CanEdit ? "" : "disabled")
+                                                   @(detail.Answer ? "checked='checked'" : "") />
+                                            <span class="BI">Yes</span>
+                                            <span class="BM">Ya</span>
+                                        </label>
+                                        <label class="col-md-6">
+                                            <input type="radio" name="DetailsOfConflict[@i].Answer" value="false" class="rBtnAnswer rBtnAnswerFalse"
+                                                   @(Model.CanEdit ? "" : "disabled")
+                                                   @(!detail.Answer ? "checked='checked'" : "") />
+                                            <span class="BI">No</span>
+                                            <span class="BM">Tidak</span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-md-12 form-control-static">
+                                <textarea class="form-control txtAreaAnswer" rows="4"
+                                          name="DetailsOfConflict[@i].AnswerDetail" @(Model.CanEdit ? "" : "disabled")>@detail.AnswerDetail</textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            }
+        </div>
+    </div>
+</div>
+
+<script>
+    function ValidateDetailsOfConflict() {
+
+        var validationMessage = "";
+
+        var category = $('[name="Category"]').val();
+        var conflictType = $('[name="ConflictType"]:checked').val();
+
+        if (!category) {
+            validationMessage += "Please select an category.\n";
+        }
+
+        if (!conflictType) {
+            validationMessage += "Please choose conflict type.\n";
+        }
+
+        if (conflictType != "None") {
+
+            var answerCount = 0;
+
+            $('.declaration-row').each(function () {
+                var $row = $(this);
+                var rowIndex = $row.find('.row-index').val();
+                var isChecked = $('input[name="DetailsOfConflict[' + rowIndex + '].Answer"]:checked').val() == "true";
+                var answerDetail = $('[name="DetailsOfConflict[' + rowIndex + '].AnswerDetail"]').val();
+                var questionIndex = $('input[name="DetailsOfConflict[' + rowIndex + '].Index"]').val();
+
+                if (isChecked && !answerDetail) {
+                    validationMessage += "Details required for question " + questionIndex + ".\n";
+                }
+
+                if (isChecked) {
+                    answerCount++;
+                }
+            });
+
+            if (answerCount < 1) {
+                validationMessage += "At least one question must be answered with 'Yes'.\n";
+            }
+        }
+
+        return validationMessage;
+    }
+</script>

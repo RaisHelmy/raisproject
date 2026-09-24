@@ -1,0 +1,247 @@
+﻿
+@model ESS.Claim.ViewModels.ClaimsSubtype
+@{
+    ViewBag.Title = "Test";
+    Layout = null;
+}
+
+<div class="portlet box blue subtypeportlet" id="dTable_Parking" >
+    <div class="portlet-title">
+        <div class="caption">
+            <i class="fa fa-reorder"></i>@ClaimsSubtypeName
+        </div>
+        <div class="tools">
+        </div>
+    </div>
+    <div class="portlet-body form">
+        <div class="form-body">
+
+            <table class="table table-striped table-bordered table-hover table-full-width">
+                <thead>
+                    <tr>
+                        <th scope="col" width="5%"></th>
+                        <th scope="col" width="15%">Date</th>
+                        <th scope="col" width="35%">Description</th>
+                        <th scope="col" width="15%">Amount (RM)</th>
+                        <th scope="col" width="15%">GST Amount (RM)</th>
+                        <th scope="col" width="15%">Total Amount (RM)</th>
+                    </tr>
+                </thead>
+                @if (Model.SubTypeDetails == null)
+                {
+                    <tbody>
+                        <tr id="new_line_details_0" class="new_line">
+                            <td><input type="checkbox" class="checkbox" /></td>
+                            <td>
+                                <div class="input-group date date-picker" data-date-format="dd MM yyyy">
+                                    <input type="text" class="form-control startdate" id="StartDate" name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[0].StartDate" />
+                                    <span class="input-group-btn">
+                                        <button type="button" class="btn default"><i class="fa fa-calendar"></i></button>
+                                    </span>
+                                </div>
+                            </td>
+                            <td><input type="text" name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[0].Description" class="form-control Description" maxlength="200" /></td>
+                            <td><input type="text" name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[0].Amount" class="form-control text-right Amount" maxlength="10" onkeypress="NumberOnly(event); calculateSum('dTable_Parking');" onpaste = "    return false"></td>
+                            <td><input type="text" name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[0].GSTAmount" class="form-control text-right GSTAmount" readonly id="txtGSTAmount" /></td>
+                            <td><input type="text" name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[0].TotalAmount" class="form-control text-right SubTotalAmount" readonly id="txtTotalAmount" /></td>
+                        </tr>
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <td colspan="3"></td>
+                            <td><input type="text" class="form-control text-right GrandAmount" readonly /></td>
+                            <td><input type="text" class="form-control text-right GrandGSTAmount" readonly /></td>
+                            <td><input type="text" class="form-control text-right GrandTotalAmount" readonly /></td>
+
+                        </tr>
+
+                    </tfoot>
+                }
+                else
+                {
+                    <tbody>
+                        @foreach (var thisDetail in Model.SubTypeDetails)
+                        {
+
+                            <tr id="new_line_details_0" class="new_line">
+                                <td><input type="checkbox" class="checkbox" /></td>
+                                <td>
+                                    <div class="input-group date date-picker" data-date-format="dd MM yyyy">
+                                        <input type="text" class="form-control startdate" name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[0].StartDate" value="@thisDetail.StartDate" />
+                                        <span class="input-group-btn">
+                                            <button type="button" class="btn default"><i class="fa fa-calendar"></i></button>
+                                        </span>
+                                    </div>
+                                </td>
+                                <td><input type="text" name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[0].Description" value="@thisDetail.Description" class="form-control Description" maxlength="200" /></td>
+                                <td><input type="text" name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[0].Amount" value="@thisDetail.Amount" class="form-control text-right Amount" maxlength="10" onkeypress="NumberOnly(event); calculateSum('dTable_Parking');" onpaste="    return false"></td>
+                                <td><input type="text" name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[0].GSTAmount" value="@thisDetail.GSTAmount" class="form-control text-right GSTAmount" readonly id="txtGSTAmount" /></td>
+                                <td><input type="text" name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[0].TotalAmount" value="@thisDetail.TotalAmount" class="form-control text-right SubTotalAmount" readonly id="txtTotalAmount" /></td>
+                            </tr>
+
+                        }
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <td colspan="3"></td>
+                            <td><input type="text" class="form-control text-right GrandAmount" value="@Model.SubTypeDetails.Sum(m => Convert.ToDecimal(m.Amount))" readonly /></td>
+                            <td><input type="text" class="form-control text-right GrandGSTAmount" value="@Model.SubTypeDetails.Sum(m => Convert.ToDecimal(m.GSTAmount))" readonly /></td>
+                            <td><input type="text" class="form-control text-right GrandTotalAmount" value="@Model.SubTypeDetails.Sum(m => Convert.ToDecimal(m.TotalAmount))" readonly /></td>
+
+                        </tr>
+
+                    </tfoot>
+
+                }
+            </table>
+
+            <div class="form-horizontal">
+                <div class="table-toolbar">
+
+                    <div class="row">
+                        <div class="col-md-12">
+
+                            <div class="btn-group">
+                                <a class="BtnPlus btn green" title="dTable_Parking" href="javascript:addRow('dTable_Parking',@Model.categoryIndex,@Model.subtypeIndex);">
+                                    Add Row
+                                    <i class="fa fa-plus"></i>
+                                </a>
+                            </div>
+
+                            <div class="btn-group">
+                                <button class="BtnPlus5 btn green" title="dTable_Parking" href="javascript:add5Row('dTable_Parking',@Model.categoryIndex,@Model.subtypeIndex);">
+                                    Add 5 Rows
+                                    <i class="fa fa-plus"></i>
+                                </button>
+
+                            </div>
+                            <div class="btn-group">
+                                <button class="deleteall btn red" title="dTable_Parking">
+                                    Delete Row
+                                    <i class="fa fa-minus"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+</div>
+@*<script>
+        jQuery(document).ready(function () {
+                //$(".BtnPlus").click(addRow);
+                //$(".BtnPlus5").click(add5Row);
+
+            $(".BtnPlus").click(function () {
+                alert($(this).attr('title'));
+                    addRow();
+                });
+        }
+        )
+    </script>*@
+
+<script>
+
+    function dTable_ParkingValidation() {
+        return "";
+    }
+
+    jQuery(document).ready(function () {
+        App.init();
+        TableEditable.init();
+
+
+        $('.date-picker').datepicker({
+            format: 'dd/mm/yyyy',
+            autoclose: true
+        });
+       
+
+        
+        //$(".GSTAmount").each(function () {
+        //    $(".Amount").keyup(function () {
+        //        calculateSum();
+        //    });
+        //});
+
+        
+        //function deleteRow() {
+        //    var par = $(this).parent().parent();
+        //    par.remove();
+        //};
+        //$("#dTable").on("click", ".BtnMinus", deleteRow);
+
+
+        //function is used to delete selected row
+        $('.deleteall').on("click", function (event) {
+            var tb = $(this).attr('title');
+            var sel = false;
+            var ch = $('#' + tb).find('tbody input[type=checkbox]');
+            var c = confirm('Continue delete?');
+            if (c) {
+                ch.each(function () {
+                    var $this = $(this);
+                    if ($this.is(':checked')) {
+                        sel = true;	//set to true if there is/are selected row
+
+                        if ($(this).closest('tr').is('tr:only-child')) {
+                            alert('Last row of data cannot be deleted. Please click Delete Section to remove this subtype.');
+                        } else {
+                            $(this).closest("tr.new_line").remove();
+                            calculateSum(tb);
+                            //$this.parents('tr.new_line').fadeOut(function () {
+                            //  //  $(this).closest("tr.new_line").not('#new_line_details_0').remove();
+                            //    $(this).closest("tr.new_line").remove();
+                            //    calculateSum();
+                            //});
+                        }
+
+
+                    }
+                });
+                if (!sel) alert('No data selected');
+            }
+            return false;
+        });
+        //function is used to delete individual row
+        $('a.delete_single').on("click", function (event) {
+            var $this = $(this);
+            var c = confirm('Are you sure to delete this message?');
+            if (c) {
+                $this.parents('tr').fadeOut(function () {
+                    $this.remove();
+                });
+            }
+            return false;
+        });
+
+
+
+    });
+
+    
+
+  
+
+
+    //move to master page
+    function NumberOnly(evt) {
+        var theEvent = evt || window.event;
+        var key = theEvent.keyCode || theEvent.which;
+        key = String.fromCharCode(key);
+        var regex = /[0-9]/;
+        if (!regex.test(key)) {
+            theEvent.returnValue = false;
+            if (theEvent.preventDefault) theEvent.preventDefault();
+        }
+    }
+
+    
+
+
+
+</script>

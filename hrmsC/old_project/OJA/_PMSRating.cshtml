@@ -1,0 +1,73 @@
+﻿@model List<OJA.Models.PMS>
+@{
+    Layout = null;
+}
+
+
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="portlet box blue">
+            <div class="mini-triangle"><img src="~/Assets/img/menu-red-triangle.png" /></div>
+            <div class="portlet-title">
+                <div class="caption">
+                    <i class="fa fa-reorder"></i>PMS Rating
+                </div>
+            </div>
+            
+            <div class="portlet-body form">
+                <div class="form-horizontal">
+                    <div class="form-body">
+                        <table id="tblResult" class="table table-striped table-bordered table-hover table-full-width">
+                            <thead>
+                                <tr>
+                                    @foreach (var item in Model)
+                                    {
+                                        <th>@item.Year</th>
+                                    }
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    @foreach (var item in Model)
+                                    {
+                                        @*<td>@(string.IsNullOrEmpty(item.PMSRating) ? "N/A" : item.PMSRating)</td>*@
+                                        <td>
+
+                                            @if(string.IsNullOrEmpty(item.PMSRating))
+                                            {
+                                                  @: N/A
+                                            }
+                                            else
+                                            {
+                                                var PMSRating = item.PMSRating;
+                                                var kpi_index = PMSRating.IndexOf("Competency");
+
+                                                var kpi = string.Empty;
+                                                var competency = string.Empty;
+
+                                                if (PMSRating.Contains("KPI"))
+                                                {
+                                                    kpi = PMSRating.Substring(0, PMSRating.IndexOf("Competency"));
+                                                }
+
+                                                if (PMSRating.Contains("Competency"))
+                                                {
+                                                    competency = PMSRating.Substring(PMSRating.IndexOf("Competency"), PMSRating.Length - PMSRating.IndexOf("Competency"));
+                                                }
+
+                                                @kpi <br />
+                                                @competency
+                                            } 
+                                        </td>
+                                    }
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>

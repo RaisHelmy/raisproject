@@ -1,0 +1,93 @@
+﻿@using ESS.Claim.ClaimSubtype
+@using ESS.Claim.ViewModels
+@model ClaimsSubtype
+
+@{
+    Layout = null;
+    string TableID = "tbl" + Model.FormInterface + "_" + Model.categoryIndex + "_" + Model.subtypeIndex;
+    string Status = ViewBag.ClaimStatus;
+
+    int Interval = ViewBag.Interval;
+    double Rate = ViewBag.Rate;
+    double MinimumDistance = ViewBag.MinimumDistance;
+
+    Model.Template = new Template(Model);
+    Model.Template.TableID = TableID;
+    Model.Template.IsReadonly = !(Status == "Draft" || Status == "Withdrawn" || Status == "Declined" || Status == "Returned");
+
+    Model.Template.Columns.Add(ColumnTemplate.CheckboxWithLabel("", "").SetColumnClass("RemoveCheckbox"));
+
+    Model.Template.Columns.Add(ColumnTemplate.ChargeCodeDropdown("Charge Code", "SubTypeColumn0").SetIsMandatory(true));
+
+    Model.Template.Columns.Add(ColumnTemplate.HiddenInput("Location").SetDefaultValue("Domestic"));
+
+    Model.Template.Columns.Add(ColumnTemplate.DatePickerWithLabel("Date", "Date").SetIsMandatory(true).SetOnChange(TableID + "_subtype.calculateAmount(this);"));
+
+    Model.Template.Columns.Add(ColumnTemplate.TimePickerWithLabel("Start Time", "StartTime").SetIsMandatory(true).SetOnChange(TableID + "_subtype.calculateAmount(this);"));
+
+    Model.Template.Columns.Add(ColumnTemplate.TimePickerWithLabel("End Time", "EndTime").SetIsMandatory(true).SetOnChange(TableID + "_subtype.calculateAmount(this);"));
+
+    Model.Template.Columns.Add(ColumnTemplate.TextBoxWithLabel("Destination", "Destination"));
+
+    Model.Template.Columns.Add(ColumnTemplate.TextBoxWithLabel("No. of Hours", "NoOfHours").SetReadonly(true));
+
+    Model.Template.Columns.Add(ColumnTemplate.TextBoxWithLabel("One Way Distance (KM)", "OneWayDistance").SetIsMandatory(true));
+
+    Model.Template.Columns.Add(ColumnTemplate.CurrencyTextBoxWithLabel("Rate (RM)", "Rate").SetReadonly(true).SetDefaultValue(Rate.ToString("0.00")));
+
+    Model.Template.Columns.Add(ColumnTemplate.NumberTextBoxWithLabel("Interval (Hrs)", "Interval").SetReadonly(true).SetDefaultValue(Interval.ToString()));
+
+    Model.Template.Columns.Add(ColumnTemplate.TextBoxForAmount(Model.Template, "Amount (RM)", "Amount").SetReadonly(true));
+    Model.Template.Columns.Add(ColumnTemplate.TextBoxForTaxAmount(Model.Template, "Tax Amount (RM)", "GSTAmount"));
+    Model.Template.Columns.Add(ColumnTemplate.TextBoxForTotalAmount(Model.Template, "Total Amount (RM)", "TotalAmount"));
+}
+
+@Html.Partial("~/Views/ClaimsSubtype/SubtypeView.cshtml", Model)
+
+<script>
+    @(TableID)_subtype.calculateAmount = function (row) {
+        var $row = $(row).closest("tr");
+
+        var _StartTime  = $row.find(".StartTime");
+        var _EndTime    = $row.find(".EndTime");
+
+        var _NoOfHours  = $row.find(".NoOfHours");
+        var _Rate       = $row.find(".Rate");
+        var _Interval = $row.find(".Interval");
+        var _Amount = $row.find(".Amount");
+
+        var startTime = moment(_StartTime.val(), "HH:mm");
+        var endTime = moment(_EndTime.val(), "HH:mm");
+
+        var rate = parseFloat(_Rate.val()) || 0;
+        var interval = parseInt(_Interval.val()) || 0;
+
+        if (!startTime || !endTime) {
+            return;
+        }
+
+        if (endTime.isBefore(startTime)) {
+            endTime.add('days', 1);
+        }
+
+        var noOfHour = endTime.diff(startTime, 'hours', true);
+        _NoOfHours.val(noOfHour);
+
+        var amount = 0;
+
+        if (interval == "24") {
+            amount = rate;
+        }
+        else {
+            amount = Math.floor(noOfHour / interval) * rate;
+        }
+
+        _Amount.val(amount.toFixed(2));
+
+        @(TableID)_subtype.calculateTax($row);
+        @(TableID)_subtype.calculateSubtotal($row);
+    };
+
+    @(TableID)_subtype.subInitialize = function () {
+    };
+</script>

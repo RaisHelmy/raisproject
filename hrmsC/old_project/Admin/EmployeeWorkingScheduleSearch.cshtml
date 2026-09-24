@@ -1,0 +1,127 @@
+﻿    @using Admin
+@{
+    ViewBag.Title = "Employee Working Schedule Search";
+    DateTime d1 = DateTime.Now.AddYears(-20);
+    DateTime d2 = DateTime.Now.AddYears(20);
+
+    string dtStrStart = d1.ToString("dd MMM yyyy");
+    string dtStrEnd = d2.ToString("dd MMM yyyy");
+
+    string defaultStartDate = DateTime.Now.AddDays(-7).ToString("dd MMM yyyy");
+    string defaultEndDate = DateTime.Now.ToString("dd MMM yyyy");
+}
+
+<style>
+    .position-form .form-group {
+        margin-bottom: 6px;
+    }
+</style>
+
+<div class="row">
+    <div class="col-md-12">
+        <br />
+        <h1 class="page-title">
+            Employee Working Schedule Search<span style="padding-left:20px;"><small></small></span>
+        </h1>
+    </div>
+</div>
+<br />
+
+<div class="row">
+    <div class="col-md-12">
+        <form id="empWorkingScheduleForm">
+            <div class="form-horizontal">
+                <div class="form-body position-form">
+                    <div class="form-group">
+                        <label class="col-md-2 control-label">Employee Code</label>
+                        <div class="col-md-4 form-control-static">
+                            <input class="form-control" id="EmployeeCode" name="EmployeeCode" @*value="@ViewBag.EmployeeCode"*@ />
+                        </div>
+ 
+                    </div>
+                    <div class="form-group">
+                        <label class="col-md-2 control-label">Start Date From</label>
+                        <div class="col-md-4 form-control-static">
+                            <div class="input-group date date-picker start-date-picker" data-date-format="dd MM yyyy">
+                                <input type="text" class="form-control" id="StartDateFrom" name="StartDateFrom" />
+                                <span class="input-group-btn">
+                                    <button type="button" class="btn default"><i class="fa fa-calendar"></i></button>
+                                </span>
+                            </div>
+                        </div>
+                        <label class="col-md-2 control-label">End Date To</label>
+                        <div class="col-md-4 form-control-static">
+                            <div class="input-group date date-picker end-date-picker" data-date-format="dd MM yyyy">
+                                <input type="text" class="form-control" id="EndDateTo" name="EndDateTo" />
+                                <span class="input-group-btn">
+                                    <button type="button" class="btn default"><i class="fa fa-calendar"></i></button>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="text-right">
+            <a id="btn-Search" class="btn green btn-Search" value="Search" onclick="SearchEmployeeWorkingSchedule();">Search</a>
+        </div>
+    </div>
+</div>
+<div class="row">&nbsp;</div>
+<div class="row">
+    <div class="col-md-12">
+        <div id="WorkingScheduleSearchResult">
+
+        </div>
+    </div>
+</div>
+
+<script>
+
+    jQuery(document).ready(function () {
+        $('.date-picker').datepicker({
+            format: 'dd/mm/yyyy',
+            autoclose: true,
+            setStartDate: '@dtStrStart',
+            setEndDate: '@dtStrEnd'
+        });
+
+        $('.start-date-picker').datepicker('setDate', '@defaultStartDate');
+        $('.end-date-picker').datepicker('setDate', '@defaultEndDate');
+    });
+
+    function Validate() {
+        var EmployeeCode = $("#EmployeeCode").val();
+        if (EmployeeCode == null || EmployeeCode == '') {
+            alert("Please insert Employee Code.");
+            return false;
+        }
+        return true;
+    }
+
+    function SearchEmployeeWorkingSchedule() {
+
+        if (!Validate())
+            return false;
+
+        $("#WorkingScheduleSearchResult").html("LOADING...");
+        $.ajax({
+            type: "GET",
+            cache: false,
+            url: '@Url.Content("~/Admin/_EmployeeWorkingScheduleSearchResult")',
+            data: $("#empWorkingScheduleForm").serialize(),
+            success: function (listingContent) {
+                $("#WorkingScheduleSearchResult").empty().append(listingContent);
+            },
+            error: function (err) {
+
+                console.log(err);
+            }
+        });
+    }
+</script>

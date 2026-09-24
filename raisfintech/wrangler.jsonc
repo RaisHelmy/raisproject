@@ -1,0 +1,36 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "rais-fintech",
+  "main": "worker/index.ts",
+  "compatibility_date": "2025-04-01",
+  "compatibility_flags": ["nodejs_compat"],
+  "assets": {
+    "not_found_handling": "single-page-application",
+    "run_worker_first": ["/api/*"]
+  },
+  "observability": { "enabled": true },
+  "routes": [
+    { "pattern": "fintech.raishelmy.uk", "custom_domain": true }
+  ],
+  // Cron moved off Cloudflare Workers Cron Triggers to Ubuntu cron, hitting
+  // POST /internal/cron every 2 minutes with the X-Cron-Secret header
+  // (CRON_SECRET, set via `wrangler secret put`).
+  "hyperdrive": [
+    {
+      "binding": "HYPERDRIVE",
+      "id": "7a7777560d434c2b91ff37c52ab1b2c9",
+      "localConnectionString": "postgresql://postgres:postgres@localhost:15432/raishelmy"
+    }
+  ],
+  "r2_buckets": [
+    {
+      "binding": "FILES",
+      "bucket_name": "rais-fintech-files"
+    }
+  ],
+  "send_email": [
+    {
+      "name": "EMAIL"
+    }
+  ]
+}

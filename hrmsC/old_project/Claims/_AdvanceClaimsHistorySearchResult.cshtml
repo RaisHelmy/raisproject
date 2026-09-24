@@ -1,0 +1,68 @@
+﻿@model List<ESS.AdvanceClaim.Models.AdvanceClaim>
+
+@{
+    Layout = null;
+}
+
+<div class="portlet box blue">
+    <div class="portlet-title">
+        <div class="caption">
+            <i class="fa fa-reorder"></i>Advance Claim History
+        </div>
+        <div class="tools">
+        </div>
+    </div>
+    <div class="portlet-body form">
+        <div class="form-body">
+            <div class="form-horizontal">
+                <div class="table-toolbar">
+                    <table id="tblResult" class="table table-striped table-bordered table-hover table-full-width">
+                        <thead>
+                            <tr>
+                                <th></th>
+                                <th>Reference No.</th>
+                                <th>Claims Category</th>
+                                <th>Request Amount</th>
+                                <th>Status</th>
+                                <th>Created Date</th>
+                               
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in @Model)
+                            {
+                                <tr>
+                                    <td>
+                                        <a class="btn blue btn-sm" href="@Url.Content("~/Claims/ViewAdvanceClaims")?ID=@item.RequestID&Source=History">
+                                            <i class="fa fa-search"></i>
+                                        </a>
+                                    </td>
+                                    <td>@item.RequestNo</td>
+                                    <td>@item.RequestType</td>
+                                    <td>@item.RequestedAmount</td>
+                                    @if (item.Status == 4 || item.Status == 5 || item.Status == 13)
+                                    {
+                                        <td style="color:red">
+                                            <b>@ESS.AdvanceClaim.Service.GetStatus(item.Status)</b>
+                                        </td>
+                                    }
+                                    else
+                                    {
+                                        <td style="color:green">
+                                            <b>@ESS.AdvanceClaim.Service.GetStatus(item.Status)</b>
+                                        </td>
+                                    }
+                                    
+                                    <td>@item.CreatedDate</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+    transformTable("#tblResult");
+</script>

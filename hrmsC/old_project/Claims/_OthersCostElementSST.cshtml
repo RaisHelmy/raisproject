@@ -1,0 +1,142 @@
+﻿@using ESS.Claim
+@using ESS.Claim.ClaimSubtype
+@using ESS.Claim.ViewModels
+@model ClaimsSubtype
+
+@{
+    Layout = null;
+    string TableID = "tbl" + Model.FormInterface + "_" + Model.categoryIndex + "_" + Model.subtypeIndex;
+    string Status = ViewBag.ClaimStatus;
+
+    List<CostElementMapping> costElementMappings = Service.GetOthersCostElementOptions();
+    List<SelectListItem> costElementOptions = new List<SelectListItem>();
+    costElementOptions.Add(new SelectListItem() { Text = "- Please Select -", Value = "" });
+    costElementOptions.AddRange(costElementMappings.Select((x) =>
+        {
+            return new SelectListItem()
+            {
+                Text = x.CostElement,
+                Value = x.CostElement
+            };
+        }));
+
+    Model.Template = new Template(Model);
+    Model.Template.TableID = TableID;
+    Model.Template.IsReadonly = !(Status == "Draft" || Status == "Withdrawn" || Status == "Declined" || Status == "Returned");
+
+    Model.Template.Columns.Add(ColumnTemplate.CheckboxWithLabel("", "").SetColumnClass("RemoveCheckbox"));
+
+    Model.Template.Columns.Add(ColumnTemplate.ChargeCodeDropdown("Charge Code", "SubTypeColumn0").SetIsMandatory(true));
+
+    Model.Template.Columns.Add(ColumnTemplate.DropdownWithLabel("Cost Element", "CostElement")
+                                             .SetColumnStyle("min-width: 200px;")
+                                             .SetDropdownItems(costElementOptions)
+                                             .SetOnChange(TableID + "_subtype.onCostElementChange(this);")
+                                             .SetIsMandatory(true));
+
+    Model.Template.Columns.Add(ColumnTemplate.TextBoxWithLabel("Cost Element Code", "CostElementCode")
+                                             .SetReadonly(true)
+                                             .SetIsMandatory(true));
+
+    Model.Template.Columns.Add(ColumnTemplate.DatePickerWithLabel("Receipt Date", "ReceiptDate").SetIsMandatory(true));
+
+    Model.Template.Columns.Add(ColumnTemplate.TextBoxWithLabel("Receipt No.", "ReceiptNo").SetIsMandatory(true));
+
+    Model.Template.Columns.Add(ColumnTemplate.TextBoxWithLabel("Description", "Description"));
+
+    Model.Template.Columns.Add(ColumnTemplate.TextBoxForAmount(Model.Template, "Amount (RM)", "Amount").SetReadonly(false));
+    Model.Template.Columns.Add(ColumnTemplate.TextBoxForTaxAmount(Model.Template, "Tax Amount (RM)", "GSTAmount"));
+    Model.Template.Columns.Add(ColumnTemplate.TextBoxForTotalAmount(Model.Template, "Total Amount (RM)", "TotalAmount"));
+}
+
+@Html.Partial("~/Views/ClaimsSubtype/SubtypeView.cshtml", Model)
+
+<script type="text/javascript">
+    @(TableID)_subtype.costElementMappings = @Html.Raw(Json.Encode(costElementMappings));
+
+    @(TableID)_subtype.onCostElementChange = function (row) {
+        var $row = $(row).closest("tr");
+        var _costElementCodeField = $row.find('.CostElementCode');
+
+        var selectedCostElement = $row.find('.CostElement').val();
+        var currentCostElementCode = _costElementCodeField.val();
+        var costElementObj = this.costElementMappings.find(function (x) { return x.CostElement == selectedCostElement });
+
+        if (!costElementObj) {
+            return;
+        }
+
+        var costElementCode = costElementObj.CostElementCode;
+
+        if (costElementCode != "") {
+            _costElementCodeField.val(costElementCode);
+            _costElementCodeField.prop('readonly', true);
+        }
+        else {
+            _costElementCodeField.val('');
+            _costElementCodeField.prop('readonly', false);
+        }
+    };
+
+    @(TableID)_subtype.onLoad = function (row) {
+        var $row = $(row).closest("tr");
+        var _costElementCodeField = $row.find('.CostElementCode');
+
+        var selectedCostElement = $row.find('.CostElement').val();
+        var currentCostElementCode = _costElementCodeField.val();
+        var costElementObj = this.costElementMappings.find(function (x) { return x.CostElement == selectedCostElement });
+
+        if (!costElementObj) {
+            return;
+        }
+
+        var costElementCode = costElementObj.CostElementCode;
+
+        if (costElementCode != "") {
+            _costElementCodeField.prop('readonly', true);
+        }
+        else {
+            _costElementCodeField.prop('readonly', false);
+        }
+    };
+
+    @(TableID)_subtype.onCostElementCodeChange = function (element) {
+        var ccCode = $(element);
+        var glCode = parseInt(ccCode.val()) || 49999;
+
+        if (glCode < 40000 || glCode > 49999) {
+            ccCode.val(49999);
+        }
+        else {
+            ccCode.val(glCode);
+        }
+    };
+
+    @(TableID)_subtype.subInitialize = function () {
+        $('.CostElement').each(function () {
+            @(TableID)_subtype.onLoad(this);
+        });
+    }
+
+    @(TableID)_subtype.subValidation = function (claimSubtypeName, $row) {
+
+        var _validationMessage = "";
+        var costElement = $row.find('.CostElement').val();
+        var costElementCode = $row.find('.CostElementCode').val();
+
+        if (costElement == "Others") {
+            var glCode = parseInt(costElementCode);
+            var regex = /^\d+$/;
+
+            if (!regex.test(costElementCode)) {
+                _validationMessage += "- " + claimSubtypeName + " Cost Element Code must only contains digit. \n";
+            }
+
+            if (glCode < 40000 || glCode > 49999) {
+                _validationMessage += "- " + claimSubtypeName + " Cost Element Code must be between 40000 to 49999. \n";
+            }
+        }
+
+        return _validationMessage;
+    };
+</script>

@@ -1,0 +1,65 @@
+﻿@model List<LTIP.Models.OfferAcceptance>
+
+<div class="portlet box blue">
+    <div class="mini-triangle"><img src="../Assets/img/menu-red-triangle.png" /></div>
+    <div class="portlet-title">
+        <div class="caption">
+            <i class="fa fa-reorder"></i>LTIP Offer/Acceptance History
+        </div>
+        <div class="tools">
+        </div>
+    </div>
+    <div class="portlet-body form">
+        <div class="form-body">
+            <div class="form-horizontal">
+                <div class="table-toolbar">
+                    <table id="tblMain" class="table table-striped table-bordered table-hover table-full-width">
+                        <thead>
+                            <tr>
+                                <th></th>
+                                <th>Employee</th>
+                                <th>Plan/Item</th>
+                                <th>Status</th>
+                                <th>Final Allocation</th>
+                                <th>Offer Letter Date</th>
+                                <th>Manual</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var offer in Model)
+                            {
+                                <tr>
+                                    <td>
+                                        <a class="btn blue btn-sm"
+                                           href="@Url.Action("OfferAcceptanceDetails", "LTIP", new { GrantID = offer.GrantID, Mode = "readonly", Source = "OfferAcceptance" })">
+                                            <i class="fa fa-edit"></i>
+                                        </a>
+                                    </td>
+                                    <td>@(offer.EmployeeCode + " " + offer.EmployeeName)</td>
+                                    <td>@(offer.CompPlan + " " + offer.CompReviewItem)</td>
+                                    @if (offer.GrantStatusDesc == "Expired" || offer.GrantStatusDesc == "Declined")
+                                    {
+                                        <td style="color:red;"><b>@offer.GrantStatusDesc</b></td>
+                                    }
+                                    else
+                                    {
+                                        <td style="color:green;"><b>@offer.GrantStatusDesc</b></td>
+                                    }
+                                    <td>@offer.FinalAllocation</td>
+                                    <td>@offer.OfferLetterDate</td>
+                                    <td>@offer.Manual</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+    transformTable("#tblMain");
+</script>
+
+

@@ -1,0 +1,351 @@
+﻿@model Tuple<ESS.StandbyPlanning.Models.StandbyPlanningVM, SEP.RoutingManagement.Models.RoutingRule>
+
+@using ESS.Core
+
+@{
+    ViewBag.Title = "Standby Planning Details";
+}
+
+<style type="text/css">
+    .hidden_1 {
+        display: none;
+    }
+
+    .LabelDisplay {
+        border: 1px #e5e5e5 solid;
+        padding: 6px;
+        width: 100%;
+        background-color: #F9F9F9;
+    }
+</style>
+
+<div class="form-section">
+    <div class="row">
+        <div class="col-md-12">
+            <h1 class="page-title">
+                Standby Planning Details
+                <span style="padding-left:20px;">
+                    <small></small>
+                </span>
+            </h1>
+        </div>
+    </div>
+</div>
+
+<!-- Hidden -->
+<input type="hidden" value="@Model.Item1.StandByID" id="EntryID" ;" />
+
+@Html.Partial("_ApprovalFormDetails", Model)
+
+@Html.Partial("_ApprovalFormDetailsStandbyPlanning", Model)
+
+@Html.Action("AttachmentControl", "Attachment", new { EmployeeID = ViewBag.EmployeeID, Mode = "View", SourceType = "Time Attendance", RequestID = Model.Item1.StandByID.ToString() })
+
+<!-- Audit Log -->
+@Html.Action("_AuditLog", "StandbyPlanning", new { StandByID = Model.Item1.StandByID.ToString() })
+
+@Html.Partial("_StandbyPlanningApproval", Model)
+
+<!-- Buttons -->
+<div class="row">
+    <div class="col-md-12">
+        @if (Model.Item1.btnSubmit == true)
+        {
+            if (Model.Item1.btnSubmitTxt == "Resubmit")
+            {
+                <input type="button" class="btn green" value="Submit" id="btnSubmit" onclick="FormValidation('@Model.Item1.btnSubmitTxt');" />
+            }
+            else
+            {
+                <input type="button" class="btn green" value="@Model.Item1.btnSubmitTxt" id="btnSubmit" onclick="FormValidation('@Model.Item1.btnSubmitTxt');" />
+            }
+        }
+        @if (Model.Item1.btnRework == true && (Model.Item1.btnSubmit == true && (Model.Item1.StatusName == "Pending" || Model.Item1.StatusName == "Verified")))
+        {
+            <input type="button" class="btn green" value="@Model.Item1.btnReworkTxt" id="btnRework" onclick="FormValidation('Rework');" />
+        }
+        @if (Model.Item1.btnDecline == true && (Model.Item1.btnSubmit == true && (Model.Item1.StatusName == "Pending" || Model.Item1.StatusName == "Verified")))
+        {
+            <input type="button" class="btn green" value="@Model.Item1.btnDeclineTxt" id="btnDecline" onclick="FormValidation('Decline')" />
+        }
+        @if (Model.Item1.btnWithdraw == true)
+        {
+            <input type="button" class="btn red" value="@Model.Item1.btnWithdrawTxt" id="btnWithdraw" onclick="FormValidation('Withdraw')" />
+        }
+    </div>
+</div>
+
+<!-- Success Message -->
+<div class="modal fade" id="SuccessSubmit" tabindex="-1" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header Success-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true" style="display: none;"></button>
+                <h4 class="Success-title">Action Successfully Completed</h4>
+            </div>
+            <div class="modal-body Success-body">
+                <div class="well">
+                    Application has been successfully.
+                </div>
+            </div>
+            <div class="modal-footer Success-footer">
+                <button type="submit" class="btn default blue" id="btnOK">
+                    <i class="fa fa-check"></i>
+                    OK
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Confirmation Message -->
+<div class="modal fade" id="ConfirmUpdate" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                <h4 class="modal-title">Confirmation</h4>
+            </div>
+            <div class="modal-body">
+                <div class="well">
+                    Are you sure you want to this application?<br />Press OK to continue or Cancel to stay on the current page.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="submit" class="btn default blue" id="btnSubmitForm" onclick="ApproverAction(this, '@Model.Item1.btnSubmitTxt')">
+                    <i class="fa fa-check"></i>
+                    OK
+                </button>
+                <button type="submit" class="btn default blue" id="btnSubmitRework" onclick="ApproverAction(this, 'Rework')">
+                    <i class="fa fa-check"></i>
+                    OK
+                </button>
+                <button type="submit" class="btn default blue" id="btnSubmitDecline" onclick="ApproverAction(this, 'Decline')">
+                    <i class="fa fa-check"></i>
+                    OK
+                </button>
+                <button type="submit" class="btn default blue" id="btnSubmitWithdraw" onclick="ApproverAction(this, 'Withdraw')">
+                    <i class="fa fa-check"></i>
+                    OK
+                </button>
+                <button type="button" class="btn default" data-dismiss="modal">Cancel</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Loading Gif -->
+<div id="divLoading" style="margin: 0px; padding: 0px; position: fixed; right: 0px;
+    top: 0px; width: 100%; height: 100%; background-color:gainsboro; z-index: 30001;
+    opacity: .8; filter: alpha(opacity=70);display:none">
+    <p style="position: absolute; top: 30%; left: 30%; color: black;">
+        Loading, please wait...<img src="../Assets/img/ajax-loading.gif" />
+    </p>
+</div>
+
+<script type="text/javascript">
+    function FormValidation(SubmitType) {
+        var _ValidationMsg = '';
+
+        if ($("#txtApprovalComment").val() == '')
+            _ValidationMsg += 'Comment is required.\n';
+
+        if (SubmitType == 'Verify' || SubmitType == 'Approve' || SubmitType == 'Resubmit')
+        {
+            var selectedDates = "";
+
+            $("#tblStandbyDate tbody tr").each(function (i, value) {
+                var strDate = $(this).find('.StartDate').val();
+
+                if (strDate) {
+                    arrDate = strDate.split('/');
+
+                    var strMomentDate = arrDate[2] + arrDate[1] + arrDate[0];
+                    var date = moment(strMomentDate, "YYYYMMDD").format("YYYY/MM/DD");
+                    var dateError = moment(strMomentDate, "YYYYMMDD").format("DD/MM/YYYY");
+
+                    if (selectedDates.indexOf(date) >= 0)
+                        _ValidationMsg += 'Standby Date: ' + dateError +' is duplicate.\n';
+
+                    selectedDates += date + ',';
+                }
+                else {
+                    _ValidationMsg += 'Standby Date is empty.\n';
+                }
+            });
+
+            if (!selectedDates)
+                _ValidationMsg += 'Standby Date is required.\n';
+        }
+        if (SubmitType == 'Resubmit') {
+            var strDesc = $('[name="Description"]').val();
+            var Description = '';
+
+            strDesc ? Description = strDesc : _ValidationMsg += 'Standby Description is required.\n';
+
+        }
+
+        if (_ValidationMsg != null && _ValidationMsg != '') {
+            alert(_ValidationMsg);
+        }
+		else {
+			if (SubmitType == 'Rework') {
+				$("#btnSubmitRework").removeClass("hidden");
+				$("#btnSubmitForm").addClass("hidden");
+                $("#btnSubmitDecline").addClass("hidden");
+                $("#btnSubmitWithdraw").addClass("hidden");
+
+				$("#ConfirmUpdate .modal-body .well").html('Are you sure you want to Rework this application?<br/>Press OK to continue or Cancel to stay on the current page.');
+			}
+			else if (SubmitType == 'Decline') {
+				$("#btnSubmitDecline").removeClass("hidden");
+				$("#btnSubmitForm").addClass("hidden");
+                $("#btnSubmitRework").addClass("hidden");
+                $("#btnSubmitWithdraw").addClass("hidden");
+
+				$("#ConfirmUpdate .modal-body .well").html('Are you sure you want to Decline this application?<br/>Press OK to continue or Cancel to stay on the current page.');
+            }
+            else if (SubmitType == 'Withdraw') {
+                $("#btnSubmitWithdraw").removeClass("hidden");
+                $("#btnSubmitDecline").addClass("hidden");
+                $("#btnSubmitForm").addClass("hidden");
+                $("#btnSubmitRework").addClass("hidden");
+
+                $("#ConfirmUpdate .modal-body .well").html('Are you sure you want to Withdraw this application?<br/>Press OK to continue or Cancel to stay on the current page.');
+            }
+			else {
+				$("#btnSubmitForm").removeClass("hidden");
+				$("#btnSubmitRework").addClass("hidden");
+                $("#btnSubmitDecline").addClass("hidden");
+                $("#btnSubmitWithdraw").addClass("hidden");
+
+				$("#ConfirmUpdate .modal-body .well").html('Are you sure you want to @Model.Item1.btnSubmitTxt this application?<br/>Press OK to continue or Cancel to stay on the current page.');
+			}
+
+            $("#ConfirmUpdate").modal('show');
+        }
+    }
+
+    function RedirectTo(_Action) {
+        switch (_Action) {
+            case 'Withdraw':
+                window.location.href = '@Url.Action("StandbyPlanningHistory", "StandbyPlanning")';
+                break;
+            default:
+                window.location.href = '@Url.Action("StandbyPlanningInTray", "MSS")';
+        }
+    }
+
+    function ApproverAction(btn, _Action) {
+        btn.disabled = true;
+
+        $("#divLoading").show();
+
+        var myVar = setTimeout(function () { ConfirmAction(btn, _Action); }, 3000);
+    }
+
+    function ConfirmAction(btn, SubmitType) {
+        var ResultMsg = "Application has been successfully Approved.";
+
+		if (SubmitType == "Verify") {
+			ResultMsg = "Application has been successfully Verified.";
+		}
+
+        if (SubmitType == "Rework") {
+			ResultMsg = "Application has been successfully Reworked.";
+		}
+
+		if (SubmitType == "Decline") {
+			ResultMsg = "Application has been successfully Declined.";
+        }
+
+        if (SubmitType == "Withdraw") {
+            ResultMsg = "Application has been successfully Withdraw.";
+        }
+
+        if (SubmitType == "Resubmit") {
+            ResultMsg = "Application has been successfully Submitted.";
+        }
+
+        var _StandbyDate = '@Model.Item1.StandByDate';
+
+        var _ChargeType = '@Model.Item1.ChargeType';
+        var _ChargeCode = '@Model.Item1.ChargeCode';
+        var _ChargeCodeDesc = '@Model.Item1.ChargeCodeDesc';
+        var _StandbyDesc = '@HttpUtility.JavaScriptStringEncode(Model.Item1.Description)';
+
+        var _ApprovalLevel = '@Model.Item1.CurrentApprovalLevel';
+
+        if ((_ApprovalLevel == '1' && (SubmitType == 'Approve' || SubmitType == 'Verify')) || (_ApprovalLevel == '0' && SubmitType == 'Resubmit')) {
+            _StandbyDate = getSelectedDates();
+            _ChargeType = $('[name="ChargeType"]').val();
+            _ChargeCode = $('[name="ChargeCode"]').val();
+            _ChargeCodeDesc = $('[name="ChargeCodeDesc"]').val();
+        }
+
+        if (SubmitType == 'Resubmit') {
+
+            _StandbyDesc = $('[name="Description"]').val();
+        }
+
+        var _ApproverComment = $('#txtApprovalComment').val();
+
+        var form = {
+            ReferenceNo: '@Model.Item1.ReferenceNo',
+            StandByID: '@Model.Item1.StandByID',
+            SubmissionType: SubmitType,
+			SubmitterID: '@ViewBag.EmployeeID',
+            StandByDate: _StandbyDate,
+			EmployeeID: '@Model.Item1.Requestor.EmployeeID',
+			EmployeeCode: '@Model.Item1.Requestor.EmployeeCode',
+			EmployeeName: '@Model.Item1.Requestor.EmployeeName',
+			ChargeType: _ChargeType,
+			ChargeCode: _ChargeCode,
+			ChargeCodeDesc: _ChargeCodeDesc,
+            Description: _StandbyDesc,
+            CurrentApprovalLevel: '@Model.Item1.CurrentApprovalLevel',
+            ApproverComment: _ApproverComment,
+			TaskID: '@ViewBag.TaskID'
+		};
+
+        var url;
+
+        console.log(SubmitType);
+        console.log(form);
+
+		url = '@Url.Content("~/StandbyPlanning/SubmitForm")'
+
+		if ($('#divLoading').is(':visible')) {
+			$.ajax({
+				type: "POST",
+				url: url,
+				cache: false,
+				async: false,
+				dataType: "json",
+				data: form,
+				success: function (result) {
+					if (result.Success) {
+						$("#ConfirmUpdate").modal('toggle');
+						$("#divLoading").hide();
+						$(".Success-body .well").html(ResultMsg);
+						$(".Success-body .well").html(result.ErrorMsg);
+						$("#SuccessSubmit").modal();
+
+						$("#SuccessSubmit #btnOK").click(function () { RedirectTo(SubmitType); });
+					}
+					else {
+						$("#ConfirmUpdate").modal('toggle');
+						$("#divLoading").hide();
+						btn.disabled = false;
+
+						alert(result.ErrorMsg);
+					}
+				},
+				error: function (e) {
+				}
+			});
+		}
+    }
+</script>
+
+

@@ -1,0 +1,213 @@
+﻿@model System.Data.DataTable
+@{
+    Layout = null;
+
+    int i = 0;
+    int j = 0;
+    string HiddenCol = "Hidden";
+    string CMID = "";
+}
+<style>
+</style>
+
+<div class="portlet box blue">
+    <div class="mini-triangle"><img src="../Assets/img/menu-red-triangle.png" /></div>
+    <div class="portlet-title">
+        <div class="caption">
+            <i class="fa fa-reorder"></i>Procurement Report
+        </div>
+        <input type="button" id="btn-Export" class="btn btn-xs green pull-right" value="Export To Excel" />
+        <div class="tools">
+        </div>
+    </div>
+    <div class="portlet-body form">
+        <div class="form-body">
+            <div class="form-horizontal">
+                <div class="table-toolbar">
+                    <table id="tbl_Index_DetailsResult" class="table table-striped table-bordered table-hover table-full-width table-font-size">
+                        <thead>
+                            <tr>
+                                @foreach (System.Data.DataColumn col in Model.Columns)
+                                {
+                                    if (i == 0)
+                                    {
+
+                                    }
+                                    else if (i == 1)
+                                    {
+                                        <th style="max-width:50px;">
+                                            <input type="checkbox" name="SelectAllProcurement" id="SelectAllProcurement" onchange="SelectUnselectAllProcurement(this);" />
+                                        </th>
+                                        <th style="max-width:50px;">
+
+                                        </th>
+                                    }
+                                    else if (!col.Caption.ToUpper().Contains(HiddenCol.ToUpper()))
+                                    {
+
+                                        <th class="long-header" style="width:0px;">@col.Caption</th>
+                                    }
+                                    @*if (i == 0)
+            {
+                <th style="max-width:50px;">
+
+                </th>
+            }
+            else
+            {
+                if (!col.Caption.ToUpper().Contains(HiddenCol.ToUpper()))
+                {
+
+                    <th class="long-header" style="width:0px;">@col.Caption</th>
+                }
+            }*@
+
+                                    i++;
+                                }
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (System.Data.DataRow row in Model.Rows)
+                            {
+                                j = 0;
+                            <tr>
+                                @{
+                                    CMID = row.ItemArray[0].ToString() + "";
+                                }
+                                @{
+                                    string Procurement = "";
+                                }
+                                @foreach (var cell in row.ItemArray)
+                                {
+                                    if (!row.Table.Columns[j].Caption.ToUpper().Contains(HiddenCol.ToUpper()))
+                                    {
+                                        if (j == 0)
+                                        {
+                                            Procurement = cell.ToString();
+                                        }
+                                        else if (j == 1)
+                                        {
+                                            if (Procurement == "False")
+                                            {
+
+                                                <td>
+                                                    <input type="checkbox" class="ProcurementCheckBox" name="ProcurementCheckBox" value="@cell.ToString()" />
+                                                </td>
+                                            }
+                                            else
+                                            {
+                                                <td></td>
+                                            }
+                                            <td class="long-text" style="min-width: 50px;">
+                                                <a class="btn blue btn-sm" href="@Url.Content("~/UniformApplication/Index")?ID=@cell.ToString()&Source=ProcurementReport">
+                                                    <i class="fa fa-edit"></i>
+                                                </a>
+                                            </td>
+                                        }
+
+                                        else
+                                        {
+                                            <td class="long-header">
+                                                @cell.ToString()
+                                            </td>
+
+                                        }
+                                    }
+
+                                    j++;
+                                }
+                            </tr>
+                            }
+                        </tbody>
+
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@{
+    i = 0;
+    j = 0;
+}
+
+<table id="tblExport" border="1" style="display: none;">
+    <thead>
+        <tr>
+            @foreach (System.Data.DataColumn col in Model.Columns)
+            {
+                if (i == 0 || i == 1)
+                {
+
+                }
+                else if (!col.Caption.ToUpper().Contains(HiddenCol.ToUpper()))
+                {
+
+                    <th>@col.Caption</th>
+                }
+                i++;
+            }
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (System.Data.DataRow row in Model.Rows)
+        {
+            j = 0;
+            <tr>
+                @foreach (var cell in row.ItemArray)
+                {
+                    if (!row.Table.Columns[j].Caption.ToUpper().Contains(HiddenCol.ToUpper()))
+                    {
+                        if (j == 0 || j == 1)
+                        {
+                        }
+                        else
+                        {
+                            <td>@cell.ToString().Trim()</td>
+
+                        }
+                    }
+
+                    j++;
+                }
+            </tr>
+        }
+    </tbody>
+</table>
+
+<script type="text/javascript">
+
+
+    var tblResult = $('#tbl_Index_DetailsResult')//.dataTable();
+                    .dataTable({
+        "fnDrawCallback": function (settings) {
+            $('#SelectAllProcurement').prop('checked', IsALLCheckBoxChecked());
+            $('input[type="checkbox"]').uniform();
+        },
+        "aoColumnDefs": [
+            { 'bSortable': false, 'aTargets': [0] }
+        ]
+    });
+
+
+    function IsALLCheckBoxChecked() {
+        if ($('#tbl_Index_DetailsResult .ProcurementCheckBox:checked').length == $('#tbl_Index_DetailsResult .ProcurementCheckBox').length && $('#tbl_Index_DetailsResult .ProcurementCheckBox').length !== 0) {
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
+
+    function SelectUnselectAllProcurement(element) {
+        $('#tbl_Index_DetailsResult .ProcurementCheckBox').attr('checked', element.checked);
+
+        $.uniform.update();
+    }
+
+
+    $(function () {
+        BindExport();
+    });
+</script>

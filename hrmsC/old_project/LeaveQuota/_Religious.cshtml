@@ -1,0 +1,241 @@
+﻿@model LeaveQuota.Models.ReligiousLeave
+@{
+    var CurrentEmployeeID = ViewData["CurrentEmployeeID"];
+    var ApplicantDescription = ViewData["Description"];
+    var ReferenceNo = ViewData["ReferenceNo"];
+    List<SelectListItem> attachmentDropdownItems = new List<SelectListItem>()
+    {
+        new SelectListItem()
+        {
+           Value = "FlightSchedule",
+           Text = "Flight Schedule"
+        },
+        new SelectListItem()
+        {
+            Value = "LetterForHaj",
+            Text = "Letter for Haj"
+        },
+        new SelectListItem()
+        {
+            Value = "Others",
+            Text = "Others"
+        }
+    };
+
+    string Status = ViewData["Status"] == null ? "Draft" : ViewData["Status"].ToString();
+    var attachmentMode = "View";
+    if (string.IsNullOrEmpty(Model.RequestID))
+    {
+        attachmentMode = "New";
+    }
+    else if (Status.ToString() == "Draft")
+    {
+        attachmentMode = "Add";
+    }
+
+
+    var readStatus = "readonly";
+    if (Status == "Draft")
+    {
+        readStatus = "";
+    }
+}
+
+
+<div id="divMainForm">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="portlet box blue">
+                <div class="mini-triangle"><img src="../Assets/img/menu-red-triangle.png" /></div>
+                <div class="portlet-title">
+                    <div class="caption">
+                        <i class="fa fa-reorder"></i>Application Details
+                    </div>
+                </div>
+                <div class="portlet-body form">
+                    <div class="form-body" id="ct00_CustomFieldFormView">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <label class="control-label col-md-4">Reference No</label>
+                                        <div class="col-md-8 form-control-static">
+                                            <input type="text" id="ReferenceNo" class="form-control" value="@ReferenceNo" readonly />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <label class="control-label col-md-4">Status</label>
+                                        <div class="col-md-8 form-control-static">
+                                            <input type="text" id="Status" class="form-control" value="@Status" readonly />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <label class="control-label col-md-4">Departure Date</label>
+                                        <div class="col-md-8 form-control-static">
+                                            <div class="input-group date @(string.IsNullOrEmpty(readStatus) ? "date-picker": "")" data-date-format="dd MM yyyy">
+                                                <input type="text" class="form-control" id="DepartDate" value="@(string.IsNullOrEmpty(Model.RequestID) ? "": Model.DepartureDate)" @readStatus>
+                                                <span class="input-group-btn">
+                                                    <button type="button" class="btn default"><i class="fa fa-calendar"></i></button>
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <label class="control-label col-md-4">Return Date</label>
+                                        <div class="col-md-8 form-control-static">
+                                            <div class="input-group date  @(string.IsNullOrEmpty(readStatus) ? "date-picker": "")" data-date-format="dd MM yyyy">
+                                                <input type="text" class="form-control" id="ReturnDate" value="@(string.IsNullOrEmpty(Model.RequestID) ? "": Model.ReturnDate)" @readStatus>
+                                                <span class="input-group-btn">
+                                                    <button type="button" class="btn default"><i class="fa fa-calendar"></i></button>
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <label class="control-label col-md-4">Length of Stay in the Holy Land</label>
+                                        <div class="col-md-2 form-control-static">
+                                            <input class="form-control" type="number" min="1" id="LengthOfStay" value="@Model.LengthOfStayInReligious" readonly />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <label class="control-label col-md-2">Description/Comment</label>
+                                        <div class="col-md-8">
+                                            <textarea maxlength="500" rows="5" class="form-control" id="ApplicantDescription" @readStatus>@ApplicantDescription</textarea>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Attachment -->
+            @Html.Action("AttachmentControl", "Attachment", new { EmployeeID = CurrentEmployeeID, Mode = attachmentMode, SourceType = Model.GetDisplayName(), RequestID = Model.RequestID, ShowOptionField = "true", ControlType = "dropdown", DropdownList = attachmentDropdownItems, CustomTextLabel1 = "Checklist", Mandatory = "true" })
+
+        </div>
+    </div>
+</div>
+<script>
+    $(document).ready(function () {
+        InitDateAndTimePickers();
+    });
+
+    function InitDateAndTimePickers() {
+        $('.date-picker').datepicker({
+            format: 'dd/mm/yyyy',
+            autoclose: true
+        });
+
+        $('.time-picker').timepicker({
+            showMeridian: false,
+            autoclose: true
+        });
+    }
+
+    function setStartDate() {
+        $('.date-picker').datepicker('setDate', new Date());
+    }
+
+    $(document).on('change', '#DepartDate', function () {
+        ComputeLengthOfStay();
+    });
+
+    $(document).on('change', '#ReturnDate', function () {
+        ComputeLengthOfStay();
+    });
+
+    function ComputeLengthOfStay() {
+        var departDate = $("#DepartDate").val();
+        var returnDate = $("#ReturnDate").val();
+
+        if (!departDate || !returnDate)
+            return;
+
+        var startDate = moment(departDate, 'DD/MM/YYYY').toDate();
+        var endDate = moment(returnDate, 'DD/MM/YYYY').toDate();
+
+        var difference = moment(returnDate, 'DD/MM/YYYY').diff(startDate, 'days') + 1;
+        $("#LengthOfStay").val(difference);
+    }
+
+    function validate() {
+        var departDate = $("#DepartDate").val();
+        var returnDate = $("#ReturnDate").val();
+       
+        var message = "";
+        if (departDate != "") {
+            var startDate = moment(departDate, 'DD/MM/YYYY').toDate();
+            var endDate = moment(returnDate, 'DD/MM/YYYY').toDate();
+
+            var difference = moment().diff(startDate, 'days');
+            var result = Math.abs(difference);
+            if (Number(difference) > 0)
+                message += "- Start date must be later than today \n";
+
+            if (moment(endDate).isBefore(startDate))
+                message += "- End date must be later than start date \n";
+
+            if (moment(startDate).isSame(endDate))
+                message += "- Start and end dates cannot be same. \n";
+
+            difference = moment(returnDate, 'DD/MM/YYYY').diff(startDate, 'days') + 1;
+            if (Number($("#LengthOfStay").val()) > difference )
+                message += "- Length of stay is not valid (based on departure and return date) \n";
+        }
+          
+        var LengthOfStayInHaj = $("#LengthOfStay").val();
+
+        if (departDate == "")
+            message += "- Departure date is required \n";
+        if (returnDate == "")
+            message += "- Return date is required \n"; 
+        if (LengthOfStayInHaj == "")
+            message += "- Length of stay in haj is required \n";
+        if (Number(LengthOfStay) < 1)
+            message += "- Length of stay is not valid \n";
+
+        if (message != "") {
+            alert("Please correct the following errors. \n" + message);
+            return false;
+        }
+        return true;
+    }
+
+    function GetData() {
+        var departDate = $("#DepartDate").val();
+        var returnDate = $("#ReturnDate").val();
+        return {
+            DepartureDate: departDate,
+            ReturnDate: returnDate, 
+            LengthOfStayInHaj: $("#LengthOfStay").val()
+        }
+    }
+</script>

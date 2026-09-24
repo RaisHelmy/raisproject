@@ -1,0 +1,149 @@
+﻿@model TemporaryPosition.Models.TemporaryPositionForm
+@{
+	Layout = null;
+}
+
+<!--Org Unit No -->
+<div class="form-group">
+	<label class="control-label col-md-2">
+		Org Unit No. (EHRMS)
+		<span style="color:red">*</span>
+	</label>
+	@if (Model.IsEditable)
+	{
+		<div>
+			<div class=" form-control-static col-md-4 col-xs-9 col-sm-10">
+				<div class="input-group">
+					<input type="text" class="form-control" id="OrgUnitNumber" name="OrgUnitNumber" value="@Model.OrgUnitNumber" maxlength="8" />
+
+					<span class="input-group-btn" id="btnLookUp">
+						<a data-toggle="modal" href="#OrgUnitNo" class="btn default"><i class="fa fa-search"></i></a>
+					</span>
+				</div>
+			</div>
+			<div class="form-control-static col-md-1 col-xs-3 col-sm-2">
+				<span class="input-group-btn">
+					<button class="btn default" type="button" id="btnOrgUnitNumber" onclick="CheckOrgUnitNumber()">Check</button>
+				</span>
+			</div>
+		</div>
+	}
+	else
+	{
+		<div class="col-md-4 form-control-static">
+			<input type="text" class="form-control" id="OrgUnitNumber" name="OrgUnitNumber" value="@Model.OrgUnitNumber" readonly="" />
+		</div>
+	}
+</div>
+
+<!--Division -->
+<div class="form-group">
+	<label class="control-label col-md-2">
+		Division
+	</label>
+	<div class="col-md-4">
+		<input type="text" class="form-control" id="Division" name="Company" value="@Model.Company" readonly="" />
+		<input type="hidden" class="form-control" id="DivisionCode" name="CompanyCode" readonly="" value="@Model.CompanyCode" />
+	</div>
+</div>
+
+<!--Personnel Area -->
+<div class="form-group">
+	<label class="control-label col-md-2">
+		Personnel Area
+	</label>
+	<div class="col-md-4">
+		<input type="text" class="form-control" id="PersonnelArea" name="Area" value="@Model.Area" readonly="" />
+		<input type="hidden" class="form-control" id="PersonnelAreaCode" name="AreaCode" readonly="" value="@Model.AreaCode" />
+	</div>
+</div>
+
+<!--Personnel Sub Area -->
+<div class="form-group">
+	<label class="control-label col-md-2">
+		Personnel Sub Area
+	</label>
+	<div class="col-md-4">
+		<input type="text" class="form-control" id="PersonnelSubArea" name="SubArea" value="@Model.SubArea" readonly="" />
+		<input type="hidden" class="form-control" id="PersonnelSubAreaCode" name="SubAreaCode" readonly="" value="@Model.SubAreaCode" />
+	</div>
+</div>
+
+<div class="modal fade" id="OrgUnitNo" tabindex="-1" aria-hidden="true">
+	<div class="modal-dialog modal-lg">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+				<h4 class="modal-title">Org Unit Number</h4>
+			</div>
+			<div class="modal-body">
+				<div>
+					@Html.Partial("_OrgUnitNumberModal")
+				</div>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn default green" onclick="SetSelectedOrgUnitNumber()">Select</button>
+				<button type="button" class="btn default" data-dismiss="modal">Close</button>
+			</div>
+		</div>
+	</div>
+</div>
+
+<script type="text/javascript">
+		function SetSelectedOrgUnitNumber() {
+			$("#tblOrgUnitNumber td input[type=radio]").each(function () {
+				var _selected = $(this).prop("checked");
+
+				if (_selected) {
+					$("#OrgUnitNumber").val($(this).val());
+					$("#Division").val($(this).attr("divisionCode") + " - " + $(this).attr("division"));
+					$("#PersonnelArea").val($(this).attr("personnelAreaCode") + " - " + $(this).attr("personnelArea"));
+					$("#PersonnelSubArea").val($(this).attr("personnelSubAreaCode") + " - " + $(this).attr("personnelSubArea"));
+					$("#DivisionCode").val($(this).attr("divisionCode"));
+					$("#PersonnelAreaCode").val($(this).attr("personnelAreaCode"));
+					$("#PersonnelSubAreaCode").val($(this).attr("personnelSubAreaCode"));
+					$('#OrgUnitNo').modal('toggle');
+				}
+			});
+		}
+
+		function CheckOrgUnitNumber()
+		{
+			var errorMessage = "";
+			if ($("#OrgUnitNumber").val().length != 8) {
+				errorMessage = "- Invalid Org Unit Number (EHRMS) length. \n";
+				alert(errorMessage);
+				return false;
+			}
+			else {
+				$("#btnOrgUnitNumber").attr("disabled", "disabled");
+				$.ajax({
+					type: "POST",
+					url: "@Url.Action("CheckOrgUnitDetails", "TemporaryPosition")?OrgUnitNumber=" + $("#OrgUnitNumber").val(),
+					success: function (content) {
+
+						if (content.orgUnitNo.OrgUnitNumber != null) {
+							$("#OrgUnitNumber").val(content.orgUnitNo.OrgUnitNumber);
+							$("#Division").val(content.orgUnitNo.DivisionCode + " - " + content.orgUnitNo.Division);
+							$("#PersonnelArea").val(content.orgUnitNo.PersonnelAreaCode + " - " + content.orgUnitNo.PersonnelArea);
+							$("#PersonnelSubArea").val(content.orgUnitNo.PersonnelSubAreaCode + " - " + content.orgUnitNo.PersonnelSubArea);
+							$("#DivisionCode").val(content.orgUnitNo.DivisionCode);
+							$("#PersonnelAreaCode").val(content.orgUnitNo.PersonnelAreaCode);
+							$("#PersonnelSubAreaCode").val(content.orgUnitNo.PersonnelSubAreaCode);
+							$("#btnOrgUnitNumber").prop("disabled", false);
+						}
+						else {
+							errorMessage += "- Org Unit Number (EHRMS) is invalid. \n";
+							alert(errorMessage);
+							$("#btnOrgUnitNumber").prop("disabled", false);
+							return false;
+						}
+					},
+					error: function (err) {
+						console.log(err);
+						alert("Error in the ajax call.");
+					}
+				});
+			}
+		}
+</script>

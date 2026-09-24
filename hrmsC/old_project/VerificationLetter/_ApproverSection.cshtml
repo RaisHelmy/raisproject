@@ -1,0 +1,320 @@
+﻿@model Tuple<List<SEP.RoutingManagement.Models.GetApprovalAuditLog>, ESS.Core.RoutingTask, List<SelectListItem>>
+
+@{
+    Layout = null;
+}
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="portlet box blue">
+            <div class="mini-triangle"><img src="~/Assets/img/menu-red-triangle.png" /></div>
+            <div class="portlet-title">
+                <div class="caption">
+                    <i class="fa fa-reorder"></i>Audit Log
+                </div>
+            </div>
+            <div class="portlet-body form">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="form-horizontal">
+                            <div class="form-body">
+                                <div style="overflow-x:auto">
+                                    <table id="tblAuditLog" class="table table-striped table-bordered table-hover table-full-width">
+                                        <thead>
+                                            <tr>
+                                                <th>Action By</th>
+                                                <th>Date</th>
+                                                <th>Activity</th>
+                                                <th>Action</th>
+                                                <th>Comment</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach (var item in Model.Item1)
+                                            {
+                                                <tr>
+                                                    @if (item.EmployeeCode == "00000000-0000-0000-0000-000000000000")
+                                                    {
+                                                        <td>System</td>
+                                                    }
+                                                    else
+                                                    {
+                                                        <td>@item.EmployeeName</td>
+                                                    }
+                                                    <td>@item.CreatedDate.Value.ToString("dd/MM/yyyy hh:mm tt")</td>
+                                                    <td>@item.ActivityName</td>
+                                                    <td>@item.ActivityAction</td>
+                                                    <td>
+                                                        @item.Comment
+                                                    </td>
+
+                                                </tr>
+                                            }
+
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@if (Model.Item2.isCurrentUserApproval)
+{
+    @Html.HiddenFor(x => x.Item2.TaskID)
+    @*@Html.Action("AttachmentControl", "Attachment", new { EmployeeID = Model.Item2.ApproverID, Mode = "Add", SourceType = "VerificationLetter", RequestID = Model.Item2.SourceID })*@
+
+    <div class="form-group">
+        <div id="Approval_approvalsec" class="row">
+            <div class="col-md-12">
+                <!-- BEGIN TAB PORTLET-->
+                <div class="portlet box blue">
+                    <div class="portlet-title">
+                        <div class="caption">
+                            <i class="fa fa-reorder"></i>Approval
+                        </div>
+                    </div>
+                    <div class="portlet-body form">
+                        <div class="form-body">
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="form-horizontal">
+                                        <div class="form-group">
+                                            <label class="control-label col-md-2">
+                                                Signature
+                                            </label>
+                                            <div class="col-md-6">
+                                                @Html.DropDownList("Signature", Model.Item3, new { @class = "bs-select form-control" })
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="control-label col-md-2">Signed Letter</label>
+                                            <div class="col-md-6">
+                                                <input name="file" type="file" id="SignatureFile" class="form-control">
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="col-md-2 control-label">
+                                                Remarks
+                                            </label>
+                                            <div class="col-md-10">
+                                                <textarea name="Approval_txtComments" maxlength="500" rows="5" cols="20" id="Approval_txtComments" class="form-control"></textarea>
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">&nbsp;</div>
+
+                        </div>
+                    </div>
+                </div>
+                <!-- END TAB PORTLET-->
+
+            </div>
+        </div>
+    </div>
+
+
+    <div class="row" style="padding-top:10px;">
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <div class="col-md-12">
+                        <button class="btn green" type="button" id="btnGenerate" onclick="GenerateSignature()">Generate PDF</button>
+
+                        <button class="btn green" type="button" id="btnGenerateWordDoc" onclick="GenerateWordDoc()">Generate Word Document</button>
+
+                        <input type="button" value="@Model.Item2.YesLabel" onclick="return checkComments('@Model.Item2.YesStatus');" id="Approval_btnApprove" class="btn green">
+                        @if (!String.IsNullOrEmpty(Model.Item2.NoLabel))
+                        {
+                            <input type="button" value="@Model.Item2.NoLabel" onclick="return checkComments('@Model.Item2.NoStatus');" id="Approval_btnReject" class="btn red">
+                        }
+                        @if (!String.IsNullOrEmpty(Model.Item2.ReworkLabel))
+                        {
+                            <input type="button" value="@Model.Item2.ReworkLabel" onclick="return checkComments('@Model.Item2.ReworkLabel');" class="btn blue">
+                        }
+
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!--RESULT MODAL-->
+    <div class="modal fade" id="ApprovalConfirmationModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                    <h4 class="modal-title">Temporary Position Approval</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="well" id="ApprovalText">
+
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn blue" id="btnApproval">Confirm</button>
+                    <button type="button" class="btn default" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="approvalResultModal" tabindex="-1" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header Success-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true" style="display: none;"></button>
+                    <h4 class="Success-title">Action Successfully Completed</h4>
+                </div>
+                <div class="modal-body Success-body">
+                    <div class="well">
+                        <p id="approvalResultMessage"></p>
+                    </div>
+                </div>
+                <div class="modal-footer Success-footer">
+                    <button type="button" class="btn default blue" id="btnApprovalOK">
+                        <i class="fa fa-check"></i>
+                        OK
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!--END RESULT MODAL-->
+
+
+}
+
+
+<script>
+
+
+    function checkComments(Action) {
+
+        var inputfile = document.getElementById('SignatureFile').value;
+        if (inputfile == '' && Action != 'Declined') {
+            alert('Please attach signed signature');
+            return false;
+        }
+
+        $("#Approval_errorMessage").hide();
+        var text = "";
+        text = "You are about to update this application with " + Action + " status." +
+            " Press confirm to proceed, or close to stay on the current page.";
+
+        $("#btnApproval").attr("onclick", "Approval('" + Action + "')");
+        $("#ApprovalText").text(text);
+        $("#ApprovalConfirmationModal").modal();
+    }
+
+    function Approval(ActionType) {
+        var ID = '@Model.Item2.SourceID';
+        var TaskID = '@Model.Item2.TaskID';
+        var Comment = $('#Approval_txtComments').val();
+        var PositionNo = $('#PositionNo').val();
+
+
+        $("#ApprovalConfirmationModal").modal("hide");
+        $("#divLoading").show();
+        var data = {
+            SourceID: ID, ActionType: ActionType, Comment: Comment, TaskID: TaskID
+        }
+
+        var formData = new FormData();
+        var inputfile = document.getElementById('SignatureFile');
+        
+        formData.append('file', inputfile.files[0]);
+        formData.append('SourceID', ID);
+        formData.append('ActionType', ActionType);
+        formData.append('Comment', Comment);
+        formData.append('TaskID', TaskID); 
+
+        $.ajax({
+            type: "POST",
+            url: '@Url.Action("ApproveReject", "VerificationLetter")',
+            data: formData,
+            processData: false,
+            contentType: false, 
+            success: function (content) {
+                $("#divLoading").hide();
+                $("#approvalResultMessage").html(content.Message);
+                $("#approvalResultModal").modal();
+                if (content.Success) {
+                    $("#btnApprovalOK").click(function () {
+                        location.href = '@Url.Action("RequestIntray", "VerificationLetter")';
+                    });
+                }
+                else {
+                    $("#btnApprovalOK").click(function () {
+                        $("#approvalResultModal").modal('hide');
+                    });
+                }
+            },
+            error: function (err) {
+                $("#divLoading").hide();
+            }
+        });
+    }
+
+
+    function GenerateWordDoc() {
+        UpdateAddressTo();
+
+        var signature = $("#Signature").val();
+        var formType = $("#FormType").val();
+        var ID = $('#ID').val();
+    
+        $.ajax({
+            url: '@Url.Action("GenerateHTML", "VerificationLetter")',
+            cache: false,
+            data: { RequestID: ID, Signature: signature },
+            success: function (test) {
+                var html = test;
+
+                var blob = new Blob(['\ufeff', html], {
+                    type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+                });
+
+                // Specify link url
+                var url = 'data:application/vnd.ms-word;charset=utf-8,' + encodeURIComponent(html);
+
+                // Specify file name
+                filename = formType + '.doc';
+
+                // Create download link element
+                var downloadLink = document.createElement("a");
+
+                document.body.appendChild(downloadLink);
+
+                if (navigator.msSaveOrOpenBlob) {
+                    navigator.msSaveOrOpenBlob(blob, filename);
+                } else {
+                    // Create a link to the file
+                    downloadLink.href = url;
+
+                    // Setting the file name
+                    downloadLink.download = filename;
+
+                    //triggering the function
+                    downloadLink.click();
+                }
+
+                document.body.removeChild(downloadLink);
+                //$('#templateDiv').empty().append(htmlContent);
+                //$('#divLoading').hide();
+            },
+            error: function (err) {
+                alert("Error:" + err);
+            }
+        });
+    }
+</script>

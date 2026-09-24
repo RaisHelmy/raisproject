@@ -1,0 +1,145 @@
+﻿@{
+    Layout = null;
+
+    var AttendeeList = ViewData["AttendeeList"] + "";
+    string EmployeeNameList = string.Empty;
+    string PickMode = ViewData["PickMode"] + "";
+    string SearchType = string.Empty;
+    if(ViewData["SearchType"] != null)
+    {
+        SearchType = ViewData["SearchType"].ToString();
+    }
+
+    if (!string.IsNullOrEmpty(AttendeeList))
+    {
+        //PickMode = "";
+        string[] EmployeeID = AttendeeList.Split(',');
+
+        foreach(string ID in EmployeeID)
+        {
+            EmployeeNameList += ESS.Core.Common.GetEmployeeCode(ID) + " - " +ESS.Core.Common.GetEmployeeName(ID) + ",";
+        }
+    }
+
+    EmployeeNameList = EmployeeNameList.TrimEnd(',');
+}
+
+
+<div>
+    <div id="EmpName" class="input-group col-md-12">
+        <div id="txtEmpName" class="hide" style="width:90%"></div>
+        <textarea id="Textarea" class="form-control" style="width:100%;height:150px;float:left;" readonly>@EmployeeNameList</textarea>
+        @if (PickMode == "Add")
+        {
+            <div class="" style="width:1%;float:left;">
+                <span class="input-group-btn">
+                    <btn style="margin-right:10px;" data-toggle="modal" onclick="clearDataTable()" class="btn default"><i class="fa fa-group"></i></btn>
+                </span>
+                <span class="input-group-btn">
+                    <btn data-toggle="modal" onclick="clearData()" class="btn default"><i class="fa fa-times"></i></btn>
+                </span>
+            </div>
+        }
+    </div>
+    <input type="hidden" id="hfEmpID" name="hfEmpID" value="@AttendeeList"/>
+</div>
+
+
+<div class="modal fade" id="PeoplePicker" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                <h4 class="modal-title">People Picker - Select By Employee Number or Name</h4>
+            </div>
+            <div class="modal-body">
+                <div>
+                    @Html.Action("Index", "MultiPeoplePicker", new { SearchType = SearchType})
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn default green" onclick="SetSelectedEmployee()">Select</button>
+                <button type="button" class="btn default" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script type="text/javascript">
+    $(document).ready(function () {
+        var EmployeeName = '@EmployeeNameList'.split(',');
+        var EmpNm = "";
+ 
+        $.each(EmployeeName, function (index, value) {
+            EmpNm += value + "\n";
+        });
+       
+        $("#Textarea").val(EmpNm);
+        $("#hfEmpID").val('@AttendeeList');
+    });
+
+    function SetSelectedEmployee() {
+        var txtEmpNm = "";
+        var EmployeeID = "";
+        var txtEmpNm2 = "";
+
+        //
+        EmployeeID = $("#hfEmpID").val().trim();
+        txtEmpNm2 = $("#Textarea").val().trim();
+        if (txtEmpNm2.length != 0) {
+            txtEmpNm2 = txtEmpNm2 + "\n";
+        }
+
+        if (EmployeeID.length != 0) {
+            EmployeeID = EmployeeID + ",";
+        }
+        //
+
+        var oTable = $('#tblPeoplePicker').dataTable();
+        var rowcollection = oTable.$("td input[type=checkbox]", { "page": "all" });
+
+        rowcollection.each(function () {
+            var _selected = $(this).prop("checked");
+
+            if (_selected) {
+
+                if ($("#" + $(this).attr("empcode")).length == 0) {
+                    txtEmpNm = txtEmpNm + "<input id='" + $(this).attr("empcode") + "' name=\"InputEmpName\" class=\"form-control\" readonly value='" + $(this).attr("empcode") + ' - ' + $(this).attr("empName") + "'/>";
+                    EmployeeID = EmployeeID + $(this).val() + ",";
+
+                    txtEmpNm2 = txtEmpNm2 + $(this).attr("empcode") + ' - ' + $(this).attr("empName") + "\n";
+                }
+            }
+
+        });
+        EmployeeID = EmployeeID.slice(0, -1);
+        $("#txtEmpName").append(txtEmpNm);
+        $("#hfEmpID").val(EmployeeID);
+        $('#PeoplePicker').modal('toggle');
+        $("#Textarea").val(txtEmpNm2);
+
+        //Implement this function to do something after employee is selected
+        if (typeof (MultiPeoplePickerEmployeeSelected) == 'function') {
+            MultiPeoplePickerEmployeeSelected();
+        }
+    }
+
+    function clearDataTable() {
+        $("#PeoplePickerResult").empty();
+        $("#txtEmpCodeSearch").val("");
+        $("#txtEmpCodeSearch").val("");
+        $('#PeoplePicker').modal();
+    }
+
+    function clearData() {
+        $("input[name='InputEmpName']").remove();
+        $("#Textarea").val("");
+        $("#hfEmpID").val("");
+
+        //Implement this function to do something after employee is selected
+        if (typeof (MultiPeoplePickerEmployeeCleared) == 'function') {
+            MultiPeoplePickerEmployeeCleared();
+        }
+    }
+</script>

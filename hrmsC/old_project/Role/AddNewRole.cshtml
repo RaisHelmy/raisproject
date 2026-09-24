@@ -1,0 +1,199 @@
+﻿@model List<ESS.Core.DropDownObject>
+
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="row">
+    <div class="col-md-12">
+        <!-- BEGIN PAGE TITLE & BREADCRUMB-->
+        <br />
+        <h1 class="page-title">
+            Add New Role<span style="padding-left:20px;"><small></small></span>
+        </h1>
+        <!-- END PAGE TITLE & BREADCRUMB-->
+    </div>
+</div>
+<!-- END PAGE HEADER-->
+<br />
+
+@using (Html.BeginForm("PerformAddNewRole", "Role", FormMethod.Post, new { @id = "AddNewRole", @class = "form-horizontal" }))
+{
+    <div class="portlet box blue">
+        <div class="mini-triangle"><img src="../Assets/img/menu-red-triangle.png" /></div>
+        <div class="portlet-title">
+            <div class="caption">
+                <i class="fa fa-reorder"></i>Employee Details
+            </div>
+        </div>
+        <div class="portlet-body form">
+            <div class="form-body">
+                <div class="row">
+                    <div class="col-md-8">
+                        <div class="form-horizontal">
+                            <div class="form-group">
+                                <label class="control-label col-md-4">Module:</label>
+                                <div class="col-md-8">
+                                    <p class="form-control-static">
+                                        @Html.DropDownList("Module", new SelectList(Model, "Value", "Text"), "Select One", new { @class = "bs-select form-control", onchange = "ModuleChange()" })
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label col-md-4">Role:</label>
+                                <div class="col-md-8">
+                                    <p class="form-control-static">
+                                        @Html.DropDownList("Role", Enumerable.Empty<SelectListItem>(), "Select One", new { @class = "bs-select form-control", onchange = "RoleChange()" })
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label col-md-4">Employee:</label>
+                                <div class="col-md-8 form-control-static">
+
+                                    @Html.Partial("_PeoplePicker")
+                                    @*PeoplePicker hiddenfieldid = hfEmpID, textboxid =txtEmpName*@
+
+                                </div>
+                            </div>
+                            <div id="orgStructure">
+                                @Html.Action("OrgStrucDropDown")
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-actions fluid">
+                    <div class="row">
+                        <div class="col-md-6">
+                        </div>
+                        <div class="col-md-6">
+                            <div class="col-md-offset-6 col-md-6">
+                                <a class="btn green" data-toggle="modal" href="#ConfirmAddRole" onclick="javascript: ValidateRole(this)">
+                                    <i class="fa fa-pencil"></i>Submit
+                                </a>
+                                <a class="btn default" id="btnBack" onclick="window.history.back()">
+                                    Back
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal-->
+    <div class="modal fade" id="ConfirmAddRole" tabindex="-1" role="basic" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                    <h4 class="modal-title">Confirmation - Submit This Record</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="well">
+                        Clicking Submit will insert this record into the database. If you want to discard the changes, click Close.
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn default green" id="btnAddRole">
+                        <i class="fa fa-check"></i>
+                        Submit
+                    </button>
+                    <button type="button" class="btn default" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+<script type="text/javascript">
+    function ModuleChange() {
+        var Url = '@Url.Content("~/RoleMaintenance/GetRole")';
+
+        var ddlSource = '#Module';
+        var ddlTarget = '#Role';
+
+        if ($(ddlSource).val() != "") {
+            $.ajaxSetup({ cache: false });
+            $.getJSON(Url, { moduleID: $(ddlSource).val() }, function (data) {
+                $(ddlTarget).empty();
+                $("#Role").append("<option  value=''>Select One</option>");
+                $.each(data, function (index, optionData) {
+                    $("#Role").append("<option value='" + optionData.Value + "'>" + optionData.Text + "</option>");
+                });
+            });
+        }
+        else {
+            $("#Role").empty();
+            $("#Role").append("<option value=''>Select One</option>");
+        }
+    }
+
+    function SetSelectedEmployee() {
+        $("#tblPeoplePicker td input[type=radio]").each(function () {
+            var _selected = $(this).prop("checked");
+
+            if (_selected) {
+                $("#txtEmpName").val($(this).attr("EmpName"));
+                $("#hfEmpID").val($(this).val());
+
+                $('#PeoplePicker').modal('toggle');
+            }
+        });
+    }
+
+    // Validation Function
+    function ValidateRole(element) {
+        var ValidationMsg = '';
+
+        if ($("#Module option:selected").val() == '')
+            ValidationMsg += '- Module  is required.\n';
+
+
+        if ($("#Role option:selected").val() == '')
+            ValidationMsg += '- Role  is required.\n';
+
+        if ($("#txtEmpName").val() == '')
+            ValidationMsg += '- Employee is required.\n';
+
+        //var _selectedDivision = $("#Role option:selected").html();
+
+        //if (_selectedDivision.indexOf('Group') != 0) {
+        //    if ($("#Division option:selected").val() == '')
+        //        ValidationMsg += '- Division is required.\n';
+
+        //    if ($("#Department option:selected").val() == '')
+        //        ValidationMsg += '- Department is required.\n';
+
+        //    if ($("#UnitSection option:selected").val() == '')
+        //        ValidationMsg += '- Unit/Section is required.\n';
+        //}
+
+        // Consolidate Message
+        if (ValidationMsg != null && ValidationMsg != '') {
+            $(element).attr('href', function () {
+                return this.href = '';
+            });
+            alert(ValidationMsg);
+
+        }
+        else {
+            $(element).attr('href', function () {
+                return this.href = '#ConfirmAddRole';
+            });
+        }
+
+    }
+
+    function RoleChange() {
+        var selectedRole = $("#Role :selected").text();
+        if (selectedRole.toLowerCase().indexOf("re-assign") >= 0) {
+            $("#orgStructure").hide();
+            console.log("item got hidden");
+        }
+        else
+        {
+            $("#orgStructure").show();
+        }
+    }
+</script>

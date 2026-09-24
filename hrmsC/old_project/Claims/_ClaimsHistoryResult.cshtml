@@ -1,0 +1,114 @@
+﻿@model List<ESS.Claim.Service.ClaimHistory>
+@{
+    Layout = null;
+}
+
+<div class="portlet box blue">
+    <div class="mini-triangle"><img src="../Assets/img/menu-red-triangle.png" /></div>
+    <div class="portlet-title">
+        <div class="caption">
+            <i class="fa fa-reorder"></i>My Claims History
+        </div>
+        <div class="tools">
+        </div>
+    </div>
+    <div class="portlet-body form">
+        <div class="form-body">
+            <div class="form-horizontal">
+                <div class="table-toolbar">
+                    @*<table id="tblResult" class="table table-striped table-bordered table-hover table-condensed">*@
+                        <table id="tblResult" class="table table-striped table-bordered table-hover table-full-width">
+                            @*<table class="table table-condensed table-striped  table-hover table-bordered">*@
+                            <thead>
+                                <tr>
+                                    <th></th>
+                                    <th>Reference No.</th>
+                                    <th>Claims Category</th>
+                                    <th>Travel Start Date</th>
+                                    <th>Travel End Date</th>
+                                    <th>Nett Claims (RM)</th>
+                                    <th>Status</th>
+                                    <th>Remarks</th>
+                                    <th>Created Date</th>
+                                </tr>
+                            </thead>
+
+                            <tbody>
+                                @foreach (var item in @Model)
+                                {
+                                    string ShortRemark = string.Empty;
+
+                                    if (item.Remarks.Length > 100)
+                                    {
+                                        ShortRemark = item.Remarks.Substring(0, 100) + "...";
+                                    }
+                                    else
+                                    {
+                                        ShortRemark = item.Remarks;
+                                    }
+
+                                    <tr>
+                                        <td>
+                                            @if (@item.ClaimCategoryCode != "CIS01")
+                                            {
+                                                <a class="btn blue btn-sm" href="@Url.Content("~/Claims/Index")?ID=@item.RequestID">
+                                                    <i class="fa fa-edit"></i>
+                                                </a>
+                                            }
+                                            else
+                                            {
+                                                <a class="btn blue btn-sm" href="@Url.Content("~/Claims/ViewILSASClaims")?ID=@item.RequestID">
+                                                    <i class="fa fa-edit"></i>
+                                                </a>
+                                            }
+                                        </td>
+                                        <td>@item.ReferenceNo</td>
+                                        <td>@item.ClaimCategoryName</td>
+                                        <td>@item.StartDate</td>
+                                        <td>@item.EndDate</td>
+                                        <td>@item.NettAmount</td>
+                                        @if (@item.Status == "Returned" || @item.Status == "Withdrawn")
+                                        {
+                                            <td style="color:red;"><b>@item.Status</b></td>
+                                        }
+                                        else
+                                        {
+                                            <td style="color:green;"><b>@item.Status</b></td>
+                                        }
+
+                                        <td style="width:300px; white-space: normal !important; word-wrap: break-word; ">
+                                            <div title="@item.Remarks">
+                                                @ShortRemark
+                                            </div>
+                                        </td>
+
+                                        @if (@item.CreatedDate.HasValue)
+                                        {
+                                            <td>@item.CreatedDate.Value.ToString("dd-MM-yyyy")</td>
+                                        }
+                                        else
+                                        {
+                                            <td>-</td>
+                                        }
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+</div>
+            </div>
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+    transformTable("#tblResult");
+</script>
+
+<style>
+    /*td {
+  white-space: normal !important; 
+  word-wrap: break-word;  
+}*/
+/*table {
+  table-layout: fixed;
+}*/
+</style>

@@ -1,0 +1,169 @@
+﻿@model List<ESS.Employee.Models.EmployeeRequestDetail>
+@using ESS.Employee;
+@{
+    string ID = "";
+    string module = "EmployeeRequestDetail";
+}
+<div class="form-body">
+    <div class="form-horizontal">
+        <div class="table-toolbar">
+
+            <table id="tblResultRequestDetails" class="table table-striped table-bordered table-hover table-full-width">
+                <thead>
+                    <tr>
+                        <th>Field Name</th>
+                        <th>Old Value</th>
+                        <th>New Value</th>
+                        <th>Supporting Doc</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in @Model)
+                    {
+                        <tr>
+                            <td>
+                                @((string.IsNullOrEmpty(item.FieldName)) ? "-" : item.FieldName)
+                            </td>
+                           
+                            <td>
+                                @{ 
+                                    string OldValue = item.OldValue;
+                                    if (item.FieldName.Contains("Date"))
+                                    {
+
+                                        DateTime isOldValue = DateTime.Now;
+                                        if (!String.IsNullOrEmpty(OldValue + ""))
+                                        {
+                                            isOldValue = DateTime.ParseExact(OldValue + "", "yyyy/MM/dd",
+                                              System.Globalization.CultureInfo.InvariantCulture);
+                                            OldValue = isOldValue.ToString("dd/MM/yyyy");
+                                        }
+
+                                    }
+                                }
+
+                                @((string.IsNullOrEmpty(OldValue)) ? "-" : OldValue)
+                                
+                            </td>
+                            <td>
+                                @{
+                                    string NewValue = item.NewValue;
+                                    if (item.FieldName.Contains("Date"))
+                                    {
+
+                                        DateTime isNewValue = DateTime.Now;
+                                        if (!String.IsNullOrEmpty(NewValue + ""))
+                                        {
+                                            isNewValue = DateTime.ParseExact(NewValue + "", "yyyy/MM/dd",
+                                              System.Globalization.CultureInfo.InvariantCulture);
+                                            NewValue = isNewValue.ToString("dd/MM/yyyy");
+                                        }
+
+                                    }
+                                }
+
+                                @((string.IsNullOrEmpty(NewValue)) ? "-" : NewValue)
+                            </td>
+                            <td>
+                                @if (item.Documents == 0)
+                                {
+                                    @item.Documents;
+                                }
+                                else
+                                {
+                                    <a href="#HistoryDetail" class="ViewAttachment"
+                                       data-DetailID="@item.DetailID">
+                                        @item.Documents
+                                    </a>
+                                }
+                                
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@*<div class="modal fade" id="FormModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                <h4 id="ConfirmationDialog_Title" class="modal-title"></h4>
+            </div>
+            <div class="modal-body">
+                <div id="AttachmentInfo" class="row">
+                    <div class="col-md-12">
+                        <div class="EmployeePortlet portlet box blue">
+                            <div class="mini-triangle"><img src="../Assets/img/menu-red-triangle.png" /></div>
+                            <div class="portlet-title">
+                                <div class="caption">
+                                    <i class="fa fa-reorder"></i>Attachment Info
+                                </div>
+                                <div class="tools">
+                                    <a href="javascript:;" class="collapse" id="hideAttachmentInfo">
+                                    </a>
+                                </div>
+                            </div>
+                            <div class="portlet-body form" id="_Form">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn default" data-dismiss="modal">
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
+</div>*@
+
+@*<script type="text/javascript">
+    transformTable("#tblResultRequestDetails");
+</script>*@
+
+<script>
+    $('.ViewAttachment').click(function (e) {
+        e.preventDefault();
+        var DetailID = $(this).attr('data-DetailID');
+
+        var EmployeeID = $("#EmployeeID").val();
+
+        var Action = 'View';
+
+        $("#FormCategory").val("@module");
+        $("#FormAction").val(Action);
+        var url="@Url.Content("~/Employee/GetAttachment")";
+        var data = {
+            EmployeeID: EmployeeID,
+            DetailID: DetailID,
+        };
+
+        $('#FormModal').modal();
+        $("#ConfirmationDialog_Title").html("View Supporting Document");
+        $("#_Form").html("LOADING...");
+
+        $("#divLoading").show();
+
+        $.ajax({
+            type: "GET",
+            url: url,
+            //   link.NavigateUrl = "javascript:openWindow('ProfileEmergency.aspx?EmployeeID=" + profileID + "&FamilyNo=" + familyNo + "', 'ProfileEmergency', '700', '370')";
+            cache: false,
+            dataType: "html",
+            data: data,
+            success: function (content) {
+                $("#_Form").html(content);
+            },
+            error: function (e) {
+                console.log(e);
+            }
+        });
+
+        setTimeout(function () { $("#divLoading").hide(); }, 1000);
+    });
+</script>

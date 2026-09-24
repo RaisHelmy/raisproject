@@ -1,0 +1,314 @@
+﻿@using ESS.Core
+@model Tuple<List<ESS.Core.DropDownObject>, List<ESS.Core.DropDownObject>>
+
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewBag.Title = "Report Statistic";
+    DateTime d1 = DateTime.Now.AddYears(-20);
+    DateTime d2 = DateTime.Now.AddYears(20);
+    string dtStrStart = d1.ToString("dd MMM yyyy");
+    string dtStrEnd = d2.ToString("dd MMM yyyy");
+
+    if (!(ESS.EPop.Service.isApprover(Common.GetEmployeeID(), "SSC") || ESS.EPop.Service.isApprover(Common.GetEmployeeID(), "HRBP")))
+    {
+        Response.Redirect("~/AccessControl/ErrorPermission");
+    }
+}
+<div class="row">
+    <div class="col-md-12">
+        <br />
+        <h1 class="page-title">
+            EPOP - Report By Statistic<span style="padding-left:20px;"><small></small></span>
+        </h1>
+    </div>
+</div>
+<br />
+<input type="hidden" id="hfEmployeeID" value="@ViewBag.EmployeeID" />
+<div class="form-body">
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-4 control-label">Start Date</label>
+                    <div class="col-md-8 form-control-static">
+                        <div class="input-group date date-picker" id="divSubmissionDateFrom" data-date-format="dd MM yyyy">
+                            <input type="text" class="form-control" id="SubDateFrom" name="SubDateFrom" />
+                            <span class="input-group-btn">
+                                <button type="button" class="btn default"><i class="fa fa-calendar"></i></button>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-4 control-label">End Date</label>
+                    <div class="col-md-8 form-control-static">
+                        <div class="input-group date date-picker" id="divSubmissionDateTo" data-date-format="dd MM yyyy">
+                            <input type="text" class="form-control" id="SubDateTo" name="SubDateTo" />
+                            <span class="input-group-btn">
+                                <button type="button" class="btn default"><i class="fa fa-calendar"></i></button>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-4 control-label">Company</label>
+                    <div class="col-md-8 form-control-static">
+                        @Html.DropDownList("Company", new SelectList(Model.Item1, "Value", "Text"), "- All -", new { @class = "bs-select form-control", @onchange = "changeCompany(this)"})
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 DepartmentDiv">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-4 control-label">Division / Department</label>
+                    <div class="col-md-8 form-control-static">
+                        @Html.Action("_DDLDepartment", "Training", new { })
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-6 hidden">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-4 control-label">Unit / Section</label>
+                    <div class="col-md-8 form-control-static">
+                        @Html.Action("_DDLUnitSection", "Training", new { })
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-4 control-label">Category</label>
+                    <div class="col-md-8 form-control-static">
+                        <select name="ExecutiveCategory" class="bs-select form-control" id="ExecutiveCategory">
+                            <option value="">- All -</option>
+                            <option value="Non-Executive">Non-Executive</option>
+                            <option value="Executive">Executive</option>
+                            <option value="Specialist">Specialist</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">&nbsp;</div>
+    <div class="row">
+        <div class="col-md-12">
+            <div class="text-right">
+                <input type="button" id="btn-Search" class="btn green btn-Search" value="Search" onclick="SearchListing();">
+            </div>
+        </div>
+    </div>
+
+    <div class="row">&nbsp;</div>
+    <div class="row">
+        <div class="col-md-12">
+            <div id="SearchResult">
+
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<script type="text/javascript">
+    var EmployeeID = '';
+
+    jQuery(document).ready(function () {
+        //var _Today = new Date();
+        //_Today.setDate(_Today.getDate());
+        //var _Start = ConvertDate(_Today);
+
+        var now = new Date();
+        var _Start = new Date('2000', now.getMonth(), now.getDate());
+
+        $('#SubDateFrom').val(convertDate2(_Start));
+
+        $('#SubDateTo').val(convertDate2(new Date()));
+
+        $('#divSubmissionDateFrom').datepicker('setStartDate', '@dtStrStart');
+        $('#divSubmissionDateFrom').datepicker('setEndDate', '@dtStrEnd');
+
+        $('#divSubmissionDateTo').datepicker('setStartDate', '@dtStrStart');
+        $('#divSubmissionDateTo').datepicker('setEndDate', '@dtStrEnd');
+
+        $("#divSubmissionDateFrom").datepicker({
+            autoclose: true,
+        }).on('changeDate', function (selected) {
+            var minDate = new Date(selected.date.valueOf());
+
+            minDate.setDate(minDate.getDate() + 1);
+            $('#divSubmissionDateTo').datepicker('setStartDate', minDate);
+        });
+
+        $("#divSubmissionDateTo").datepicker({
+            autoclose: true,
+        })
+            .on('changeDate', function (selected) {
+                var minDate = new Date(selected.date.valueOf());
+                minDate.setDate(minDate.getDate() - 1);
+                $('#divSubmissionDateFrom').datepicker('setEndDate', minDate);
+            });
+
+        $("#SubDateFrom").on("blur", function (e) {
+            if ($('#SubDateFrom').val() == "") {
+                $('#divSubmissionDateTo').datepicker('setStartDate', '@dtStrStart');
+            }
+
+        });
+
+        $("#SubDateTo").on("blur", function (e) {
+            if ($('#SubDateTo').val() == "") {
+                $('#divSubmissionDateFrom').datepicker('setEndDate', '@dtStrEnd');
+            }
+
+        });
+
+        $('.DepartmentDiv').addClass("hidden");
+        SearchListing();
+
+    });
+
+    function ConvertDate(_date) {
+        var mnth = ("0" + (_date.getMonth() + 1)).slice(-2),
+            day = ("0" + _date.getDate()).slice(-2);
+
+        return [mnth, day, _date.getFullYear()].join("/");
+    }
+
+    function convertDate2(inputFormat) {
+        function pad(s) { return (s < 10) ? '0' + s : s; }
+        var monthNames = ["January", "February", "March", "April", "May", "June",
+        "July", "August", "September", "October", "November", "December"
+        ];
+
+        var d = new Date(inputFormat);
+        return [pad(d.getDate()), monthNames[d.getMonth()], d.getFullYear()].join(' ');
+    }
+
+
+    function ExportExcel() {
+        var dt = new Date();
+        var day = dt.getDate();
+        var month = dt.getMonth() + 1;
+        var year = dt.getFullYear();
+        var hour = dt.getHours();
+        var mins = dt.getMinutes();
+        var postfix = day + "." + month + "." + year + "_" + hour + "." + mins;
+
+        var _SubmitterID = "@ViewBag.EmployeeID";
+        var _CompanyCode = $('#Company option:selected').val();
+        var _DepartmentCode = $('#Department option:selected').val();
+        var _UnitSectionCode = $('#UnitSection option:selected').val();
+        var _Category = $('#ExecutiveCategory option:selected').val();
+        var _StartDate = $('#SubDateFrom').val();
+        var _EndDate = $('#SubDateTo').val();
+
+        var JsonObjectFilter = {
+            "SubmitterID": _SubmitterID,
+            "StartDate": _StartDate,
+            "EndDate": _EndDate,
+            "Category": _Category,
+            "Division": _CompanyCode,
+            "Department": _DepartmentCode,
+            "UnitSection": _UnitSectionCode
+        }
+
+        var Filter = JSON.stringify(JsonObjectFilter);
+
+        window.open("../EPOP/_ExportToExcelGeneral?FileName=EPOP_ReportStatistic" + postfix +
+                    "&ReportCategory=" + "ReportByStatistic" +
+                    "&Filter=" + Filter);
+    }
+
+
+    function SearchListing() {
+        var _CompanyCode = $('#Company option:selected').val();
+        var _DepartmentCode = $('#Department option:selected').val();
+        var _UnitSectionCode = $('#UnitSection option:selected').val();
+        var _Category = $('#ExecutiveCategory option:selected').val();
+        var _StartDate = $('#SubDateFrom').val();
+        var _EndDate = $('#SubDateTo').val();
+
+        $("#SearchResult").html("LOADING...");
+
+        $.ajax({
+            type: "GET",
+            url: '@Url.Content("~/EPOP/_ReportStatisticResult")',
+            cache: false,
+            dataType: "html",
+            data: {
+                SubmitterID: "@ViewBag.EmployeeID",
+                StartDate: _StartDate, EndDate: _EndDate,
+                Category: _Category,
+                Division: _CompanyCode, Department: _DepartmentCode,
+                UnitSection: _UnitSectionCode
+
+            },
+            success: function (content) {
+                $("#SearchResult").html(content);
+            },
+            error: function (e) {
+                console.log(e);
+            }
+        });
+    }
+
+    function changeCompany(e) {
+        var a = $('#Company option:selected').val();
+        if (a == "4001") {
+            $('.DepartmentDiv').removeClass("hidden");
+            $.ajax({
+                type: "GET",
+                url: '@Url.Content("~/EPOP/_DDLDepartment")',
+                cache: false,
+                dataType: "html",
+                data: { CompanyCode: e.value, RoleCode: "@ViewBag.RoleCode" },
+                success: function (content) {
+                    $("#Department").html(content);
+                },
+                error: function (e) {
+                    console.log(e);
+                }
+            });
+        }
+        else {
+            $('.DepartmentDiv').addClass("hidden");
+        }
+
+    }
+
+    function changeDepartment(e) {
+        $.ajax({
+            type: "GET",
+            url: '@Url.Content("~/EPOP/_DDLUnitSection")',
+            cache: false,
+            dataType: "html",
+            data: { DepartmentCode: e.value, RoleCode: "@ViewBag.RoleCode"},
+            success: function (content) {
+                $("#UnitSectionResult").html(content);
+            },
+            error: function (e) {
+                console.log(e);
+            }
+        });
+    }
+
+</script>

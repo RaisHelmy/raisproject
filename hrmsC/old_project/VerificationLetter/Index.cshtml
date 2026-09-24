@@ -1,0 +1,361 @@
+﻿@model VerificationLetter.Models.VerificationModel
+@{
+	ViewBag.Title = "Verification Letter";
+	Layout = "~/Views/Shared/_Layout.cshtml";
+	SelectListItem no = new SelectListItem() { Value = "0", Text = "No" };
+	SelectListItem yes = new SelectListItem() { Value = "1", Text = "Yes" };
+
+	List<SelectListItem> list = new List<SelectListItem>();
+	list.Add(yes);
+	list.Add(no);
+	SelectList signatureDDL = new SelectList(list, "Value", "Text");
+
+	var url = string.Format("{0}://{1}{2}", Request.Url.Scheme, Request.Url.Authority, Url.Content("~"));
+
+
+	Dictionary<string, object> htmlAttributes2 = new Dictionary<string, object>();
+	htmlAttributes2.Add("class", "form-control");
+	htmlAttributes2.Add("rows", "5");
+	if (!string.IsNullOrEmpty(Model.ID))
+	{
+		htmlAttributes2.Add("readonly", "readonly");
+	}
+}
+
+<style>
+    .form-group {
+        margin-bottom: 5px;
+    }
+</style>
+
+<!-- Loading Gif -->
+<div id="divLoading" style="margin: 0px; padding: 0px; position: fixed; right: 0px; top: 0px; width: 100%; height: 100%; background-color: gainsboro; z-index: 30001; opacity: .8; filter: alpha(opacity=70); display: none; ">
+    <p style="position: absolute; top: 30%; left: 30%; color: black;">
+        Performing action, please wait...<img src="/_layouts/15/TNBESS/Assets/img/ajax-loading.gif">
+    </p>
+</div>
+
+<div class="form-section">
+    <div class="row">
+        <div class="col-md-12">
+            <h1 class="page-title">
+                Verification Letter
+            </h1>
+        </div>
+    </div>
+</div>
+
+@Html.Action("_RequestorDetails", "VerificationLetter", new { ID = Model.ID })
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="portlet box blue">
+            <div class="mini-triangle"><img src="~/Assets/img/menu-red-triangle.png" /></div>
+            <div class="portlet-title">
+                <div class="caption">
+                    <i class="fa fa-reorder"></i>Application Details
+                </div>
+                <div class="tools">
+                    <a href="javascript:;" class="collapse" id="hidePersonalInfo"></a>
+                </div>
+            </div>
+            <div class="portlet-body form">
+                <div class="form-horizontal">
+                    <form id="verificationform">
+                        <div class="form-body">
+
+                            <div class="form-group">
+                                <label class="control-label col-md-2">
+                                    Form Type
+                                    <span style="color:red">*</span>
+                                </label>
+                                <div class="col-md-6">
+                                    @Html.DropDownListFor(m => m.FormType, new SelectList(ViewBag.FormType, "Value", "Text"), new { @class = "bs-select form-control" })
+                                </div>
+                            </div>
+                            <div class="form-group" style="display:none">
+                                <label class="col-md-2 control-label">Require Signature</label>
+                                <div class="col-md-6">
+                                    @Html.DropDownListFor(m => m.RequireSignature, signatureDDL, new { @class = "bs-select form-control" })
+                                </div>
+                            </div>
+                            <div id="templateDiv">
+
+                            </div>
+
+                            
+                            
+
+                            <div class="form-group">
+                                <label class="col-md-2 control-label">
+                                    Nota
+                                </label>
+                                <div class="col-md-6">
+                                    @Html.TextAreaFor(m => m.Remarks, htmlAttributes2)
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <button class="btn green" type="button" id="btnSubmit" onclick="javascript: submitVL();">Submit</button>
+
+        @*<button class="btn green" type="button" id="btnGenerate">Generate PDF</button>*@
+    </div>
+</div>
+
+<div class="modal fade" id="VLModal" tabindex="-1" aria-hidden="true" data-status="">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                <h4 class="modal-title">Confirmation</h4>
+            </div>
+            <div class="modal-body">
+                <div class="well">
+                    Are you sure you want to <p id="modalAction" style="display:inline">submit</p> this verification letter request <br />
+                    Press Confirm to proceed, or Close to stay on the current page.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn default blue" id="btnConfirm" value="Submit">
+                    <i class="fa fa-check"></i>
+                    Confirm
+                </button>
+                <button type="button" id="btnClose" class="btn default" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Success Message -->
+<div class="modal fade" id="resultModal" tabindex="-1" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header Success-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true" style="display: none;"></button>
+                <h4 class="Success-title">Action Successfully Completed</h4>
+            </div>
+            <div class="modal-body Success-body">
+                <div class="well">
+                    <p id="resultModalBody">Your verification letter request has been successfully submitted.</p>
+                </div>
+            </div>
+            <div class="modal-footer Success-footer">
+                <button type="button" class="btn default blue" id="btnOK">
+                    <i class="fa fa-check"></i>
+                    OK
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<script>
+    $(document).ready(function () { 
+        $('#FormType').trigger('change');
+        $('#RequireSignature').trigger('change');
+    });
+
+    $("#RequireSignature").change(function () {
+        var results = $(this).val();
+        var objSelect = document.getElementById("DeliveryCode");
+        if (results == 0) {
+            //not require signature
+            //$("#DeliveryCode").val("D1");
+            $("#DisabledDeliveryCode").removeClass("hidden");
+            $("#DeliveryCode").addClass("hidden");
+        }
+        else
+        {
+            //require signature
+            $("#DisabledDeliveryCode").addClass("hidden");
+            $("#DeliveryCode").removeClass("hidden");
+        }
+    });
+
+    $('#FormType').change(function () {
+        var type = $(this).val();
+        var form = "";
+        switch (type) {
+            case 'Surat pengesahan dan butir-butir perkhidmatan':
+            case 'Surat Pengesahan Bujang / Status Perkahwinan':
+                form = "_Bujang";
+                break;
+            case 'Surat Pengesahan and Butir perkhidmatan (Pinjaman Pembelian Kereta Mewah)':
+                form = "_CarPurchase";
+                break;
+            case 'Surat Diskaun Korporat Pembelian Kereta Mewah – M Group':
+            case 'Surat Diskaun Korporat Pembelian Kereta Mewah – M Group (Mercedes)':
+                form = "_CarPurchaseM";
+                break;
+            case 'Surat Pengesahan Pembelian Kenderaan – Eksekutif/Bukan Eksekutif':
+            case 'Surat Pengesahan Pembelian Kenderaan – Eksekutif / Bukan Eksekutif (Mercedes)':
+                form = "_CarPurchaseE";
+                break;
+            case 'Surat Pengesahan and Butir Perkhidmatan (Tanpa Maklumat Gaji)':s
+                form = "_ServiceDetailWithoutSalary";
+                break;
+            case 'Surat Pengesahan and Butir Perkhidmatan (Dengan Maklumat Gaji)':
+                form = "_ServiceDetail";
+                break;
+            default:
+                $('#templateDiv').empty();
+                break;
+        }
+
+        if (form == "")
+            return;
+
+        $('#divLoading').show();
+
+        $.ajax({
+            url: '@url' + '/VerificationLetter/' + form,
+            cache: false,
+            success: function (htmlContent) {
+                $('#templateDiv').empty().append(htmlContent);
+                $('#divLoading').hide();
+            },
+            error: function (err) {
+                $('#divLoading').hide();
+            }
+        });
+    });
+
+    $('#btnGenerate').click(function () {
+        var data = $('#verificationform').serialize();
+        window.location = "@Url.Action("Preview")?" + data;
+    });
+
+    function submitVL() {
+        var promise = displayModal(true);
+
+        var btnClicked = $(this);
+        promise.done(function () {
+            btnClicked.attr('disabled', true);
+
+            $("#VLModal").modal('hide');
+
+            var form = $('#verificationform');
+            var data = form.serialize();
+
+            $('#divLoading').show();
+            $.ajax({
+                type: "POST",
+                url: '@Url.Action("Submit", "VerificationLetter")',
+                data: data,
+                success: function (response) {
+                    $("#resultModal").modal();
+                    $("#resultModalBody").html(response.Message);
+                    $("#btnOK").click(function () {
+                        location.href = '@Url.Action("RequestHistory", "VerificationLetter")';
+                    });
+                },
+                error: function (err) {
+
+                }
+            }).done(function () {
+                $('#divLoading').hide();
+            });
+        });
+    }
+    function displayModal(shouldValidate) {
+        var deferred = $.Deferred();
+
+        if (IsValid == "undefined") {
+            deferred.reject();
+            return deferred;
+        }
+
+        if (shouldValidate && !IsValid()) {
+            deferred.reject();
+            return deferred;
+        }
+        $('#VLModal').modal();
+
+        $('#btnConfirm').click(function () {
+            deferred.resolve();
+        });
+        $('#btnClose').click(function () {
+            deferred.reject();
+        });
+        return deferred;
+    }
+
+    function IsValid()
+    {
+        var form = $('#FormType').val();
+        var errorMessage = "";
+        switch (form) {
+            case 'Surat Pengesahan Bujang':
+                errorMessage = ValidateBujang();
+                break;
+            case 'Surat Pengesahan and Butir perkhidmatan (Pinjaman Pembelian Kereta Mewah)':
+                errorMessage = ValidateCarPurchase();
+                break;
+            case 'Surat Pengesahan Pembelian Kenderaan – Eksekutif/Bukan Eksekutif':
+            case 'Surat Pengesahan Pembelian Kenderaan – Eksekutif / Bukan Eksekutif (Mercedes)':
+                errorMessage = ValidateCarPurchase();
+                break;
+            case 'Surat Diskaun Korporat Pembelian Kereta Mewah – M Group':
+            case 'Surat Diskaun Korporat Pembelian Kereta Mewah – M Group (Mercedes)':
+                errorMessage = ValidateCarPurchase();
+                break;
+            default:
+                break;
+        }
+
+        if (errorMessage != "") {
+            alert(errorMessage);
+            return false;
+        }
+
+        return true;
+    }
+
+    function ValidateBujang() {
+        var errorMessage = "";
+       // errorMessage += $("#AddressTo").val() == "" ? "- Kepada is required. \n" : "";
+        return errorMessage;
+    }
+
+    function ValidateCarPurchase() {
+        var errorMessage = "";
+        errorMessage += $("#AddressTo").val() == "" ? "- Kepada is required. \n" : "";
+        errorMessage += $("#AttentionTo").val() == "" ? "- Attention To is required. \n" : "";
+        //errorMessage += $("#Quantity").val() == "" ? "- Quantity is required. \n" : "";
+        errorMessage += $("#CarModel").val() == "" ? "- Car Model is required. \n" : "";
+
+        return errorMessage;
+    }
+
+    function ValidateCarPurchaseE() {
+        var errorMessage = "";
+        errorMessage += $("#AddressTo").val() == "" ? "- Kepada To is required. \n" : "";
+        errorMessage += $("#AttentionTo").val() == "" ? "- Attention To is required. \n" : "";
+        //errorMessage += $("#Quantity").val() == "" ? "- Quantity is required. \n" : "";
+        errorMessage += $("#CarModel").val() == "" ? "- Car Model is required. \n" : "";
+
+        return errorMessage;
+    }
+
+    function ValidateCarPurchaseM() {
+        var errorMessage = "";
+        //errorMessage += $("#AddressTo").val() == "" ? "- Address To is required. \n" : "";
+        //errorMessage += $("#AttentionTo").val() == "" ? "- Attention To is required. \n" : "";
+        //errorMessage += $("#Quantity").val() == "" ? "- Quantity is required. \n" : "";
+        errorMessage += $("#CarModel").val() == "" ? "- Car Model is required. \n" : "";
+
+        return errorMessage;
+    }
+
+</script>

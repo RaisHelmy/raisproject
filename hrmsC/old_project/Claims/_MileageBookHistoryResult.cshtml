@@ -1,0 +1,71 @@
+﻿@model List<ESS.Core.MileageBookDetails>
+
+@{
+    Layout = null;
+}
+
+<div class="portlet box blue">
+    <div class="portlet-title">
+        <div class="caption">
+            <i class="fa fa-reorder"></i>Mileage Book History
+        </div>
+        <div class="tools">
+        </div>
+    </div>
+    <div class="portlet-body form">
+        <div class="form-body">
+            <div class="form-horizontal">
+                <div class="table-toolbar">
+                    <table id="tblResult" class="table table-striped table-bordered table-hover table-full-width">
+                        <thead>
+                            <tr>
+                                <th></th>
+                                <th>Reference No.</th>
+                                <th>Year</th>
+                                <th>Month</th>
+                                <th>Total Claims</th>
+                                <th>Submission Date</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in @Model)
+                            {
+                                <tr>
+                                    <td>
+                                        <a class="btn blue btn-sm" href="@Url.Content("~/Claims/MileageBookDetails")?ID=@item.ID&Source=History">
+                                            <i class="fa fa-search"></i>
+                                        </a>
+                                    </td>
+                                    <td>@item.ReferenceNo</td>
+                                    <td>@item.Year</td>
+                                    <td>@item.Month</td>
+                                    <td>@item.TotalClaims</td>
+                                    @if (@item.SubmissionDate.HasValue)
+                                    {
+                                        <td>@item.SubmissionDate.Value.ToString("dd-MM-yyyy")</td>
+                                    }
+                                    else
+                                    {
+                                        <td>-</td>
+                                    }
+                                    @if (@item.Status == "Returned" || @item.Status == "Withdrawn")
+                                    {
+                                        <td style="color:red;"><b>@item.Status</b></td>
+                                    }
+                                    else
+                                    {
+                                        <td style="color:green;"><b>@item.Status</b></td>
+                                    }
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+    transformTable("#tblResult");
+</script>

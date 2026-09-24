@@ -1,0 +1,243 @@
+﻿@model Tuple<ESS.StandbyPlanning.Models.StandbyPlanningVM, SEP.RoutingManagement.Models.RoutingRule>
+
+@{
+	Layout = null;
+
+	int i = 0;
+
+    List<DateTime> items = new List<string>(@Model.Item1.StandByDate.Split(',')).Where(s => !string.IsNullOrEmpty(s)).Select(s => DateTime.Parse(s)).OrderBy(d => d).ToList();
+
+    DateTime Today = DateTime.Now;
+
+    DateTime firstDayOfYear = new DateTime(Model.Item1.StandByYear, 1, 1);
+    DateTime lastDayOfYear = new DateTime(Model.Item1.StandByYear, 12, 31);
+
+    DateTime fromDate = (Today.Date).AddDays(-60);
+
+    DateTime toDate = lastDayOfYear;
+
+    string dtStrStart = fromDate.ToString("dd/MM/yyyy");
+    string dtStrEnd = toDate.ToString("dd/MM/yyyy");
+
+}
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="portlet box blue">
+            <div class="mini-triangle"><img src="../Assets/img/menu-red-triangle.png" /></div>
+            <div class="portlet-title">
+                <div class="caption">
+                    <i class="fa fa-reorder"></i>Standby Planning Details
+                </div>
+            </div>
+            <div class="portlet-body form">
+                <div class="form-body">
+                    <div id="trRefNo" class="row">
+                        <div class="col-md-6">
+                            <div class="form-horizontal">
+                                <div class="form-group">
+                                    <label class="control-label col-md-4">Type</label>
+                                    <div class="col-md-8 form-control-static">
+                                        Standby Planning
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-horizontal">
+                                @if ((Model.Item1.CurrentApprovalLevel == 1 && Model.Item1.btnSubmit == true) || (Model.Item1.CurrentApprovalLevel == 0 && Model.Item1.StatusName == "Rework" && Model.Item1.btnSubmit == true))
+                                {
+                                    <div class="form-group">
+                                        <label class="col-md-2 control-label">Charge Code *</label>
+                                        <div class="col-md-10 form-control-static">
+                                            @Html.Partial("SPChargeCodePicker", new Tuple<int?, ESS.StandbyPlanning.Models.StandbyPlanningVM, string>(null, Model.Item1, ""))
+                                        </div>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <div class="form-group">
+                                        <label class="control-label col-md-4">Charge Code</label>
+                                        <div class="col-md-8 form-control-static">
+                                            @Model.Item1.ChargeCode
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row" style="">
+                        <div id="divCurrentApprover" class="col-md-6">
+                            <div class="form-horizontal">
+                                <div class="form-group">
+                                    <label class="control-label col-md-4">Standby Date</label>
+                                    <div class="col-md-8 form-control-static">
+                                        <table id="tblStandbyDate" class="table table-striped table-bordered table-hover table-full-width">
+                                            <thead>
+                                                <tr>
+                                                    <th>No.</th>
+                                                    <th>Date</th>
+                                                    @if ((Model.Item1.CurrentApprovalLevel == 1 && Model.Item1.btnSubmit == true) || (Model.Item1.CurrentApprovalLevel == 0 && Model.Item1.StatusName == "Rework" && Model.Item1.btnSubmit == true))
+                                                    {
+                                                        <th></th>
+                                                    }
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @foreach (var item in items)
+                                                {
+                                                    <tr>
+                                                        <td>
+                                                            @(++i)
+                                                        </td>
+                                                        @if ((Model.Item1.CurrentApprovalLevel == 1 && Model.Item1.btnSubmit == true) || (Model.Item1.CurrentApprovalLevel == 0 && Model.Item1.StatusName == "Rework" && Model.Item1.btnSubmit == true))
+                                                        {
+                                                            <td>
+                                                                <div class="input-group date date-picker" data-date-format="dd MM yyyy">
+                                                                    <input type="text" class="form-control StartDate" value="@item.ToString("dd/MM/yyyy")" readonly />
+                                                                    <span class="input-group-btn">
+                                                                        <button type="button" class="btn default"><i class="fa fa-calendar"></i></button>
+                                                                    </span>
+                                                                </div>
+                                                            </td>
+                                                            <td>
+                                                                <div>
+                                                                    <a onclick='RemoveDate(event);'>Remove</a>
+                                                                </div>
+                                                            </td>
+                                                        }
+                                                        else
+                                                        {
+                                                            <td>
+                                                                <input type="text" class="form-control StartDate" value="@item.ToString("dd/MM/yyyy")" readonly />
+
+                                                            </td>
+                                                        }
+                                                    </tr>
+                                                }
+                                            </tbody>
+                                        </table>
+                                        @if ((Model.Item1.CurrentApprovalLevel == 1 && Model.Item1.btnSubmit == true) || (Model.Item1.CurrentApprovalLevel == 0 && Model.Item1.StatusName == "Rework" && Model.Item1.btnSubmit == true))
+                                        {
+                                            <div style="position: relative; display: flex; align-items: center; justify-content: flex-end;">
+                                                <button class="btn default blue" id="addButton">Add <i class="fa fa-plus"></i></button>
+                                            </div>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-horizontal">
+                                <div class="form-group">
+
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="trRefNo" class="row">
+                        <div class="col-md-12">
+                            <div class="form-horizontal">
+                                <div class="form-group">
+                                    <label class="control-label col-md-2">Description</label>
+                                    <div class="col-md-10 form-control-static">
+                                        @if (Model.Item1.CurrentApprovalLevel == 0 && Model.Item1.StatusName == "Rework" && Model.Item1.btnSubmit == true)
+                                        {
+                                            <textarea id="txtDescription" name="Description" class="form-control" rows="3" cols="60">@Model.Item1.Description</textarea>
+                                        }
+                                        else
+                                        {
+                                            <textarea id="txtDescription" name="Description" class="form-control" rows="3" cols="60" readonly="readonly">@Model.Item1.Description</textarea>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@Html.Action("SPChargeCodeIndex", "StandbyPlanning", new { CurrEmpID = ViewBag.EmployeeID, SearchType = "" })
+
+<script type="text/javascript">
+    $(function () {
+        Initialize();
+
+        $("#addButton").click(function () {
+            addDateRow();
+        });
+    });
+
+    function Initialize() {
+        $('#tblStandbyDate .date-picker').datepicker({
+            format: 'dd/mm/yyyy',
+            autoclose: true,
+        });
+
+        $('#tblStandbyDate .date-picker').datepicker('setStartDate', '@dtStrStart');
+        $('#tblStandbyDate .date-picker').datepicker('setEndDate', '@dtStrEnd');
+    }
+
+    function addDateRow() {
+        rowNum = newRowNumber();
+
+        var newRow = '';
+        newRow += '<tr>';
+        newRow += '     <td>' + rowNum + '</td>';
+        newRow += '     <td><div class="input-group date date-picker" data-date-format="dd MM yyyy"><input type="text" class="form-control StartDate" value="" readonly /><span class="input-group-btn"><button type="button" class="btn default"><i class="fa fa-calendar"></i></button></span></div></td>';
+        newRow += '     <td>';
+        newRow += '         <div>';
+        newRow += '             <a onclick="RemoveDate(event);">Remove</a>';
+        newRow += '         </div>';
+        newRow += '     </td>';
+        newRow += '</tr>';
+
+        $('#tblStandbyDate tbody').append(newRow);
+
+        Initialize();
+    }
+
+    function newRowNumber() {
+        return $('#tblStandbyDate tbody tr').length + 1;
+    }
+
+    function RemoveDate(event) {
+        var row = $(event.target).closest("tr");
+
+        row.remove();
+
+        // Update the numbering
+        UpdateNumbering();
+    }
+
+    function getSelectedDates() {
+        var selectedDates = "";
+
+        $("#tblStandbyDate tbody tr").each(function (i, value) {
+            var strDate = $(this).find('.StartDate').val();
+
+            if (strDate) {
+                arrDate = strDate.split('/');
+
+                var strMomentDate = arrDate[2] + arrDate[1] + arrDate[0];
+                var date = moment(strMomentDate, "YYYYMMDD").format("YYYY/MM/DD");
+
+                selectedDates += date + ',';
+            }
+        });
+
+        return selectedDates;
+    }
+
+    function UpdateNumbering() {
+        var table = $("#tblStandbyDate tbody");
+
+        // Update the numbering for each row
+        table.find("tr").each(function (index) {
+            $(this).find("td:first").text(index + 1);
+        });
+    }
+</script>

@@ -1,0 +1,427 @@
+﻿@model ESS.Claim.ViewModels.ClaimsSubtype
+@using TNB_ESS_MVC.Helpers
+@{
+    Layout = null;
+    string ClaimsSubtypeName = ViewBag.Homeopathy_ClaimsSubtypeName;
+    string GSTEnabled = (ViewBag.Homeopathy_GSTEnabled + "").ToLower();
+    string Status = ViewBag.Homeopathy_Status;
+    string dtStrStart = ViewBag.Homeopathy_StartDate;
+    string dtStrEnd = ViewBag.Homeopathy_EndDate;
+    string GSTMaximumValue = ViewBag.Homeopathy_GSTMaximumValue;
+
+}
+
+<div class="portlet box blue subtypeportlet" id="dTable_Homeopathy">
+    <div class="portlet-title">
+        <div class="caption">
+            <i class="fa fa-reorder"></i>@ClaimsSubtypeName
+        </div>
+        <div class="tools">
+        </div>
+    </div>
+    <div class="portlet-body form">
+        <div class="form-body">
+            <div class="form-horizontal">
+                <div class="table-toolbar">
+                    <table class="table table-striped table-bordered table-hover table-full-width" id="tblHomeopathy">
+                        <thead>
+                            <tr>
+                                <th scope="col" width="5%"></th>
+                                <th scope="col">ReceiptDate *</th>
+                                <th scope="col">Receipt No. *</th>
+                                <th scope="col">Name of Clinic</th>
+                                <th scope="col">Treatment Type *</th>
+                                <th scope="col">Amount (RM) *</th>
+                                <th scope="col">Total Claimable (RM)</th>
+                                <th scope="col">GST Amount (RM)</th>
+                                <th scope="col">Total Amount (RM)</th>
+                            </tr>
+                        </thead>
+                        @{
+                            List<SelectListItem> TreatmentTypeList = new List<SelectListItem>();
+                            TreatmentTypeList.Add(new SelectListItem { Text = "- Please Select -", Value = "" });
+                            TreatmentTypeList.Add(new SelectListItem { Text = "Homeopathy", Value = "Homeopathy" });
+                            TreatmentTypeList.Add(new SelectListItem { Text = "Acupuncture", Value = "Acupuncture" });
+                            TreatmentTypeList.Add(new SelectListItem { Text = "Chiropractic", Value = "Chiropractic" });
+                        }
+
+                        @Html.DropDownList("TreatmentTypeDDL", TreatmentTypeList, new { @id = "TreatmentTypeDDL", @class = "bs-select form-control hidden HomeopathyhiddenDDL", @style = "min-width:200px" })
+
+                        @if (Status == "Draft" || Status == "Withdrawn" || Status == "Declined" || Status =="Returned")
+                        {
+                            if (Model.SubTypeDetails == null)
+                            {
+                                <tbody>
+                                    <tr>
+                                        <td><input type="checkbox" class="HomeopathyRemoveCheckbox" /></td>
+                                        <td>
+                                            <div class="input-group date date-picker" data-date-format="dd MM yyyy">
+                                                <input type="text" class="form-control SubTypeColumn1" id="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[0].SubTypeColumn1"
+                                                       name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[0].SubTypeColumn1" />
+                                                <span class="input-group-btn">
+                                                    <button type="button" class="btn default"><i class="fa fa-calendar"></i></button>
+                                                </span>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <input type="text" id="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[0].SubTypeColumn2"
+                                                   name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[0].SubTypeColumn2" class="form-control SubTypeColumn2" />
+                                        </td>
+                                        <td>
+                                            <input type="text" id="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[0].SubTypeColumn3"
+                                                   name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[0].SubTypeColumn3" class="form-control SubTypeColumn3" />
+                                        </td>
+                                        <td>
+                                            @Html.DropDownList("ClaimsSubtypeCategory[" + Model.categoryIndex + "].ClaimSubtype[" + Model.subtypeIndex + "].SubTypeDetails[0].SubTypeColumn4", TreatmentTypeList,
+                                            new { @id = "ClaimsSubtypeCategory[" + Model.categoryIndex + "].ClaimSubtype[" + Model.subtypeIndex + "].SubTypeDetails[0].SubTypeColumn4", @class = "bs-select form-control SubTypeColumn4", @style = "min-width:200px" })
+                                        </td>
+                                        <td>
+                                            <input type="text" id="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[0].SubTypeColumn5"
+                                                   name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[0].SubTypeColumn5" class="form-control SubTypeColumn5" onblur="HomeopathyAmountOnBlur('@Model.categoryIndex','@Model.subtypeIndex','0')" />
+                                        </td>
+                                        <td><input type="text" id="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[0].Amount" class="form-control Amount" name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[0].Amount" onkeypress="NumberOnly(event);" onkeyup="CalculateAmount('@Model.categoryIndex','@Model.subtypeIndex','0')" /></td>
+                                        <td><input type="text" id="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[0].GSTAmount" class="form-control text-right GSTAmount" name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[0].GSTAmount" readonly /></td>
+                                        <td><input type="text" id="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[0].TotalAmount" class="form-control text-right SubTotalAmount" name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[0].TotalAmount" readonly /></td>
+                                    </tr>
+                                </tbody>
+                                <tfoot>
+                                    <tr>
+                                        <td colspan="6"></td>
+                                        <td><input type="text" class="form-control text-right GrandAmount" readonly /></td>
+                                        <td><input type="text" class="form-control text-right GrandGSTAmount" readonly /></td>
+                                        <td><input type="text" class="form-control text-right GrandTotalAmount" readonly /></td>
+                                    </tr>
+                                </tfoot>
+                            }
+                            else
+                            {
+                                int count = 0;
+
+                                <tbody>
+
+                                    @foreach (var thisDetail in Model.SubTypeDetails)
+                                    {
+                                        <tr>
+                                            <td><input type="checkbox" class="HomeopathyRemoveCheckbox" /></td>
+                                            <td>
+                                                <div class="input-group date date-picker" data-date-format="dd MM yyyy">
+                                                    <input type="text" class="form-control SubTypeColumn1" id="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[@count].SubTypeColumn1" name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[@count].SubTypeColumn1" value="@thisDetail.SubTypeColumn1" />
+                                                    <span class="input-group-btn">
+                                                        <button type="button" class="btn default"><i class="fa fa-calendar"></i></button>
+                                                    </span>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <input type="text" class="form-control SubTypeColumn2" value="@thisDetail.SubTypeColumn2"
+                                                       id="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[@count].SubTypeColumn2"
+                                                       name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[@count].SubTypeColumn2" />
+                                            </td>
+                                            <td>
+                                                <input type="text" class="form-control SubTypeColumn3" value="@thisDetail.SubTypeColumn3"
+                                                       id="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[@count].SubTypeColumn3"
+                                                       name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[@count].SubTypeColumn3" />
+                                            </td>
+                                            <td>
+                                                <input type="hidden" value="@thisDetail.SubTypeColumn4" />
+                                                @Html.DropDownList("ClaimsSubtypeCategory[" + Model.categoryIndex + "].ClaimSubtype[" + Model.subtypeIndex + "].SubTypeDetails[" + count + "].SubTypeColumn4", TreatmentTypeList,
+                                                 new { @id = "ClaimsSubtypeCategory[" + Model.categoryIndex + "].ClaimSubtype[" + Model.subtypeIndex + "].SubTypeDetails[" + count + "].SubTypeColumn4", @class = "bs-select form-control SubTypeColumn4", @style = "width:200px" })
+
+                                            </td>
+                                            <td>
+                                                <input type="text" class="form-control SubTypeColumn5" value="@thisDetail.SubTypeColumn5"
+                                                       id="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[@count].SubTypeColumn5"
+                                                       name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[@count].SubTypeColumn5" onblur="HomeopathyAmountOnBlur('@Model.categoryIndex','@Model.subtypeIndex','@count')" />
+                                            </td>
+                                            <td>
+                                                <input type="text" class="form-control Amount" value="@thisDetail.Amount"
+                                                       id="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[@count].Amount"
+                                                       name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[@count].Amount" />
+                                            </td>
+                                            <td>
+                                                <input type="text" class="form-control text-right GSTAmount" value="@thisDetail.GSTAmount"
+                                                       id="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[@count].GSTAmount"
+                                                       name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[@count].GSTAmount" readonly />
+                                            </td>
+                                            <td>
+                                                <input type="text" class="form-control text-right SubTotalAmount" value="@thisDetail.TotalAmount"
+                                                       id="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[@count].TotalAmount"
+                                                       name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[@count].TotalAmount" readonly />
+                                            </td>
+                                        </tr>
+
+                                        count++;
+                                    }
+                                </tbody>
+                                <tfoot>
+                                    <tr>
+                                        <td colspan="6"></td>
+                                        <td><input type="text" class="form-control text-right GrandAmount" value="@Model.SubTypeDetails.Sum(m => Convert.ToDecimal(m.Amount))" readonly /></td>
+                                        <td><input type="text" class="form-control text-right GrandGSTAmount" value="@Model.SubTypeDetails.Sum(m => Convert.ToDecimal(m.GSTAmount))" readonly /></td>
+                                        <td><input type="text" class="form-control text-right GrandTotalAmount" value="@Model.SubTypeDetails.Sum(m => Convert.ToDecimal(m.TotalAmount))" readonly /></td>
+                                    </tr>
+                                </tfoot>
+                            }
+                        }
+                        else
+                        {
+                            int count = 0;
+
+                            <tbody>
+                                @foreach (var thisDetail in Model.SubTypeDetails)
+                                {
+                                    <tr>
+                                        <td><input type="checkbox" class="HomeopathyRemoveCheckbox" /></td>
+                                        <td>
+                                            <input type="text" class="form-control SubTypeColumn1" value="@thisDetail.SubTypeColumn1" readonly
+                                                   name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[@count].SubTypeColumn1" />
+                                        </td>
+                                        <td>
+                                            <input type="text" class="form-control SubTypeColumn2" value="@thisDetail.SubTypeColumn2" readonly
+                                                   name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[@count].SubTypeColumn2" />
+                                        </td>
+                                        <td>
+                                            <input type="text" class="form-control SubTypeColumn3" value="@thisDetail.SubTypeColumn3" readonly
+                                                   name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[@count].SubTypeColumn3" />
+                                        </td>
+                                        <td>
+                                            <input type="text" class="form-control SubTypeColumn4" value="@thisDetail.SubTypeColumn4" readonly
+                                                   name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[@count].SubTypeColumn4" />
+                                        </td>
+                                        <td>
+                                            <input type="text" class="form-control SubTypeColumn5" value="@thisDetail.SubTypeColumn5" readonly
+                                                   name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[@count].SubTypeColumn5" />
+                                        </td>
+
+                                        <td>
+                                            <input type="text" class="form-control Amount" value="@thisDetail.Amount" readonly
+                                                   name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[@count].Amount" />
+                                        </td>
+                                        <td>
+                                            <input type="text" class="form-control text-right GSTAmount" value="@thisDetail.GSTAmount" readonly
+                                                   name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[@count].GSTAmount" />
+                                        </td>
+                                        <td>
+                                            <input type="text" class="form-control text-right SubTotalAmount" value="@thisDetail.TotalAmount" readonly
+                                                   name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[@count].TotalAmount" />
+                                        </td>
+                                    </tr>
+
+                                    count++;
+                                }
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <td colspan="5"></td>
+                                    <td><input type="text" class="form-control text-right GrandAmount" value="@Model.SubTypeDetails.Sum(m => Convert.ToDecimal(m.Amount))" readonly /></td>
+                                    <td><input type="text" class="form-control text-right GrandGSTAmount" value="@Model.SubTypeDetails.Sum(m => Convert.ToDecimal(m.GSTAmount))" readonly /></td>
+                                    <td><input type="text" class="form-control text-right GrandTotalAmount" value="@Model.SubTypeDetails.Sum(m => Convert.ToDecimal(m.TotalAmount))" readonly /></td>
+                                </tr>
+                            </tfoot>
+                        }
+                    </table>
+                </div>
+            </div>
+            <div class="form-horizontal">
+                <div class="table-toolbar">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="btn-group">
+                                <a class="BtnPlus btn green" title="dTable_Homeopathy" href="javascript:Homeopathy_addRow();">
+                                    Add Row
+                                    <i class="fa fa-plus"></i>
+                                </a>
+                            </div>
+                            <div class="btn-group">
+                                <a class="BtnPlus5 btn green" title="dTable_Homeopathy" href="javascript:Homeopathy_add5Row();">
+                                    Add 5 Rows
+                                    <i class="fa fa-plus"></i>
+                                </a>
+                            </div>
+                            <div class="btn-group">
+                                <a class="deleteall btn red" title="dTable_Homeopathy" href="javascript:Homeopathy_removeRow();">
+                                    Delete Row
+                                    <i class="fa fa-minus"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+    var _HomeopathyTable = $('#tblHomeopathy').DataTable({
+        "bLengthChange": false,
+        "bFilter": false,
+        "bPaginate": false,
+        "bInfo": false,
+        "bSort": false
+    });
+
+    function dTable_HomeopathyValidation() { // HomeopathyValidation
+        var _ValidationMsg = '';
+
+        var thisTable = $('#tblHomeopathy');
+        thisTable.find(".Amount").each(function () {
+            var $row = $(this).closest("tr");
+            var _ReceiptDate = $row.find(".SubTypeColumn1").val();
+            var _ReceiptNo = $row.find(".SubTypeColumn2").val();
+            var _TreatmentType = $row.find(".SubTypeColumn4").val();
+            var _Amount = $row.find(".SubTypeColumn5").val();
+
+            if (_Amount == null || _Amount == '0' || _Amount == '') {
+                _ValidationMsg += '- @ClaimsSubtypeName (Amount) is required.\n'
+            }
+
+            if (_ReceiptDate == null || _ReceiptDate == '') {
+                _ValidationMsg += '- @ClaimsSubtypeName (Receipt Date) is required.\n'
+            }
+
+            if (_ReceiptNo == null || _ReceiptNo == '') {
+                _ValidationMsg += '- @ClaimsSubtypeName (Receipt No) is required.\n'
+            }
+            if (_TreatmentType == null || _TreatmentType == '') {
+                _ValidationMsg += '- @ClaimsSubtypeName (Treatment Type) is required.\n'
+            }
+
+        });
+
+        return _ValidationMsg;
+    }
+
+    function Homeopathy_removeRow() {
+        $.each($('input[class="HomeopathyRemoveCheckbox"]:checked'), function (i, val) {
+            var row = $(this).closest("tr").get(0);
+            var id = $(this).attr("id");
+            _HomeopathyTable.fnDeleteRow(mytable.fnGetPosition(row));
+        });
+
+        reorderTable('#tblHomeopathy');
+    }
+
+    function Homeopathy_add5Row() {
+        Homeopathy_addRow();
+        Homeopathy_addRow();
+        Homeopathy_addRow();
+        Homeopathy_addRow();
+        Homeopathy_addRow();
+    }
+
+    function Homeopathy_addRow() {
+
+        var _TreatmentTypeDDLOption = $('.HomeopathyhiddenDDL').html();
+
+        _HomeopathyTable.fnAddData([
+            '<input type="checkbox" class="HomeopathyRemoveCheckbox" />',
+            '<div class="input-group date date-picker" data-date-format="dd MM yyyy"><input type="text" class="form-control SubTypeColumn1" name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[' + _HomeopathyTable.fnSettings().fnRecordsTotal() + '].SubTypeColumn1" value="" /><span class="input-group-btn"><button type="button" class="btn default"><i class="fa fa-calendar"></i></button></span></div>',
+            '<input type="text" id="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[' + _HomeopathyTable.fnSettings().fnRecordsTotal() + '].SubTypeColumn2" name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[' + _HomeopathyTable.fnSettings().fnRecordsTotal() + '].SubTypeColumn2" class="form-control SubTypeColumn2" maxlength="200" />',
+            '<input type="text" id="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[' + _HomeopathyTable.fnSettings().fnRecordsTotal() + '].SubTypeColumn3" name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[' + _HomeopathyTable.fnSettings().fnRecordsTotal() + '].SubTypeColumn3" class="form-control SubTypeColumn3" maxlength="200" />',
+            '<select id="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[' + _HomeopathyTable.fnSettings().fnRecordsTotal() + '].SubTypeColumn4"  name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[' + _HomeopathyTable.fnSettings().fnRecordsTotal() + '].SubTypeColumn4" class = "bs-select form-control SubTypeColumn4" style="min-width:200px">' + _TreatmentTypeDDLOption + '</select>',
+            '<input type="text" id="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[' + _HomeopathyTable.fnSettings().fnRecordsTotal() + '].SubTypeColumn5" name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[' + _HomeopathyTable.fnSettings().fnRecordsTotal() + '].SubTypeColumn5" class="form-control SubTypeColumn5" maxlength="200" onblur="HomeopathyAmountOnBlur(@Model.categoryIndex,@Model.subtypeIndex,' + _HomeopathyTable.fnSettings().fnRecordsTotal() + ');"/>',
+            '<input type="text" id="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[' + _HomeopathyTable.fnSettings().fnRecordsTotal() + '].Amount" name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[' + _HomeopathyTable.fnSettings().fnRecordsTotal() + '].Amount" value="" class="form-control text-right Amount"/>',
+            '<input type="text" id="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[' + _HomeopathyTable.fnSettings().fnRecordsTotal() + '].GSTAmount" name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[' + _HomeopathyTable.fnSettings().fnRecordsTotal() + '].GSTAmount" value="" class="form-control text-right GSTAmount" readonly />',
+            '<input type="text" id="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[' + _HomeopathyTable.fnSettings().fnRecordsTotal() + '].TotalAmount" name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[' + _HomeopathyTable.fnSettings().fnRecordsTotal() + '].TotalAmount" value="" class="form-control text-right SubTotalAmount" readonly />'
+        ]);
+
+        Homeopathy_Initialize();
+    }
+
+    function Homeopathy_Initialize() {
+        $('#tblHomeopathy .date-picker').datepicker({
+            format: 'dd/mm/yyyy',
+            autoclose: true,
+        });
+        $('#tblHomeopathy .date-picker').datepicker('setStartDate', '@dtStrStart');
+        $('#tblHomeopathy .date-picker').datepicker('setEndDate', '@dtStrEnd');
+
+        if ('@GSTEnabled' == 'false') {
+            $('#tblHomeopathy tbody tr:last').each(function () {
+                var _GSTAmount = $(this).children('td:eq(8)').children('input[type=text]');
+                _GSTAmount.prop('readonly', true);
+                _GSTAmount.val('0.00');
+            });
+        }
+
+        $('#tblHomeopathy tbody tr:last').each(function () {
+            var _Amount = $(this).children('td:eq(7)').children('input[type=text]');
+            _Amount.prop('readonly', true);
+
+        });
+
+        $('#tblHomeopathy tbody tr:last').each(function () {
+            var _TotalAmount = $(this).children('td:eq(9)').children('input[type=text]');
+
+            _TotalAmount.prop('readonly', true);
+        });
+
+    }
+
+    function GetTreatmentTypeListInputValues() {
+        $('#tblHomeopathy tbody tr').each(function () {
+            var _TreatmentTypeSelect = $(this).children('td:eq(4)').children('select');
+            var _TreatmentTypeHidden = $(this).children('td:eq(4)').children('input[type=hidden]');
+            _TreatmentTypeSelect.val(_TreatmentTypeHidden.val());
+            console.log('GetTreatmentTypeListInputValues');
+        });
+    }
+
+    function HomeopathyAmountOnBlur(categoryIndex, subtypeIndex, IndexCount) {
+        var ddlName = "ClaimsSubtypeCategory[" + categoryIndex + "].ClaimSubtype[" + subtypeIndex + "].SubTypeDetails[" + IndexCount + "]";
+        var _TreatmentType = document.getElementById(ddlName + ".SubTypeColumn4").value
+        var _Amount = document.getElementById(ddlName + ".SubTypeColumn5");
+        var _TotalClaimable = document.getElementById(ddlName + ".Amount");
+        var _GSTAmount = document.getElementById(ddlName + ".GSTAmount");
+        var _TotalAmount = document.getElementById(ddlName + ".TotalAmount");
+
+        if (_TreatmentType != "") {
+            HomeopathyCalculation(categoryIndex, subtypeIndex, IndexCount);
+        }
+    }
+
+    function HomeopathyCalculation(categoryIndex, subtypeIndex, IndexCount) {
+        var ddlName = "ClaimsSubtypeCategory[" + categoryIndex + "].ClaimSubtype[" + subtypeIndex + "].SubTypeDetails[" + IndexCount + "]";
+        var _TreatmentType = document.getElementById(ddlName + ".SubTypeColumn4").value
+        var _Amount = document.getElementById(ddlName + ".SubTypeColumn5");
+        var _TotalClaimable = document.getElementById(ddlName + ".Amount");
+        var _GSTAmount = document.getElementById(ddlName + ".GSTAmount");
+        var _TotalAmount = document.getElementById(ddlName + ".TotalAmount");
+
+
+
+        var form = {
+            TreatmentType: _TreatmentType,
+            Amount: _Amount.value,
+            GSTEnabled: '@GSTEnabled',
+            GSTMaximumValue: '@GSTMaximumValue',
+        };
+
+        $.ajax({
+            type: "POST",
+            url: '@Url.Content("~/Claims/_HomeopathyCalculation")',
+            cache: false,
+            async: false,
+            dataType: "json",
+            data: form,
+            success: function (result) {
+                if (result.Success) {
+                    _GSTAmount.value = result['GSTAmount'];
+                    _TotalClaimable.value = result['TotalClaimable'];
+                    _TotalAmount.value = result['TotalAmount'];
+                }
+                else {
+                    alert(result.ErrorMsg);
+                }
+            },
+            error: function (e) {
+
+            }
+        });
+
+    }
+
+    $(document).ready(function () {
+        Homeopathy_Initialize();
+        GetTreatmentTypeListInputValues();
+    });
+</script>

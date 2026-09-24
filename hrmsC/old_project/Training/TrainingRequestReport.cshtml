@@ -1,0 +1,351 @@
+﻿@model Tuple <List<ESS.Core.DropDownObject>, List<ESS.Core.DropDownObject>>
+
+@{
+    //Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewBag.Title = "Training Request Report";
+}
+
+<div class="row">
+    <div class="col-md-12">
+        <br />
+        <h1 class="page-title">
+            Training Request Tracking Report<span style="padding-left:20px;"><small></small></span>
+        </h1>
+    </div>
+</div>
+<br />
+<input type="hidden" id="hfEmployeeID" value="@ViewBag.EmployeeID"/>
+<div class="form-body">
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-4 control-label">Start Date</label>
+                    <div class="col-md-8 form-control-static">
+                        <div class="input-group date date-picker" data-date-format="dd MM yyyy">
+                            <input type="text" class="form-control" id="SubDateFrom" name="SubDateFrom" />
+                            <span class="input-group-btn">
+                                <button type="button" class="btn default"><i class="fa fa-calendar"></i></button>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-4 control-label">End Date</label>
+                    <div class="col-md-8 form-control-static">
+                        <div class="input-group date date-picker" data-date-format="dd MM yyyy">
+                            <input type="text" class="form-control" id="SubDateTo" name="SubDateTo" />
+                            <span class="input-group-btn">
+                                <button type="button" class="btn default"><i class="fa fa-calendar"></i></button>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-4 control-label">Company</label>
+                    <div class="col-md-8 form-control-static">
+                        @Html.DropDownList("Company", new SelectList(Model.Item2, "Value", "Text"), "- All -", new { @class = "bs-select form-control", @onchange = "changeCompany(this)" })
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-4 control-label">Division / Department</label>
+                    <div class="col-md-8 form-control-static">
+                        @Html.Action("_DDLDepartment", "Training", new {  })
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-4 control-label">Unit / Section</label>
+                    <div class="col-md-8 form-control-static">
+                        @Html.Action("_DDLUnitSection", "Training", new { })
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-4 control-label">Employee</label>
+                    <div class="col-md-8 form-control-static">
+                        <input class="form-control" type="text" id="EmployeeName" />
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-4 control-label">Training Category</label>
+                    <div class="col-md-8 form-control-static">
+                        @*@Html.DropDownList("TrainingCategory", new SelectList(Model.Item1, "Value", "Text"), "- All -", new { @class = "bs-select form-control" , @onchange = "changeType(this)"})*@
+
+                        <select name="TrainingCategory" class="bs-select form-control" id="TrainingCategory" onchange="changeType(this)">
+                            <option value="">- All -</option>
+                            <option value="01">IN HOUSE</option>
+                            <option value="02">PUBLIC</option>
+                            <option value="01">ILSAS</option>
+                            <option value="01">ILSAS (Self)</option>
+                            <option value="01">ILSAS (Subordinate)</option>
+                        </select>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-4 control-label">Training Type</label>
+                    <div class="col-md-8 form-control-static">
+                        @Html.Action("_DDLTrainingType", "Training", new { ID = ViewBag.TrainingID })
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-4 control-label">Course Title</label>
+                    <div class="col-md-8 form-control-static">
+                        <input class="form-control" type="text" id="CourseTitle" />
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-4 control-label">Status</label>
+                    <div class="col-md-8 form-control-static">
+                        <select class="form-control" id="Status">
+                            <option value="">- All -</option>
+                            <option value="AG">Agreed</option>
+                            <option value="AP">Approved</option>
+                            <option value="DE">Declined</option>
+                            <option value="DR">Draft</option>
+                            <option value="ER">Error</option>
+                            <option value="PE">Pending</option>
+                            <option value="RE">Recommended</option>
+                            <option value="WD">Withdrawn</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-4 control-label">Provider</label>
+                    <div class="col-md-8 form-control-static">
+                        <input class="form-control" id="Provider" />
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-4 control-label">Venue</label>
+                    <div class="col-md-8 form-control-static">
+                        <input class="form-control" id="Venue" />
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-4 control-label">Request Reference No</label>
+                    <div class="col-md-8 form-control-static">
+                        <input class="form-control" id="ReferenceNo" />
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-4 control-label">BE Number</label>
+                    <div class="col-md-8 form-control-static">
+                        <input class="form-control" id="BENumber" />
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">&nbsp;</div>
+    <div class="row">
+        <div class="col-md-12">
+            <div class="text-right">
+                <input type="button" id="btn-Search" class="btn green btn-Search" value="View Report" onclick="SearchListing();">
+                <input type="button" id="btn-Export" class="btn green btn-Search" value="Export To Excel" onclick="ExportToExcel();">
+            </div>
+        </div>
+    </div>
+    <div class="row">&nbsp;</div>
+    <div class="row">
+        <div class="col-md-12">
+            <div id="SearchResult">
+
+            </div>
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+    jQuery(document).ready(function () {
+        $('.date-picker').datepicker({
+            format: 'dd/mm/yyyy',
+            autoclose: true
+        });
+
+        //SearchListing();
+    });
+
+    function SearchListing() {
+        var _DateFrom = $('#SubDateFrom').val();
+        var _DateTo = $('#SubDateTo').val();
+        var _CompanyCode = $('#Company option:selected').val();
+        var _DepartmentCode = $('#Department option:selected').val();
+        var _UnitSectionCode = $('#UnitSection option:selected').val();
+        var _EmployeeName = $('#EmployeeName').val();
+        var _TrainingCategory = $('#TrainingCategory option:selected').val();
+        var _TrainingType = $('#TrainingType option:selected').val();
+        var _CourseTitle = $('#CourseTitle').val();
+        var _Status = $('#Status').val();
+        var _Provider = $('#Provider').val();
+        var _Venue = $('#Venue').val();
+        var _ReferenceNo = $('#ReferenceNo').val();
+        var _BENumber = $("#BENumber").val();
+        
+        
+        $("#SearchResult").html("LOADING...");
+
+        $.ajax({
+            type: "GET",
+            url: '@Url.Content("~/Training/_TrainingRequestReportResult")',
+            cache: false,
+            dataType: "html",
+            data: {
+                DateFrom: _DateFrom, DateTo: _DateTo, CompanyCode: _CompanyCode, DepartmentCode: _DepartmentCode,
+                UnitSectionCode: _UnitSectionCode, EmployeeName: _EmployeeName, TrainingCategory: _TrainingCategory, TrainingType: _TrainingType,
+                CourseTitle: _CourseTitle, Status: _Status, Provider: _Provider, Venue: _Venue, ReferenceNo: _ReferenceNo, BENumber: _BENumber
+            },
+            success: function (content) {
+                $("#SearchResult").html(content);
+            },
+            error: function (e) {
+                console.log(e);
+            }
+        });
+    }
+
+    function ConvertDate(_date) {
+        var mnth = ("0" + (_date.getMonth() + 1)).slice(-2),
+            day = ("0" + _date.getDate()).slice(-2);
+
+        return [day, mnth, _date.getFullYear()].join("/");
+    }
+
+    function changeType(e) {
+        $.ajax({
+            type: "GET",
+            url: '@Url.Content("~/Training/_DDLTrainingType")',
+            cache: false,
+            dataType: "html",
+            data: { CategoryCode: e.value},
+            success: function (content) {
+                $("#TrainingTypeResult").html(content);
+            },
+            error: function (e) {
+                console.log(e);
+            }
+        });
+    }
+
+    function changeCompany(e) {
+        $.ajax({
+            type: "GET",
+            url: '@Url.Content("~/Training/_DDLDepartment")',
+            cache: false,
+            dataType: "html",
+            data: { CompanyCode: e.value },
+            success: function (content) {
+                $("#DepartmentResult").html(content);
+            },
+            error: function (e) {
+                console.log(e);
+            }
+        });
+    }
+
+    function changeDepartment(e) {
+        $.ajax({
+            type: "GET",
+            url: '@Url.Content("~/Training/_DDLUnitSection")',
+            cache: false,
+            dataType: "html",
+            data: { DepartmentCode: e.value },
+            success: function (content) {
+                $("#UnitSectionResult").html(content);
+            },
+            error: function (e) {
+                console.log(e);
+            }
+        });
+    }
+
+    function ExportToExcel() {
+        var dt = new Date();
+        var day = dt.getDate();
+        var month = dt.getMonth() + 1;
+        var year = dt.getFullYear();
+        var hour = dt.getHours();
+        var mins = dt.getMinutes();
+        var postfix = day + "." + month + "." + year + "_" + hour + "." + mins;
+
+        var _DateFrom = $('#SubDateFrom').val();
+        var _DateTo = $('#SubDateTo').val();
+        var _CompanyCode = $('#Company option:selected').val();
+        var _DepartmentCode = $('#Department option:selected').val();
+        var _UnitSectionCode = $('#UnitSection option:selected').val();
+        var _EmployeeName = $('#EmployeeName').val();
+        var _TrainingCategory = $('#TrainingCategory option:selected').val();
+        var _TrainingType = $('#TrainingType option:selected').val();
+        var _CourseTitle = $('#CourseTitle').val();
+        var _Status = $('#Status').val();
+        var _Provider = $('#Provider').val();
+        var _Venue = $('#Venue').val();
+        var _ReferenceNo = $('#ReferenceNo').val();
+
+        window.open("../Training/_ExportToExcel?FileName=TrainingRequest_Report_" + postfix + "&DateFrom=" + _DateFrom +
+                    "&DateTo=" + _DateTo +"&CompanyCode=" +_CompanyCode + "&DepartmentCode=" + _DepartmentCode + "&UnitSectionCode=" +_UnitSectionCode + "&EmployeeName=" +_EmployeeName + "&TrainingCategory=" + _TrainingCategory + "&TrainingType=" + _TrainingType
+                    +"&CourseTitle=" + _CourseTitle + "&Status=" + _Status + "&Provider=" + _Provider + "&Venue=" + _Venue + "&ReferenceNo=" +_ReferenceNo);
+    }
+</script>

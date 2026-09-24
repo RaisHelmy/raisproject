@@ -1,0 +1,390 @@
+﻿@model List<ESS.Core.DropDownObject>
+@{
+    ViewBag.Title = "Work Schedule";
+}
+
+<script src="~/assets/plugins/fullcalendar/fullcalendar/fullcalendar.js"></script>
+<script src="~/Assets/plugins/fullcalendar/fullcalendar/fullcalendar.min.js"></script>
+<link rel="stylesheet" type="text/css" href="~/assets/plugins/fullcalendar/fullcalendar/fullcalendar.css" />
+
+<style>
+
+    tr.fc-first.fc-last {
+        background-color:lightcyan;
+    }
+
+    .fullcalendar-eventitem {
+        padding: 5px;
+        text-align: center;
+    }
+
+    #tbl_calendar_legend tbody tr td {
+        width: 40px;
+        height: 20px;
+    }
+
+    .Pending {
+        background-color: #e3efff;
+        color: #003399;
+        border: #6f9dd9 1px solid;
+    }
+
+        .Pending A {
+            color: #003399;
+        }
+
+    .Draft {
+        background-color: #FFB2B2;
+        color: #E02100;
+        border: solid 1px #E02100;
+    }
+
+        .Draft A {
+            color: #E02100;
+        }
+
+    .Acknowledged {
+        background-color: #CCFB5D;
+        color: #8C5CFA;
+        border: solid 1px #8C5CFA;
+    }
+
+        .Acknowledged A {
+            color: #8C5CFA;
+        }
+
+    .Approved {
+        background-color: #CCFFCC;
+        color: #47AD47;
+        border: solid 1px #35B735;
+    }
+
+        .Approved A {
+            color: #35B735;
+        }
+
+    .PublicHoliday {
+        background-color: #FFE8E8;
+        color: #6f9dd9;
+        border: solid 1px #6f9dd9;
+    }
+
+        .PublicHoliday a {
+            color: #6f9dd9;
+        }
+</style>
+
+<div class="form-section">
+    <div class="row">
+        <div class="col-md-12">
+            <h1 class="page-title">
+                @ViewBag.Title
+                <span style="padding-left:20px;">
+                    <small></small>
+                </span>
+            </h1>
+        </div>
+    </div>
+</div>
+
+
+@using (Html.BeginForm("", "TimeAttendance", FormMethod.Post, new { @class = "form-horizontal", @id = "MainForm" }))
+{
+    <input id="hfEmployeeID" type="hidden" value="@ViewBag.EmployeeID" />
+    @*<input id="hfTaskID" type="hidden" value="@ViewBag.TaskID" />
+        <input id="hfCourseApplicationID" type="hidden" value="@ViewBag.SourceID" />*@
+
+    <div class="form-body">
+        <div class="row">
+            <div class="col-md-8">
+                <div class="form-horizontal">
+                    <div class="form-group">
+                        <label class="col-md-4 control-label">Employee's Working Hours</label>
+                        <div class="col-md-4 form-control-static">
+                            @if (!string.IsNullOrEmpty(ViewBag.EmployeeID))
+                            {
+                                @Html.DropDownList("EmployeeDll", new SelectList(Model, "Value", "Text"), null, new { @class = "bs-select form-control EmployeeDll", @onchange = "generateCalendar()" })
+                                @*<select class="form-control EmployeeDll" name="EmployeeDll" onchange="generateCalendar()">
+                                        <option value="">- All -</option>
+                                    </select>*@
+                            }
+                            else
+                            {
+
+                                @Html.DropDownList("EmployeeDll", new SelectList(Model, "Value", "Text"), "- All -", new { @class = "bs-select form-control EmployeeDll", @onchange = "generateCalendar()" })
+                                @*<select class="form-control EmployeeDll" name="EmployeeDll" onchange="generateCalendar()">
+                                        <option value="">- All -</option>
+                                    </select>*@
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">&nbsp;</div>
+        <div class="row">
+            <div class="col-md-6 col-md-offset-6">
+                <table id="tbl_calendar_legend" style="display:table;border-collapse:separate;border-spacing:2px; float:right;">
+                    <tbody>
+                        <tr>
+                            <td class="Draft">
+                                <img src="/_layouts/15/images/blank.gif">
+                            </td>
+                            <td>Draft</td>
+
+                            <td class="Approved">
+                                <img src="/_layouts/15/images/blank.gif">
+                            </td>
+                            <td>Approved</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">&nbsp;</div>
+    <div id="calendarList"></div>
+    <br />
+    <div id="calendarLegend">
+        <div class="row">
+            <div class="col-md-9 col-md-offset-3">
+                <span style="font-weight:bold;">Legend</span>
+                <table width=60%>
+                    <tr>
+                        <td valign="top">
+                            <table class="table table-bordered" width=60%>
+                                <tr>
+                                    <td>
+                                        NH
+                                    </td>
+                                    <td>
+                                        Normal Hour
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        N
+                                    </td>
+                                    <td>
+                                        Night
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        M
+                                    </td>
+                                    <td>
+                                        Morning
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        A
+                                    </td>
+                                    <td>
+                                        Afternoon
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                        <td valign="top">
+                            <table class="table table-bordered" width=60%>
+                                <tr>
+                                    <td>
+                                        OFF
+                                    </td>
+                                    <td>
+                                        Off
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        R
+                                    </td>
+                                    <td>
+                                        Rest
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        S
+                                    </td>
+                                    <td>
+                                        Spare
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        SB
+                                    </td>
+                                    <td>
+                                        Standby
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+        <div class="col">
+        </div>
+    </div>
+
+   <!-- Loading Gif -->
+    <div id="divLoading" style="margin: 0px; padding: 0px; position: fixed; right: 0px;
+        top: 0px; width: 100%; height: 100%; background-color:gainsboro; z-index: 30001;
+        opacity: .8; filter: alpha(opacity=70);display:none">
+        <p style="position: absolute; top: 30%; left: 30%; color: black;">
+            Loading, please wait...<img src="../Assets/img/ajax-loading.gif" />
+
+        </p>
+    </div>
+}
+<script type="text/javascript">
+    var calendar;
+    var LastMonth;
+
+    function refetchCalendarEvent() {
+        //console.log('trigger refetchCalendarEvent');
+        var date;
+        var year;
+        var month;
+        if ($('#calendarList').length > 0) {
+            date = $('#calendarList').fullCalendar('getDate');
+            if (Date.parse(date)) {
+                year = date.getFullYear();
+                month = date.getMonth();
+            }
+        }
+
+        var employeeID = $('#EmployeeDll').val();
+
+        if (LastMonth !== month) {
+
+            //console.log('loaded CalendarEvent');
+            $.ajax({
+                url: '@Url.Content("~/TimeAttendance/_WorkScheduleData")',
+                type: 'POST',
+                data: {
+                    EmployeeID: employeeID,
+                    Year: year,
+                    Month: month,
+                    MonthRange: 0
+                },
+                success: function (result) {
+
+                    //remove old data
+                    calendar.fullCalendar('removeEvents');
+                    //Updating new events
+                    calendar.fullCalendar('addEventSource', result.result);
+
+                    ////getting latest Events
+                    ////$('#fullCalendar').fullCalendar( 'refetchEvents' );
+                    ////getting latest Resources
+                    //$('#fullCalendar').fullCalendar('refetchResources');
+
+                    //calendar.fullCalendar('rerenderEvents');
+                    //calendar.fullCalendar('refetchResources');
+
+                    if (result.errorMessage != '' && result.errorMessage != undefined) {
+                        alert(result.errorMessage);
+                    }
+                    else {
+                        LastMonth = month;
+                    }
+                },
+                error: function () {
+                    console.log('there was an error while fetching events!');
+                }
+            });
+        }
+        
+        
+    }
+
+
+
+    function generateCalendar() {
+        var date;
+        var year;
+        var month;
+
+        if ($('#calendarList').length > 0) {
+            date = $('#calendarList').fullCalendar('getDate');
+            if (Date.parse(date)) {
+
+                year = date.getFullYear();
+                month = date.getMonth();
+            }
+        }
+        var employeeID = $('#EmployeeDll').val();
+        
+        //year = '2018';
+        //month = '12';
+
+        $.ajax({
+            url: '@Url.Content("~/TimeAttendance/_WorkScheduleData")',
+            type: 'POST',
+            data: {
+                EmployeeID: employeeID,
+                Year: year,
+                Month: month,
+                MonthRange: 0
+            },
+            success: function (result) {
+                
+                $('#calendarList').fullCalendar('destroy');
+
+                calendar = $('#calendarList').fullCalendar({
+                    header: {
+                        left: 'prev,next today',
+                        center: 'title',
+                        right: 'month,basicWeek,basicDay'
+                    },
+                    eventLimit: true,
+                    events: result.result
+
+                });
+
+
+                $('.fc-button-prev').click(refetchCalendarEvent);
+                $('.fc-button-next').click(refetchCalendarEvent);
+
+                //$('.fc-button-prev span').unbind();
+                //$('.fc-button-prev span').click(prevClick);
+                
+                //$('.fc-button-next span').unbind();
+                //$('.fc-button-next span').click(nextClick);
+
+
+                if(result.errorMessage != '' && result.errorMessage != undefined)
+                {
+                    alert(result.errorMessage);
+                }
+            },
+            error: function () {
+                console.log('there was an error while fetching events!');
+            }
+        });
+
+    }
+    
+    $(document).ready(function () {
+        var empID = $("#hfEmployeeID").val();
+        $('#EmployeeDll').val(empID);
+
+        generateCalendar();
+
+
+        //$("#ddlDisplayWorkingHours").on("change", function () {
+        //    $('#divLoading').css("d isplay", "block");
+        //    generateCalendar(empID);
+
+        //    $('#divLoading').css("display", "none");
+        //});
+    });
+</script>
+
+

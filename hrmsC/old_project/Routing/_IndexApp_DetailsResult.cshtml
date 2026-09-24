@@ -1,0 +1,55 @@
+﻿@model List<SEP.RoutingManagement.Models.App>
+@{
+    Layout = "";
+}
+
+<table id="tbl_result" class="table table-striped table-bordered table-hover table-full-width">
+    <thead>
+        <tr>
+            <th>
+
+            </th>
+            <th>
+                System Name
+            </th>
+            <th>
+                Application Name
+            </th>
+            
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in @Model)
+        {
+            <tr>
+                <td>
+                    <a href="@Url.Action("PreviewApp", "Routing", new { id = @item.ID })" class=" btn default btn-sm">
+                        View
+                    </a>
+                    <a href="@Url.Action("EditApp", "Routing", new { id = @item.ID })" class="btn blue btn-sm">
+                        Edit
+                    </a>
+                    <a href=# onclick="showDeleteField('@item.ID');" class="btn red btn-sm ControlMultipleClick">
+                        Delete
+                    </a>
+                </td>
+                <td>@item.Sy.SystemName</td>
+                <td>@item.ApplicationName</td>
+            </tr>
+        }
+    </tbody>
+</table>
+<div id="ModalResultPopUp"></div>
+<script>
+    transformTable("#tbl_result");
+    function showDeleteField(ID) {
+        callAjax("GET",
+                       "@Url.Action("DeleteApp", "Routing")",
+                        "html",
+                        {
+                            ID: ID
+                        },
+                        "#ModalResultPopUp");
+    }
+
+</script>

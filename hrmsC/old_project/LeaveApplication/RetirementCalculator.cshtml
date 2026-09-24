@@ -1,0 +1,100 @@
+﻿@using System.Configuration
+@{
+    string ssrsReportUrl = ConfigurationManager.AppSettings["SSRSReportServerUrl"];
+    string ssrsReportFolder = ConfigurationManager.AppSettings["SSRSReportFolder"];
+
+    ViewBag.Title = "Calculator";
+    Layout = "";
+
+    bool isEarlyRetirement = ViewBag.EarlyRetirement;
+    string RetirementDate = ViewBag.RetirementDate;
+}
+
+<input type="hidden" id="hfEmployeeID" value="@ViewBag.EmployeeID" />
+<input type="hidden" id="hfRetirementDate" value="@RetirementDate"; />
+
+@*Employee Details*@
+@Html.Action("_EmployeeDetails", "LeaveApplication", new { EmployeeID = ViewBag.EmployeeID })
+
+<div id="container-leave-detail">
+    @*Leave Details*@
+    @Html.Action("_LeaveDetails", "LeaveApplication", new { EmployeeID = ViewBag.EmployeeID, RetirementDate = ViewBag.RetirementDate })
+</div>
+
+@*Note*@
+@Html.Action("_Note", "LeaveApplication", new { EmployeeID = ViewBag.EmployeeID, EarlyRetirement = isEarlyRetirement, RetirementDate = ViewBag.RetirementDate })
+
+<script>
+    jQuery(document).ready(function () {
+        CalculateRetirementDate();
+    });
+
+    function printPDF() {
+        var EmployeeID = $("#hfEmployeeID").val();
+        var CutiGantianEntitlement1 = $("#Entitlement_52").val();
+        var CutiGantianEntitlement2 = $("#Entitlement_2").val();
+        var CutiGantianLeaveTaken1 = $("#LeaveTaken_52").val();
+        var CutiGantianLeaveTaken2 = $("#LeaveTaken_2").val();
+        var ActualRetirementDate = $("#NoteActualRetirementDate").html();
+
+        if (CutiGantianEntitlement2 == null) {
+            CutiGantianEntitlement2 = 0;
+        }
+
+        if (CutiGantianLeaveTaken2 == null) {
+            CutiGantianLeaveTaken2 = 0;
+        }
+
+        window.location.href = '@Html.Raw(String.Format(@"{0}?/{1}/{2}&rs:Command=Render&rs:Format=PDF", ssrsReportUrl, ssrsReportFolder, "RetirementReport"))&EmployeeID=' + EmployeeID + "&CutiGantianEntitlement1=" + CutiGantianEntitlement1 + "&CutiGantianEntitlement2=" + CutiGantianEntitlement2 + "&CutiGantianLeaveTaken1=" + CutiGantianLeaveTaken1 + "&CutiGantianLeaveTaken2=" + CutiGantianLeaveTaken2 + "&ActualRetirementDate=" + ActualRetirementDate;
+    }
+
+
+</script>
+
+
+
+@*@if (ViewBag.IsAbleAccess)
+{
+    @Html.Action("_EmployeeDetails", "LeaveApplication", new { EmployeeID = ViewBag.EmployeeID })
+    @Html.Action("_LeaveDetails", "LeaveApplication", new { EmployeeID = ViewBag.EmployeeID })
+    @Html.Action("_Note", "LeaveApplication", new { EmployeeID = ViewBag.EmployeeID })
+
+    <input type="button" class="btn green" value="Export to PDF" id="btnPrintPDF" onclick="printPDF()" />
+
+    <script>
+        jQuery(document).ready(function () {
+            CalculateRetirementDate();
+
+        });
+        function printPDF() {
+            var EmployeeID = $("#hfEmployeeID").val();
+            var CutiGantianEntitlement1 = $("#Entitlement_52").val();
+            var CutiGantianEntitlement2 = $("#Entitlement_2").val();
+            var CutiGantianLeaveTaken1 = $("#LeaveTaken_52").val();
+            var CutiGantianLeaveTaken2 = $("#LeaveTaken_2").val();
+            var ActualRetirementDate = $("#NoteActualRetirementDate").html();
+
+            if (CutiGantianEntitlement2 == null) {
+                CutiGantianEntitlement2 = 0;
+            }
+
+            if (CutiGantianLeaveTaken2 == null) {
+                CutiGantianLeaveTaken2 = 0;
+            }
+
+            window.location.href = "http://10.215.61.244/ReportServer/Pages/ReportViewer.aspx?/ESS%20Reports/RetirementReport&rs:Command=Render&rs:Format=PDF&EmployeeID=" + EmployeeID + "&CutiGantianEntitlement1=" + CutiGantianEntitlement1 + "&CutiGantianEntitlement2=" + CutiGantianEntitlement2 + "&CutiGantianLeaveTaken1=" + CutiGantianLeaveTaken1 + "&CutiGantianLeaveTaken2=" + CutiGantianLeaveTaken2 + "&ActualRetirementDate=" + ActualRetirementDate;
+        }
+
+
+    </script>
+}
+else
+{
+    <br />
+    <p>
+        This function only applicable for them who will retire in the next 8 months
+    </p>
+}*@
+
+
+

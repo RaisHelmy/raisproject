@@ -1,0 +1,28 @@
+﻿@model List<ESS.Core.DropDownObject>
+
+@{
+    Layout = null;
+    bool ForFilter = ViewBag.ForFilter;
+}
+<span id="StateResult">
+    @Html.DropDownList("State", new SelectList(Model, "Value", "Text"), new { @class = "bs-select form-control", @onchange = "changeState(this)" })
+</span>
+
+<script>
+    function changeState(e) {
+        $.ajax({
+            type: "GET",
+            url: '@Url.Content("~/UniformApplication/_DDLLocation")',
+            cache: false,
+            dataType: "html",
+            data: { State: e.value, ForFilter: '@ForFilter'},
+            success: function (content) {
+                $("#LocationResult").html(content);
+            },
+            error: function (e) {
+                console.log(e);
+            }
+        });
+    }
+
+</script>

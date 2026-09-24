@@ -1,0 +1,809 @@
+﻿@model Tuple<ESS.EPop.Models.EPopVM, SEP.RoutingManagement.Models.RoutingRule>
+@{
+    ViewBag.Title = "EPOP Assessment Form";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+    string TaskID = ViewBag.TaskID + "";
+    string RequestID = ViewBag.RequestID + "";
+    string ApprovalLevel = ViewBag.ApprovalLevel + "";
+    string Source = ViewBag.Source + "";
+    bool isHRSSC = ViewBag.isHRSSC;
+    bool isHRAdminSCCRecruiting = ViewBag.isHRAdminSCCRecruiting;
+    bool isSCCRecruitingSpecialist = ViewBag.isSCCRecruitingSpecialist;
+
+    string EmployeeID = Model.Item1.Submiter.EmployeeID.ToString();
+    string OnlineAssessmentDefinitionURL = ViewBag.OnlineAssessmentDefinitionURL + "";
+
+    var data = new ViewDataDictionary
+{
+new KeyValuePair<string, object>("TaskID", TaskID),
+new KeyValuePair<string, object>("RequestID", RequestID),
+new KeyValuePair<string, object>("ApprovalLevel",ApprovalLevel),
+new KeyValuePair<string, object>("Source",Source),
+new KeyValuePair<string, object>("EmployeeID",EmployeeID),
+new KeyValuePair<string, object>("OnlineAssessmentDefinitionURL",OnlineAssessmentDefinitionURL)
+};
+    int applvl = String.IsNullOrEmpty(ApprovalLevel) ? 0 : Convert.ToInt32(ApprovalLevel);
+
+    string ReadOnly = "disabled";
+
+    if (Model.Item1.btnRework == true || Model.Item1.btnSaveDraft == true || Model.Item1.btnSubmit == true)
+    {
+        ReadOnly = "";
+        //ApprovalLevel > 1 of Non-Executive, cannot edit
+        if ((Model.Item1.Category == "Non-Executive" && Model.Item1.CurrentApprovalLevel == 2) ||
+            (Model.Item1.Category == "Specialist" && Model.Item1.CurrentApprovalLevel > 2) ||
+            (Model.Item1.Category == "Executive" && Model.Item1.CurrentApprovalLevel == 2))
+        {
+            <style>
+                .NonEdittableContent {
+                    display: none;
+                }
+
+                .EdittableContent {
+                    display: block;
+                }
+
+                .EdittableRatingContent {
+                    display: none;
+                }
+
+                .NonEdittableRatingContent {
+                    display: block;
+                }
+
+                .NonEditContent {
+                    display: none;
+                }
+                .EditContent {
+                    display: block;
+                }
+            </style>
+        }
+        else if (Model.Item1.Category == "Executive" && Model.Item1.CurrentApprovalLevel == 3)
+        {
+            <style>
+                .NonEdittableContent {
+                    display: none;
+                }
+
+                .EdittableContent {
+                    display: block;
+                }
+
+                .EdittableRatingContent {
+                    display: block;
+                }
+
+                .NonEdittableRatingContent {
+                    display: none;
+                }
+                .NonEditContent {
+                    display: block;
+                }
+
+                .EditContent {
+                    display: none;
+                }
+            </style>
+        }
+        //ApprovalLevel = 1 of Specialist cannot Rate
+        else if (Model.Item1.Category == "Specialist" && Model.Item1.CurrentApprovalLevel == 1)
+        {
+            //Rating section cannot edit, Recommandation section hide
+            <style>
+                .NonEdittableContent {
+                    display: block;
+                }
+
+                .EdittableContent {
+                    display: none;
+                }
+
+                .EdittableRatingContent {
+                    display: block;
+                }
+
+                .NonEdittableRatingContent {
+                    display: none;
+                }
+            </style>
+        }
+        else if (Model.Item1.Category == "Non-Executive" && Model.Item1.CurrentApprovalLevel == 3)
+        {
+            <style>
+                .NonEdittableContent {
+                    display: block;
+                }
+
+                .EdittableContent {
+                    display: none;
+                }
+
+                .EdittableRatingContent {
+                    display: none;
+                }
+
+                .NonEdittableRatingContent {
+                    display: block;
+                }
+            </style>
+        }
+        else
+        {
+            <style>
+                .NonEdittableContent {
+                    display: none;
+                }
+
+                .EdittableContent {
+                    display: block;
+                }
+
+                .EdittableRatingContent {
+                    display: block;
+                }
+
+                .NonEdittableRatingContent {
+                    display: none;
+                }
+                .NonEditContent {
+                    display: none;
+                }
+                .EditContent {
+                    display: block;
+                }
+            </style>
+        }
+
+    }
+    else
+    {
+        <style>
+            .NonEdittableContent {
+                display: block;
+            }
+
+            .EdittableContent {
+                display: none;
+            }
+
+            .EdittableRatingContent {
+                display: none;
+            }
+
+            .NonEdittableRatingContent {
+                display: block;
+            }
+            .NonEditContent {
+                display: block;
+            }
+            .EditContent {
+                display: none;
+            }
+        </style>
+    }
+
+    if (Model.Item1.Category == "Specialist")
+    {
+        <style>
+            .SpecialistEdittableContent {
+                display: block;
+            }
+        </style>
+    }
+    else
+    {
+        <style>
+            .SpecialistEdittableContent {
+                display: none;
+            }
+        </style>
+    }
+
+    string Checked = "checked";
+    bool HODDisclaimerEnabled = false;
+    if (Model.Item1.chkHODDisclaimerEnabled == true)
+    {
+        HODDisclaimerEnabled = true;
+        if (Model.Item1.chkHODDisclaimer == false)
+        {
+            Checked = "";
+        }
+    }
+}
+
+<style type="text/css">
+    .hidden_1 {
+        display: none;
+    }
+
+    .LabelDisplay {
+        border: 1px #e5e5e5 solid;
+        padding: 6px;
+        width: 100%;
+        background-color: #F9F9F9;
+    }
+</style>
+
+<div class="form-section">
+    <div class="row">
+        <div class="col-md-12">
+            <h1 class="page-title">
+                EPOP - @Model.Item1.Category
+                <span style="padding-left:20px;">
+                    <small></small>
+                </span>
+            </h1>
+        </div>
+    </div>
+</div>
+
+<!-- Hidden -->
+@*Approver Employee*@
+<input type="hidden" value="@ViewBag.EmployeeID" id="hfCurrEmpID" />
+@*@ViewBag.EmployeeID*@
+<input type="hidden" value="@ViewBag.TaskID" id="hfTaskID" />
+<input type="hidden" value="@ViewBag.RequestID" id="hfRequestID" />
+<input type="hidden" value="@ViewBag.ApprovalLevel" id="hfApprovalLevel" />
+<input type="hidden" value="@Model.Item1.AssessmentID" id="hfAssessmentID">
+
+@*Review For*@
+<input id="hfEmployeeID" type="hidden" value="@Model.Item1.Submiter.EmployeeID" />
+<input id="AttachMandatory" type="hidden" value="false" />
+
+<!-- ETransfer Details -->
+@Html.Partial("_OnlineAssessmentFormDetails", Model, data)
+
+
+@if (isHRSSC && Model.Item1.StatusName != "Pending" && Request.QueryString["RevertAssessment"] == "true")
+{
+    @Html.Partial("_OnlineAssessmentFormDetailsRevert", Model, data)
+}
+
+@if (Model.Item1.CurrentApprovalLevel == 1)
+{
+    @Html.Action("AttachmentControl", "Attachment", new { EmployeeID = ViewBag.EmployeeID, Mode = "Add", SourceType = "EPOP", RequestID = Model.Item1.hdfRequestID })
+
+}
+else if (isHRSSC || isHRAdminSCCRecruiting || isSCCRecruitingSpecialist)
+{
+    @Html.Action("AttachmentControl", "Attachment", new { EmployeeID = ViewBag.EmployeeID, Mode = "Edit", SourceType = "EPOP", RequestID = Model.Item1.hdfRequestID })
+
+}
+else
+{
+    @Html.Action("AttachmentControl", "Attachment", new { EmployeeID = ViewBag.EmployeeID, Mode = "View", SourceType = "EPOP", RequestID = Model.Item1.hdfRequestID })
+
+}
+
+<!-- Audit Log -->
+@Html.Action("_AuditLog", "EPOP", new { RequestID = Model.Item1.hdfRequestID })
+
+@Html.Partial("_EPOPApproval", Model, data)
+
+<!-- Disclaimer -->
+@if (Model.Item1.chkHODDisclaimerEnabled == true)
+{
+    <div class="row">
+        <div class="col-md-12">
+            <input type="checkbox" id="chkHODDisclaimer" @ReadOnly @Checked> <b>Disclaimer: Telah berbincang dengan IM sebelum perakuan ini dibuat </b>
+        </div>
+    </div>
+}
+
+<br />
+
+
+
+
+
+
+<!-- Buttons -->
+<div class="row">
+    <input type="hidden" name="ctl00$ContentPlaceHolder1$hfDownloadSource" id="ContentPlaceHolder1_hfDownloadSource">
+    <div class="col-md-12">
+        @*<input type="button" class="btn green" value="Upload Attachment" id="btnHRSSCUpload" onclick="UploadDocument('@RequestID', 'EPOP');" />*@
+        <input type="button" class="btn green" value="Save As Draft" id="btnSave" onclick="SaveAsDraft();" />
+        <input type="button" class="btn red" value="@Model.Item1.btnReworkTxt" id="btnRework" onclick="Rework();" />
+        <input type="button" class="btn green" value="@Model.Item1.btnSubmitTxt.ToString()" id="btnSubmit" onclick="FormValidation();" /> @*@Model.Item1.btnSubmitTxt*@
+        <input type="button" class="btn green" value="Back" id="btnBack" onclick="window.history.back()" />
+
+    </div>
+</div>
+
+<!-- Success Message -->
+<div class="modal fade" id="SuccessSubmit" tabindex="-1" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header Success-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true" style="display: none;"></button>
+                <h4 class="Success-title">Action Successfully Completed</h4>
+            </div>
+            <div class="modal-body Success-body">
+                <div class="well">
+                    The EPOP Assessment has been successfully submitted.
+                </div>
+            </div>
+            <div class="modal-footer Success-footer">
+                <button type="submit" class="btn default blue" id="btnOK">
+                    <i class="fa fa-check"></i>
+                    OK
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- Confirmation Message -->
+<div class="modal fade" id="ConfirmUpdate" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                <h4 class="modal-title">Confirmation</h4>
+            </div>
+            <div class="modal-body">
+                <div class="well">
+                    Are you sure you want to Submit this EPOP Assessment Form application?\n\rPress Confirm to proceed, or Close to stay on the current page.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="submit" class="btn default blue" id="btnSubmitDraft" onclick="ApproverAction(this, 'SaveAsDraft')">
+                    @*ApproverAction(this, 'SaveAsDraft')*@
+                    <i class="fa fa-check"></i>
+                    Draft
+                </button>
+                <button type="submit" class="btn default blue" id="btnSubmitRework" onclick="ApproverAction(this, 'Rework')">
+                    @*ApproverAction(this, 'Rework')*@
+                    <i class="fa fa-check"></i>
+                    @Model.Item1.btnReworkTxt.ToString()
+                </button>
+                <button type="submit" class="btn default blue" id="btnSubmitForm" onclick="javascript: ApproverAction(this, ' @Model.Item1.btnSubmitTxt.ToString()')">
+                    <i class="fa fa-check"></i>
+                    @*@Model.Item1.btnSubmitTxt.ToString*@
+                    Submit
+                </button>
+                <button type="button" class="btn default" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- Loading Gif -->
+<div id="divLoading" style="margin: 0px; padding: 0px; position: fixed; right: 0px;
+    top: 0px; width: 100%; height: 100%; background-color:gainsboro; z-index: 30001;
+    opacity: .8; filter: alpha(opacity=70);display:none">
+    <p style="position: absolute; top: 30%; left: 30%; color: black;">
+        Loading, please wait...<img src="../Assets/img/ajax-loading.gif" />
+
+    </p>
+</div>
+@if (Model.Item1.Category == "Executive")
+{
+    <style>
+        .NonExecutiveDiv {
+            display: none;
+        }
+    </style>
+}
+@if (Model.Item1.btnSaveDraft == true)
+{
+    <script>
+        $("#btnSave").removeClass("hidden");
+    </script>
+}
+else
+{
+    <script>
+        $("#btnSave").addClass("hidden");
+    </script>
+}
+@if (Model.Item1.btnRework == true)
+{
+    <script>
+        $("#btnRework").removeClass("hidden");
+    </script>
+}
+else
+{
+    <script>
+        $("#btnRework").addClass("hidden");
+    </script>
+}
+@if (Model.Item1.btnSubmit == true)
+{
+    <script>
+        $("#btnSubmit").removeClass("hidden");
+    </script>
+}
+else
+{
+    <script>
+        $("#btnSubmit").addClass("hidden");
+    </script>
+}
+@if (isHRSSC && Model.Item1.btnSubmit != true && Model.Item1.btnSaveDraft != true)
+{
+    <script>
+        $("#btnHRSSCUpload").removeClass("hidden");
+    </script>
+}
+else
+{
+    <script>
+        $("#btnHRSSCUpload").addClass("hidden");
+    </script>
+}
+
+<script type="text/javascript">
+
+    //var Path = '/_layouts/15/tnbess';
+    //var Path = '/_layouts/15/essv2';
+    //var Path = 'http://localhost:49773';
+
+    var EmployeeID = '';
+
+    // Helper function
+    function convertDate(inputFormat) {
+        function pad(s) { return (s < 10) ? '0' + s : s; }
+        var monthNames = ["January", "February", "March", "April", "May", "June",
+        "July", "August", "September", "October", "November", "December"
+        ];
+
+        var d = new Date(inputFormat);
+        return [pad(d.getDate()), monthNames[d.getMonth()], d.getFullYear()].join(' ');
+    }
+
+    $(document).ready(function () {
+        $("#btnSubmitForm").addClass("hidden");
+        $("#btnSubmitRework").addClass("hidden");
+        $("#btnSubmitDraft").removeClass("hidden");
+    });
+    function FormValidation() {
+        var _Employeee = document.getElementById('hfEmployeeID');
+        var _Attachment = document.getElementById('ct_Attachment');
+        var _Disclaimer = document.getElementById('chkHODDisclaimer');
+        var _Disclaimer2 = $('#chkHODDisclaimer').parent().hasClass('checked');
+
+        var _ValidationMsg = '';
+        var minWords = false;
+
+        if (_Employeee.value == '')
+            _ValidationMsg += '- Employee field is required.\n';
+
+        var _ValidationRadioMsg = '';
+        if (!(@Model.Item1.CurrentApprovalLevel == 1 && '@Model.Item1.Category.ToString()' == 'Specialist')){
+            $(".reqRadio").each(function () {
+                var name = $(this).attr('name');
+                if ($('input[name="' + name + '"]:checked').size() == 0) {
+                    _ValidationRadioMsg = '- Please ensure all Employee Assessment Rating is selected before proceed.\n';
+                }
+            });
+
+            _ValidationMsg += _ValidationRadioMsg;
+            _ValidationRadioMsg = '';
+            $(".reqComment").each(function () {
+                var name = $(this).attr('id');
+                var comment = true;
+                var totalWords = 0;
+
+
+                if (($("#" + name).val()) == "") {
+                    comment = false;
+                    //_ValidationRadioMsg = '- Please comment before proceed.\n';
+                }
+                if (!comment) {
+                    _ValidationMsg = '- Please comment before proceed.\n';
+
+                }
+
+                //Non-Executive Minimum Words
+                if ('@Model.Item1.Category.ToString()' == 'Non-Executive' && @Model.Item1.CurrentApprovalLevel == 1) {
+                    totalWords = $("#" + name).val().replace(/\r?\n/g, "\r\n").split(' ').length;
+
+                    if (totalWords < 10) {
+                        minWords = true;
+                    }
+                }
+            });
+
+            if (minWords) {
+                 _ValidationMsg += '- Please enter minimum 10 words.\n';
+            }
+
+            if ($('input[name="rblAcknowledgement"]:checked').size() == 0)
+                _ValidationMsg += '- Please select Recommendation before proceed.\n';
+        }
+
+        if ('@Model.Item1.Category.ToString()' == 'Executive' && (@Model.Item1.CurrentApprovalLevel == 1 || @Model.Item1.CurrentApprovalLevel == 2)) {
+            var isError = false;
+
+            $(".ArcContriRemarks").each(function () {
+                if ($(this).val() == '') {
+                    isError = true;
+                 }
+             });
+
+            if (isError == true) {
+                _ValidationMsg += '- Please comment archievement and contribution factor before proceed.\n';
+            }
+
+            //if ($("#txtApprovalComment").val() == '') {
+            //    _ValidationMsg += '- Please key in approval comments.\n';
+            //}
+        }
+
+        var _ValidationRecommendationMsg = '';
+        var _RatingRate = '@ViewBag.RatingRate';
+        var _TotalRate = 0;
+        var _TotalRadio = 0;
+
+        _TotalRate = $(".reqRadio").length;
+
+        _TotalRadio = _TotalRate / 5;
+
+        if($(".reqRadio:checked").length != _TotalRadio){
+            _ValidationMsg += '- Cannot proceed with submission, please rate all the assessment factor.\n';
+        }
+        else
+        {
+            if(_RatingRate == 1){
+                //DO NOTHING...
+            }
+            else{
+                if ((@Model.Item1.CurrentApprovalLevel == 1 && '@Model.Item1.Category.ToString()' == 'Non-Executive') ||
+                    (@Model.Item1.CurrentApprovalLevel == 2 && '@Model.Item1.Category.ToString()' == 'Specialist')) {
+                    if ('@Model.Item1.Category.ToString()' != 'Executive' && $('input[name="rblAcknowledgement"]:checked').val() == 'R') {
+                        $(".reqRadio").each(function () {
+                            var name = $(this).attr('name');
+                            if (Number($('input[name="' + name + '"]:checked').val()) < _RatingRate) {
+                                _ValidationRecommendationMsg = '- Cannot proceed with submission, at least one (1) assessment factor has been rated lower than ' + _RatingRate + ' points. Please amend the recommendations section.\n'
+                            }
+                        })
+                    }
+                    if ('@Model.Item1.Category.ToString()' != 'Executive' && $('input[name="rblAcknowledgement"]:checked').val() != 'R') {
+                        var groups = 0;
+                        $(".reqRadio:checked").each(function () {
+                            var name = $(this).attr('name');
+                            if (Number($('input[name="' + name + '"]:checked').val()) >= _RatingRate) {
+                                groups++;
+                            }
+                        })
+                        if ($(".reqRadio:checked").length == groups) {
+                            _ValidationRecommendationMsg = '- Cannot proceed with submission, all criteria have been marked ' + _RatingRate + ' or higher. Please amend the recommendations section.\n'
+                        }
+                    }
+                    _ValidationMsg += _ValidationRecommendationMsg;
+                }
+            }
+        }
+
+        
+
+        if('@HODDisclaimerEnabled' == 'True')
+        {
+            if (!_Disclaimer.checked && !_Disclaimer2)
+                _ValidationMsg += '- Please read and check the Disclaimer section before proceed.\n';
+        }
+
+        if (_ValidationMsg != null && _ValidationMsg != '') {
+            alert(_ValidationMsg);
+        }
+        else {
+
+            if (_ValidationMsg != null && _ValidationMsg != '') {
+                alert(_ValidationMsg);
+            }
+            else {
+                document.getElementById('AttachMandatory').value = 'true';
+                $("#btnSubmitForm").removeClass("hidden");
+                $("#btnSubmitRework").addClass("hidden");
+                $("#btnSubmitDraft").addClass("hidden");
+                if (@Model.Item1.CurrentApprovalLevel == 1 && '@Model.Item1.Category.ToString()' == 'Specialist') {
+                    $("#ConfirmUpdate .modal-body .well").html('Clicking Confirm will verify this application. If you want to make changes, click Close.');
+                }
+                else {
+                    $("#ConfirmUpdate .modal-body .well").html('Clicking Confirm will submit this application. If you want to make changes, click Close.');
+                }
+                $("#ConfirmUpdate").modal('show');
+            }
+        }
+    }
+
+    function RedirectTo(_Action) {
+        switch (_Action) {
+            case "SaveAsDraft":
+                window.location.href = '@Url.Action("EPOPInTray", "MSS")';
+                break;
+            default:
+                window.location.href = '@Url.Action("EPOPInTray", "MSS")';
+
+        }
+    }
+
+    function ApproverAction(btn, _Action) {
+        btn.disabled = true;
+        $("#divLoading").show();
+        var myVar = setTimeout(function () { ConfirmAction(btn, _Action); }, 3000);
+    }
+
+    function SaveAsDraft() {
+        $("#btnSubmitDraft").removeClass("hidden");
+        $("#btnSubmitForm").addClass("hidden");
+        $("#btnSubmitRework").addClass("hidden");
+        $("#ConfirmUpdate .modal-body .well").html('Clicking Confirm will Save the form As Draft . If you want to make changes, click Close.');
+        $("#ConfirmUpdate").modal('show');
+        document.getElementById('AttachMandatory').value = 'false';
+    }
+
+    function Rework() {
+        $("#btnSubmitDraft").addClass("hidden");
+        $("#btnSubmitForm").addClass("hidden");
+        $("#btnSubmitRework").removeClass("hidden");
+        $("#ConfirmUpdate .modal-body .well").html('Clicking Confirm will Rework the form . If you want to make changes, click Close.');
+        $("#ConfirmUpdate").modal('show');
+        document.getElementById('AttachMandatory').value = 'false';
+
+    }
+    function ConfirmAction(btn, SubmitType) {
+        //$("input[type=button]").attr("disabled", "disabled");
+        var _Employee = document.getElementById('hfEmployeeID').value;
+        var _SubmitterID = document.getElementById('hfCurrEmpID').value;
+
+        var _AttachMandatory = document.getElementById('AttachMandatory').value;
+        var _Acknowledgement = $('input[name="rblAcknowledgement"]:checked').val();
+        //var _Remarks = document.getElementById('txtRemarks').value;
+        var _KnowledgePossessed = document.getElementById('txtKnowledge').value;
+        var _Specialization = document.getElementById('txtSpecialization').value;
+        var _CurrentGrade = $('#CurrentGrade').val();
+        var _NextGrade = $('#NextGrade').val();
+        var _CurrentGradeStartDate = $('#CurrentGradeStartDate').val();
+        var _PromotionDate = $('#PromotionDate').val();
+        var _lblArchievementContributionFactors = "";
+
+        console.log(_CurrentGradeStartDate + " " + _CurrentGrade);
+        console.log(_PromotionDate + " " + _NextGrade);
+
+        var ResultMsg = "The EPOP Assessment has been successfully saved.";
+        if (SubmitType == "Rework") {
+            ResultMsg = "The EPOP Assessment has been successfully " + "@Model.Item1.btnReworkLabel.ToString()" + ".";
+        }
+        else if (SubmitType != "SaveAsDraft") {
+            ResultMsg = "The EPOP Assessment has been successfully " + "@Model.Item1.btnSubmitLabel.ToString()" + ".";
+        }
+
+        var lblOrder ='';
+
+        $(".reqOrder").each(function () {
+            var name = $(this).attr('id');
+            lblOrder += $("#" + name).text() + " ,";
+        });
+
+        var lblAssessmentFactor ='';
+
+        $(".reqAssessment").each(function () {
+            var name = $(this).attr('id');
+            lblAssessmentFactor += $("#" + name).text() + " ,";
+        });
+
+        var lblAssessmentFactor2 = '';
+
+        $(".reqAssessment2").each(function () {
+            var name = $(this).attr('id');
+            lblAssessmentFactor2 += $("#" + name).text() + " ,";
+        });
+
+        var rbRating ='';
+        var countRdr = 0;
+        $(".reqRadioDiv").each(function () {
+            var RadioValue = '';
+            if ($("input[name='optionsRadios_" + countRdr + "']").is(':checked'))
+            {
+                RadioValue = $("input[name='optionsRadios_" + countRdr + "']:checked").val();
+            }
+            rbRating += RadioValue + " ,";
+            countRdr++;
+        });
+
+        //var txtComment ='';
+
+        //$(".reqComment").each(function () {
+        //    var name = $(this).attr('id');
+        //    txtComment += $("#" + name).val() + " ,";
+        //});
+
+        var JSONtxtComment = $(".reqComment").map(function () {
+            var name = $(this).attr('id');
+            return $("#" + name).val();
+        });
+        var txtComment = JSON.stringify(JSONtxtComment.get());
+
+        var resultDisclaimer = "1";
+        var _Disclaimer = document.getElementById('chkHODDisclaimer');
+        var _Disclaimer2 = $('#chkHODDisclaimer').parent().hasClass('checked');
+        var _ApproverComment = document.getElementById('txtApprovalComment').value;
+        if('@HODDisclaimerEnabled' == 'True')
+        {
+            if (!_Disclaimer.checked && !_Disclaimer2)
+                resultDisclaimer = "0";
+        }
+
+        if ('@Model.Item1.Category.ToString()' == 'Executive') {
+             $(".ArcContriRemarks").each(function () {
+                _lblArchievementContributionFactors += $(this).attr("factor") + "_|$PLITTER_SMALL|_" + $(this).val() + "_|$PLITTER_SMALL|_" + $(this).attr("order") + "_|$PLITTER_BIG|_";
+             });
+
+            _lblArchievementContributionFactors = _lblArchievementContributionFactors.slice(0, -16);
+        }
+
+        var form = {
+            ReferenceNo: '@Model.Item1.ReferenceNo',
+            EntryID: '@Model.Item1.AssessmentID',
+            RequestID: '@Model.Item1.hdfRequestID',
+            SubmissionType: SubmitType,
+            SubmitterID: _SubmitterID,
+            EmployeeID: _Employee,
+            EmployeeName: '@Model.Item1.Submiter.EmployeeName',
+            Category: '@Model.Item1.Category.ToString()',
+            CurrentApprovalLevel: '@Model.Item1.CurrentApprovalLevel',//'@ViewBag.ApprovalLevel',
+            Remarks: '',
+            ApproverComment: _ApproverComment,
+            Acknowledgement: _Acknowledgement,
+            KnowledgePossessed: _KnowledgePossessed,
+            Specialization: _Specialization,
+            HODDisclaimer: resultDisclaimer,
+            lblOrder: lblOrder,
+            lblAssessmentFactor: lblAssessmentFactor,
+            lblAssessmentFactor2: lblAssessmentFactor2,
+            rbRating : rbRating,
+            txtComment: txtComment,
+            AttachMandatory: _AttachMandatory,
+            TaskID: '@ViewBag.TaskID',
+            CurrentGrade: _CurrentGrade,
+            NextGrade: _NextGrade,
+            CurrentGradeStartDate: _CurrentGradeStartDate,
+            PromotionDate: _PromotionDate,
+            lblArchievementContributionFactors: _lblArchievementContributionFactors
+        };
+        if ($('#divLoading').is(':visible')) {
+
+
+            $.ajax({
+                type: "POST",
+                url: '@Url.Content("~/EPop/SubmitForm")',
+                cache: false,
+                async: false,
+                dataType: "json",
+                data: form,
+                success: function (result) {
+                    if (result.Success) {
+                        $("#ConfirmUpdate").modal('toggle');
+                        $("#divLoading").hide();
+                        $(".Success-body .well").html(ResultMsg);
+                        $(".Success-body .well").html(result.ErrorMsg);
+                        $("#SuccessSubmit").modal();
+
+                        $("#SuccessSubmit #btnOK").click(function () { RedirectTo(SubmitType); });
+                    }
+                    else {
+                        $("#ConfirmUpdate").modal('toggle');
+                        $("#divLoading").hide();
+                        btn.disabled = false;
+
+                        alert(result.ErrorMsg);
+                    }
+                },
+                error: function (e) {
+
+                }
+            });
+        }
+    }
+
+</script>
+
+
+

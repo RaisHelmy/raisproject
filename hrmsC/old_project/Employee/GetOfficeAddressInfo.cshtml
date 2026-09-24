@@ -1,0 +1,206 @@
+﻿@model Tuple<ESS.Employee.Models.OfficeAddressInfo, ESS.Employee.Models.Setting>
+@using ESS.Employee
+@{
+    Layout = null;
+    string ID = "";
+    string module = "OfficeAddress";
+
+    string divMode = "";
+
+    bool runFieldVisible = false;
+    if (Model.Item2 != null)
+    {
+        runFieldVisible = true;
+    }
+}
+
+@if (Model.Item1 != null)
+{
+
+    <div class="form-body">
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-horizontal">
+
+                    <div class="form-group">
+                        <label class="control-label col-md-4 ">
+                            Building Code
+                        </label>
+                        <div class="col-md-8 form-control-static">
+                            <label>@((string.IsNullOrEmpty(Model.Item1.BuildingCode)) ? "-" : Model.Item1.BuildingCode)</label>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="control-label col-md-4 ">
+                            Level
+                        </label>
+                        <div class="col-md-8 form-control-static">
+                            <label>@((string.IsNullOrEmpty(Model.Item1.Level)) ? "-" : Model.Item1.Level)</label>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="control-label col-md-4 ">
+                            Building Name
+                        </label>
+                        <div class="col-md-8 form-control-static">
+                            <label>@((string.IsNullOrEmpty(Model.Item1.BuildingName)) ? "-" : Model.Item1.BuildingName)</label>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="control-label col-md-4 ">
+                            No/ Street
+                        </label>
+                        <div class="col-md-8 form-control-static">
+                            <label>@((string.IsNullOrEmpty(Model.Item1.StreetName)) ? "-" : Model.Item1.StreetName)</label>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-horizontal">
+
+                    <div class="form-group">
+                        <label class="control-label col-md-4 ">
+                            City
+                        </label>
+                        <div class="col-md-8 form-control-static">
+                            <label>@((string.IsNullOrEmpty(Model.Item1.City)) ? "-" : Model.Item1.City)</label>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="control-label col-md-4 ">
+                            Postcode
+                        </label>
+                        <div class="col-md-8 form-control-static">
+                            <label>@((string.IsNullOrEmpty(Model.Item1.Postcode)) ? "-" : Model.Item1.Postcode)</label>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="control-label col-md-4 ">
+                            State
+                        </label>
+                        <div class="col-md-8 form-control-static">
+                            <label>@((string.IsNullOrEmpty(Model.Item1.State)) ? "-" : Model.Item1.State)</label>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="control-label col-md-4 ">
+                            Country
+                        </label>
+                        <div class="col-md-8 form-control-static">
+                            <label>@((string.IsNullOrEmpty(Model.Item1.Country)) ? "-":Model.Item1.Country)</label>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+        <div class="form-horizontal">
+            <div class="table-toolbar">
+                <div class="row">
+                    <div class="col-md-12">
+                        <br />
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="btn-group editCurrentOfficeAddressDiv hidden">
+                            <a class="btn green editCurrentOfficeAddress" style="margin:5px;" id="editCurrentOfficeAddress">
+                                Edit
+                                <i class="fa fa-pencil"></i>
+                            </a>
+                            <button class="btn green" style="margin:5px;" id="ackCurrentOfficeAddress">
+                                Acknowledge
+                                @*<i class="fa fa-pencil"></i>*@
+                            </button>
+                            <p style="display: inline-block; margin-left: 5px; position: absolute; transform: translateY(-50%); width: 300px; top: 50%;">
+                                @{
+                                    string ackDateMessage = string.Empty;
+                                    if (Model.Item1.AcknowledgeDate.HasValue && !(Model.Item1.AcknowledgeDate.Value <= new DateTime(1900, 1, 1)))
+                                    {
+                                        ackDateMessage = "Acknowledged on: " + @Model.Item1.AcknowledgeDate.Value.ToString("dd/MM/yyyy HH:mm:ss");
+                                    }
+                                }
+                                <span id="ackUpdateDate">@ackDateMessage</span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="text/javascript">
+        $(document).ready(function () {
+            App.initAjax();
+
+            var divMode = "@divMode";
+            var runFieldVisible = "@runFieldVisible";
+
+            if (runFieldVisible.toUpperCase() == "TRUE") {
+                Setting_FieldVisible = JSON.parse('@Html.Raw(Json.Encode(Model.Item2.FieldVisible))');
+                Setting_FieldEnable = JSON.parse('@Html.Raw(Json.Encode(Model.Item2.FieldEnable))');
+                Setting_FieldChecked = JSON.parse('@Html.Raw(Json.Encode(Model.Item2.FieldChecked))');
+                Setting_FieldValue = JSON.parse('@Html.Raw(Json.Encode(Model.Item2.FieldValue))');
+
+                PopulateSetting(divMode, "#SearchGetOfficeAddressInfo", "#SettingSection", Setting_FieldVisible, Setting_FieldEnable, Setting_FieldChecked, Setting_FieldValue);
+                //PopulateSetting(divMode, divMain, LogDiv, Setting_FieldVisible, Setting_FieldEnable, Setting_FieldChecked, Setting_FieldValue)
+            }
+        });
+
+        $('#editCurrentOfficeAddress').click(function (e) {
+            e.preventDefault();
+
+            //var EmployeeCode = $(this).attr('data-EmployeeCode');
+            var EmployeeCode = $("#EmployeeCode").val();
+            var EmployeeID = $("#EmployeeID").val();
+            var Action = 'EDIT';
+
+            $("#FormCategory").val("@module");
+            $("#FormAction").val(Action);
+            var url="@Url.Content("~/Employee/_CurrentOfficeAddress")";
+            var data = {
+                EmployeeCode: EmployeeCode,
+                EmployeeID: EmployeeID,
+                Mode: Action,
+            };
+            OpenEditPanel('Edit Office Address', Action, url, data)
+        });
+
+        $('#ackCurrentOfficeAddress').click(function (e) {
+            e.preventDefault();
+
+            var ackData = {
+                EmpID: $("#EmployeeID").val()
+            };
+
+            $.ajax({
+                type: "POST",
+                url: "@Url.Content("~/Employee/OfficeAddressAck")",
+                dataType: "json",
+                data: ackData,
+                success: function (result) {
+                    if (result.Success) {
+                        $('#ackUpdateDate').empty();
+                        $('#ackUpdateDate').append("Acknowledged on: " + result.Message);
+                        $('#ackCurrentOfficeAddress').prop('disabled', true);
+                        alert("Successfully Acknowledged.");
+                    }
+                    else {
+                        alert(result.TechnicalError);
+                    }
+                },
+                error: function (e) {
+
+                }
+            });
+        });
+    </script>
+}

@@ -1,0 +1,292 @@
+﻿@model List<ESS.Core.CourseAttendeeSAP>
+@{
+    ViewBag.Title = "Evaluation Form";
+}
+
+<div class="form-section">
+    <div class="row">
+        <div class="col-md-12">
+            <h1 class="page-title">
+                Evaluation Form
+                <span style="padding-left:20px;">
+                    <small></small>
+                </span>
+            </h1>
+        </div>
+    </div>
+</div>
+@using (Html.BeginForm("", "TrainingEvaluation", FormMethod.Post, new { @class = "form-horizontal", @id = "MainForm" }))
+{
+    <input id="hfEmployeeID" type="hidden" value="@ViewBag.EmployeeID" />
+    <input id="hfEvaluationID" type="hidden" value="@ViewBag.EvaluationID" />
+
+    //Step 1 to Step 4
+    <div class="row">
+        <div class="col-md-12">
+            <div class="col-md-2 col-sm-2 col-xs-2">
+                Training Details
+            </div>
+            <div class="col-md-1 col-sm-1 col-xs-1">
+                <img src="/_layouts/tnbess/ui/silver_arrow.png" />
+            </div>
+            <div class="col-md-2 col-sm-2 col-xs-2">
+                Select Questions
+            </div>
+            <div class="col-md-1 col-sm-1 col-xs-1">
+                <img src="/_layouts/tnbess/ui/silver_arrow.png" />
+            </div>
+            <div class="col-md-2 col-sm-2 col-xs-2">
+                <b>Select Attendees</b>
+            </div>
+            <div class="col-md-1 col-sm-1 col-xs-1">
+                <img src="/_layouts/tnbess/ui/silver_arrow.png" />
+            </div>
+            <div class="col-md-1 col-sm-1 col-xs-1">
+                Preview
+            </div>
+        </div>
+    </div>
+    <br />
+
+    //Course Attendee Details
+    <div class="row">
+        <div class="col-md-12">
+            <div class="portlet box blue">
+                <div class="mini-triangle"><img src="../Assets/img/menu-red-triangle.png" /></div>
+                <div class="portlet-title">
+                    <div class="caption">
+                        <i class="fa fa-reorder"></i>Course Attendee Details
+                    </div>
+                </div>
+                <div class="portlet-body form">
+                    <div class="form-body" id="ct01_CustomFieldFormView">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <label class="control-label col-md-12">
+                                            Select Attendee <span id="lvTypeMan" style="color:red;"> *</span>
+                                        </label>
+                                        <div class="col-md-12">
+                                            <div class="table-toolbar">
+                                                <table id="tblResult" class="table table-striped table-bordered table-hover table-full-width">
+                                                    <thead>
+                                                        <tr>
+                                                            <th style="width:5%;"><input class="DestroyUniform" type="checkbox" ID="chkSelectAllQuestion" name="chkSelectAllQuestion" value="" onclick="javascript: SelectheaderCheckboxes(this)"></th>
+                                                            <th>Attendees</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        @foreach (var item in Model)
+                                                        {
+                                                            <tr>
+                                                                <td>
+                                                                    <input type="checkbox" class="DestroyUniform" ID="chkSelect" name="chkSelect" value="@item.EmployeeID" @item.IsChecked>
+                                                                </td>
+                                                                <td>@item.Employee</td>
+                                                            </tr>
+                                                        }
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    //Add Attendee
+    @Html.Action("_MultiPeoplePickerChkbox", "TrainingEvaluation", new {  PickerMode ="Add"  })
+
+    <input type="button" class="btn green" value="Back" id="btnBack" onclick="NextPreviousStep('Back')" />
+    <input type="button" class="btn green" value="Save as Draft" id="btnSaveAsDraft" onclick="NextPreviousStep('Save')" />
+    <input type="button" class="btn green" value="Next" id="btnAttach" onclick="NextPreviousStep('Next')" />
+    <input type="button" class="btn green" value="Delete" id="btnSaveAsDraft" onclick="javascript: $('#ConfirmUpdate').modal('toggle');" />
+    <input type="button" class="btn green" value="Close" id="btnAttach" onclick="NextPreviousStep('Close')" />
+
+    <!-- Confirmation Message -->
+    <div class="modal fade" id="ConfirmUpdate" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                    <h4 class="modal-title">Confirmation</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="well">
+                        Are you sure you want to Delete this Evaluation Form? Press Confirm to proceed, or Close to stay on the current page.
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn default blue" id="btnSubmitDraft" value="Draft" onclick="javascript: ConfirmDelete('Delete');">
+                        <i class="fa fa-check"></i>
+                        Confirm
+                    </button>
+                    <button type="button" class="btn default" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Success Message -->
+    <div class="modal fade" id="SuccessSubmit" tabindex="-1" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header Success-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true" style="display: none;"></button>
+                    <h4 class="Success-title">Action Successfully Completed</h4>
+                </div>
+                <div class="modal-body Success-body">
+                    <div class="well">
+                        Your Evaluation Form has been successfully deleted.
+                    </div>
+                </div>
+                <div class="modal-footer Success-footer">
+                    <button type="button" class="btn default blue" id="btnOK">
+                        <i class="fa fa-check"></i>
+                        OK
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    //Loading
+    <div id="divLoading" style="margin: 0px; padding: 0px; position: fixed; right: 0px; top: 0px; width: 100%; height: 100%; background-color: gainsboro; z-index: 30001; opacity: .8; filter: alpha(opacity=70); display: none; ">
+        <p style="position: absolute; top: 30%; left: 30%; color: black;">
+            Performing action, please wait...<img src="/_layouts/15/TNBESS/Assets/img/ajax-loading.gif">
+        </p>
+    </div>
+}
+
+<script>
+    $(window).load(function () {
+        $.uniform.restore(".DestroyUniform");
+    });
+
+    var SaveAsDraft = "";
+
+    function NextPreviousStep(_Action) {
+        if (_Action == "Back") {
+            location.href = '/_layouts/15/essv2/trainingEvaluation/EvaluationForm2?EvaluationID=' + '@ViewBag.EvaluationID';
+        } else if (_Action == "Next") {
+            $("#divLoading").css("display", "block");
+            var myVar = setTimeout(SaveSelectedAttendees, 1000);
+        } else if (_Action == "Close") {
+            location.href = '/_layouts/15/essv2/trainingEvaluation/EvaluationFormHistory';
+        } else if (_Action == "Save") {
+            SaveAsDraft = "Save";
+            $("#divLoading").css("display", "block");
+            var myVar = setTimeout(SaveSelectedAttendees, 1000);
+        }
+    }
+
+    function SaveSelectedAttendees() {
+        var _Attendees = "";
+        var _EvaluationID = $("#hfEvaluationID").val();
+        $("input[id=chkSelect]:checked").each(function () {
+            var AttendeesID = $(this).val();
+
+            _Attendees += AttendeesID + ",";
+        });
+        if (_Attendees == "") {
+            $("#divLoading").css("display", "none");
+            alert('You need to select at least one Attendee.');
+            return false;
+        }
+        _Attendees = _Attendees.slice(0, -1);
+
+        $.ajax({
+            url: '@Url.Content("~/TrainingEvaluation/PerformInsertEvaluationForm3")',
+            type: 'POST',
+            cache: false,
+            async: false,
+            dataType: "json",
+            data: { Attendees: _Attendees, EvaluationID: _EvaluationID },
+            success: function (result) {
+                if (result.Success) {
+                    //$("#divLoading").css("display", "none");
+                    if (SaveAsDraft == "Save") {
+                        window.location.replace("/_layouts/15/essv2/TrainingEvaluation/EvaluationForm3?EvaluationID=" + result.EvaluationID);
+                    } else {
+                        window.location.replace("/_layouts/15/essv2/TrainingEvaluation/EvaluationForm4?EvaluationID=" + result.EvaluationID);
+                    }
+                    
+                } else {
+                    $("#divLoading").css("display", "none");
+                    alert(result.ErrorMsg);
+                    console.log(result.ErrorMsg);
+                }
+            },
+            error: function (x, y, z) {
+                $("#divLoading").css("display", "none");
+                console.log(x + '\n' + y + '\n' + z);
+            }
+        });
+    }
+
+    function ConfirmDelete(_Action) {
+        $('#btnOK').click(function () { RedirectTo('Delete'); });
+        $("#ConfirmUpdate").modal('toggle');
+        $("#divLoading").css("display", "block");
+        var myVar = setTimeout(SubmitDelete, 1000);
+    }
+
+    function SubmitDelete() {
+        $.ajax({
+            url: '@Url.Content("~/TrainingEvaluation/PerformDeleteEvaluationForm")',
+            type: 'POST',
+            cache: false,
+            async: false,
+            dataType: "json",
+            data: { EvaluationID: $("#hfEvaluationID").val() },
+            success: function (result) {
+                if (result.Success) {
+                    $("#divLoading").css("display", "none");
+                    $("#SuccessSubmit").modal();
+                } else {
+                    $("#divLoading").css("display", "none");
+                    alert(result.ErrorMsg);
+                    console.log(result.ErrorMsg);
+                }
+            },
+            error: function (x, y, z) {
+                $("#divLoading").css("display", "none");
+                console.log(x + '\n' + y + '\n' + z);
+            }
+        });
+    }
+
+    function RedirectTo(_Action) {
+        switch (_Action) {
+            case "Delete":
+                window.location.href = '/_layouts/15/essv2/TrainingEvaluation/EvaluationForm';
+                break;
+            default:
+                window.location.href = '/Pages/default.aspx';
+        }
+    }
+
+    function SelectheaderCheckboxes(headerchk) {
+        var gvcheck = $("#tblResult");
+        var i;
+        //Condition to check header checkbox selected or not if that is true checked all checkboxes
+        if (headerchk.checked) {
+            $.each(gvcheck.find('tbody tr'), function (index, value) {
+                $(this).find('input').attr("checked", "checked");
+            });
+        }
+            //if condition fails uncheck all checkboxes in gridview
+        else {
+            $.each(gvcheck.find('tbody tr'), function (index, value) {
+                $(this).find('input').removeAttr("checked");
+            });
+        }
+    }
+</script>
+

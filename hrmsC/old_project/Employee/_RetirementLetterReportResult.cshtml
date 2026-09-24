@@ -1,0 +1,129 @@
+﻿@model List<ESS.Employee.Models.RetirementLetter>
+@using ESS.Employee.Models;
+@using atQuest.Utilities;
+@using ESS.Employee;
+@{
+    Layout = null;
+    string StatusCSS = "green";
+
+}
+
+<div class="portlet box blue">
+    <div class="mini-triangle"><img src="../Assets/img/menu-red-triangle.png" /></div>
+    <div class="portlet-title">
+        <div class="caption">
+            <i class="fa fa-reorder"></i>Retirement Letter Report
+        </div>
+        <input type="button" id="btn-Export" class="btn btn-xs green pull-right" value="Export To Excel" />
+        <div class="tools">
+        </div>
+    </div>
+    <div class="portlet-body form">
+        <div class="form-body">
+            <div class="form-horizontal">
+                <div class="table-toolbar">
+                    <table id="tblResult" class="table table-striped table-bordered table-hover table-full-width">
+                        <thead>
+                            <tr>
+                                <th></th>
+                                <th>Employee Code</th>
+                                <th>Employee Name</th>
+                                <th>Company</th>
+                                <th>Division / Department</th>
+                                <th>Unit / Section</th>
+                                <th>Pay Scale Group</th>
+                                <th>Status</th>
+                                <th>Retirement Date</th>
+                                <th>Release Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in @Model)
+                            {
+                            <tr>
+                                <td>
+                                    <a class="btn blue btn-sm" href="@Url.Content("~/Employee/RetirementLetterDetails")?UniqueID=@item.UniqueID">
+                                        <i class="fa fa-search"></i>
+                                    </a>
+                                </td>
+                                <td>@item.EmployeeCode</td>
+                                <td>@item.EmployeeName</td>
+                                <td>@item.Company</td>
+                                <td>@item.Department</td>
+                                <td>@item.UnitSection</td>
+                                <td>@item.PayScaleGroup</td>
+                                @{
+                                    string CheckStatus = item.Status;
+                                    StatusCSS = "green";
+                                    if (CheckStatus == "Pending")
+                                    {
+                                        StatusCSS = "red";
+                                    }
+                                }
+                                <td style="color:@StatusCSS;"><b>@Helper.SplitText(item.Status)</b></td>
+                                <td>
+                                    @Service.FormatDateInNumber(item.RetirementDate, "dd/MM/yyyy")
+                                </td>
+                                <td>
+                                    @Service.FormatDateInNumber(item.ReleaseDate, "dd/MM/yyyy")
+                                </td>
+                            </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<table id="tblExport" class="table table-striped table-bordered table-hover table-full-width" style="display:none;">
+	<thead>
+		<tr>
+			<th>Employee Code</th>
+			<th>Employee Name</th>
+			<th>Company</th>
+			<th>Division / Department</th>
+			<th>Unit / Section</th>
+			<th>Pay Scale Group</th>
+			<th>Status</th>
+			<th>Retirement Date</th>
+			<th>Release Date</th>
+		</tr>
+	</thead>
+	<tbody>
+		@foreach (var item in @Model)
+		{
+		<tr>
+			<td>@item.EmployeeCode</td>
+			<td>@item.EmployeeName</td>
+			<td>@item.Company</td>
+			<td>@item.Department</td>
+			<td>@item.UnitSection</td>
+			<td>@item.PayScaleGroup</td>
+			@{
+				string CheckStatus = item.Status;
+				StatusCSS = "green";
+				if (CheckStatus == "Pending")
+				{
+					StatusCSS = "red";
+				}
+			}
+			<td style="color:@StatusCSS;"><b>@Helper.SplitText(item.Status)</b></td>
+			<td>
+				@Service.FormatDateInNumber(item.RetirementDate, "dd/MM/yyyy")
+			</td>
+			<td>
+				@Service.FormatDateInNumber(item.ReleaseDate, "dd/MM/yyyy")
+			</td>
+		</tr>
+		}
+	</tbody>
+</table>
+					
+<script type="text/javascript">
+    transformTable("#tblResult");
+</script>
+
+
+

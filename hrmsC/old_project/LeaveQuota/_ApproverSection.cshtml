@@ -1,0 +1,261 @@
+﻿@model Tuple<List<SEP.RoutingManagement.Models.GetApprovalAuditLog>, ESS.Core.RoutingTask>
+
+@{
+    Layout = null;
+}
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="portlet box blue">
+            <div class="mini-triangle"><img src="/_layouts/15/TNBESS/Assets/img/menu-red-triangle.png" /></div>
+            <div class="portlet-title">
+                <div class="caption">
+                    <i class="fa fa-reorder"></i>Audit Log
+                </div>
+                <div class="tools">
+                    <a title="" data-original-title="" href="javascript:;" class="collapse"> </a>
+                </div>
+            </div>
+            <div class="portlet-body form">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div style="overflow-x: scroll;">
+                            <table id="tblAuditLog" class="table table-striped table-bordered table-hover table-full-width">
+                                <thead>
+                                    <tr>
+                                        <th>Action By</th>
+                                        <th>Date</th>
+                                        <th>Activity</th>
+                                        <th>Action</th>
+                                        <th>Comment</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var item in Model.Item1)
+                                    {
+
+                                        string[] comment = item.Comment.Split('|');
+                                        if (comment.Length > 1)
+                                        {
+                                            <tr>
+                                                <td>@item.EmployeeName</td>
+                                                <td>@item.CreatedDate.Value.ToString("dd/MM/yyyy hh:mm tt")</td>
+                                                <td>@item.ActivityName - @comment[0]</td>
+                                                <td>@item.ActivityAction</td>
+                                                <td>@comment[1]</td>
+                                            </tr>
+                                        }
+                                        else
+                                        {
+                                            <tr>
+                                                @if (@item.EmployeeCode == "00000000-0000-0000-0000-000000000000")
+                                                {
+                                                    <td>@item.EmployeeName</td>
+                                                }
+                                                else
+                                                {
+                                                    <td>@item.EmployeeName</td>
+                                                }
+                                                <td>@item.CreatedDate.Value.ToString("dd/MM/yyyy hh:mm tt")</td>
+                                                <td>@item.ActivityName</td>
+                                                <td>@item.ActivityAction</td>
+                                                <td>@item.Comment</td>
+
+
+                                            </tr>
+                                        }
+                                    }
+
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+@if (Model.Item2.isCurrentUserApproval)
+{
+    @Html.HiddenFor(x => x.Item2.TaskID)
+    <div id="Approval_errorMessage" style="display:none" class="alert alert-danger">
+        <strong><span id="Approval_errorLabel">Please Fill in Comments!</span></strong>
+    </div>
+
+    <div class="form-group">
+        <div id="Approval_approvalsec" class="row">
+            <div class="col-md-12">
+                <!-- BEGIN TAB PORTLET-->
+                <div class="portlet box blue">
+                    <div class="portlet-title">
+                        <div class="caption">
+                            <i class="fa fa-reorder"></i>Approval
+                        </div>
+                    </div>
+                    <div class="portlet-body form">
+                        <div class="form-body">
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="form-horizontal">
+                                        <div class="form-group">
+                                            <label class="col-md-2">Comments  <span style="color:red">*</span></label>
+                                            <div class="col-md-10">
+                                                <textarea name="Approval_txtComments" maxlength="1000" rows="5" cols="20" id="Approval_txtComments" class="form-control"></textarea>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">&nbsp;</div>
+
+                        </div>
+                    </div>
+                </div>
+                <!-- END TAB PORTLET-->
+
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <div class="col-md-12">
+
+                        <input type="submit" value="@Model.Item2.YesLabel" onclick="return checkComments('@Model.Item2.YesStatus');" id="Approval_btnApprove" class="btn green">
+                        @if (!String.IsNullOrEmpty(Model.Item2.NoLabel))
+                        {
+                            <input type="submit" value="@Model.Item2.NoLabel" onclick="return checkComments('@Model.Item2.NoStatus');" id="Approval_btnReject" class="btn red">
+                        }
+                        @if (!String.IsNullOrEmpty(Model.Item2.ReworkLabel))
+                        {
+                            <input type="submit" value="@Model.Item2.ReworkLabel" onclick="return checkComments('@Model.Item2.ReworkLabel');" class="btn blue">
+                        }
+
+                        @if (ViewBag.CanWithdraw != null && ViewBag.CanWithdraw)
+                        {
+                            <a class="btn red" onclick="javascript: Withdraw()">Withdraw</a>
+                        }
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!--RESULT MODAL-->
+    <div class="modal fade" id="ApprovalConfirmationModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                    <h4 class="modal-title">Leave Quota Approval</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="well" id="ApprovalText">
+
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn blue" id="btnApproval">Confirm</button>
+                    <button type="button" class="btn default" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="approvalResultModal" tabindex="-1" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header Success-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true" style="display: none;"></button>
+                    <h4 class="Success-title">Action Successfully Completed</h4>
+                </div>
+                <div class="modal-body Success-body">
+                    <div class="well">
+                        <p id="approvalResultMessage"></p>
+                    </div>
+                </div>
+                <div class="modal-footer Success-footer">
+                    <button type="button" class="btn default blue" id="btnApprovalOK">
+                        <i class="fa fa-check"></i>
+                        OK
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!--END RESULT MODAL-->
+
+    <script>
+
+        $("#approveextendedDate").datepicker({
+            format: 'dd M yyyy',
+            autoclose: true
+        });
+
+        function checkComments(Action) {
+            //alert($("#Approval_txtComments").val().length);
+            var Tomorrow = new Date();
+            Tomorrow.setDate(Tomorrow.getDate() + 1);
+            Tomorrow.setHours(0, 0, 0, 0);
+            var ApprovedExtebdDate = moment($('#approveextendedDate').val());
+            if ($("#Approval_txtComments").val().length == 0) {
+                //alert('weee');
+                $("#Approval_errorLabel").html("Please Fill in Comments!");
+                $("#Approval_errorMessage").show();
+                return false;
+            }
+            else {
+                $("#Approval_errorMessage").hide();
+                var text = "";
+                text = "You are about to update this application with " + Action + " status." +
+                " Press confirm to proceed, or close to stay on the current page.";
+
+                $("#btnApproval").attr("onclick", "Approval('" + Action + "')");
+                $("#ApprovalText").text(text);
+                $("#ApprovalConfirmationModal").modal();
+            }
+        }
+
+
+        function Approval(ActionType) {
+            var ID = '@Model.Item2.SourceID';
+            var TaskID = '@Model.Item2.TaskID';
+            var Comment = $('#Approval_txtComments').val();
+            $("#ApprovalConfirmationModal").modal("hide");
+            $("#divLoading").show();
+            $.ajax({
+                type: "POST",
+                cache: false,
+                url: '@Url.Action("ApproveReject", "LeaveQuota")',
+                data: { SourceID: ID, ActionType: ActionType, Comment: Comment, TaskID: TaskID },
+                success: function (content) {
+                    $("#divLoading").hide();
+                    $("#approvalResultMessage").html(content.Message);
+                    $("#approvalResultModal").modal();
+                    if (content.Success) {
+                        $("#btnApprovalOK").click(function () {
+                            location.href = '@Url.Action("RequestIntray", "LeaveQuota")';
+                        });
+                    }
+                    else {
+                        $("#btnApprovalOK").click(function () {
+                            $("#approvalResultModal").modal('hide');
+                            console.log("Technical error: " + response.TechnicalError);
+                        });
+                    }
+                },
+                error: function (err) {
+                    $("#divLoading").hide();
+                    console.log("Error in posting the approval.");
+                    console.log(err);
+                }
+            });
+        }
+    </script>
+}
+
+

@@ -1,0 +1,128 @@
+﻿@model ESS.DeathDonation.Models.ReportDto.ResponseReport
+@{
+    Layout = null;
+}
+
+
+    <div class="portlet box blue">
+        <div class="mini-triangle"><img src="/_layouts/15/TNBESS/Assets/img/menu-red-triangle.png" /></div>
+        <div class="portlet-title">
+            @if (ViewBag.isHistory == "true")
+            {
+                <div class="caption">
+                    <i class="fa fa-reorder"></i>Death Donation History
+                </div>
+            }
+            else
+            {
+                <div class="caption">
+                    <i class="fa fa-reorder"></i>Death Donation Report
+                </div>
+                <div class="pull-right">
+                    <input type="button" id="btn-Export" class="btn btn-xs green pull-right" value="Export To Excel">
+                </div>
+            }
+
+            <div class="tools">
+            </div>
+        </div>
+        <div class="portlet-body form">
+            <div class="form-body">
+                <div class="form-horizontal">
+                    <div class="table-toolbar">
+                        @if (Model.result)
+                        {
+                            <table id="tblResult" class="table table-striped table-bordered table-hover table-full-width">
+                                <thead>
+                                    <tr>
+                                        <th></th>
+                                        <th>Reference No.</th>
+                                        <th>BSO</th>
+                                        <th>Deceased</th>
+                                        <th>Date of Death</th>
+                                        <th>Death Cert</th>
+                                        <th>Receipt</th>
+                                        <th>Current Status</th>
+                                        <th>Submission Date</th>
+                                    </tr>
+                                </thead>
+
+                                <tbody>
+                                    @foreach (var item in Model.applcationInfos)
+                                    {
+                                    <tr>
+                                        <td>
+                                            <a class="btn blue btn-sm" href="@Url.Action("Application", "DeathDonation", new { id = item.requestId })">
+                                                <i class="fa fa-edit"></i>
+                                            </a>
+                                        </td>
+                                        <td>@item.referenceNo</td>
+                                        <td>@item.bsoEmployeeCode - @item.bsoEmployeeName</td>
+                                        <td>@item.deceasedEmployeeCode - @item.deceasedEmployeeName</td>
+                                        <td>@item.dateOfDeath</td>
+                                        <td>@item.deathCert</td>
+                                        <td>@item.receipt</td>
+                                        @if (item.status == ESS.DeathDonation.Constants.StatusConstants.STATUS_WITHDRAW ||
+                                                item.status == ESS.DeathDonation.Constants.StatusConstants.STATUS_DECLINED ||
+                                                item.status == ESS.DeathDonation.Constants.StatusConstants.STATUS_PENDING)
+                                        {
+                                            <td style="color:red;"><b>@item.status</b></td>
+                                        }
+                                        else
+                                        {
+                                            <td style="color:green;"><b>@item.status</b></td>
+                                        }
+                                        <td>@item.createdDate</td>
+
+                                    </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        }
+                        else
+                        {
+                            <span>@Model.errorMessage</span>
+                        }
+                        
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <table id="tblExport" border="1" style="display:none;">
+        <thead>
+            <tr>
+                <th>Reference No.</th>
+                <th>BSO</th>
+                <th>Deceased</th>
+                <th>Date of Death</th>
+                <th>Death Cert</th>
+                <th>Receipt</th>
+                <th>Current Status</th>
+                <th>Submission Date</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.applcationInfos)
+            {
+                <tr>
+                    <td>@item.referenceNo</td>
+                    <td>@item.bsoEmployeeCode - @item.bsoEmployeeName</td>
+                    <td>@item.deceasedEmployeeCode - @item.deceasedEmployeeName</td>
+                    <td>@item.dateOfDeath</td>
+                    <td>@item.deathCert</td>
+                    <td>@item.receipt</td>
+                    <td>@item.status</td>
+                    <td>@item.createdDate</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+<script>
+    transformTable("#tblResult");
+
+    $(function () {
+        BindExport();
+    });
+</script>

@@ -1,0 +1,110 @@
+﻿@model ETKEMS.Models.ETKEMSViewModel
+@{
+    Layout = "";
+}
+
+<div class="portlet box blue">
+    <div class="mini-triangle"><img src="/_layouts/15/TNBESS/Assets/img/menu-red-triangle.png" /></div>
+    <div class="portlet-title">
+        <div class="caption">
+            <i class="fa fa-reorder"></i>Authorized for Cover of Duty Employee Details
+        </div>
+        <div class="tools">
+            <a title="" data-original-title="" href="javascript:;" class="collapse"> </a>
+        </div>
+    </div>
+    <div class="portlet-body form">
+        <div class="form-body">
+            <div id="tblAuthCODEmpDetailsContainer">
+                @Html.Partial("_ETKAuthCODEmpDetailsResult", Model)
+            </div>
+
+            @if (Model.EStatus == ETKEMS.Status.Draft || Model.EStatus == ETKEMS.Status.Declined)
+            {
+                <div class="form-horizontal">
+                    <div class="table-toolbar">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="btn-group">
+                                    <a class="btn green" onclick="OpenAuthEmpsPickerPanel(AddEmployee);">
+                                        Add
+                                        <i class="fa fa-plus"></i>
+                                    </a>
+                                </div>
+                                <div class="btn-group">
+                                    <a class="btn red" onclick="RemoveEmployee();">
+                                        Delete
+                                        <i class="fa fa-minus"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@Html.Action("__AuthEmpPicker", "ETKEMS", new
+{
+    Selection = "multiple"
+})
+
+
+<script>
+    var tblAuthEmps = $('#tblAuthEmps').DataTable();
+
+    function AddEmployee(selectedEmployees) {
+        var data = {};
+        var _AuthEmps = $(':input[name="AuthEmpID"]').map(function () { return this.value; }).get();
+        // Filter already selected items
+        var _Selected = selectedEmployees.filter(function (v, i) { return $.inArray(v.AuthEmpID, _AuthEmps) < 0; });
+        var _Total = _AuthEmps.length + _Selected.length;
+
+        if (_Total > 3) {
+            alert("Maximum 3 Authorized for Cover of Duty is allowed.");
+            return false;
+        }
+
+
+        $.each(_Selected, function (i, v) {
+            //var row = $(v).closest('tr');
+            //var EmployeeID = $(v).val();
+            //var AuthEmp = $(v).attr("AuthEmp");
+            //var AuthPosition = $(v).attr("AuthPosition");
+            //var AuthPositionNo = $(v).attr("AuthPositionNo");
+            //var AuthSalaryGrade = $(v).attr("AuthSalaryGrade");
+            //var AuthDuty = $(v).attr("AuthDuty");
+            //var AuthJobGrade = $(v).attr("AuthJobGrade");
+            //var AuthEmpID = $(v).attr("AuthEmpID");
+
+            tblAuthEmps.fnAddData([
+                '<input type="hidden" name="AuthEmpID" value="' + v.AuthEmpID + '" /><input type="hidden" name="AuthorizedEmployees[' + tblAuthEmps.fnSettings().fnRecordsTotal() + '].AuthEmpID" value="' + v.AuthEmpID +'" /><input type="checkbox" class="RemoveRowCheckbox" value="' + v.AuthEmpID + '" />',
+                '<input type="hidden" name="AuthorizedEmployees[' + tblAuthEmps.fnSettings().fnRecordsTotal() + '].AuthEmp" value="' + v.AuthEmp + '" />' + v.AuthEmp,
+                '<input type="hidden" name="AuthorizedEmployees[' + tblAuthEmps.fnSettings().fnRecordsTotal() + '].AuthPosition" value="' + v.AuthPosition + '" />' + v.AuthPosition,
+                '<input type="hidden" name="AuthorizedEmployees[' + tblAuthEmps.fnSettings().fnRecordsTotal() + '].AuthPositionNo" value="' + v.AuthPositionNo + '" />' + v. AuthPositionNo,
+                '<input type="hidden" name="AuthorizedEmployees[' + tblAuthEmps.fnSettings().fnRecordsTotal() + '].AuthSalaryGrade" value="' + v.AuthSalaryGrade + '" />' + v.AuthSalaryGrade,
+                '<input type="hidden" name="AuthorizedEmployees[' + tblAuthEmps.fnSettings().fnRecordsTotal() + '].AuthDuty" value="' + v.AuthDuty + '" />' + v.AuthDuty,
+                '<input type="hidden" name="AuthorizedEmployees[' + tblAuthEmps.fnSettings().fnRecordsTotal() + '].AuthJobGrade" value="' + v.AuthJobGrade + '" />' + v.AuthJobGrade])
+        });
+
+        $('input[type="checkbox"]').uniform();
+        return true;
+    }
+
+    function RemoveEmployee() {
+        var data = {};
+        var selectedPeers = [];
+
+        $('.RemoveRowCheckbox:checked').each(function (i, v) {
+            var row = $(v).closest('tr').get(0);
+            tblAuthEmps.fnDeleteRow(tblAuthEmps.fnGetPosition(row));
+        });
+    }
+
+    function GetAuthEmps() {
+        return $(':input[name="AuthEmpID"]')
+                 .map(function () { return this.value; }).get();
+    }
+</script>

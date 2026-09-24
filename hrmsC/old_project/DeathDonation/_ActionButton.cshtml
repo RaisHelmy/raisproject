@@ -1,0 +1,445 @@
+﻿@model ESS.DeathDonation.Models.Application
+@{
+    Layout = null;
+
+    bool isCreate = true;
+    if (!string.IsNullOrEmpty(Model.deceasedDetail.id))
+    {
+        isCreate = false;
+    }
+
+}
+
+<style>
+    .inputfile {
+        border: 0px !important;
+        margin-left: -10px;
+    }
+</style>
+<div id="DeceasedDetails" class="row">
+    <div class="col-md-12">
+        <div class="portlet box blue">
+            <div class="mini-triangle"><img src="../Assets/img/menu-red-triangle.png" /></div>
+            <div class="portlet-title">
+                <div class="caption">
+                    <i class="fa fa-reorder"></i>Deceased Details
+                </div>
+            </div>
+            <div class="portlet-body form">
+                <div class="form-body" id="ct00_CustomFieldFormView">
+                    @if (!isCreate)
+                    {
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <label class="control-label col-md-4 ">
+                                            Reference No
+                                        </label>
+                                        <div class="col-md-8 form-control-static">
+                                            <input type="text" class="form-control" value="@Model.deceasedDetail.referenceNo" name="referenceNo" id="referenceNo" readonly />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <label class="control-label col-md-4 ">
+                                            Status
+                                        </label>
+                                        <div class="col-md-8 form-control-static">
+                                            <input type="text" class="form-control" value="@Model.deceasedDetail.status" name="status" id="status" readonly />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <label class="control-label col-md-4 ">
+                                            Current Approver
+                                        </label>
+                                        <div class="col-md-8 form-control-static">
+                                            <input type="text" class="form-control" value="@Model.deceasedDetail.currentApprover" name="currentApprover" id="currentApprover" readonly />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <label class="control-label col-md-4 ">
+                                            Employee
+                                        </label>
+                                        <div class="col-md-8 form-control-static">
+                                            <input type="text" class="form-control" value="@Model.deceasedDetail.employeeCode - @Model.deceasedDetail.employeeName" name="employee" id="employee" readonly />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <label class="control-label col-md-4 ">
+                                            Date Of Death
+                                        </label>
+                                        <div class="col-md-8 form-control-static">
+                                            <input type="text" class="form-control" value="@Model.deceasedDetail.dateOfDeath.ToString("dd/MM/yyyy")" name="dateOfDeath" id="dateOfDeath" readonly />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <label class="control-label col-md-4">Employee<span style="color:red;"> *</span></label>
+                                        <div class="col-md-8 form-control-static">
+                                            @Html.Action("_PeoplePickerExt", "PeoplePicker", new { CurrEmpID = Model.deceasedDetail.employeeId })
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <label class="control-label col-md-4 ">
+                                            Date Of Death <span style="color:red;"> *</span>
+                                        </label>
+                                        <div class="col-md-8 form-control-static">
+                                            <div class="input-group date death-date-picker" data-date-format="dd/mm/yyyy">
+                                                <input type="text" class="form-control StartDate" id="dateOfDeath" name="dateOfDeath" />
+                                                <span class="input-group-btn">
+                                                    <button type="button" id="btnDateOfDeath" class="btn default"><i class="fa fa-calendar"></i></button>
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    }
+
+
+
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-horizontal">
+                                <div class="form-group">
+                                    <label class="control-label col-md-4 ">
+                                        Company
+                                    </label>
+                                    <div class="col-md-8 form-control-static">
+                                        <span id="company">@Model.deceasedDetail.company</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-horizontal">
+                                <div class="form-group">
+                                    <label class="control-label col-md-4 ">
+                                        Position
+                                    </label>
+                                    <div class="col-md-8 form-control-static">
+                                        <span id="position">@Model.deceasedDetail.position</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-horizontal">
+                                <div class="form-group">
+                                    <label class="control-label col-md-4 ">
+                                        Department
+                                    </label>
+                                    <div class="col-md-8 form-control-static">
+                                        <span id="department">@Model.deceasedDetail.department</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-horizontal">
+                                <div class="form-group">
+                                    <label class="control-label col-md-4 ">
+                                        Joined Date
+                                    </label>
+                                    @if (!String.IsNullOrEmpty(Model.deceasedDetail.joinedDate.ToString()))
+                                    {
+                                        <div class="col-md-8  form-control-static">
+                                            @Model.deceasedDetail.joinedDate.Value.ToString("dd/MM/yyyy")
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <div class="col-md-8  form-control-static">
+                                            <span id="joinedDate">-</span>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-horizontal">
+                                <div class="form-group">
+                                    <label class="control-label col-md-4 ">
+                                        Unit Section
+                                    </label>
+                                    <div class="col-md-8 form-control-static">
+                                        <span id="unitSection">@Model.deceasedDetail.unitSection</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-horizontal">
+                                <div class="form-group">
+                                    <label class="control-label col-md-4 ">
+                                        Duty
+                                    </label>
+                                    <div class="col-md-8 form-control-static">
+                                        <span id="duty">@Model.deceasedDetail.duty</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-horizontal">
+                                <div class="form-group">
+                                    <label class="control-label col-md-4 ">
+                                        Cost Center
+                                    </label>
+                                    <div class="col-md-8 form-control-static">
+                                        <span id="costCenter">@Model.deceasedDetail.costCenter</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-horizontal">
+                                <div class="form-group">
+                                    <label class="control-label col-md-4 ">
+                                        Manager
+                                    </label>
+                                    <div class="col-md-8 form-control-static">
+                                        <span id="manager">@Model.deceasedDetail.manager</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-horizontal">
+                                <div class="form-group">
+                                    <label class="control-label col-md-4 ">
+                                        Amount
+                                    </label>
+                                    <div class="col-md-8 form-control-static">
+                                        <span id="amount">@Model.deceasedDetail.amount.ToString("###,###,##0.00")</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        @if (!isCreate)
+                        {
+                            <div class="col-md-6">
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <label class="control-label col-md-4 ">
+                                            Charge Code
+                                        </label>
+                                        <div class="col-md-8 form-control-static">
+                                            <span id="chargeCode">@Model.deceasedDetail.chargeCode</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="col-md-6">
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <label class="control-label col-md-4 ">
+                                            Charge Code<span style="color:red;"> *</span>
+                                        </label>
+                                        <div class="col-md-8 form-control-static">
+                                            @Html.Partial("ChargeCodePicker", new Tuple<string, string>("", ""))
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+
+                    </div>
+
+                    <div class="row">
+                        @if (!isCreate)
+                        {
+                            <div class="col-md-6">
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <label class="control-label col-md-4 ">
+                                            BSO Bank
+                                        </label>
+                                        <div class="col-md-8 form-control-static">
+                                            @Model.deceasedDetail.bsoBank
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="col-md-6">
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <label class="control-label col-md-4 ">
+                                            BSO Bank<span style="color:red;"> *</span>
+                                        </label>
+                                        <div class="col-md-8 form-control-static">
+                                            <select class="form-control" id="bsoBank" name="bsoBank">
+                                                <option>-- Select a Bank -- </option>
+                                                <option value="1">123456789 - Maybank</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="form-horizontal">
+                                <div class="form-group">
+                                    <label class="control-label col-md-2 ">
+                                        Remarks
+                                    </label>
+                                    <div class="col-md-10 form-control-static">
+                                        <textarea class="form-control"></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-horizontal">
+                                <div class="form-group">
+                                    <label class="control-label col-md-4 ">
+                                        Death Cert/ Register of Death<span style="color:red;"> *</span>
+                                    </label>
+                                    <div class="col-md-8 form-control-static">
+                                        <input type="file" name="deathCert" id="deathCert" class="form-control inputfile" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-horizontal">
+                                <div class="form-group">
+                                    <label class="control-label col-md-4 ">
+                                        Receipt<span style="color:red;"> *</span>
+                                    </label>
+                                    <div class="col-md-8 form-control-static">
+                                        <input type="file" name="receipt" id="receipt" class="form-control inputfile" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@if (isCreate)
+{
+    @Html.Action("ChargeCodeIndex", "DeathDonation", new { CurrEmpID = ViewBag.EmployeeID, SearchType = "" })
+}
+
+
+<script>
+    $(document).ready(function () {
+        var dpkDeathDate = $(".death-date-picker");
+        dpkDeathDate.datepicker({
+            format: 'dd/mm/yyyy',
+            autoclose: true
+        });
+
+        var btnPeoplePickerSelect = document.getElementById('btnPeoplePickerSelect');
+        var employeId = document.getElementById('hfEmpID');
+
+        btnPeoplePickerSelect.addEventListener("click", function () { // Add to OnClick of button.
+            employeId.dispatchEvent(new Event('change')); // force change event to run on textbox.
+        });
+
+        employeId.addEventListener("change", function (e) { // EventListener for OnChange of the element.
+            var hdEmpId = $("#hfEmpID").val();
+            retrieveEmployeeInfo(hdEmpId);
+        });
+    });
+
+    function retrieveEmployeeInfo(empid) {
+         $.ajax({
+                type: "GET",
+                url: '@Url.Content("~/DeathDonation/GetEmployeeInfo")',
+                cache: false,
+                data: { id: empid },
+                success: function (content) {
+                    if (content.responseResult) {
+                        document.getElementById("company").innerHTML = content.responseData["CompanyCode"] + " - " + content.responseData["Company"];
+                        document.getElementById("position").innerHTML = content.responseData["Position"] + "";
+                        document.getElementById("department").innerHTML = content.responseData["Department"] + "";
+                        document.getElementById("joinedDate").innerHTML = content.responseJoinedDate + "";
+                        document.getElementById("unitSection").innerHTML = content.responseData["UnitSection"] + "";
+                        document.getElementById("duty").innerHTML = content.responseData["JobKeyName"] + "";
+                        document.getElementById("costCenter").innerHTML = content.responseData["CostCenterCode"] + " - " + content.responseData["CostCenterName"];
+                        document.getElementById("manager").innerHTML = content.responseData["ImmediateManager"] + "";
+                        document.getElementById("amount").innerHTML = content.responseAmount + "";
+                    }
+                    else {
+                        alert(content.responseErrorMessage)
+                    }
+                },
+                error: function (e) {
+                    console.log(e);
+                }
+            });
+    }
+</script>

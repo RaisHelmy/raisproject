@@ -1,0 +1,221 @@
+﻿@{
+    Layout = "";
+    string EmployeeCode = ViewBag.CurrEmployeeCode;
+    string DateFrom = DateTime.Now.AddDays(-13).ToString("dd/MM/yyyy");
+    string DateTo = DateTime.Now.ToString("dd/MM/yyyy");
+
+}
+
+<div class="modal fade" id="GetApprovedOTPlanning" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                <h4 class="modal-title">
+                    <p>Approved Overtime Planning Search</p>
+                </h4>
+            </div>
+            <div class="modal-body">
+                <div>
+
+                    <div class="row" onkeypress="return event.keyCode!=13;">
+                        <div class="col-md-12">
+                            <div class="form-horizontal">
+                                <div class="form-body">
+                                    <div class="row">
+                                        <label class="control-label col-md-2 ">
+                                            Start Date
+                                        </label>
+                                        <div class="col-md-4 form-control-static">
+                                            <div class="date date-picker input-group" data-date-format="dd MM yyyy">
+                                                <input type="text" class="form-control Date" id="AppOTStartDateSearch" value="@DateFrom"/>
+                                                <span class="input-group-btn">
+                                                    <button type="button" class="btn default"><i class="fa fa-calendar"></i></button>
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <label class="control-label col-md-2 ">
+                                            End Date
+                                        </label>
+                                        <div class="col-md-4 form-control-static">
+                                            <div class="date date-picker input-group" data-date-format="dd MM yyyy">
+                                                <input type="text" class="form-control Date" id="AppOTEndDateSearch" value="@DateTo"/>
+                                                <span class="input-group-btn">
+                                                    <button type="button" class="btn default"><i class="fa fa-calendar"></i></button>
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <label class="control-label col-md-2 ">
+                                            Employee Code
+                                        </label>
+                                        <div class="col-md-4 form-control-static">
+                                            <input type="text" id="EmployeeCodeSearch" class="form-control" value="@EmployeeCode" />
+                                        </div>
+                                        <label class="control-label col-md-2 ">
+                                            Charge Code
+                                        </label>
+                                        <div class="col-md-4 form-control-static">
+                                            <input type="text" id="ChargeCodeSearch" class="form-control" />
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-12 text-right" style="margin-top: 4px;">
+                                            <input id="btn-Search" type="button" value="Search" class="btn green btn-Search" onclick="SearchApprovedOTPlanning();">
+                                        </div>
+                                    </div>
+                                </div>
+                                <br />
+                                <div id="ApprovedOTPlanningResult">
+
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" id="btnAppOTNext" name="btnAppOTNext" class="btn default green" >Save & Next</button>
+                <button type="button" id="btnAppOTClose" name="btnAppOTClose" class="btn default green" >Save & Close</button>
+                <button type="button" class="btn default" data-dismiss="modal" onclick="ReloadForm()">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function DisableAppOTButton()
+    {
+        //$('#btnAppOTNext').attr('disabled', true);
+        //$('#btnAppOTClose').attr('disabled', true);
+        document.getElementById("btnAppOTNext").disabled = true;
+        document.getElementById("btnAppOTClose").disabled = true;
+    }
+
+    function EnableAppOTButton()
+    {
+        //$('#btnAppOTNext').attr('disabled', false);
+        //$('#btnAppOTClose').attr('disabled', false);
+        document.getElementById("btnAppOTNext").disabled = false;
+        document.getElementById("btnAppOTClose").disabled = false;
+    }
+
+    function Save(action)
+    {
+        //console.log('Save :' + action);
+        DisableAppOTButton();
+        var _EntryIDs = "";
+        $("#tblApprovedOTPlanningSearch td input[type=checkbox]:checked").each(function (i, value) {
+            var row = $(this).closest("tr");
+            _EntryIDs += row.find('.AddOTCode').val() + ',';
+        });
+
+        if (_EntryIDs != "")
+        {
+            $.ajax({
+                type: "POST",
+                url: '@Url.Content("~/TimeAttendance/SaveApprovedOTPlanning")',
+                data: {
+                    EntryIDs: _EntryIDs
+                },
+                success: function (result) {
+                    if (result.Result == 'True') {
+                        if(action == 'next'){
+                            SearchApprovedOTPlanning();
+                            InitiateAppOTButton(action);
+                        }
+                        else {
+                            $('#GetApprovedOTPlanning').modal('toggle');
+                            ReloadForm();
+                        }
+                    } else {
+                        alert(result.ErrorMessage);
+                    }
+
+                    EnableAppOTButton();
+                },
+                error: function (e) {
+                    InitiateAppOTButton(action);
+                    EnableAppOTButton();
+                    console.log(e);
+                }
+            });
+        }
+        else
+        {
+            alert("Please select entry to proceed.")
+            InitiateAppOTButton(action);
+            EnableAppOTButton();
+        }
+
+    }
+
+    function SearchApprovedOTPlanning()
+    {
+        var _StartDate = $('#AppOTStartDateSearch').val();
+        var _EndDate = $('#AppOTEndDateSearch').val();
+        var _EmployeeCodeSearch = $('#EmployeeCodeSearch').val();
+        var _ChargeCodeSearch = $('#ChargeCodeSearch').val();
+
+        $.ajax({
+            url: '@Url.Content("~/TimeAttendance/_GetApprovedOTPlanningResult")',
+            type: 'POST',
+            data: {
+                StartDate: _StartDate,
+                EndDate: _EndDate,
+                EmployeeCodeSearch: _EmployeeCodeSearch,
+                ChargeCodeSearch: _ChargeCodeSearch
+            },
+            success: function (result) {
+
+                $('#ApprovedOTPlanningResult').html(result);
+                // ... Process the result ...
+            }
+        });
+    }
+
+
+    function ClearOTPlanningSearch()
+    {
+        var fromDate = $('#WorkScheduleFromDate').val();
+        var toDate = $('#WorkScheduleToDate').val();
+
+        $('#AppOTStartDateSearch').val(fromDate);
+        $('#AppOTEndDateSearch').val(toDate);
+
+        $('#ChargeCodeSearch').val('');
+    }
+
+    function InitiateAppOTButton(action)
+    {
+        if (action === 'next') {
+
+            $('#btnAppOTNext').one('click', function () { Save('next'); });
+        }
+        else if (action === 'close') {
+            $('#btnAppOTClose').one('click', function () { Save('close'); });
+        }
+        else {
+
+            $('#btnAppOTNext').one('click', function () { Save('next'); });
+            $('#btnAppOTClose').one('click', function () { Save('close'); });
+        }
+        //$('#btnAppOTNext').one('click', function () { console.log("this will be displayed only once. btnAppOTNext") });
+        //$('#btnAppOTClose').one('click', function () { console.log("this will be displayed only once. btnAppOTClose") });
+    }
+    
+
+    $(function () {
+        var _EmployeeCodeSearch = $('#EmployeeCodeSearch');
+        if (_EmployeeCodeSearch.val() != '' && _EmployeeCodeSearch.val() != undefined)
+        {
+            _EmployeeCodeSearch.attr('disabled', true);
+        }
+        InitiateAppOTButton();
+
+    })
+
+</script>

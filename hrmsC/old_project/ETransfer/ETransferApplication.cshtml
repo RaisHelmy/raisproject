@@ -1,0 +1,447 @@
+﻿@model ESS.ETransfer.Models.ETransferVM
+@{
+    ViewBag.Title = "E-Transfer Application";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="form-section">
+    <div class="row">
+        <div class="col-md-12">
+            <h1 class="page-title">
+                Online Transfer Form
+                <span style="padding-left:20px;">
+                    <small></small>
+                </span>
+            </h1>
+        </div>
+    </div>
+</div>
+
+
+<div class="row" id="divError" style="display:none">
+    <div class="col-md-12">
+        <div class="note note-danger">
+            <h4 class="block">
+                <span id="spErrorMsg"></span>
+            </h4>
+
+        </div>
+    </div>
+</div>
+
+<form>
+    <input type="hidden" value="@ViewBag.EmployeeID" id="hfEmployeeID" />
+    <input type="hidden" value="@ViewBag.CanSubmit" id="hfCanSubmit" />
+    <input type="hidden" value="@ViewBag.CheckingDays" id="hfCheckingDays" />
+
+    <!-- Employee Details -->
+    @if (!string.IsNullOrEmpty(ViewBag.ErrorMessage))
+    {
+        <div class="row">
+            <div class="col-md-12">
+                <div class="note note-danger">
+                    <h4 class="block">
+                        @ViewBag.ErrorMessage
+                    </h4>
+
+                </div>
+            </div>
+        </div>
+    }
+    
+    @Html.Partial("_EmployeeInfo", Model.Submiter)
+
+    <!-- ETransfer Details -->
+    @Html.Partial("_ETransferDetails", Model)
+
+    <!-- Attachment -->
+    @Html.Action("AttachmentControl", "Attachment", new { EmployeeID = ViewBag.EmployeeID, Mode = "New", SourceType = "ETransfer" })
+</form>
+
+<!-- Buttons -->
+@if (ViewBag.IsShowSubmitButton)
+{
+    <div class="row">
+        <div class="col-md-12">
+            <input type="button" class="btn green" value="Submit" id="btnSubmit" onclick="SubmitValidation();" />
+        </div>
+    </div>
+}
+
+
+<!-- Success Message -->
+<div class="modal fade" id="SuccessSubmit" tabindex="-1" role="basic" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header Success-header">
+                @*<button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>*@
+                <h4 class="Success-title">Action Successfully Completed</h4>
+            </div>
+            <div class="modal-body Success-body">
+                <div class="well">
+                    Your application has been successfully submitted.
+                </div>
+            </div>
+            <div class="modal-footer Success-footer">
+                <a class="btn default blue" id="btnOK">
+                    <i class="fa fa-check"></i>
+                    OK
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Confirmation Message -->
+<div class="modal fade" id="ConfirmUpdate" tabindex="-1" role="basic" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                <h4 class="modal-title">Confirmation</h4>
+            </div>
+            <div class="modal-body">
+                <div class="well">
+                    Are you sure you want to Submit this application?\n\rPress Confirm to proceed, or Close to stay on the current page.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn default blue " id="btnSubmitForm" onclick="SubmitForm('Submit'); return false;">
+                    <i class="fa fa-check"></i>
+                    Confirm submit
+                </button>
+                <button type="button" class="btn default" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Loading Gif -->
+<div id="divLoading" style="margin: 0px; padding: 0px; position: fixed; right: 0px; top: 0px; width: 100%; height: 100%; background-color: gainsboro; z-index: 30001; opacity: .8; filter: alpha(opacity=70); display: none; ">
+    <p style="position: absolute; top: 30%; left: 30%; color: black;">
+        Performing action, please wait...<img src="/_layouts/15/TNBESS/Assets/img/ajax-loading.gif">
+    </p>
+</div>
+
+<script>
+    //var Path = '/_layouts/15/tnbess';
+    var Path = '/_layouts/15/essv2';
+    //var Path = 'http://localhost:49773';
+
+    //Helper Function
+    function getParameterByName(name) {
+        name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
+        var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
+        results = regex.exec(location.search);
+        return results === null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
+    }
+
+    // Page Load
+    function FormConfiguration() {
+
+        var _canSubmit = document.getElementById('hfCanSubmit').value;
+        var _CheckingDays = document.getElementById('hfCheckingDays').value;
+        var _TransferType = document.getElementById('TransferType').value;
+        if (_canSubmit == "false")
+        {
+            $('#btnSubmit').hide();
+            document.getElementById('divError').style.display = '';
+            document.getElementById('spErrorMsg').innerHTML = _TransferType + ' application only can submit once every ' + _CheckingDays + ' days.';
+        }
+    }
+
+    //DetailsTable
+    var _DetailsTable = $('#tblTransferDetails').DataTable({
+        "bLengthChange": false,
+        "bFilter": false,
+        "bPaginate": false,
+        "bInfo": false,
+        "bSort": false
+    });
+
+    function Within_addRow() {
+
+        var _WithinDDLOption = $('#HiddenWithinDepartmentDDL').html();
+
+        _DetailsTable.fnAddData([
+            '<input type="checkbox" class="RemoveCheckbox" />',
+            '<input type="text" readonly="readonly" class="form-control TransferToCompanyCode" style="min-width:250px" id="TransferDetails[' + _DetailsTable.fnSettings().fnRecordsTotal() + '].TransferToCompanyCode" name="TransferDetails[' + _DetailsTable.fnSettings().fnRecordsTotal() + '].TransferToCompanyCode" value="@Model.Submiter.CompanyCode - @Model.Submiter.Company" />',
+            '<select class = "bs-select form-control TransferToAreaCode" style="min-width:250px" id="TransferDetails[' + _DetailsTable.fnSettings().fnRecordsTotal() + '].TransferToAreaCode" name="TransferDetails[' + _DetailsTable.fnSettings().fnRecordsTotal() + '].TransferToAreaCode" onchange = "GetWithinUnitSection(this);">' + _WithinDDLOption + '</select>',
+            '<select class = "bs-select form-control TransferToSubAreaCode" style="min-width:250px" id="TransferDetails[' + _DetailsTable.fnSettings().fnRecordsTotal() + '].TransferToSubAreaCode" name="TransferDetails[' + _DetailsTable.fnSettings().fnRecordsTotal() + '].TransferToSubAreaCode"> <option value="">- Select One -</option> </select>'
+        ]);
+
+        if (_DetailsTable.fnSettings().fnRecordsTotal() > 2) {
+            $("#btnWithinAddRow").hide();
+        }
+
+        $(".RemoveCheckbox").uniform();
+    }
+
+    function Within_removeRow() {
+
+        $.each($('input[class="RemoveCheckbox"]:checked'), function (i, val) {
+            var currLength = $('#tblTransferDetails tr').length - 1;
+            var row = $(this).closest("tr").get(0);
+            if (currLength > 1) {
+                _DetailsTable.fnDeleteRow(_DetailsTable.fnGetPosition(row));
+            }
+
+            currLength = $('#tblTransferDetails tr').length - 1;
+            if (currLength < 3) {
+                $("#btnWithinAddRow").show();
+            }
+
+        });
+
+        reorderTable('#tblTransferDetails');
+    }
+
+    function Inter_addRow() {
+        var _InterDDLOption = $('#HiddenInterDivisionDDL').html();
+
+        _DetailsTable.fnAddData([
+            '<input type="checkbox" class="RemoveCheckbox" />',
+            '<select class = "bs-select form-control TransferToCompanyCode" style="min-width:250px" id="TransferDetails[' + _DetailsTable.fnSettings().fnRecordsTotal() + '].TransferToCompanyCode" name="TransferDetails[' + _DetailsTable.fnSettings().fnRecordsTotal() + '].TransferToCompanyCode" onchange="GetInterDepartment(this)">' + _InterDDLOption + '</select>',
+            '<select class = "bs-select form-control TransferToAreaCode" style="min-width:250px" id="TransferDetails[' + _DetailsTable.fnSettings().fnRecordsTotal() + '].TransferToAreaCode" name="TransferDetails[' + _DetailsTable.fnSettings().fnRecordsTotal() + '].TransferToAreaCode" onchange="GetInterUnitSection(this)"> <option value="">- Select One -</option> </select>',
+            '<select class = "bs-select form-control TransferToSubAreaCode" style="min-width:250px" id="TransferDetails[' + _DetailsTable.fnSettings().fnRecordsTotal() + '].TransferToSubAreaCode" name="TransferDetails[' + _DetailsTable.fnSettings().fnRecordsTotal() + '].TransferToSubAreaCode"> <option value="">- Select One -</option> </select>'
+        ]);
+
+        if (_DetailsTable.fnSettings().fnRecordsTotal() > 2) {
+            $("#btnInterAddRow").hide();
+        }
+
+        $(".RemoveCheckbox").uniform();
+    }
+
+    function Inter_removeRow() {
+        $.each($('input[class="RemoveCheckbox"]:checked'), function (i, val) {
+            var currLength = $('#tblTransferDetails tr').length - 1;
+            var row = $(this).closest("tr").get(0);
+            if (currLength > 1) {
+                _DetailsTable.fnDeleteRow(_DetailsTable.fnGetPosition(row));
+            }
+            currLength = $('#tblTransferDetails tr').length - 1;
+            if (currLength < 3) {
+                $("#btnInterAddRow").show();
+            }
+        });
+
+        reorderTable('#tblTransferDetails');
+    }
+
+    function reorderTable(tableName) {
+        var int = 0;
+        var name = '';
+        $.each($(tableName + ' tbody tr'), function (i, val) {
+
+            $.each($(this).find('td [name]'), function (i, val) {
+                var name = $(this).attr('name');
+                $(this).attr('name', reorder(int, name));
+                $(this).attr('id', reorder(int, name));
+            });
+            int++;
+
+        });
+    }
+
+    function reorder(currentIndex, name) {
+        if (typeof name === "undefined") { } else
+        {
+            var ColumnNaw = name.split('.');
+            var replaceIndex = ColumnNaw[0].match(/\d+/g);
+            ColumnNaw[0] = ColumnNaw[0].replace(replaceIndex, currentIndex);
+            return ColumnNaw.join('.');
+        }
+    }
+
+    //Ajax
+    function GetWithinUnitSection(x) {
+        var $row = $(x).closest("tr");
+        var _AreaValue = document.getElementById($row.find(".TransferToAreaCode").attr('id'));
+        var _SubAreaCode = document.getElementById($row.find(".TransferToSubAreaCode").attr('id'));
+        var _EmpSubAreaCode = '@Model.Submiter.UnitSectionCode';
+        var _AreaCode = _AreaValue.value.substring(0, 4);
+
+        var form = {
+            AreaCode: _AreaCode,
+            EmpSubAreaCode: _EmpSubAreaCode,
+        };
+
+
+        $.ajax({
+            type: "POST",
+            url: '@Url.Content("~/ETransfer/GetWithinUnitSection")',
+            cache: false,
+            async: false,
+            dataType: "json",
+            data: form,
+            success: function (result) {
+                document.getElementById(_SubAreaCode.id).options.length = 0;
+                var opt = document.createElement('option');
+                opt.value = '';
+                opt.innerHTML ='- Select One -';
+                _SubAreaCode.appendChild(opt);
+
+                $.each(result, function (index, optionData) {
+                    var opt = document.createElement('option');
+                    opt.value = optionData.Value;
+                    opt.innerHTML = optionData.Text;
+                    _SubAreaCode.appendChild(opt);
+                });
+
+            },
+            error: function (e) {
+
+            }
+        });
+
+    }
+
+    function GetInterDepartment(x) {
+        var $row = $(x).closest("tr");
+        var _CompanyValue = document.getElementById($row.find(".TransferToCompanyCode").attr('id'));
+        var _AreaCode = document.getElementById($row.find(".TransferToAreaCode").attr('id'));
+        var _EmpAreaCode = '@Model.Submiter.DepartmentCode';
+        var _CompanyCode = _CompanyValue.value.substring(0, 4);
+
+        var form = {
+            CompanyCode: _CompanyCode,
+            EmpAreaCode: _EmpAreaCode,
+        };
+
+
+        $.ajax({
+            type: "POST",
+            url: '@Url.Content("~/ETransfer/GetInterDepartment")',
+            cache: false,
+            async: false,
+            dataType: "json",
+            data: form,
+            success: function (result) {
+                document.getElementById(_AreaCode.id).options.length = 0;
+                var opt = document.createElement('option');
+                opt.value = '';
+                opt.innerHTML = '- Select One -';
+                _AreaCode.appendChild(opt);
+
+                $.each(result, function (index, optionData) {
+                    var opt = document.createElement('option');
+                    opt.value = optionData.Value;
+                    opt.innerHTML = optionData.Text;
+                    _AreaCode.appendChild(opt);
+                });
+
+            },
+            error: function (e) {
+
+            }
+        });
+
+    }
+
+    function GetInterUnitSection(x) {
+        var $row = $(x).closest("tr");
+        var _AreaValue = document.getElementById($row.find(".TransferToAreaCode").attr('id'));
+        var _SubAreaCode = document.getElementById($row.find(".TransferToSubAreaCode").attr('id'));
+        var _AreaCode = _AreaValue.value.substring(0, 4);
+
+        var form = {
+            AreaCode: _AreaCode,
+        };
+
+
+        $.ajax({
+            type: "POST",
+            url: '@Url.Content("~/ETransfer/GetInterUnitSection")',
+            cache: false,
+            async: false,
+            dataType: "json",
+            data: form,
+            success: function (result) {
+                document.getElementById(_SubAreaCode.id).options.length = 0;
+                var opt = document.createElement('option');
+                opt.value = '';
+                opt.innerHTML = '- Select One -';
+                _SubAreaCode.appendChild(opt);
+
+                $.each(result, function (index, optionData) {
+                    var opt = document.createElement('option');
+                    opt.value = optionData.Value;
+                    opt.innerHTML = optionData.Text;
+                    _SubAreaCode.appendChild(opt);
+                });
+
+            },
+            error: function (e) {
+
+            }
+        });
+
+    }
+
+    function SubmitValidation() {
+        var ValidationMsg = '';
+
+        if ($("#txtReason").val() == '')
+            ValidationMsg += '- Reason for transfer is required.\n'
+
+        var thisTable = $('#tblTransferDetails');
+        thisTable.find(".TransferToCompanyCode").each(function () {
+            var $row = $(this).closest("tr");
+            var _Division= $row.find(".TransferToCompanyCode").val();
+            var _Department = $row.find(".TransferToAreaCode").val();
+
+            if (_Division == null || _Division == '') {
+                ValidationMsg += '- Division is required.\n'
+            }
+
+            if (_Department == null || _Department == '') {
+                ValidationMsg += '- Department is required.\n'
+            }
+        });
+
+        // Consolidate Message
+        if (ValidationMsg != null && ValidationMsg != '') {
+            alert(ValidationMsg);
+        }
+        else {
+
+            $("#btnSubmitForm").removeClass("hidden_1");
+            $("#btnSubmitDraft").addClass("hidden_1");
+            $("#ConfirmUpdate .modal-body .well").html('Clicking Confirm will submit this application for Approval. If you want to make changes, click Close.');
+            $("#ConfirmUpdate").modal('show');
+        }
+    }
+
+    function SubmitForm(SubmitType) {
+        $("#divLoading").show();
+        var data = $('form').serializeArray();
+        //Add in additional data to the original form data:
+        $.ajax({
+            url: '@Url.Content("~/ETransfer/SubmitForm")',
+            type: 'POST',
+            data: data,
+            success: function (result) {
+                $("#ConfirmUpdate").modal('toggle');
+                $("#divLoading").hide();
+                if (result.Success == true) {
+                    $('#SuccessSubmit').modal();
+                    $('#btnOK').attr('href', '../ETransfer/ETransferHistory');
+                } else {
+                    alert(result.ErrorMsg);
+
+                }
+                // ... Process the result ...
+            }
+        });
+
+    }
+
+    jQuery(document).ready(function () {
+        FormConfiguration();
+        $(".RemoveCheckbox").uniform();
+    });
+
+</script>
+
+

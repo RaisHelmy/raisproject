@@ -1,0 +1,155 @@
+﻿
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewBag.Title = "Notification Template";
+}
+
+<div class="row">
+    <div class="col-md-12">
+        <br />
+        <h1 class="page-title">
+            Notification Template<span style="padding-left:20px;"><small></small></span>
+        </h1>
+    </div>
+</div>
+<br />
+
+<div class="form-body">  
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-4 control-label">Approval Name</label>
+                    <div class="col-md-8 form-control-static">
+                        @Html.DropDownList("RoutingList",
+                                         (IEnumerable<SelectListItem>)ViewBag.ListOfRouting,
+                            new
+                            {
+                                @class = "bs-select form-control",
+                                @id = "ListOfRouting"
+                            })
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-4 control-label">Activity Name</label>
+                    <div class="col-md-8 form-control-static">
+                        @Html.DropDownList("RoutingList",
+                                                  (IEnumerable<SelectListItem>)ViewBag.ListOfRoutingRule, "- All -",
+                            new
+                            {
+                                @class = "bs-select form-control",
+                                @id = "ListOfRoutingRule"
+                            })
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-4 control-label">Subject</label>
+                    <div class="col-md-8 form-control-static">
+                        <input class="form-control" type="text" id="EmaiLTemplateSubject"/>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">&nbsp;</div>
+    <div class="row">
+        <div class="col-md-12">
+            <div class="text-right">
+                <input type="button" id="btn-Search" class="btn green btn-Search" value="Search" onclick="SearchListing();">
+            </div>
+        </div>
+    </div>
+    <div class="row">&nbsp;</div>
+    <div class="row">
+        <div class="col-md-12">
+            <div id="SearchResult">
+
+            </div>
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+    function SearchListing() {
+        var _ListOfRouting = $('#ListOfRouting option:selected').val();
+
+        var _ListOfRoutingRule = $('#ListOfRoutingRule option:selected').val();
+        if (_ListOfRoutingRule == '- All -')
+            _ListOfRoutingRule = '';
+        var _EmaiLTemplateSubject = $('#EmaiLTemplateSubject').val();
+
+        $("#SearchResult").html("LOADING...");
+
+        $.ajax({
+            type: "GET",
+            url: '@Url.Content("~/Routing/_IndexEmail_DetailsResult")',
+            cache: false,
+            dataType: "html",
+            data: { Routing: _ListOfRouting, RoutingRule: _ListOfRoutingRule, EmailTemplateSubject: _EmaiLTemplateSubject },
+            success: function (content) {
+                $("#SearchResult").html(content);
+            },
+            error: function (e) {
+                console.log(e);
+            }
+        });
+    }
+
+
+
+    jQuery(document).ready(function () {
+        var ddlSource1 = $('#ListOfRouting').val();
+        var ddlTarget1 = '#ListOfRoutingRule';
+        var urlAction1 = "@Url.Action("GetListOfRoutingRule", "Routing")";
+        var ddlSource2 = getApplication(ddlSource1, ddlTarget1, urlAction1);
+        SearchListing();
+    });
+
+   
+    $("#ListOfRouting").change(function (e) {
+
+        var ddlSource1 = $('#ListOfRouting').val();
+        var ddlTarget1 = '#ListOfRoutingRule';
+        var urlAction1 = "@Url.Action("GetListOfRoutingRule", "Routing")";
+        var ddlSource2 = getApplication(ddlSource1, ddlTarget1, urlAction1);
+    });
+    
+    function getApplication(ddlSource, ddlTarget, urlAction) {
+        var ddlTargetValue = "";
+        $.ajax({
+            type: "GET",
+            url: urlAction,
+            data: { selValue: ddlSource },
+            contentType: "application/json;charset=utf-8",
+            dataType: "json",
+            async: false,
+            success: function (result) {
+                $(ddlTarget).empty();
+                if (result != "") {
+                    $(ddlTarget).append("<option value=' - All - '> - All - </option>");
+                    
+                    $.each(result, function (index, optionData) {
+                        $(ddlTarget).append("<option value='" + optionData.Value + "'>" + optionData.Text + "</option>");
+                    })
+                }
+                else {
+                    $(ddlTarget).append("<option value='0'>None</option>");
+                    $(ddlTarget).val("0");
+                }
+                ddlTargetValue = $(ddlTarget).val();
+
+            },
+        });
+        return ddlTargetValue;
+    }
+
+</script>

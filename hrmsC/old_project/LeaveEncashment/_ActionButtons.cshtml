@@ -1,0 +1,301 @@
+﻿@model SEP.RoutingManagement.Service.AllowAction
+
+@{
+    LeaveApplication.Models.LeaveEncashmentVM vm = ViewBag.ViewModel;
+    var task = vm.GetTask();
+}
+
+@if (vm.Status != "DR" && vm.Status != "CA")
+{
+    if (Model.CanAcknowledge == "1" || Model.CanAgree == "1" || Model.CanApprove == "1" || Model.CanDecline == "1" ||
+        Model.CanEndorse == "1" || Model.CanProcess == "1" || Model.CanReceive == "1" || Model.CanRecommend == "1" ||
+        Model.CanRework == "1" || Model.CanVerify == "1" || Model.CanCancel == "1" || Model.CanAgreeCancel == "1")
+    {
+        <div id="portletComment" class="row">
+            <div class="col-md-12">
+                <div class="portlet box blue">
+                    <div class="mini-triangle"><img src="/_layouts/15/TNBESS/Assets/img/menu-red-triangle.png" /></div>
+                    <div class="portlet-title">
+                        <div class="caption">
+                            <i class="fa fa-reorder"></i>Comment
+                        </div>
+                        <div class="tools">
+                            <a title="" data-original-title="" href="javascript:;" class="collapse"> </a>
+                        </div>
+                    </div>
+                    <div class="portlet-body form">
+                        <div class="form-body">
+                            <div class="row hide" id="DeclineReason">
+                                <div class="col-md-12">
+                                    <div class="form-horizontal">
+                                        <div class="form-group">
+                                            <label class="control-label col-md-2">Reason</label>
+                                            <div class="col-md-10 form-control-static">
+                                                <select id="ddlDeclineReason" class="form-control">
+                                                    <option value=""> - Please Select - </option>
+                                                    <option value="Incomplete Document">Incomplete Document</option>
+                                                    <option value="Not Eligible">Not Eligible</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="form-horizontal">
+                                        <div class="form-group">
+                                            <label class="control-label col-md-2">Comment</label>
+                                            <div class="col-md-10 form-control-static">
+                                                <textarea class="form-control" id="txtAppComment" rows="5" cols="60"></textarea>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                @if (RoleMaintenance.RoleService.IsCurrentUserInRole("Leave Encashment", "HR SSC BA"))
+                                {
+                                    <div class="col-md-offset-2 col-md-10" style="margin-top: 16px;">
+                                        <input type="checkbox" name="isApprovalCommentRestricted" checked="checked" />
+                                        Show this only for HR SSC BA
+                                    </div>
+                                }
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+}
+
+<br />
+<br />
+
+<div class="row">
+    @if (vm.Status == "DR" || vm.Status == "WD" || vm.Status == "DE")
+    {
+        <div class="col-md-12">
+            @*@if (vm.Status == "DR")
+                {
+                    <input type="button" class="btn green" value="Save as Draft" id="btnDraft" onclick="ExecuteAction('Draft'); " />
+                }*@
+
+            <input type="button" class="btn green" value="Submit" id="btnSubmit" onclick="ExecuteAction('Submit'); " />
+            <input type="button" class="btn green" value="Back" id="btnBack" onclick="BackToHistory();" />
+        </div>
+    }
+    else
+    {
+        <div class="col-md-12">
+            @if (Model.CanVerify == "1")
+            {
+                <input type="button" class="btn green" value="Verify" id="btnVerify" onclick="ExecuteApproverAction('Verify')" />
+            }
+
+            @if (Model.CanAcknowledge == "1")
+            {
+                <input type="button" class="btn green" value="Acknowledge" id="btnAcknowledge" onclick="ExecuteApproverAction('Acknowledge')" />
+            }
+
+            @if (Model.CanAgree == "1")
+            {
+                <input type="button" class="btn green" value="Agree" id="btnAgree" onclick="ExecuteApproverAction('Agree')" />
+            }
+
+            @if (Model.CanApprove == "1")
+            {
+                <input type="button" class="btn green" value="Approve" id="btnApprove" onclick="ExecuteApproverAction('Approve')" />
+            }
+
+            @if (Model.CanProcess == "1")
+            {
+                <input type="button" class="btn green" value="Process" id="btnProcess" onclick="ExecuteApproverAction('Process')" />
+            }
+
+            @if (Model.CanProcessMemo == "1")
+            {
+                <input type="button" class="btn green" value="Process Memo" id="btnProcessMemo" onclick="ExecuteApproverAction('ProcessMemo')" />
+            }
+
+            @if (Model.CanReceive == "1")
+            {
+                <input type="button" class="btn green" value="Receive" id="btnReceive" onclick="ExecuteApproverAction('Receive')" />
+            }
+
+            @if (Model.CanRecommend == "1")
+            {
+                <input type="button" class="btn green" value="Recommend" id="btnRecommend" onclick="ExecuteApproverAction('Recommend')" />
+            }
+            @if (Model.CanEndorse == "1")
+            {
+                <input type="button" class="btn green" value="Endorse" id="btnEndorse" onclick="ExecuteApproverAction('Endorse')" />
+            }
+            @if (Model.CanAgreeCancel == "1")
+            {
+                <input type="button" class="btn green" value="Approve Cancel" id="btnAgreeCancel" onclick="ExecuteApproverAction('ApproveCancel')" />
+            }
+            @if (Model.CanWithdraw == "1")
+            {
+                <input type="button" class="btn red" value="Withdraw" id="btnWithdraw" onclick="ExecuteAction('Withdraw')" />
+            }
+            @if (Model.CanRework == "1")
+            {
+                <input type="button" class="btn red" value="Rework" id="btnRework" onclick="ExecuteApproverAction('Rework')" />
+            }
+
+            @if (Model.CanDecline == "1")
+            {
+                <input type="button" class="btn red" value="Decline" id="btnDecline" onclick="ExecuteApproverAction('Decline');" />
+            }
+
+            <input type="button" class="btn green" value="Back" id="btnBack" onclick="BackToHistory()" />
+        </div>
+    }
+
+</div>
+<script>
+    var _draftAction = '@Url.Action("Draft", "LeaveEncashment")';
+    var _submitAction = '@Url.Action("Submit", "LeaveEncashment")';
+    var _deleteAction = '@Url.Action("Delete", "LeaveEncashment")';
+    var _approverAction = '@Url.Action("Approval", "LeaveEncashment")';
+    var _withdrawAction = '@Url.Action("Withdraw", "LeaveEncashment")';
+
+    function ExecuteAction(action) {
+        var actionUrl = "";
+        var confirmationMessage = "Are you sure you want to submit this declaration?";
+
+        switch (action) {
+            case "Draft": actionUrl = _draftAction;
+                confirmationMessage = "Are you sure you want to save as draft?";
+                break;
+            case "Submit": actionUrl = _submitAction;
+                confirmationMessage = "Are you sure you want to submit this request?";
+                break;
+            case "Delete": actionUrl = _deleteAction;
+                confirmationMessage = "Are you sure you want to delete this request?";
+                break;
+            case "Withdraw": actionUrl = _withdrawAction;
+                confirmationMessage = "Are you sure you want to withdraw this request?";
+                break;
+            default: return;
+        }
+
+        var validateDetails = Validation();
+
+        if (validateDetails != "" && action == "Submit") {
+            alert(validateDetails);
+            return;
+        }
+
+        ShowConfirmationDialog({
+            message: confirmationMessage,
+            positiveCallback: function () {
+                var data = $('form').serializeArray();
+
+                HideConfirmationDialog();
+                ShowLoadingScreen();
+
+                $.post(actionUrl, data, function (result) {
+                    HideLoadingScreen();
+                    if (result.Success) {
+                        ShowDialog({
+                            message: result.Message,
+                            okCallback: function () {
+                                window.location.href = "@Url.Action("History", "LeaveEncashment")";
+                            }
+                        });
+                    }
+                    else {
+                        ShowDialog({
+                            title: "Failed",
+                            message: result.Message,
+                            okCallback: function () {
+                                HideDialog();
+                            }
+                        });
+                    }
+                });
+            }
+        });
+    }
+
+    function ExecuteApproverAction(action) {
+        var actionUrl = _approverAction;
+        var confirmationMessage = "Are you sure you want to " + action + " this declaration?";
+        var approvalComment = $("#txtAppComment").val();
+        var _isApprovalCommentRestricted = $('[name="isApprovalCommentRestricted"]').is(':checked');
+
+        if (action == "Decline" && (approvalComment == null || approvalComment.length < 1)) {
+            alert("Comment is mandatory for declining.");
+            return;
+        }
+
+        ShowConfirmationDialog({
+            message: confirmationMessage,
+            positiveCallback: function () {
+                var data = $('form').serializeArray();
+
+                data.push({ name: "ApproverVm.EncashmentID", value: '@vm.EncashmentID' });
+                data.push({ name: "ApproverVm.TaskID", value: '@(task == null ? "" : task.ID.ToString())' });
+                data.push({ name: "ApproverVm.ApproverID", value: '@ESS.Core.Common.GetEmployeeID()' });
+                data.push({ name: "ApproverVm.ApproverAction", value: action });
+                data.push({ name: "ApproverVm.ApproverComment", value: $("#txtAppComment").val() });
+
+                //isApproval object handling
+                if (data.findIndex(x => x.name === "isApprovalCommentRestricted") != -1) {
+                    data.splice(data.findIndex(x => x.name === "isApprovalCommentRestricted"), 1);
+                }
+                data.push({ name: "isApprovalCommentRestricted", value: _isApprovalCommentRestricted });
+
+                HideConfirmationDialog();
+                ShowLoadingScreen();
+
+                $.post(actionUrl, data, function (result) {
+                    HideLoadingScreen();
+                    if (result.Success) {
+                        ShowDialog({
+                            message: result.Message,
+                            okCallback: function () {
+                                window.location.href = "@Url.Action("InTray", "LeaveEncashment")";
+                            }
+                        });
+                    }
+                    else {
+                        ShowDialog({
+                            title: "Failed",
+                            message: result.Message,
+                            okCallback: function () {
+                                HideDialog();
+                            }
+                        });
+                    }
+                });
+            }
+        });
+    }
+
+    function Validation() {
+        var validationMessage = "";
+        var category = $('[name="EmployeeID"]').val();
+
+        if (!category) {
+            validationMessage += "Please select an employee.\n";
+        }
+
+        var totalRequestedDays = parseFloat($('#tblLeaveDetails tfoot .RequestedDays').text());
+        if (totalRequestedDays < 1) {
+            validationMessage += "Requested days must be more than 0.\n";
+        }
+
+        return validationMessage;
+    }
+
+    function BackToHistory() {
+        window.location.href = '@ViewBag.BackUrl';
+    }
+</script>
+
+@Html.Partial("__Prompt")

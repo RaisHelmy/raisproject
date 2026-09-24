@@ -1,0 +1,241 @@
+﻿@using LTIP.Models
+@model CDSMaintenance
+@{
+    ViewBag.Title = "LTIP CDS Account Maintenance";
+
+    string CurrentEmployeeID = ViewBag.CurrentEmployeeID;
+    ESS.Core.EmployeeDetailsSummary EmployeeDetails = ViewBag.EmployeeDetails;
+
+ 
+}
+
+@using (Html.BeginForm("CDSMaintenance", "LTIP", FormMethod.Post))
+{
+    <div class="form-section">
+        <div class="row">
+            <div class="col-md-12">
+                <h1 class="page-title">
+                    @ViewBag.Title
+                    <span style="padding-left:20px;">
+                        <small></small>
+                    </span>
+                </h1>
+            </div>
+        </div>
+    </div>
+    if (ViewBag.CDSLocked=="1")
+    {
+        <div>
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="note note-danger">
+                        <p>
+                            CDS Account Maintenance has been locked down for administrative processing purpose.<br />
+                            For any inquiries, please email to saham@tnb.com.my or 03- 2108 3574/ 3594 / 3765 / 3766.<br /><br />
+                            Pengemaskinian akaun CSD telah dibekukan sementara waktu bagi urusan pentadbiran.<br />
+                            Sebarang pertanyaan, sila email ke saham@tnb.com.my atau hubungi 03- 2108 3574/ 3594 / 3765 / 3766.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+
+
+    @Html.Partial("_EmployeeDetails", (ESS.Core.EmployeeDetailsSummary)ViewBag.EmployeeDetails)
+
+    <input type="hidden" name="EmployeeID" value="@CurrentEmployeeID" />
+    <div class="row">
+        <div class="col-md-12">
+            <div class="portlet box blue">
+                <div class="mini-triangle"><img src="../Assets/img/menu-red-triangle.png" /></div>
+                <div class="portlet-title">
+                    <div class="caption">
+                        <i class="fa fa-reorder"></i>CDS Account Number
+                    </div>
+                    <div class="tools">
+                        <a title="" data-original-title="" href="javascript:;" class="collapse"> </a>
+                    </div>
+                </div>
+                <div class="portlet-body form">
+                    <div class="form-body">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <label class="control-label col-md-3">
+                                            Current CDS Account No.
+                                        </label>
+                                        <div class="col-md-4 form-control-static">
+                                            <input id="OriginalNr1" class="form-control-inline" style="width: 20%" name="OriginalNr1" type="text" maxlength="3"
+                                                   value="@Model.OriginalNr1" readonly="readonly" /> -
+                                            <input id="OriginalNr2" class="form-control-inline" style="width: 20%" name="OriginalNr2" type="text" maxlength="3"
+                                                   value="@Model.OriginalNr2" readonly="readonly" /> -
+                                            <input id="OriginalNr3" class="form-control-inline" style="width: 50%" name="OriginalNr3" type="text" maxlength="9"
+                                                   value="@Model.OriginalNr3" readonly="readonly" />
+                                        </div>
+                                        <div class="col-md-5 form-control-static">
+                                            <a href="#"  onclick="window.open('CDSMaintenanceHistory');">
+                                                View CDS Account Maintenance History
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <label class="control-label col-md-3">
+                                            Update CDS Account No.
+                                        </label>
+                                        <div class="col-md-4 form-control-static">
+                                            <input id="UpdatedNr1" class="form-control-inline" style="width: 20%" name="UpdatedNr1" type="text" maxlength="3"
+                                                   value="@Model.OriginalNr1" /> -
+                                            <input id="UpdatedNr2" class="form-control-inline" style="width: 20%" name="UpdatedNr2" type="text" maxlength="3"
+                                                   value="@Model.OriginalNr2" /> -
+                                            <input id="UpdatedNr3" class="form-control-inline" style="width: 50%" name="UpdatedNr3" type="text" maxlength="9"
+                                                   value="@Model.OriginalNr3" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!--Attachment-->
+    <!-- Attachment -->
+    @Html.Action("AttachmentControl", "Attachment", new
+    {
+        EmployeeID = CurrentEmployeeID,
+        Mode = "New",
+        SourceType = "LTIP"
+    })
+
+    @Html.Partial("__Prompt")
+
+    <div class="row">
+        <div class="col-md-12">
+            <input type="button" class="btn green" value="Submit" id="btnSubmit" onclick="Submit()" />
+            <input type="button" class="btn green" value="Back" id="btnBack" onclick="Back()" />
+        </div>
+    </div>
+}
+<script>
+    function Submit() {
+        var message = "Are you sure you want to update your CDS Account No?";
+        var validationMessage = PerformValidation();
+
+        if (validationMessage) {
+            alert(validationMessage);
+            return;
+        }
+
+        ShowConfirmationDialog({
+            message: message,
+            positiveCallback: PerformSubmission
+        });
+    }
+
+    function PerformSubmission() {
+        var data = $('form').serializeArray();
+        HideConfirmationDialog();
+        ShowLoadingScreen();
+
+        $.post('@Url.Action("CDSMaintenance", "LTIP")', data, function (result) {
+            HideLoadingScreen();
+
+            if (result.IsSuccess) {
+                ShowDialog({
+                    message: result.Message,
+                    okCallback: function () {
+                        window.location.href = '@Url.Action("CDSMaintenanceHistory", "LTIP")';
+                    }
+                });
+            }
+            else {
+                HideDialog();
+                alert(result.ErrorMessage);
+            }
+        });
+    }
+
+    function PerformValidation() {
+        var validationMessage = "";
+        var msgEn = "";
+        var msgBm = "";
+
+        var UpdatedNr1 = $('#UpdatedNr1').val();
+        var UpdatedNr2 = $('#UpdatedNr2').val();
+        var UpdatedNr3 = $('#UpdatedNr3').val();
+
+        if (UpdatedNr1 == "000" || UpdatedNr2 == "000" || UpdatedNr3 == "000000000") {
+            if (UpdatedNr1 == "000" && UpdatedNr2 == "000" && UpdatedNr3 == "000000000") {
+                msgEn += "CDS Account Number [000]-[000]-[000000000] is not allowed.";
+                msgBm += "Nombor Akaun CDS [000]-[000]-[000000000] adalah tidak dibenarkan.";
+            }
+            else {
+                if (UpdatedNr1 == "000") {
+                    msgEn += "[000] is not allowed in the fist textbox.";
+                    msgBm += "[000] tidak dibenarkan dalam kotak pertama.";
+                }
+                if (UpdatedNr2 == "000") {
+                    msgEn += "[000] is not allowed in the second textbox.";
+                    msgBm += "[000] tidak dibenarkan dalam kotak kedua.";
+                }
+                if (UpdatedNr3 == "000000000") {
+                    msgEn += "[000000000] is not allowed in the third textbox.";
+                    msgBm += "[000000000] tidak dibenarkan dalam kotak ketiga.";
+                }
+            }
+
+            validationMessage = msgEn.replace("#\\n", "") + "\n" + msgBm.replace("#\\n", "");
+        }
+        else {
+            if (UpdatedNr1.trim().length != 3 || UpdatedNr2.trim().length != 3 || UpdatedNr3.trim().length != 9) {
+                validationMessage = 'The format for CDS Account Number is [xxx]-[xxx]-[xxxxxxxxx].\nFormat untuk Nombor Akaun CDS adalah [xxx]-[xxx]-[xxxxxxxxx].'
+            }
+            else {
+                var pattern = new RegExp("^[0-9]+$");
+
+                if (!pattern.test(UpdatedNr1) || !pattern.test(UpdatedNr2) || !pattern.test(UpdatedNr3)) {
+                    validationMessage = 'Only numbers [0-9] are allowed.\nHanya nombor [0-9] yang dibenarkan.';
+                }
+            }
+        }
+
+        return validationMessage;
+    }
+
+    function Back() {
+         window.location.href = '@Url.Action("CDSMaintenanceHistory", "LTIP")';
+    }
+
+    $(function () {
+        alert('You are currently signed in to ESS as @EmployeeDetails.EmployeeName.\nPlease check the Employee Details section before you proceed.\n\nAnda sedang menggunakan ESS sebagai @EmployeeDetails.EmployeeName.\nSila semak ruangan Employee Details sebelum anda meneruskan proses selanjutnya.');
+        ShowAttachmentNote();
+
+        if (@ViewBag.CDSLocked=="1") { 
+            $("#UpdatedNr1").attr("disabled", "disabled"); 
+            $("#UpdatedNr2").attr("disabled", "disabled"); 
+            $("#UpdatedNr3").attr("disabled", "disabled"); 
+             
+            $("#btnSubmit").prop("disabled",true);
+        }
+    });
+
+    function ShowAttachmentNote() {
+        $('#AttachmentListing').parent().append(
+            '<br /><div>' +
+            '<p>Note: Please ensure that the attached CDS account statement/information contains your name and complete account number.</p>' +
+            '<p>Nota: Sila pastikan lampiran penyata/maklumat akaun CDS mempunyai nama dan nombor akaun yang lengkap.</p>' +
+            '</div >');
+    }
+</script>
+

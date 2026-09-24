@@ -1,0 +1,215 @@
+﻿@model ESS.Payroll.Models.PayrollDeductionVM
+@{
+    Layout = null;
+
+    List<ESS.Core.DropDownObject> PayrollDeductionTypeDDL = ViewBag.PayrollDeductionType;
+    List<ESS.Core.DropDownObject> PayeeKeyDDL = ViewBag.PayeeKeyDDL;
+    List<ESS.Core.DropDownObject> PayrollDeductionReasonDDL = ViewBag.PayrollDeductionReason;
+    string PaySlipUrl = (string)ViewData["PaySlipUrl"];
+}
+<input class="form-control" type="hidden" id="hdfprocessid" value="@Model.hdfProcessID" />
+<input class="form-control" type="hidden" id="hdfSourceID" value="@Model.hdfSourceID" />
+<input class="form-control" type="hidden" id="hdfGrossPayAmount" value="@Model.hdfGrossPayAmount" />
+<input class="form-control" type="hidden" id="hdfExecGroup" value="@Model.hdfExecGroup" />
+<input class="form-control" type="hidden" id="hdfDeductionTypeCode" value="@Model.DeductionTypeCode" />
+<div class="row">
+    <div class="col-md-12">
+        <div class="portlet box blue">
+            <div class="mini-triangle"><img src="../Assets/img/menu-red-triangle.png" /></div>
+            <div class="portlet-title">
+                <div class="caption">
+                    <i class="fa fa-reorder"></i>Payroll Details
+                </div>
+            </div>
+            <div class="portlet-body form">
+                <div class="form-body" id="ct01_CustomFieldFormView">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-horizontal">
+                                <div class="form-group">
+                                    <label class="control-label col-md-4">Deduction Type<span class="mandatory"> *</span></label>
+                                    <div class="col-md-8 form-control-static">
+                                        @Html.DropDownList("HiddenPayrollDeductionTypeDDL", new SelectList(PayrollDeductionTypeDDL, "Value", "Text"), new { @id = "HiddenPayrollDeductionTypeDDL", @class = "bs-select form-control", onchange = "DeductionTypeChange()" })
+                                    </div>
+                                    @*<div class="col-md-8 form-control-static">
+                                            <select class="form-control" id="ct01_DeductionType" onchange="DeductionTypeChange()">
+                                                <option value="0">-Select One-</option>
+                                                <option value="Zakat Selangor">Zakat Selangor</option>
+                                                <option value="Zakat Melaka">Zakat Melaka</option>
+                                                <option value="Tabung Haji">Tabung Haji</option>
+                                                <option value="Zakat">Zakat</option>
+                                                <option value="PTPTN">PTPTN</option>
+                                            </select>
+                                        </div>*@
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-horizontal">
+                                <div class="form-group">
+                                    <div class="col-md-8 form-control-static">
+                                        @*<a href="@PaySlipUrl" target="_blank"> <u>View Payslip</u></a>*@
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-horizontal">
+                                <div class="form-group">
+                                    <label class="control-label col-md-4">Deduction Description</label>
+                                    <div class="col-md-8 form-control-static">
+                                        <input class="form-control" type="text" id="ct01_DeductionDescription" readonly value="@Model.DeductionDescription" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 hidePayeeKey hidden_1">
+                            <div class="form-horizontal">
+                                <div class="form-group ">
+                                    <label class="control-label col-md-4">Payee Kee<span class="mandatory"> *</span></label>
+                                    <div class="col-md-8 form-control-static">
+                                        @Html.DropDownList("HiddenPayeeKeyDDL", new SelectList(PayeeKeyDDL, "Value", "Text"), new { @id = "HiddenPayeeKeyDDL", @class = "bs-select form-control", onchange = "PayeeKeyChange()" })
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-horizontal">
+                                <div class="form-group hidden_1">
+                                    <label class="control-label col-md-4">Available Amount to be Deducted</label>
+                                    <div class="col-md-8 form-control-static">
+                                        <input class="form-control" type="text" id="ct01_AmountToBeDeducted" readonly value="@Model.AvailableAmountToBeDeducted" />
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="control-label col-md-4">Current Deducted Amount</label>
+                                    <div class="col-md-8 form-control-static">
+                                        <input class="form-control" type="text" id="ct01_CurrentDeductedAmount" readonly value="@Model.CurrentDeductedAmount" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-horizontal">
+                                <div class="form-group">
+                                    <label class="control-label col-md-4">Membership No./ Account No.<span class="mandatory" id="lblMembershipNo"> *</span></label>
+                                    <div class="col-md-8 form-control-static">
+                                        <input class="form-control" type="text" id="ct01_MembershipAccountNo" value="@Model.MembershipNo" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-horizontal">
+                                @*<div class="form-group">
+            <label class="control-label col-md-4">Current Deducted Amount</label>
+            <div class="col-md-8 form-control-static">
+                <input class="form-control" type="text" id="ct01_CurrentDeductedAmount" readonly value="@Model.CurrentDeductedAmount" />
+            </div>
+        </div>*@
+                                <div class="form-group">
+                                    <label class="control-label col-md-4">Deduction Amount<span class="mandatory"> *</span></label>
+                                    <div class="col-md-8 form-control-static">
+                                        <input class="form-control dsCV" type="text" id="ct01_DeductionAmount" value="@Model.DeductionAmount" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-horizontal">
+                                <div class="form-group">
+                                    <label class="control-label col-md-4">Deduction Start Date<span class="mandatory"> *</span></label>
+                                    <div class="col-md-8 form-control-static">
+                                        <div id="divDeductionStartDate" class="input-group date date-picker" data-date-format="dd MM yyyy">
+                                            <input type="text" class="form-control" id="ct01_DeductionStartDate" name="DeductionStartDate" />
+                                            <span class="input-group-btn">
+                                                <button type="button" class="btn default"><i class="fa fa-calendar"></i></button>
+                                            </span>
+                                        </div>
+                                        <div id="divDeductionStartDateRO" style="display:none">
+                                            <input class="form-control" type="text" id="ct01_DeductionStartDateRO" name="DeductionStartDate" readonly />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-horizontal">
+                                @*<div class="form-group">
+            <label class="control-label col-md-4">Deduction Amount<span class="mandatory"> *</span></label>
+            <div class="col-md-8 form-control-static">
+                <input class="form-control dsCV" type="text" id="ct01_DeductionAmount" value="@Model.DeductionAmount" />
+            </div>
+        </div>*@
+                                <div class="form-group">
+                                    <label class="control-label col-md-4">Reason<span class="mandatory"> *</span></label>
+                                    <div class="col-md-8 form-control-static">
+                                        @Html.DropDownList("HiddenPayrollDeductionReasonDDL", new SelectList(PayrollDeductionReasonDDL, "Value", "Text"), new { @id = "HiddenPayrollDeductionReasonDDL", @class = "bs-select form-control" })
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-horizontal">
+                                <div class="form-group">
+                                    <label class="control-label col-md-4">Deduction End Date<span class="mandatory"> *</span></label>
+                                    <div class="col-md-8 form-control-static">
+                                        <div id="divDeductionEndDate" class="input-group date date-picker" data-date-format="dd MM yyyy">
+                                            <input type="text" class="form-control" id="ct01_DeductionEndDate" name="DeductionEndDate" />
+                                            <span class="input-group-btn">
+                                                <button type="button" class="btn default"><i class="fa fa-calendar"></i></button>
+                                            </span>
+                                        </div>
+                                        <div id="divDeductionEndDateRO" style="display:none">
+                                            <input class="form-control" type="text" id="ct01_DeductionEndDateRO" name="DeductionEndDate" readonly />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    @*<div class="row">
+                        <div class="col-md-6">
+                            <div class="form-horizontal">
+                                <div class="form-group">
+                                    <label class="control-label col-md-4">Reason<span class="mandatory"> *</span></label>
+                                    <div class="col-md-8 form-control-static">
+                                        @Html.DropDownList("HiddenPayrollDeductionReasonDDL", new SelectList(PayrollDeductionReasonDDL, "Value", "Text"), new { @id = "HiddenPayrollDeductionReasonDDL", @class = "bs-select form-control" })
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-horizontal">
+                                <div class="form-group">
+
+                                </div>
+                            </div>
+                        </div>
+                    </div>*@
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="form-horizontal">
+                                <div class="form-group">
+                                    <label class="control-label col-md-2">Comment</label>
+                                    <div class="col-md-10 form-control-static">
+                                        <textarea name="ct01_comment" id="ct01_comment" class="form-control" form="usrform" rows="5">@Model.Comment</textarea>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

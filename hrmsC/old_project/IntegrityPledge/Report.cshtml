@@ -1,0 +1,268 @@
+﻿@{
+    ViewBag.Title = "Integrity Pledge - Report";
+}
+
+@{
+    DateTime dStartDateTime = DateTime.Now.AddMonths(-3);
+    DateTime dEndDateTime = DateTime.Now;
+    string dtStart = new DateTime(dStartDateTime.Year, dStartDateTime.Month, 1).ToString("dd/MM/yyyy");
+    string dtDefault = dEndDateTime.ToString("dd/MM/yyyy");
+}
+
+<div class="row">
+    <div class="col-md-12">
+        <br />
+        <h1 class="page-title">
+            @ViewBag.Title
+            <span style="padding-left:20px;">
+                <small>
+                </small>
+            </span>
+        </h1>
+    </div>
+</div>
+<br />
+
+<form>
+    <div class="form-body">
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-horizontal">
+                    <div class="form-group">
+                        <label class="col-md-4 control-label">Reference No</label>
+                        <div class="col-md-8 form-control-static">
+                            <input type="text" class="form-control ReferenceNo" name="ReferenceNo" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-horizontal">
+                    <div class="form-group">
+                        <label class="col-md-4 control-label">Company Code</label>
+                        <div class="col-md-8 form-control-static">
+                            <select id="ddlCompanyCode" class="form-control" name="CompanyCode">
+                                <option value="">--  All --</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-horizontal">
+                    <div class="form-group">
+                        <label class="col-md-4 control-label">Grade</label>
+                        <div class="col-md-8 form-control-static">
+                            <select id="ddlGrade" class="form-control" name="Grade">
+                                <option value="">--  All --</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-horizontal">
+                    <div class="form-group">
+                        <label class="col-md-4 control-label">Personnel Area</label>
+                        <div class="col-md-8 form-control-static">
+                            <select id="ddlPersonnelArea" class="form-control" name="AreaCode">
+                                <option value="">--  All --</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-horizontal">
+                    <div class="form-group">
+                        <label class="col-md-4 control-label">Personnel Subarea</label>
+                        <div class="col-md-8 form-control-static">
+                            <select id="ddlPersonnelSubarea" class="form-control" name="SubAreaCode">
+                                <option value="">--  All --</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-horizontal">
+                    <div class="form-group">
+                        <label class="col-md-4 control-label">Employee</label>
+                        <div class="col-md-8 form-control-static">
+                            @Html.Action("_PeoplePickerExt", "PeoplePicker",
+                                                    new { CurrEmpID = ESS.Core.Common.GetEmployeeID(),
+                                                          SearchType = "" })
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-horizontal">
+                    <div class="form-group">
+                        <label class="col-md-4 control-label">Declaration Status</label>
+                        <div class="col-md-8 form-control-static">
+                            <select id="ddlDeclarationStatus" class="form-control" name="DeclarationStatus">
+                                <option value="">-- All --</option>
+                                <option value="Draft">Draft</option>
+                                <option value="Pending">Pending</option>
+                                <option value="Acknowledged">Acknowledged</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-horizontal">
+                    <div class="form-group">
+                        <label class="col-md-4 control-label">Submission From</label>
+                        <div class="col-md-8 form-control-static">
+                            <div class="input-group date date-picker" data-date-format="dd/MM/yyyy">
+                                <input type="text" class="form-control" name="SubmissionFromDate" value="@dtStart" />
+                                <span class="input-group-btn">
+                                    <button type="button" class="btn default"><i class="fa fa-calendar"></i></button>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-horizontal">
+                    <div class="form-group">
+                        <label class="col-md-4 control-label">Submission To</label>
+                        <div class="col-md-8 form-control-static">
+                            <div class="input-group date date-picker" data-date-format="dd/MM/yyyy">
+                                <input type="text" class="form-control" name="SubmissionToDate" value="@dtDefault" />
+                                <span class="input-group-btn">
+                                    <button type="button" class="btn default"><i class="fa fa-calendar"></i></button>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">&nbsp;</div>
+        <div class="row">
+            <div class="col-md-12">
+                <div class="text-right">
+                    <input type="button" class="btn green btn-Search"
+                           value="Search" onclick="SearchListing();">
+                </div>
+            </div>
+        </div>
+        <div class="row">&nbsp;</div>
+        <div class="row">
+            <div class="col-md-12">
+                <div id="SearchResult">
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+@Html.Partial("__Prompt")
+<script>
+    $(function () {
+        $('.date-picker').datepicker({
+            format: 'dd/mm/yyyy',
+            autoclose: true,
+        });
+    });
+
+    function SearchListing() {
+        var option = $('form').serializeArray();
+        option.push({ name: '_', value: $.now() });
+
+        ShowLoadingScreen();
+        $.get('@Url.Action("ReportResult", "IntegrityPledge")', option, function (result) {
+            HideLoadingScreen();
+            $('#SearchResult').html(result);
+        });
+    }
+
+    var OptionLink = '@Url.Action("_GetAssetSearchOptions", "Asset")';
+    var ddlCompanyCode;
+        var ddlGrade;
+        var ddlPersonnelArea;
+        var ddlPersonnelSubarea;
+        var ddlDeclarationStatus;
+    //var ddlCompanyCode = $('#ddlCompanyCode');
+
+    $(function () {
+        ddlCompanyCode = $('#ddlCompanyCode');
+        ddlGrade = $('#ddlGrade');
+        ddlPersonnelArea = $('#ddlPersonnelArea');
+        ddlPersonnelSubarea = $('#ddlPersonnelSubarea');
+        ddlDeclarationStatus = $('#ddlDeclarationStatus');
+
+        InitCompanyCodeOptions();
+        InitPayScaleGroupOptions();
+        ddlCompanyCode.on('change', UpdateAreaCodeOption);
+        ddlPersonnelArea.on('change', UpdateSubAreaCodeOption);
+    });
+
+    function InitPayScaleGroupOptions() {
+        FillDropdown(ddlGrade,
+            {
+                OptionType: "Grade",
+                CompanyCode: ddlCompanyCode.val() || "",
+                AreaCode: ddlPersonnelArea.val() || "",
+                SubAreaCode: ddlPersonnelSubarea.val() || ""
+            });
+    }
+
+    function InitCompanyCodeOptions() {
+        FillDropdown(ddlCompanyCode,
+        {
+            OptionType: "CompanyCode",
+            CompanyCode: ddlCompanyCode.val() || "",
+            AreaCode: ddlPersonnelArea.val() || "",
+            SubAreaCode: ddlPersonnelSubarea.val() || ""
+        });
+    }
+
+    function UpdateAreaCodeOption() {
+        FillDropdown(ddlPersonnelArea,
+            {
+                OptionType: "PersonnelArea",
+                CompanyCode: ddlCompanyCode.val() || "",
+                AreaCode: ddlPersonnelArea.val() || "",
+                SubAreaCode: ddlPersonnelSubarea.val() || ""
+            }, UpdateSubAreaCodeOption);
+    }
+
+    function UpdateSubAreaCodeOption() {
+        FillDropdown(ddlPersonnelSubarea,
+            {
+                OptionType: "PersonnelSubarea",
+                CompanyCode: ddlCompanyCode.val() || "",
+                AreaCode: ddlPersonnelArea.val() || "",
+                SubAreaCode: ddlPersonnelSubarea.val() || ""
+            });
+    }
+
+    function FillDropdown(ddl, option, callback) {
+        $.get(OptionLink, option, function (result) {
+            ddl.empty().append('<option value="">--  All --</option>');
+
+            for (var i = 0; i < result.length; i++) {
+                ddl.append('<option value="' + result[i].Code + '">' + result[i].Description + '</option>');
+            }
+
+            if (callback) {
+                callback();
+            }
+        });
+    }
+</script>
+
+@Html.Partial("_ExcelExport")

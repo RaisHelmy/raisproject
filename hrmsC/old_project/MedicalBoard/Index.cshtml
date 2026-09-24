@@ -1,0 +1,684 @@
+﻿@model ESS.MedicalBoard.Models.MedicalBoardVM
+
+@{
+    ViewBag.Title = "Medical Board Application";
+}
+
+@if (!string.IsNullOrEmpty(Model.ErrorMessage))
+{
+    <div class="row" id="WarningMessageDiv">
+        <div class="col-md-12">
+            <div class="note note-danger">
+                <h4 class="block">
+                    @Model.ErrorMessage
+                </h4>
+            </div>
+        </div>
+    </div>
+}
+
+<div class="form-section">
+    <div class="row">
+        <div class="col-md-12">
+            <h1 class="page-title">
+                Medical Board Application
+                <span style="padding-left:20px;">
+                </span>
+            </h1>
+            <input type="hidden" name="MedicalBoardID" value="@Model.MedicalBoardID" />
+            <input type="hidden" name="TaskID" value="@Model.TaskID" />
+        </div>
+    </div>
+</div>
+
+<!-- Requestor Details -->
+@Html.Partial("_MedicalBoardRequestorInfo", Model.Submiter)
+
+@Html.Partial("_MedicalBoardApplication", Model)
+
+@if (Model.Status != "Draft") {
+    @Html.Partial("_NotifyPeers", Model)
+}
+
+<div class="row">
+    <div class="col-md-12">
+        @if (Model.Status == "Draft")
+        {
+            @Html.Action("AttachmentControl", "Attachment", new
+            {
+                EmployeeID = ViewBag.EmployeeID,
+                Mode = "New",
+                SourceType = "MedicalBoard",
+                ShowOptionField = "false",
+                Mandatory = "false"
+            })
+        }
+        else
+        {
+            if (Model.IsTaskOwner)
+            {
+                @Html.Action("AttachmentControl", "Attachment", new
+                {
+                    EmployeeID = ViewBag.EmployeeID,
+                    Mode = "Add",
+                    SourceType = "MedicalBoard",
+                    RequestID = Model.MedicalBoardID.ToString(),
+                    ShowOptionField = "false",
+                    Mandatory = "false"
+                })
+            }
+            else
+            {
+                @Html.Action("AttachmentControl", "Attachment", new
+                {
+                    EmployeeID = ViewBag.EmployeeID,
+                    Mode = "View",
+                    SourceType = "MedicalBoard",
+                    RequestID = Model.MedicalBoardID.ToString(),
+                    ShowOptionField = "false",
+                    Mandatory = "false"
+                })
+            }
+
+        }
+    </div>
+</div>
+
+@if (Model.Status == "Draft" || Model.IsTaskOwner)
+{
+    <div class="row">
+        <div class="col-md-12">
+            <label style="position: relative;top: -10px;">Note: COMPULSORY to attach latest Medical Report</label>
+        </div>
+    </div>
+}
+
+@if (Model.ApprovalLevel >= 4)
+{
+    <div class="row">
+        <div class="col-md-12">
+            @if (Model.ApprovalLevel == 4 && Model.IsTaskOwner)
+            {
+                @Html.Action("AttachmentControl", "Attachment1", new
+                {
+                    EmployeeID = ViewBag.EmployeeID,
+                    Mode = "Edit",
+                    SourceType = "MedicalBoardAdmin2",
+                    RequestID = Model.MedicalBoardID.ToString(),
+                    Mandatory = "false",
+                    Title = "Result of Medical Board Seating Attachment"
+                })
+            }
+            else
+            {
+                @Html.Action("AttachmentControl", "Attachment1", new
+                {
+                    EmployeeID = ViewBag.EmployeeID,
+                    Mode = "View",
+                    SourceType = "MedicalBoardAdmin2",
+                    RequestID = Model.MedicalBoardID.ToString(),
+                    Mandatory = "false",
+                    Title = "Result of Medical Board Seating Attachment"
+                })
+            }
+        </div>
+    </div>
+}
+
+@if (Model.Status != "Draft")
+{
+    @Html.Action("_AuditLog", "MedicalBoard", new { SourceID = Model.MedicalBoardID })
+}
+
+@if (Model.IsTaskOwner)
+{
+    <div class="row" id="DivApproval">
+        <div class="col-md-12">
+            <div class="portlet box blue">
+                <div class="mini-triangle"><img src="/_layouts/15/TNBESS/Assets/img/menu-red-triangle.png" /></div>
+                <div class="portlet-title">
+                    <div class="caption">
+                        <i class="fa fa-reorder"></i>Approval Comments
+                    </div>
+                </div>
+                <div class="portlet-body form">
+                    <div class="form-body">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <label class="control-label col-md-2">Comments<span style="color:red;"> *</span></label>
+                                        <div class="col-md-10 form-control-static">
+                                            <textarea class="form-control" id="txtAppComment" rows="5" cols="60"></textarea>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@if (Model.Status == "Draft" || (Model.Status == "Reworked" && Model.IsTaskOwner))
+{
+    <div class="row">
+        <div class="col-md-12">
+            <input type="checkbox" id="chkDisclaimer"> <b>I declare that all the information stated above are accurate and reliable to the best of my knowledge.</b>
+        </div>
+    </div>
+}
+
+<div class="row">
+    <div class="col-md-12"><br /></div>
+</div>
+
+<!-- Buttons -->
+<div class="row">
+    <div class="col-md-12">
+        @if (Model.Status == "Draft" && string.IsNullOrEmpty(Model.ErrorMessage))
+        {
+            <input type="button" class="btn green" value="Submit" id="btnSubmit" onclick="SubmitApplication('Submit'); " />
+        }
+        else if (Model.AllowActionButton.CanWithdraw == "1" && string.IsNullOrEmpty(Model.ErrorMessage))
+        {
+            <input type="button" class="btn green" value="Withdraw" id="btnWithdraw" onclick="ApproverAction('Withdraw');" />
+        }
+        else if (Model.IsTaskOwner && string.IsNullOrEmpty(Model.ErrorMessage))
+        {
+            if (Model.AllowActionButton.CanSubmit == "1")
+            {
+                <input type="button" class="btn green" value="Submit" id="btnSubmit" onclick="ApproverAction('Submit'); " />
+            }
+            if (Model.ApprovalLevel == 1 && Model.AllowActionButton.CanVerify == "1")
+            {
+                <input type="button" class="btn green" value="Verify" id="btnVerify" onclick="ApproverAction('Verify');" />
+            }
+            if (Model.ApprovalLevel == 1 && Model.AllowActionButton.CanRework == "1")
+            {
+                <input type="button" class="btn red" value="Rework" id="btnRework" onclick="ApproverAction('Rework');" />
+            }
+            if (Model.AllowActionButton.CanMBArrange == "1")
+            {
+                <input type="button" class="btn green" value="MB Arranged" id="btnMBArranged" onclick="ApproverAction('MB Arranged');" />
+            }
+            if (Model.AllowActionButton.CanMBAttend == "1")
+            {
+                <input type="button" class="btn green" value="MB Attended" id="btnMBAttended" onclick="ApproverAction('MB Attended');" />
+            }
+            if (Model.AllowActionButton.CanDecline == "1")
+            {
+                <input type="button" class="btn red" value="Decline" id="btnDecline" onclick="ApproverAction('Decline');" />
+            }
+            if (Model.AllowActionButton.CanFitToWork == "1")
+            {
+                <input type="button" class="btn green" value="Fit To Work" id="btnFitToWork" onclick="ApproverAction('Fit To Work');" />
+            }
+            if (Model.AllowActionButton.CanUnfitToWork == "1")
+            {
+                <input type="button" class="btn red" value="Unfit To Work" id="btnUnfitToWork" onclick="ApproverAction('Unfit To Work');" />
+            }
+            if (Model.ApprovalLevel == 5 && Model.AllowActionButton.CanVerify == "1")
+            {
+                <input type="button" class="btn green" value="Verify" id="btnVerify" onclick="ApproverAction('Admin Verify');" />
+            }
+            if (Model.AllowActionButton.CanReturn == "1")
+            {
+                <input type="button" class="btn red" value="Return" id="btnReturn" onclick="ApproverAction('Return');" />
+            }
+            if (Model.AllowActionButton.CanAgree == "1")
+            {
+                <input type="button" class="btn green" value="Agree" id="btnAgree" onclick="ApproverAction('Agree');" />
+            }
+            if (Model.AllowActionButton.CanDisagree == "1")
+            {
+                <input type="button" class="btn red" value="Disagree" id="btnDisagree" onclick="ApproverAction('Disagree');" />
+            }
+            if (Model.AllowActionButton.CanApprove == "1")
+            {
+                <input type="button" class="btn green" value="Approve" id="btnApprove" onclick="ApproverAction('Approve');" />
+            }
+            if (Model.ApprovalLevel == 7 && Model.AllowActionButton.CanRework == "1")
+            {
+                <input type="button" class="btn red" value="Rework" id="btnRework" onclick="ApproverAction('Admin Rework');" />
+            }
+        }
+
+        <input type="button" class="btn green" value="Back" id="btnBack" onclick="BackToHistory()" />
+    </div>
+</div>
+
+<!-- Confirmation Message -->
+<div class="modal fade" id="ConfirmationDialog" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                <h4 id="ConfirmationDialog_Title" class="modal-title"></h4>
+            </div>
+            <div class="modal-body">
+                <div id="ConfirmationDialog_Message" class="well">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="ConfirmationDialog_PositiveButton" type="button" class="btn default blue">
+                    <i class="fa fa-check"></i>
+                </button>
+                <button id="ConfirmationDialog_NegativeButton" type="button" class="btn default" data-dismiss="modal">
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Success Message -->
+<div class="modal fade" id="SuccessDialog" tabindex="-1" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header Success-header">
+                <h4 id="SuccessDialog_Title" class="Success-title">
+                    Action Successfully Completed.
+                </h4>
+            </div>
+            <div class="modal-body Success-body">
+                <div class="well" id="SuccessDialog_Message">
+                    Application has been successfully submitted.
+                </div>
+            </div>
+            <div class="modal-footer Success-footer">
+                <a class="btn default blue" id="SuccessDialog_OkButton" data-dismiss="modal">
+                    <i class="fa fa-check"></i>
+                    OK
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="divLoading" style="margin: 0px; padding: 0px; position: fixed;
+    right: 0px; top: 0px; width: 100%; height: 100%; background-color: gainsboro; z-index: 30001; opacity: .8; filter: alpha(opacity=70); display: none; ">
+    <p style="position: absolute; top: 30%; left: 30%; color: black;">
+        Performing action, please wait...<img src="/_layouts/15/TNBESS/Assets/img/ajax-loading.gif">
+    </p>
+</div>
+
+<script>
+    function BackToHistory() {
+        window.location.href = '@ViewBag.BackUrl';
+    }
+
+    function SubmitApplication(submitStatus) {
+        var validationMessage = PerformSubmissionValidation(submitStatus);
+
+        if (validationMessage) {
+            alert(validationMessage);
+        }
+        else {
+            ShowConfirmationDialog({
+                positiveCallback: PerformSubmission
+            });
+        }
+    }
+
+    function PerformSubmissionValidation(submitStatus) {
+        var employeeID = $("[name='EmployeeID']").val();
+        var typeOfDisease = $("[name='TypeOfDisease']").val();
+        var hospital = $("[name='Hospital']").val();
+        var iMComment = $("[name='IMComment']").val();
+        var checkbox = $("#chkDisclaimer").prop("checked");
+
+        var errorMessage = '';
+
+        if (employeeID == null || employeeID.length <= 0)
+            errorMessage = errorMessage + 'Employee Name is required.' + '\n';
+
+        if (typeOfDisease == null || typeOfDisease.length <= 0)
+            errorMessage = errorMessage + 'Type of Disease is required.' + '\n';
+
+        if (hospital == null || hospital.length <= 0)
+            errorMessage = errorMessage + 'Hospital is required.' + '\n';
+
+        if (iMComment == null || iMComment.length <= 0)
+            errorMessage = errorMessage + 'IM Comment is required.' + '\n';
+
+        if (checkbox == false)
+            errorMessage = errorMessage + 'Disclaimer is required.' + '\n'
+
+        return errorMessage;
+    }
+
+    function ShowConfirmationDialog(data) {
+        if (!data) {
+            data = {};
+        }
+
+        var dialog = $('#ConfirmationDialog'),
+            title = data.title || "Confirmation",
+            message = data.message || "Clicking Confirm will submit this application for Approval. If you want to make changes, click Close.",
+            positiveButtonText = data.positiveButtonText || "Confirm",
+            positiveCallback = data.positiveCallback,
+            negativeButtonText = data.negativeButtonText || "Close",
+            negativeCallback = data.negativeCallback;
+
+        dialog.find("#ConfirmationDialog_Title").html(title);
+        dialog.find("#ConfirmationDialog_Message").html(message);
+        var ePositiveButton = dialog.find("#ConfirmationDialog_PositiveButton");
+        var eNegativeButton = dialog.find("#ConfirmationDialog_NegativeButton");
+
+        ePositiveButton.html(positiveButtonText);
+        ePositiveButton.off('click');
+        ePositiveButton.one('click', function () {
+            if (positiveCallback)
+                positiveCallback(dialog);
+        });
+
+        eNegativeButton.html(negativeButtonText);
+        eNegativeButton.off('click');
+        eNegativeButton.one('click', function () {
+            if (negativeCallback)
+                negativeCallbAllowanceIDllowanceIDck(dialog);
+        });
+
+        dialog.modal();
+    }
+
+    function PerformSubmission() {
+        HideConfirmationDialog();
+
+        ShowLoadingScreen();
+
+        var medicalBoardID = $("[name='MedicalBoardID']").val();
+        var taskID = $("[name='TaskID']").val();
+        var employeeID = $("[name='EmployeeID']").val();
+        var employeeCode = $("[name='EmployeeCode']").val();
+        var employeeName = $("[name='EmployeeName']").val();
+        var typeOfDisease = $("[name='TypeOfDisease']").val();
+        var hospital = $("[name='Hospital']").val();
+        var iMComment = $("[name='IMComment']").val();
+        var status = $("[name='Status']").val();
+
+        var data = {
+            MedicalBoardID: medicalBoardID,
+            TaskID: taskID,
+            EmployeeID: employeeID,
+            EmployeeCode: employeeCode,
+            EmployeeName: employeeName,
+            TypeOfDisease: typeOfDisease,
+            Hospital: hospital,
+            IMComment: iMComment,
+            Status: status
+        };
+
+        $.post('@Url.Action("SubmitApplication", "MedicalBoard")',
+            data,
+            function (result) {
+                HideLoadingScreen();
+
+                if (result.IsSuccess) {
+                    ShowDialog({
+                        message: "Your Medical Board Application has been successfully submitted.",
+                        okCallback: function () {
+                            window.location.href = '@Url.Action("MedicalBoardHistory", "MedicalBoard")';
+                        }
+                    });
+                }
+                else {
+                    alert(result.Message);
+                }
+            }
+        );
+    }
+
+    function HideConfirmationDialog() {
+        var dialog = $('#ConfirmationDialog');
+
+        dialog.modal("hide");
+    }
+
+    function ShowLoadingScreen() {
+        $("#divLoading").show();
+    }
+
+    function HideLoadingScreen() {
+        $('#divLoading').hide();
+    }
+
+    function ShowDialog(data) {
+        if (!data) {
+            data = {};
+        }
+
+        var dialog = $('#SuccessDialog'),
+            title = data.title,
+            message = data.message || "The operation was success.",
+            okCallback = data.okCallback;
+
+        var okButton = dialog.find("#SuccessDialog_OkButton");
+
+        dialog.find("#SuccessDialog_Title").html(title);
+        dialog.find("#SuccessDialog_Message").html(message);
+
+        okButton.off('click');
+        okButton.one('click', function () {
+            if (okCallback)
+                okCallback();
+        });
+
+        dialog.modal();
+    }
+
+    function ApproverAction(action) {
+        var _ApproverInfo = {};
+        var _ApproverAction = "";
+
+        var _ApproverComment = $("#txtAppComment").val();
+
+        if (action != 'Withdraw') {
+            if (!_ApproverComment) {
+                alert("Approval comment is required.");
+                return;
+            }
+        }
+
+        var employeeID = $("[name='EmployeeID']").val();
+        var appointmentDate = $("[name='AppointmentDate']").val();
+        var typeOfDisease = $("[name='TypeOfDisease']").val();
+        var letterDateToHospital = $("[name='LetterDateToHospital']").val();
+        var hospital = $("[name='Hospital']").val();
+        var location = $("[name='Location']").val();
+        var iMComment = $("[name='IMComment']").val();
+        var checkbox = $("#chkDisclaimer").prop("checked");
+
+        var errorMessage = '';
+
+        if (employeeID == null || employeeID.length <= 0)
+            errorMessage = errorMessage + 'Employee Name is required.' + '\n';
+
+        if (action != 'Withdraw' && action != 'Rework' && action != 'Decline')
+        {
+    @if (Model.ApprovalLevel >= 2)
+    {
+        <text>
+        if (appointmentDate == null || appointmentDate.length <= 0)
+            errorMessage = errorMessage + 'Appointment Date is required.' + '\n';
+        </text>
+    }
+
+        if (typeOfDisease == null || typeOfDisease.length <= 0)
+            errorMessage = errorMessage + 'Type of Disease is required.' + '\n';
+
+    @if (Model.ApprovalLevel >= 4)
+    {
+        <text>
+        if (letterDateToHospital == null || letterDateToHospital.length <= 0)
+            errorMessage = errorMessage + 'Letter Date To Hospital Date is required.' + '\n';
+        </text>
+    }
+
+        if (hospital == null || hospital.length <= 0)
+            errorMessage = errorMessage + 'Hospital is required.' + '\n';
+
+    @if (Model.ApprovalLevel >= 2)
+    {
+        <text>
+        if (location == null || location.length <= 0)
+            errorMessage = errorMessage + 'Location is required.' + '\n';
+        </text>
+    }
+
+        if (iMComment == null || iMComment.length <= 0)
+            errorMessage = errorMessage + 'IM Comment is required.' + '\n';
+        }
+
+    @if (Model.Status == "Draft" || Model.Status == "Reworked")
+    {
+        <text>
+        if (checkbox == false)
+            errorMessage = errorMessage + 'Disclaimer is required.' + '\n'
+        </text>
+    }
+
+
+        if (errorMessage) {
+            alert(errorMessage);
+            return;
+        }
+
+        var _RedirectUrl = "";
+
+        switch (action) {
+            case "Submit":
+                _ApproverAction = "Submitted";
+                break;
+            case "Withdraw":
+                _ApproverAction = "Withdrawn";
+                break;
+            case "Verify":
+                _ApproverAction = "Verified";
+                break;
+            case "Rework":
+                _ApproverAction = "Reworked";
+                break;
+            case "MB Arranged":
+                _ApproverAction = "MB Arranged";
+                break;
+            case "MB Attended":
+                _ApproverAction = "MB Attended";
+                break;
+            case "Decline":
+                _ApproverAction = "Declined";
+                break;
+            case "Fit To Work":
+                _ApproverAction = "Fit To Work";
+                break;
+            case "Unfit To Work":
+                _ApproverAction = "Unfit To Work";
+                break;
+            case "Admin Verify":
+                _ApproverAction = "Admin Verified";
+                break;
+            case "Return":
+                _ApproverAction = "Returned";
+                break;
+            case "Agree":
+                _ApproverAction = "Admin Agreed";
+                break;
+            case "Disagree":
+                _ApproverAction = "Admin Disagreed";
+                break;
+            case "Approve":
+                _ApproverAction = "Admin Approved";
+                break;
+            case "Admin Rework":
+                _ApproverAction = "Admin Reworked";
+                break;
+        }
+
+        var promptMessage = "Are you sure you want to " + action + " this Medical Board Application?\n\r Press Confirm to proceed, or Close to stay on the current page.";
+
+        switch (action) {
+            case "MB Arranged":
+                promptMessage = "Are you sure you want to change this Medical Board Application status to MB Arranged?\n\rPress Confirm to proceed, or Close to stay on the current page.";
+                break;
+            case "MB Attended":
+                promptMessage = "Are you sure you want to change this Medical Board Application status to MB Attended?\n\rPress Confirm to proceed, or Close to stay on the current page.";
+                break;
+            case "Fit To Work":
+                promptMessage = "Are you sure you want to change this Medical Board Application status to Fit To Work?\n\rPress Confirm to proceed, or Close to stay on the current page.";
+                break;
+            case "Unfit To Work":
+                promptMessage = "Are you sure you want to change this Medical Board Application status to Unfit To Work?\n\rPress Confirm to proceed, or Close to stay on the current page.";
+                break;
+            case "Admin Verify":
+                promptMessage = "Are you sure you want to change this Medical Board Application status to Admin Verified?\n\rPress Confirm to proceed, or Close to stay on the current page.";
+                break;
+        }
+
+        var notifyMessage = "Your Medical Board Application has been successfully submitted. Status:" + _ApproverAction;
+
+        _ApproverInfo = {
+            ID: '@Model.MedicalBoardID',
+            TaskID: '@Model.TaskID',
+            CurrentUserID: '@ViewBag.EmployeeID',
+            Status: action,
+            ApproverComment: _ApproverComment,
+            EmployeeID: employeeID,
+            AppointmentDate: appointmentDate,
+            TypeOfDisease: typeOfDisease,
+            LetterDateToHospital: letterDateToHospital,
+            Hospital: hospital,
+            Location: location,
+            IMComment: iMComment
+        };
+
+        if (action == 'Withdraw') {
+             _RedirectUrl = '@Url.Action("MedicalBoardHistory", "MedicalBoard")';
+         }
+
+        ShowConfirmationDialog({
+            message: promptMessage,
+            positiveCallback: function () {
+                HideConfirmationDialog();
+
+                ShowLoadingScreen();
+
+                $.post('@Url.Action("PostApproverAction", "MedicalBoard")',
+                    {
+                        info: _ApproverInfo,
+                        ApproverAction: _ApproverAction,
+                        Peers: GetPeers()
+                    },
+                    function (result) {
+                        HideLoadingScreen();
+
+                        if (result.Success) {
+                            ShowDialog({
+                                message: notifyMessage,
+                                okCallback: function () {
+                                    if (_RedirectUrl) {
+                                        window.location.href = _RedirectUrl;
+                                    }
+                                    else {
+                                        window.location.href = '@Url.Action("MedicalBoardInTray", "MSS")';
+                                    }
+                                }
+                            });
+                        }
+                        else {
+                            ShowDialog({
+                                title: "Action not completed.",
+                                message: result.ErrorMsg,
+                                okCallback: function () {
+                                    HideDialog();
+                                }
+                            });
+                        }
+                    }
+                );
+            }
+        });
+     }
+</script>

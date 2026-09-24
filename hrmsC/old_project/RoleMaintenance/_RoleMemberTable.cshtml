@@ -1,0 +1,196 @@
+﻿@using RoleMaintenance
+@model Tuple<RoleViewModel, List<RoleMemberViewModel>>
+@{
+    Layout = null;
+
+    RoleViewModel roleDetails = Model.Item1;
+    List<RoleMemberViewModel> rms = Model.Item2;
+
+    rms.Sort((a, b) => a.EmployeeName.CompareTo(b.EmployeeName));
+}
+
+<h4>
+    @(roleDetails != null ? roleDetails.RoleName : "Role details not found.")
+</h4>
+<table id="tblRoleMembers" class="table table-striped table-bordered table-hover table-full-width">
+    <thead>
+        <tr>
+            <th style="width : 10px;">
+                <input type="checkbox" onchange="SelectAll(this)" />
+            </th>
+            <th>Employee Name</th>
+
+            @if (roleDetails != null && roleDetails.NeedHierarchy)
+            {
+                <th style="min-width: 250px;">Division</th>
+                <th style="min-width: 250px;">Department</th>
+                <th style="min-width: 250px;">Unit/Section</th>
+            }
+
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var rm in rms)
+        {
+            <tr>
+                <td>
+                    <input type="checkbox" class="selected-emp">
+                    <input type="hidden" name="ID" value="@rm.ID" />
+                </td>
+                <td>
+                    <input type="hidden" name="EmployeeID" value="@rm.EmployeeID" />
+                    @(rm.EmployeeCode + " - " + rm.EmployeeName)
+                </td>
+                @if (roleDetails != null && roleDetails.NeedHierarchy)
+                {
+                    <td>
+                        <input type="hidden" class="division-value" value="@rm.DivisionCode" />
+                        <select class="ddl-division form-control Division" name="Division" onchange="UpdateDepartmentDropdown(this);"></select>
+                    </td>
+                    <td>
+                        <input type="hidden" class="department-value" value="@rm.DepartmentCode" />
+                        <select class="ddl-department form-control Department" name="Department" onchange="UpdateUnitSectionDropdown(this);"></select>
+                    </td>
+                    <td>
+                        <input type="hidden" class="unitsection-value" value="@rm.UnitSectionCode" />
+                        <select class="ddl-unitsection form-control UnitSection" name="UnitSection"></select>
+                    </td>
+                }
+
+                <td>
+                    <div class="form-horizontal">
+                        <input type="button" class="btn blue btn-update" value="Save" onclick="SaveRow(this);" />
+                        <input type="button" class="btn red btn-delete" value="Delete" onclick="DeleteRow(this);" />
+                    </div>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<div class="form-horizontal">
+    <div class="table-toolbar">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="btn-group">
+                    <a class="btn green" id="btnAddPeersPanel" onclick="OpenMemberPicker();">
+                        Add
+                        <i class="fa fa-plus"></i>
+                    </a>
+                </div>
+                <div class="btn-group">
+                    <a class="btn purple" id="btnAddPeersPanel" onclick="SaveAll();">
+                        Save All
+                        <i class="fa fa-plus"></i>
+                    </a>
+                </div>
+                <div class="btn-group">
+                    <a class="btn blue" id="btnAddPeersPanel" onclick="SaveSelectedRows();">
+                        Save Selected
+                        <i class="fa fa-plus"></i>
+                    </a>
+                </div>
+                <div class="btn-group">
+                    <a class="btn red" id="btnRemovePeers" onclick="DeleteSelectedRows();">
+                        Delete Selected
+                        <i class="fa fa-minus"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="RoleMemberPicker" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                <h4 class="modal-title">Role Members</h4>
+            </div>
+            <div class="modal-body">
+                <div class="row" onkeypress="return event.keyCode!=13;">
+                    <div class="col-md-12">
+                        <div class="form-horizontal">
+                            <div class="form-body">
+                                <div class="form-group">
+                                    <label class="control-label col-md-2 ">
+                                        Employee Number
+                                    </label>
+                                    <div class="col-md-4 form-control-static">
+                                        <input type="text" id="txtEmpCode" />
+                                    </div>
+                                    <label class="control-label col-md-2 ">
+                                        Employee Name
+                                    </label>
+                                    <div class="col-md-4  form-control-static">
+                                        <input type="text" id="txtEmpName" />
+                                    </div>
+                                </div>
+                                <div class="form-group ">
+                                    <div class="text-right">
+                                        <input id="btn-Search" type="button" value="Search" class="btn green btn-Search" onclick="SearchPeople();">
+                                    </div>
+                                </div>
+                            </div>
+                            <br />
+                            <div id="PeoplePickerResult">
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn default blue" onclick="AddSelected();">
+                    Add
+                </button>
+                <button type="button" class="btn default" data-dismiss="modal">
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    var roleDetails = @Html.Raw(Json.Encode(roleDetails));
+
+    @if (roleDetails != null && roleDetails.NeedHierarchy)
+    {
+    <text>
+    var rowTemplate = [
+        '<input type="checkbox" class="selected-emp"><input type="hidden" name="ID" value="" />',
+        '<input type="hidden" name="EmployeeID" value="{EMPLOYEE_ID}" />{EMPLOYEE_DISPLAY_NAME} <i class="fa fa-info-circle new-row-info" data-trigger="hover" data-container="body" data-placement="right" data-content="Unsaved"></i>',
+        '<select class="ddl-division form-control" name="Division" onchange="UpdateDepartmentDropdown(this);"></select>',
+        '<select class="ddl-department form-control" name="Department" onchange="UpdateUnitSectionDropdown(this);"></select>',
+        '<select class="ddl-unitsection form-control" name="UnitSection"></select>',
+        '<div class="form-horizontal"><input type="button" class="btn blue btn-update" value="Save" onclick="SaveRow(this);" /><input type="button" class="btn red btn-delete" value="Delete" onclick="DeleteRow(this);" /></div>'
+    ];
+    </text>
+    }
+    else {
+    <text>
+    var rowTemplate = [
+        '<input type="checkbox" class="selected-emp"><input type="hidden" name="ID" value="" />',
+        '<input type="hidden" name="EmployeeID" value="{EMPLOYEE_ID}" />{EMPLOYEE_DISPLAY_NAME} <i class="fa fa-info-circle new-row-info" data-trigger="hover" data-container="body" data-placement="right" data-content="Unsaved"></i>',
+        '<div class="form-horizontal"><input type="button" class="btn blue btn-update" value="Save" onclick="SaveRow(this);" /><input type="button" class="btn red btn-delete" value="Delete" onclick="DeleteRow(this);" /></div >'
+    ];
+    </text>
+    }
+    
+
+    $(function () {
+        tblRoleMembers = $('#tblRoleMembers').dataTable({
+            "bLengthChange": false,
+            "bFilter": false,
+            "bPaginate": false,
+            "bInfo": false,
+            "bSort": false
+        });
+
+        tblRoleMembers.find('input[type=checkbox]').uniform();
+        InitRoleTable();
+    });
+</script>

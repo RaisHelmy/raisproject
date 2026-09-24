@@ -1,0 +1,271 @@
+﻿@model Asset.Models.PropertyInfo
+@{
+    string Title = @"Pemilikan Harta";
+    string EmployeeID = ViewBag.EmployeeID;
+
+    bool Readonly = ViewBag.Readonly;
+    DateTime? AssetLastCompletedDate = Asset.Service.GetAssetLastCompletedDate(EmployeeID);
+}
+
+<div class="collapse-portlet portlet box blue">
+    <div class="mini-triangle"><img src="/_layouts/15/TNBESS/Assets/img/menu-red-triangle.png" /></div>
+    <div class="portlet-title">
+        <div class="caption">
+            <i class="fa fa-reorder"></i>@Title @(ViewBag.ErrorMessage)
+        </div>
+        <div class="tools">
+            <a title="" data-original-title="" href="javascript:;" class="collapse"></a>
+        </div>
+        @if (!Readonly)
+        {
+            <div class="edit-action-bar actions">
+                <a href="javascript:void(0)" onclick="Property_OpenForm();" class="btn green">
+                    <i class="fa fa-pencil"></i> Tambah
+                </a>
+            </div>
+        }
+    </div>
+    <div class="portlet-body form">
+        <div class="form-body">
+            <div class="form-horizontal">
+                <div class="table-toolbar">
+                    <table id="tblResultProperty" class="table table-striped table-bordered table-hover table-full-width">
+                        <thead>
+                            <tr>
+                                <th>Jenis Harta</th>
+                                <th>Tarikh Kemaskini</th>
+                                <th>Tarikh Pemilikan</th>
+                                <th>Bilangan / Ekar / Kaki Persegi / Unit</th>
+                                <th>Keterangan Lain</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (Model.Properties != null)
+                            {
+                                foreach (var item in @Model.Properties)
+                                {
+                                    <tr>
+                                        <td>
+                                            @if (Readonly)
+                                            {
+                                                <a href="javascript:void(0)" onclick="Property_OpenForm('@item.PropertyID', 'Read')">
+                                                    @item.PropertyTypeDesc
+                                                </a>
+                                            }
+                                            else
+                                            {
+                                                <a href="javascript:void(0)" onclick="Property_OpenForm('@item.PropertyID', 'ReadAndEdit')">
+                                                    @item.PropertyTypeDesc
+                                                </a>
+                                            }
+                                        </td>
+                                        <td>
+                                            @item.ModifiedDate
+                                            <br />
+                                            @if (AssetLastCompletedDate == null || item.DtCreatedDate >= AssetLastCompletedDate)
+                                            {
+                                                <span style="background-color: yellow;">[Baru]</span>
+                                            }
+                                            else if (item.DtModifiedDate >= AssetLastCompletedDate)
+                                            {
+                                                <span style="background-color: yellow;">[Dikemaskini]</span>
+                                            }
+
+                                        </td>
+                                        <td>@item.OwnershipDate</td>
+                                        <td>@item.UnitDetails</td>
+                                        <td>@item.OtherDetails</td>
+                                        <td>
+                                            @item.AssetStatusDesc
+                                            <br />
+                                            @if (!Readonly && item.AssetStatusCode == "AK")
+                                            {
+                                                <a href="javascript:void(0)" onclick="Property_OpenForm('@item.PropertyID', 'Discard')">
+                                                    [Klik Untuk Lupuskan]
+                                                </a>
+                                            }
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <br />
+
+            <p>Rumusan maklumat bilangan Harta mengikut jenis dan status: </p>
+
+            <br />
+
+            <div class="form-horizontal">
+                <div class="table-toolbar">
+                    <table id="tblResultPropertySummary" class="table table-striped table-bordered table-hover table-full-width">
+                        <thead>
+                            <tr>
+                                <th>Jenis Harta</th>
+                                <th>Rekod Aktif</th>
+                                <th>Rekod Lupus</th>
+                                <th>Jumlah Rekod</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (Model.PropertySummaries != null && Model.PropertySummaries.Count > 0)
+                            {
+                                int count = 0;
+                                int length = Model.PropertySummaries.Count;
+
+                                foreach (var item in @Model.PropertySummaries)
+                                {
+                                    string style = count == length - 1 ? "background-color : lightgreen" : "";
+                                    <tr>
+                                        <td style="@style">
+                                            @item.PropertyTypeDesc
+                                        </td>
+                                        <td style="@style">
+                                            @item.Active
+                                        </td>
+                                        <td style="@style">
+                                            @item.Inactive
+                                        </td>
+                                        <td style="background-color: lightgreen">@item.Total</td>
+                                    </tr>
+
+                                    count++;
+                                }
+                            }
+                            else
+                            {
+                                <tr>
+                                    <td colspan="5" style="text-align: center;">
+                                        No data available in table
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <br />
+
+            <p>Rumusan maklumat Pinjaman bagi rekod Kediaman / Kenderaan yang masih berstatus Aktif bagi Pekerja / Pasangan:</p>
+
+            <br />
+
+            <div class="form-horizontal">
+                <div class="table-toolbar">
+                    <table id="tblResultPropertySummary2" class="table table-striped table-bordered table-hover table-full-width">
+                        <thead>
+                            <tr>
+                                <th>Hubungan</th>
+                                <th>Maklumat</th>
+                                <th>Kediaman</th>
+                                <th>Kenderaan</th>
+                                <th>Jumlah</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+
+                            @if (Model.PropertySummaries2 != null && Model.PropertySummaries2.Count > 0)
+                            {
+                                decimal tempDec = 0;
+
+                                foreach (var item in @Model.PropertySummaries2)
+                                {
+                                    <tr>
+                                        <td rowspan="3">
+                                            @item.RelationshipType
+                                        </td>
+                                        <td>
+                                            Bilangan
+                                        </td>
+                                        <td>
+                                            @item.BilanganKediaman
+                                        </td>
+                                        <td>
+                                            @item.BilanganKenderaan
+                                        </td>
+                                        <td style="background-color: lightgreen">
+                                            @item.BilanganJumlah
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>Jumlah Pinjaman (RM)</td>
+                                        <td>
+                                            @(decimal.TryParse(item.PinjamanKediaman, out tempDec) ? tempDec.ToString("#,##0.00") : "0.00")
+                                        </td>
+                                        <td>
+                                            @(decimal.TryParse(item.PinjamanKenderaan, out tempDec) ? tempDec.ToString("#,##0.00") : "0.00")
+                                        </td>
+                                        <td style="background-color: lightgreen">
+                                            @(decimal.TryParse(item.PinjamanJumlah, out tempDec) ? tempDec.ToString("#,##0.00") : "0.00")
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>Ansuran Bulanan (RM)</td>
+                                        <td>
+                                            @(decimal.TryParse(item.AnsuranKediaman, out tempDec) ? tempDec.ToString("#,##0.00") : "0.00")
+                                        </td>
+                                        <td>
+                                            @(decimal.TryParse(item.AnsuranKenderaan, out tempDec) ? tempDec.ToString("#,##0.00") : "0.00")
+                                        </td>
+                                        <td style="background-color: lightgreen">
+                                            @(decimal.TryParse(item.AnsuranJumlah, out tempDec) ? tempDec.ToString("#,##0.00") : "0.00")
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                            else
+                            {
+                                <tr>
+                                    <td colspan="5" style="text-align: center;">
+                                        No data available in table
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="Property_ModalContainer">
+</div>
+
+<script>
+    var tblResultProperty =
+        $('#tblResultProperty').dataTable({
+            "bLengthChange": false,
+            "bFilter": false,
+            "bPaginate": false,
+            "bInfo": false,
+            "bSortable": false,
+        });
+
+    $(function () {
+        CheckHasAsset();
+    });
+
+    function Property_OpenForm(propertyID, mode) {
+        var link = '@Url.Action("_PropertyForm", "Asset", new { EmployeeID = EmployeeID })';
+
+        if (propertyID) {
+            link += '&PropertyID=' + propertyID;
+            link += "&Mode=" + mode;
+        }
+
+        ShowLoadingScreen();
+        $('#Property_Modal').modal('hide');
+        ClearBackdrop();
+        $.get(link, function (result) {
+            HideLoadingScreen();
+            $('#Property_ModalContainer').html(result);
+            $('#Property_Modal').modal();
+        });
+    }
+</script>

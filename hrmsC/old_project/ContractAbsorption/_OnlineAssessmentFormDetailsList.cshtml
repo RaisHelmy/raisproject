@@ -1,0 +1,113 @@
+﻿@model Tuple<ESS.ContractAbsorption.Models.EContractAbsorptionVM, SEP.RoutingManagement.Models.RoutingRule>
+
+@using ESS.Core
+
+@{
+	Layout = null;
+
+	string TaskID = (string)ViewData["TaskID"];
+	string RequestID = (string)ViewData["RequestID"];
+	string ApprovalLevel = (string)ViewData["ApprovalLevel"];
+	string Source = (string)ViewData["Source"];
+	string EmployeeID = (string)ViewData["EmployeeID"];
+	string OnlineAssessmentDefinitionURL = (string)ViewData["OnlineAssessmentDefinitionURL"];
+
+	int applvl = String.IsNullOrEmpty(ApprovalLevel) ? 0 : Convert.ToInt32(ApprovalLevel);
+}
+
+@if (new Guid(Common.GetEmployeeID()) != Model.Item1.Submiter.EmployeeID) {
+<div class="row">
+	<div class="col-md-12">
+		<div class="portlet box blue">
+			<div class="mini-triangle"><img src="../Assets/img/menu-red-triangle.png" /></div>
+			<div class="portlet-title">
+				<div class="caption">
+					<i class="fa fa-reorder"></i>Assessment Details
+				</div>
+			</div>
+			<div class="portlet-body form">
+				<div class="form-body" id="ct01_CustomFieldFormView">
+					<div class="row">
+						<div class="col-md-12">
+							<div class="form-horizontal">
+								<div class="form-group">
+									<label class="control-label col-md-12">
+										Please rate staff according to these criteria <span class="required">*</span>
+									</label>
+
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="row">
+						<div class="col-md-12">
+							<div class="form-horizontal">
+								<div class="form-group">
+									<div class="col-md-12 form-control-static">
+										Note: In order to be eligible for absorption to permanent employment, all assessment factors must be at least of rating of 3 and above.
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="row">
+						<div class="col-md-12">
+							<div class="form-horizontal">
+								<div class="form-group">
+									<div class="col-md-12 form-control-static text-right">
+										@*<a href="@OnlineAssessmentDefinitionURL" target="_blank"> <u>View Assessment Criteria Definition</u></a>*@
+										@Html.ActionLink("View Assessment Criteria Definition", "AssessmentCriteriaTable", "ContractAbsorption", new { Category = Model.Item1.Category }, new { target = "_blank", style = "text-decoration:underline;" })
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<input class="hidden" value="SameForm_DetailList" />
+					@Html.Action("_OnlineAssessmentFormDetailsListTable", "ContractAbsorption", new { AssessmentID = Model.Item1.AssessmentID, Category = Model.Item1.Category })
+					<div class="row">
+						<div class="col-md-12">
+							<div class="form-horizontal">
+								<div class="form-group">
+									<div class="col-md-12 form-control-static">
+										Need Improvement (<b>1</b>), Partially Meeting Expectation (<b>2</b>), Meet Expectation (<b>3</b>), Exceed Expectation (<b>4</b>), Significant Exceed Expectation (<b>5</b>)
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+}
+
+<script>
+    function CheckMaxLength(textBox, e, length) {
+		var mLen = textBox["MaxLength"];
+
+        if (null == mLen)
+            mLen = length;
+
+        var maxLength = parseInt(mLen);
+        if (!checkSpecialKeys(e)) {
+            if (textBox.value.length > maxLength - 1) {
+                if (window.event)//IE
+                {
+                    e.returnValue = false;
+                    return false;
+                }
+                else//Firefox
+                    e.preventDefault();
+            }
+        }
+    }
+
+    function checkSpecialKeys(e) {
+        if (e.keyCode != 8 && e.keyCode != 46 && e.keyCode != 35 && e.keyCode != 36 && e.keyCode != 37 && e.keyCode != 38 && e.keyCode != 39 && e.keyCode != 40)
+            return false;
+        else
+            return true;
+    }
+</script>

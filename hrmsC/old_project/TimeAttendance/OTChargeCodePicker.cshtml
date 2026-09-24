@@ -1,0 +1,60 @@
+﻿@model Tuple<int?, TimeAttendance.Models.OTPlanningEntryVM, string>
+@*Model.Item1 = EntriesCount*@
+@*Model.Item2 = TimesheetAttendanceVM*@
+@*Model.Item3 = Type (for name)*@
+@{
+    Layout = null;
+    string entries = "";
+    if (Model.Item1 != null)
+    {
+        if(Model.Item1 >= 0)
+        {
+            entries = "Entries[" + Model.Item1.Value + "].";
+        }
+    }
+    string type = "";
+    if (Model.Item3 != null)
+    {
+        type = Model.Item3;
+    }
+
+    string ChargeCodePicker = type + "ChargeCodePicker";
+    string chargeTypeName = entries + type + "ChargeType";
+    string chargeCodeName = entries + type + "ChargeCode";
+    string chargeCodeDescName = entries + type + "ChargeCodeDesc";
+
+    string chargeType = "";
+    string chargeCode = "";
+    string chargeCodeDesc = "";
+    string chargeCodeDisplayText = "";
+    if (Model.Item2 != null)
+    {
+        chargeType = Model.Item2.ChargeType;
+        chargeCode = Model.Item2.ChargeCode;
+        chargeCodeDesc = Model.Item2.ChargeCodeDesc;
+        if (!string.IsNullOrEmpty(chargeCode) &&
+        !string.IsNullOrEmpty(chargeCodeDesc))
+        {
+            chargeCodeDisplayText = chargeCode + " - " + chargeCodeDesc;
+        }
+    }
+
+}
+
+<div>
+    <div class=" input-group ">
+        <input type="text" class="form-control TSChargeCodePickerName @ChargeCodePicker" value="@chargeCodeDisplayText" readonly />
+        <span class="input-group-btn" style="">
+            <a data-toggle="modal" href="#SearchChargeCode" class="btn default TimesheetChargeCodePicker" onclick="SearchChargeCode()"><i class="fa fa-list-alt"></i></a>
+        </span>
+        <input class="TSChargeCodePickerType @ChargeCodePicker" type="hidden" name="@chargeTypeName" value="@chargeType"/>
+        <input class="TSChargeCodePickerCC @ChargeCodePicker" type="hidden" name="@chargeCodeName" value="@chargeCode"/>
+        <input class="TSChargeCodePickerDesc @ChargeCodePicker" type="hidden" name="@chargeCodeDescName" value="@chargeCodeDesc"/>
+    </div>
+</div>
+
+
+<script>
+
+
+</script>

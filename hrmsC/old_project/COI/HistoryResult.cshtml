@@ -1,0 +1,83 @@
+﻿@using Integrity.ConflictOfInterest.Models
+@model IEnumerable<COIHistoryResultViewModel>
+@{
+
+}
+
+<div class="portlet box blue">
+    <div class="mini-triangle"><img src="../Assets/img/menu-red-triangle.png" /></div>
+    <div class="portlet-title">
+        <div class="caption">
+            <i class="fa fa-reorder"></i>My Conflict of Interest Declaration History
+        </div>
+        <div class="tools">
+        </div>
+    </div>
+    <div class="portlet-body form">
+        <div class="form-body">
+            <div class="form-horizontal">
+                <div class="table-toolbar">
+                    <table id="tblResult" class="table table-striped table-bordered table-hover table-full-width">
+                        <thead>
+                            <tr>
+                                <th></th>
+                                <th>Reference No</th>
+                                <th>Category</th>
+                                <th>Conflict Type</th>
+                                <th>Status</th>
+                                <th>Submission Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (COIHistoryResultViewModel item in Model)
+                            {
+                                <tr>
+                                    <td>
+                                        <a class="btn blue btn-sm"
+                                           href="@Url.Action("Index", "COI", new { DeclarationID = item.DeclarationID , Source = "History" })">
+                                            <i class="fa fa-edit"></i>
+                                        </a>
+                                    </td>
+                                    <td>@item.ReferenceNo</td>
+                                    <td>@item.Category</td>
+                                    <td>@item.ConflictType</td>
+                                    <td>
+                                        @if (item.Status == "Withdrawn" || item.Status == "Declined")
+                                        {
+                                            <span style="color : red; font-weight: bold;">
+                                                @item.Status
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span style="color : green; font-weight: bold;">
+                                                @item.Status
+                                            </span>
+                                        }
+                                    </td>
+                                    <td>
+                                        @{
+                                            @item.FormattedSubmissionDate
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    transformTable("#tblResult");
+    //var tblResult =
+    //    $('#tblResult').dataTable({
+    //        "bLengthChange": false,
+    //        "bFilter": false,
+    //        "bPaginate": false,
+    //        "bInfo": false,
+    //        "bSortable": false,
+    //    });
+</script>

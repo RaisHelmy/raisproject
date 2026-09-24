@@ -1,0 +1,92 @@
+﻿@model List<ESS.Core.TrainingRequestHistory>
+
+@{
+    Layout = null;
+    string TrainingTypeCode = "";
+}
+
+<div class="portlet box blue">
+    <div class="mini-triangle"><img src="../Assets/img/menu-red-triangle.png" /></div>
+    <div class="portlet-title">
+        <div class="caption">
+            <i class="fa fa-reorder"></i>My Training Request History
+        </div>
+        <div class="tools">
+        </div>
+    </div>
+    <div class="portlet-body form">
+        <div class="form-body">
+            <div class="form-horizontal">
+                <div class="table-toolbar">
+                    <table id="tblResult" class="table table-striped table-bordered table-hover table-full-width">
+                        <thead>
+                            <tr>
+                                <th></th>
+                                <th>Reference No.</th>
+                                <th>Category</th>
+                                <th>Type</th>
+                                <th>Course Title</th>
+                                <th>Provider</th>
+                                <th>Start Date</th>
+                                <th>End Date</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model)
+                            {
+                                
+                                if(item.TrainingTypeDesc == "ILSAS")
+                                {
+                                    TrainingTypeCode = "I";
+                                }else if(item.TrainingTypeDesc == "Non ILSAS")
+                                {
+                                    TrainingTypeCode = "NI";
+                                }
+
+                                <tr>
+                                    <td>
+                                        @if (item.RequestStatus == "Draft")
+                                        {
+                                            
+                                            <a class="btn blue btn-sm" href="@Url.Content("~/TrainingApplication/Application")?ID=@item.TrainingID&Category=@item.TrainingCategoryCode&Mode=Edit&Target=@item.Target&CategoryType=@TrainingTypeCode">
+                                                <i class="fa fa-search"></i>
+                                            </a>
+                                        }
+                                        else
+                                        {
+                                            <a class="btn blue btn-sm" href="@Url.Content("~/TrainingApplication/Application")?ID=@item.TrainingID&Category=@item.TrainingCategoryCode&Mode=View&Target=@item.Target&CategoryType=@TrainingTypeCode">
+                                                <i class="fa fa-search"></i>
+                                            </a>
+                                        }
+
+
+                                        
+                                    </td>
+                                    <td>@item.TrainingRequestNo</td>
+                                    <td>@item.TrainingCategoryDesc</td>
+                                    <td>@item.TrainingTypeDesc</td>
+                                    <td>@item.CourseName</td>
+                                    <td>@item.CourseOrganizer</td>
+                                    <td>@item.TrainingStartDate.Value.ToString("dd/MM/yyyy")</td>
+                                    <td>@item.TrainingEndDate.Value.ToString("dd/MM/yyyy")</td>
+                                    @if (item.RequestStatus == "Declined" || item.RequestStatus == "Withdrawn")
+                                    {
+                                        <td style="color:red;"><b>@item.RequestStatus</b></td>
+                                    }
+                                    else
+                                    {
+                                        <td style="color:green;"><b>@item.RequestStatus</b></td>
+                                    }
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+    transformTable("#tblResult");
+</script>

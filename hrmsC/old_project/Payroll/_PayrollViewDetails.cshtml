@@ -1,0 +1,94 @@
+﻿@model Tuple<ESS.Payroll.Models.PayrollDeductionVM, SEP.RoutingManagement.Models.RoutingRule>
+@{
+    Layout = null;
+    string TaskID = (string)ViewData["TaskID"];
+    string RequestID = (string)ViewData["RequestID"];
+    string ApprovalLevel = (string)ViewData["ApprovalLevel"];
+    string Source = (string)ViewData["Source"];
+    string PaySlipUrl = (string)ViewData["PaySlipUrl"];
+
+    var data = new ViewDataDictionary
+    {
+        new KeyValuePair<string, object>("TaskID", TaskID),
+        new KeyValuePair<string, object>("RequestID", RequestID),
+        new KeyValuePair<string, object>("ApprovalLevel",ApprovalLevel),
+        new KeyValuePair<string, object>("Source",Source),
+        new KeyValuePair<string, object>("PaySlipUrl",PaySlipUrl)
+    };
+
+    int applvl = String.IsNullOrEmpty(ApprovalLevel) ? 0 : Convert.ToInt32(ApprovalLevel);
+}
+
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="portlet box blue">
+            <div class="mini-triangle"><img src="../Assets/img/menu-red-triangle.png" /></div>
+            <div class="portlet-title">
+                <div class="caption">
+                    <i class="fa fa-reorder"></i>Request Details
+                </div>
+            </div>
+            <div class="portlet-body form">
+                <div class="form-body">
+                    <div id="trRefNo" class="row">
+                        <div class="col-md-6">
+                            <div class="form-horizontal">
+                                <div class="form-group">
+                                    <label class="control-label col-md-4">Reference No.</label>
+                                    <div class="col-md-8 form-control-static">
+                                        <input type="text" id="txtReferenceNo" name="ReferenceNo" class="form-control" value="@Model.Item1.ReferenceNo" readonly="readonly" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-horizontal">
+                                <div class="form-group">
+                                    <label class="control-label col-md-4">Status</label>
+                                    <div class="col-md-8 form-control-static">
+                                        <input type="text" id="txtStatusName" name="StatusName" class="form-control" value="@Model.Item1.StatusName" readonly="readonly" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row" style="">
+                        <div class="col-md-6">
+                            <div class="form-horizontal">
+                                <div class="form-group">
+                                    <label class="control-label col-md-4">
+                                        Request Type
+                                    </label>
+                                    <div class="col-md-8 form-control-static">
+                                        <input type="text" id="txtRequestType" name="RequestType" class="form-control" value="@Model.Item1.RequestType" readonly="readonly" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="divCurrentApprover" class="col-md-6">
+                            <div class="form-horizontal">
+                                <div class="form-group">
+                                    <label class="control-label col-md-4">Current Approver</label>
+                                    <div class="col-md-8 form-control-static">
+                                        <input type="text" id="txtCurrentApprover" name="CurrentApprover" class="form-control" value="@Model.Item1.CurrentApprover" readonly="readonly" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <br />
+                    <!-- Payroll Deduction Details -->
+
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Employee Details -->
+@Html.Partial("_EmployeeInfo", Model.Item1.Submiter)
+
+@Html.Partial("_PayrollViewDetailsList", Model, data)

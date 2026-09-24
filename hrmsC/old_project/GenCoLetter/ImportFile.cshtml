@@ -1,0 +1,150 @@
+﻿@model ESS.GenCoLetter.Models.SubmitResult
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewBag.Title = "Offer Letter Data Import";
+}
+
+<div class="row">
+    <div class="col-md-12">
+        <br />
+        <h1 class="page-title">
+            @ViewBag.Title <span style="padding-left:20px;"><small></small></span>
+        </h1>
+    </div>
+</div>
+<br />
+
+@using (Html.BeginForm("ImportFile", "GenCoLetter", FormMethod.Post, new { enctype = "multipart/form-data", @id = "MainForm" }))
+{
+    if (!string.IsNullOrEmpty(Model.Message))
+    {
+        string classNote = "";
+        if (Model.Error)
+        {
+            classNote = "note note-danger";
+        }
+        if (Model.Success)
+        {
+            classNote = "note note-success";
+        }
+        <div class="row">
+            <div class="col-md-12">
+                <div class="@classNote">
+                    <label class="control-label">
+                        @Model.Message
+                    </label>
+                </div>
+            </div>
+        </div>
+    }
+    <input type="hidden" id="actionType" name="actionType"/>
+    <div class="row">
+        <div class="col-md-12">
+            <div class="portlet box blue">
+                <div class="mini-triangle"><img src="/_layouts/15/TNBESS/Assets/img/menu-red-triangle.png" /></div>
+                <div class="portlet-title">
+                    <div class="caption">
+                        <i class="fa fa-reorder"></i>@ViewBag.Title
+                    </div>
+                    <div class="tools">
+                        <a title="" data-original-title="" href="javascript:;" class="collapse"> </a>
+                    </div>
+                </div>
+                <div class="portlet-body form">
+                    <div class="form-body">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="form-group">
+                                    <div class="col-md-5 form-control-static">
+                                        <input type="file" id="UploadFile" name="UploadFile" />
+                                    </div>
+                                    <div class="col-md-7">
+                                        <div class="text-left">
+                                            <a class="btn btn-sm default blue" id="btnPerformImport" onclick="PerformFormValidation(this, 'Import')" data-toggle="modal">
+                                                Import
+                                            </a>
+                                            <a class="btn btn-sm default blue" id="btnPreview" onclick="PerformFormValidation(this, 'Preview')" data-toggle="modal">
+                                                Preview
+                                            </a>
+                                            <a class="btn btn-sm default blue" id="btnDownload" target="_blank" href="@Url.Content("~/TemplateFiles/ESS_OfferLetter_DataUploadTemplateV1.csv")">
+                                                Download Template
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Confirmation Message -->
+    <div class="modal fade" id="ConfirmSubmit" tabindex="-1" role="basic" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header Success-header">
+                    <h4 class="Success-title">Confirmation - Data Import</h4>
+                </div>
+                <div class="modal-body Success-body">
+                    <div class="well" id="SuccessMessage">
+                        Clicking confirm will import the data into system. If you want to discard the changes, click Close.
+                    </div>
+                </div>
+                <div class="modal-footer Success-footer">
+                    <button type="submit" class="btn default blue" id="btnSubmit" onclick="showDivLoading()">
+                        <i class="fa fa-check"></i>
+                        Confirm
+                    </button>
+                    <button type="button" class="btn default" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Gif -->
+    <div id="divLoading" style="margin: 0px; padding: 0px; position: fixed; right: 0px;
+        top: 0px; width: 100%; height: 100%; background-color:gainsboro; z-index: 30001;
+        opacity: .8; filter: alpha(opacity=70);display:none">
+        <p style="position: absolute; top: 30%; left: 30%; color: black;">
+            Loading, please wait...<img src="../Assets/img/ajax-loading.gif" />
+
+        </p>
+    </div>
+}
+
+
+@*<a class="btn btn-sm default blue" id="btnPreview" data-toggle="modal">
+    Preview
+</a>*@
+
+<script type="text/javascript">
+
+    function PerformFormValidation(elem, action) {
+        $("#actionType").val(action);
+
+        if (document.getElementById("UploadFile").files.length == 0) {
+            alert("Please select a file.");
+        }
+        else {
+            if (action == "Import") {
+                $("#btnSubmit").prop('disabled', false);
+                $(elem).attr("href", "#ConfirmSubmit");
+            }
+            else {
+                $("#MainForm").submit();
+            }
+        }
+    }
+
+
+    function showDivLoading() {
+        $('#divLoading').show();
+    }
+
+    function hideDivLoading() {
+        $('#divLoading').hide();
+    }
+
+</script>

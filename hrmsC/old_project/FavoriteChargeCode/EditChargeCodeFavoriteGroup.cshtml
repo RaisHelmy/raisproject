@@ -1,0 +1,190 @@
+﻿@model IEnumerable<ESS.ChargeCode.Models.ChargeCode>
+
+@{
+    ViewBag.Title = "Edit Charge Code Favourite Group";
+}
+<div class="row">
+    <div class="col-md-12">
+        <br />
+        <h1 class="page-title">
+            Edit Favourite Charge Code<span style="padding-left:20px;"><small></small></span>
+        </h1>
+    </div>
+</div>
+<div class="portlet box blue">
+    <div class="mini-triangle"><img src="../Assets/img/menu-red-triangle.png"></div>
+
+    <div class="portlet-title">
+        <div class="caption">
+            <i class="fa fa-reorder"></i>Charge Code Group: @ViewBag.GroupName
+        </div>
+        <a href="javascript:OpenSearchChargeCode();" class="btn btn-xs blue pull-right"><i class="fa fa-plus"></i> Add Charge Code</a>
+    </div>
+
+    <div class="portlet-body form">
+        <div class="form-horizontal">
+            <div class="form-body">
+                <div class="table-toolbar">
+                    <input type="hidden" name="ChargeCodeList" id="ChargeCodeList" value="" />
+                    <table id="sourcechargecode" class="table table-striped table-bordered table-hover table-full-width">
+                        <thead>
+                            <tr>
+                                <th>
+                                    @Html.DisplayNameFor(model => model.ChargeType)
+                                </th>
+                                <th>
+                                    @Html.DisplayNameFor(model => model.ChargeCodes)
+                                </th>
+                                <th>
+                                    @Html.DisplayNameFor(model => model.ChargeCodeDesc)
+                                </th>
+                                <th width="10px fixed">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model)
+                            {
+                                <tr>
+                                    
+                                    <td>
+                                        @Html.DisplayFor(modelItem => item.ChargeType)
+                                    </td>
+                                    <td class="selectedChargeCode">
+                                        @Html.DisplayFor(modelItem => item.ChargeCodes)
+                                    </td>
+                                    <td>
+                                        @Html.DisplayFor(modelItem => item.ChargeCodeDesc)
+                                    </td>
+                                    <td>
+                                        <a class="btn red btn-sm" data-toggle="modal" onclick="javascript: RemoveChargeCodeFromGroup(this, '@item.ChargeCodes')">Delete
+                                        </a>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+                <!--Back button-->
+                <a class="btn blue" onclick="location.href = '@Url.Action("ChargeCodeFavouriteGroup")'">Back</a>
+            </div>
+        </div>
+    </div>
+
+
+</div>
+
+<!--BEGIN MODAL FOR SEARCH-->
+<div class="modal fade" id="SearchChargeCode" tabindex="-1" role="basic" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                <h4 class="modal-title">Add Charge Code</h4>
+            </div>
+            <div class="modal-body">
+                @Html.Action("SearchChargeCode", "FavoriteChargeCode")
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn default blue" id="btnSubmitForm" onclick="AddChargeCodeToDb(); return false;">
+                    <i class="fa fa-plus"></i>
+                    Add
+                </button>
+                <button type="button" class="btn default" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+<!--END SEARCH MODAL-->
+<!--BEGIN CONFIRMATION MODAL-->
+<div class="modal fade" id="DeleteChargeCodeModal" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                <h4 class="modal-title" id="deleteText">Remove charge code from group</h4>
+            </div>
+            <div class="modal-body">
+                <div class="well">
+                    <p>Clicking on "Delete" button will remove this charge code from the favourite group. To cancel, click on "Close" button to return to the favourite group.</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <a class="btn default red" id="btnDelete" href="">Delete</a>
+                <button type="button" class="btn default" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+<!--END OF CONFIRMATION MODAL-->
+
+<script>
+
+    $(document).ready(function () {
+        $('#sourcechargecode').dataTable()
+        var tableWrapper = "#sourcechargecode_wrapper";
+
+        jQuery(tableWrapper + ' .dataTables_filter input').addClass("form-control input-medium input-inline"); // modify table search input
+        jQuery(tableWrapper + ' .dataTables_length select').addClass("form-control input-small"); // modify table per page dropdown
+        jQuery(tableWrapper + ' .dataTables_length select').select2({
+            showSearchInput: false //hide search box with special css class
+        });
+    });
+
+    function OpenSearchChargeCode() {
+        $('#SearchChargeCode').modal();
+        var chargecodestring = "";
+        $.each($('#sourcechargecode tbody tr'), function (i, val) {
+            var item = $(this).find('.selectedChargeCode').html();
+            if (item != null)
+                chargecodestring += $.trim(item) + ",";
+        });
+        $('#ChargeCodeList').val(chargecodestring);
+    }
+
+    function ShowDeleteGroupModal() {
+        $("#deleteText").text("Remove favorite group");
+        $("#DeleteGroupModal").modal();
+    }
+
+    function DeleteGroup() {
+        var groupId = '@ViewBag.GroupId';
+        var url = '@Url.Content("DeleteChargeCodeFavoriteGroup")?groupId=' + groupId;
+        window.location.href = url;
+        $("#DeleteGroupModal").hide();
+    }
+
+    function RemoveChargeCodeFromGroup(element, chargeCode) {
+        console.log("In deletion function")
+        $(element).attr('href', function () {
+            return this.href = '#DeleteChargeCodeModal';
+        });
+
+        var groupId = '@ViewBag.GroupId';
+        var groupName = '@ViewBag.GroupName';
+        console.log(groupId);
+        var url = '@Url.Action("RemoveChargeCodeFromGroup")?groupId=' + groupId + '&groupName=' + groupName + '&chargeCode=' + chargeCode;
+        $("#btnDelete").attr("href", url);
+    }
+
+    function AddChargeCodeToDb() {
+
+        var chargeCodes = $('input:checked').map(function () {
+            return $(this).val();
+        }).toArray();
+
+        var Id = "@ViewBag.GroupId";
+        var groupName = "@ViewBag.GroupName";
+        var url = '@Url.Content("AddChargeCodes")?groupId=' + Id + '&groupName=' + groupName + '&chargeCodes=' + chargeCodes;
+        window.location.href = url;
+        $('#SearchChargeCode').hide();
+    }
+
+    $("#removeButton").submit(function (event) {
+        if (confirm("Are you sure you want to remove the charge code?"))
+            return true;
+        else {
+            event.preventDefault();
+            return false;
+        }
+    });
+</script>

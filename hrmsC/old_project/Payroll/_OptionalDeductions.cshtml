@@ -1,0 +1,100 @@
+﻿@using ESS.Payroll.Models
+@model List<TaxExemptionDeduction>
+@{
+    Layout = null;
+    List<TaxExemptionOptionalDeductions> OptionalDeductions = ViewBag.OptionalDeductions;
+    bool IsReadOnly = ViewBag.IsReadOnly;
+    bool? PCBReportMode = ViewBag.PCBReportMode;
+}
+
+<style>
+    table td {
+        word-wrap: break-word;
+    }
+
+    #tblOptionalDeduction td {
+        white-space: inherit;
+    }
+</style>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="portlet box blue">
+            <div class="mini-triangle"><img src="../Assets/img/menu-red-triangle.png" /></div>
+            <div class="portlet-title">
+                <div class="caption">
+                    <i class="fa fa-reorder"></i>
+                    Optional Deductions
+                </div>
+            </div>
+            <div class="portlet-body form">
+                <table id="tblOptionalDeduction" class="table table-striped table-bordered table-hover table-full-width">
+                    <thead>
+                        <tr>
+                            <th>Tax Exemption Optional Deductions</th>
+                            <th>Accumulated Amount (RM)</th>
+
+                            @if (PCBReportMode == null || PCBReportMode == false)
+                            {
+                                <th>Current Amount (RM)</th>
+                            }
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @{
+                            int count = 0;
+                            foreach (var item in Model)
+                            {
+                                <tr>
+                                    <td class="col-md-8">
+                                        <input type="hidden" name="TaxExemptionDeductions[@count].DeductionCode"
+                                               value="@item.DeductionCode" />
+                                        <input type="hidden" name="TaxExemptionDeductions[@count].DeductionDescription"
+                                               value="@item.DeductionDescription" />
+                                        <input type="hidden" name="TaxExemptionDeductions[@count].Frequency"
+                                               value="@item.Frequency" />
+                                        <input type="hidden" name="TaxExemptionDeductions[@count].EntryID"
+                                               value="@item.EntryID" />
+                                        <input type="hidden" name="TaxExemptionDeductions[@count].HeaderID"
+                                               value="@item.HeaderID" />
+                                        <input type="hidden" name="TaxExemptionDeductions[@count].ValueLimit"
+                                               value="@item.ValueLimit" />
+
+                                        @item.DeductionDescription
+                                    </td>
+                                    <td class="col-md-2">
+                                        <input type="text" class="form-control" readonly="readonly"
+                                               name="TaxExemptionDeductions[@count].AccumulatedAmount" placeholder="0.00"
+                                               value="@item.AccumulatedAmount.ToString("0.00")" />
+                                    </td>
+
+                                    @if (PCBReportMode == null || PCBReportMode == false)
+                                    {
+                                        <td class="col-md-2">
+                                            <input type="text" class="form-control currencyinput"
+                                                   name="TaxExemptionDeductions[@count].Amount" placeholder="0.00"
+                                                   @(IsReadOnly ? "readonly" : "") value="@item.Amount.ToString("0.00")" />
+                                        </td>
+                                    }
+                                </tr>
+
+                                count++;
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    $('#tblOptionalDeduction').dataTable({
+        "bLengthChange": false,
+        "bFilter": false,
+        "bPaginate": false,
+        "bInfo": false,
+        "bSortable": false,
+        'aaSorting' : []
+    });
+</script>

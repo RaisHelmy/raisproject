@@ -1,0 +1,227 @@
+﻿@model Tuple<List<ESS.Core.DropDownObject>, List<ESS.Core.DropDownObject>>
+@{
+    ViewBag.Title = "Request Report By Employee";
+}
+
+<style>
+    .job-search-form .form-group {
+        margin-bottom: 6px;
+    }
+</style>
+
+<div class="row">
+    <div class="col-md-12">
+        <br />
+        <h1 class="page-title">
+            View Job Application (By Employee)<span style="padding-left:20px;"><small></small></span>
+        </h1>
+    </div>
+</div>
+<br />
+
+@Html.Partial("_PeoplePickerInit")
+
+<div class="row">
+    <div class="col-md-12">
+        <form id="filterForm">
+            <div class="form-horizontal">
+                <div class="form-body job-search-form">
+                    <div class="form-group">
+                        <label class="col-md-2 control-label">Start Date</label>
+                        <div class="col-md-4">
+                            <div class="input-group date date-picker" data-date-format="dd MM yyyy">
+                                <input type="text" class="form-control" id="StartDate" name="StartDate" />
+                                <span class="input-group-btn">
+                                    <button type="button" class="btn default"><i class="fa fa-calendar"></i></button>
+                                </span>
+                            </div>
+                        </div>
+                        <label class="col-md-2 control-label">End Date</label>
+                        <div class="col-md-4">
+                            <div class="input-group date date-picker" data-date-format="dd MM yyyy">
+                                <input type="text" class="form-control" id="EndDate" name="EndDate" />
+                                <span class="input-group-btn">
+                                    <button type="button" class="btn default"><i class="fa fa-calendar"></i></button>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-md-2 control-label">Company</label>
+                        <div class="col-md-4">
+                            @Html.DropDownList("Division", new SelectList(Model.Item2, "Value", "Text"), "- All -", new { @class = "bs-select form-control", @onchange = "changeCompany(this)" })
+                        </div>
+                        <label class="col-md-2 control-label">Division / Department</label>
+                        <div class="col-md-4">
+                            @Html.Action("_DDLDepartment", "Training", new { })
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-md-2 control-label">Unit Section</label>
+                        <div class="col-md-4">
+                            @Html.Action("_DDLUnitSection", "Training", new { })
+                        </div>
+                        <label class="col-md-2 control-label">Position</label>
+                        <div class="col-md-4">
+                            <input class="form-control" name="Position" />
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-md-2 control-label">Application Type</label>
+                        <div class="col-md-4">
+                            <select class="form-control" id="ApplicationType" name="ApplicationType">
+                                <option value="">ALL</option>
+                                <option value="Promotion">Promotion</option>
+                                <option value="Transfer">Transfer</option>
+                            </select>
+                        </div>
+                        <label class="col-md-2 control-label">Advertisement Ref. No</label>
+                        <div class="col-md-4">
+                            <input class="form-control" id="AdvertisementRefNo" name="AdvertisementRefNo" />
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-md-2 control-label">Vacancy No.</label>
+                        <div class="col-md-4">
+                            <input class="form-control" id="VacancyNo" name="VacancyNo" />
+                        </div>
+                        <label class="col-md-2 control-label">Employee</label>
+                        <div class="col-md-4">
+                            @Html.Partial("_PeoplePickerControl", new ViewDataDictionary { { "PPID", "EmployeeID" } })
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-md-2 control-label">Status</label>
+                        <div class="col-md-4">
+                            <select class="form-control" name="JobStatus">
+                                <option value="">ALL</option>
+                                <option value="0"> Draft</option>
+                                <option value="1"> Pending</option>
+                                <option value="2"> Withdrawn</option>
+                                <option value="3"> Failed</option>
+                                <option value="4"> Recommended</option>
+                                <option value="5"> Agreed</option>
+                                <option value="6"> Declined</option>
+                                <option value="7"> Invited For Interview</option>
+                                <option value="8"> Successful</option>
+                                <option value="9">Unsuccessful</option>
+                                <option value="10">Reserved</option>
+                                <option value="11">Incomplete Submission</option>
+                            </select>
+                        </div>
+                        <label class="col-md-2 control-label">Recommendation</label>
+                        <div class="col-md-4">
+                            <select id="Recommendation" name="Recommendation" class="form-control">
+                                <option value="">Select</option>
+                                <option value="1">Recommended</option>
+                                <option value="2">Recommended (Released)</option>
+                                <option value="3">Recommended (Cannot be released)</option>
+                                <option value="4">Not Recommended</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="text-right">
+            <a id="btn-Search" class="btn green btn-Search" onclick="ClearSearch();">Clear Search</a>
+            <a id="btn-Search" class="btn green btn-Search" value="Search" onclick="SearchListing();">Search</a>
+        </div>
+    </div>
+</div>
+<div class="row">&nbsp;</div>
+<div class="row">
+    <div class="col-md-12">
+        <div id="SearchResult">
+
+        </div>
+    </div>
+</div>
+<script>
+
+    $(document).ready(function () {
+        $('.date-picker').datepicker({
+            format: 'mm/dd/yyyy',
+            autoclose: true
+        });
+
+        //SearchListing();
+    });
+
+    function SearchListing() {
+
+        $("#SearchResult").html("LOADING...");
+        $.ajax({
+            type: "GET",
+            cache: false,
+            url: '@Url.Content("~/OJA/_RequestReportResult")',
+            data: $("#filterForm").serialize(),
+            success: function (listingContent) {
+
+                $("#SearchResult").empty().append(listingContent);
+            },
+            error: function (err) {
+
+                console.log(err);
+            }
+        });
+    }
+
+     function changeType(e) {
+        $.ajax({
+            type: "GET",
+            url: '@Url.Content("~/Training/_DDLTrainingType")',
+            cache: false,
+            dataType: "html",
+            data: { CategoryCode: e.value},
+            success: function (content) {
+                $("#TrainingTypeResult").html(content);
+            },
+            error: function (e) {
+                console.log(e);
+            }
+        });
+    }
+
+    function changeCompany(e) {
+        $.ajax({
+            type: "GET",
+            url: '@Url.Content("~/Training/_DDLDepartment")',
+            cache: false,
+            dataType: "html",
+            data: { CompanyCode: e.value },
+            success: function (content) {
+                $("#DepartmentResult").html(content);
+            },
+            error: function (e) {
+                console.log(e);
+            }
+        });
+    }
+
+    function changeDepartment(e) {
+        $.ajax({
+            type: "GET",
+            url: '@Url.Content("~/Training/_DDLUnitSection")',
+            cache: false,
+            dataType: "html",
+            data: { DepartmentCode: e.value },
+            success: function (content) {
+                $("#UnitSectionResult").html(content);
+            },
+            error: function (e) {
+                console.log(e);
+            }
+        });
+    }
+
+    function ClearSearch() {
+        $('#filterForm').find("input[type=text], textarea, select, input:text").val("");
+        SearchListing();
+    }
+</script>

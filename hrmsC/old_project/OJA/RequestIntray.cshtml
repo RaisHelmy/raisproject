@@ -1,0 +1,119 @@
+﻿@model OJA.Models.FilterModel
+@{
+    ViewBag.Title = "Online Job Application - Intray";
+}
+
+<div class="row">
+    <div class="col-md-12">
+        <br />
+        <h1 class="page-title">
+            MSS - Online Job Application Intray<span style="padding-left:20px;"><small></small></span>
+        </h1>
+    </div>
+</div>
+<br />
+
+<form id="filterForm">
+    <div class="form-body">
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-horizontal">
+                    <div class="form-group">
+                        <label class="col-md-4 control-label">Closing Date</label>
+                        <div class="col-md-8 form-control-static">
+                            <div class="input-group date date-picker" data-date-format="dd MM yyyy">
+                                <input type="text" class="form-control" id="ClosingDate" name="ClosingDate" />
+                                <span class="input-group-btn">
+                                    <button type="button" class="btn default"><i class="fa fa-calendar"></i></button>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-horizontal">
+                    <div class="form-group">
+                        <label class="col-md-4 control-label">Application Type</label>
+                        <div class="col-md-8 form-control-static">
+                            <select id="ApplicationType" name="ApplicationType" class="form-control">
+                                <option value="ALL">ALL</option>
+                                <option value="Promotion">Promotion</option>
+                                <option value="Transfer">Transfer</option>
+
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div> 
+        <div class="row"> 
+            <div class="col-md-6">
+                <div class="form-horizontal">
+                    <div class="form-group">
+                        <label class="col-md-4 control-label">Employee</label>
+                        <div class="col-md-8 form-control-static">
+                            <input id="CreatedBy" name="CreatedBy" class="form-control" type="text" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-horizontal">
+                    <div class="form-group">
+                        <label class="col-md-4 control-label">Position</label>
+                        <div class="col-md-8 form-control-static">
+                            <input id="Position" name="Position" class="form-control" type="text" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+<div class="row">&nbsp;</div>
+<div class="row">
+    <div class="col-md-12">
+        <div class="text-right">
+            <a id="btn-Search" class="btn green btn-Search" value="Search" onclick="GetIntray();">Search</a>
+        </div>
+    </div>
+</div>
+<div class="row">&nbsp;</div>
+<div class="row">
+    <div class="col-md-12">
+        <div id="SearchResult">
+
+        </div>
+    </div>
+</div>
+<script>
+
+    $(document).ready(function () {
+        $('.date-picker').datepicker({
+            format: 'dd/mm/yyyy',
+            autoclose: true
+        });
+
+        GetIntray();
+    });
+
+    function GetIntray() {
+
+        $("#SearchResult").html("LOADING...");
+        $.ajax({
+            type: "GET",
+            cache: false,
+            url: '@Url.Content("~/OJA/_RequestIntrayResult")',
+            data: $("#filterForm").serialize(),
+            success: function (listingContent) {
+
+                $("#SearchResult").empty().append(listingContent);
+            },
+            error: function (err) {
+
+                console.log(err);
+            }
+        });
+    }
+</script>

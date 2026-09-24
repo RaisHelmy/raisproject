@@ -1,0 +1,264 @@
+﻿@model LeaveQuota.Models.PaternityLeave
+@{
+    var SubmitterID = ViewData["CurrentEmployeeID"];
+    string Status = ViewData["Status"] == null ? "Draft" : ViewData["Status"].ToString();
+    var ApplicantDescription = ViewData["Description"];
+    var ReferenceNo = ViewData["ReferenceNo"];
+
+    string[] editTableStatus = new string[] { "Draft" };
+    List<SelectListItem> attachmentDropdownItems = new List<SelectListItem>()
+    {
+        new SelectListItem()
+        {
+           Value = "Certificate of Birth",
+           Text = "Certificate of Birth"
+        },
+        new SelectListItem()
+        {
+            Value = "My Kid",
+            Text = "My Kid"
+        },
+        new SelectListItem()
+        {
+            Value = "Others",
+            Text = "Others"
+        }
+    };
+    var attachmentMode = "View";
+    if (string.IsNullOrEmpty(Model.RequestID))
+    {
+        attachmentMode = "New";
+    }
+    else if (Status.ToString() == "Draft")
+    {
+        attachmentMode = "Add";
+    }
+
+    if(string.IsNullOrEmpty(Model.StateOfBirth))
+    {
+        Model.StateOfBirth = "Kuala Lumpur";
+    }
+
+
+    var readStatus = "readonly";
+    var disabledStatus = "disabled";
+    if (Status == "Draft")
+    {
+        readStatus = "";
+        disabledStatus = "";
+    }
+}
+
+<div id="divMainForm" class="row">
+    <div class="col-md-12">
+        <div class="portlet box blue">
+            <div class="mini-triangle"><img src="../Assets/img/menu-red-triangle.png" /></div>
+            <div class="portlet-title">
+                <div class="caption">
+                    <i class="fa fa-reorder"></i>Application Details
+                </div>
+            </div>
+            <div class="portlet-body form">
+                <div class="form-body" id="ct00_CustomFieldFormView">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-horizontal">
+                                <div class="form-group">
+                                    <label class="control-label col-md-4">Reference No</label>
+                                    <div class="col-md-8 form-control-static">
+                                        <input type="text" id="ReferenceNo" class="form-control" value="@ReferenceNo" readonly />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-horizontal">
+                                <div class="form-group">
+                                    <label class="control-label col-md-4">Status</label>
+                                    <div class="col-md-8 form-control-static">
+                                        <input type="text" id="Status" class="form-control" value="@Status" readonly />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-horizontal">
+                                <div class="form-group">
+                                    <label class="control-label col-md-4">Date of Birth</label>
+                                    <div class="col-md-8 form-control-static">
+                                        <div class="input-group date  @(string.IsNullOrEmpty(readStatus) ? "date-picker": "")">
+                                            <input type="text" class="form-control" id="DOB" value="@(string.IsNullOrEmpty(Model.RequestID) ? "": Model.DOB)" @readStatus >
+                                            <span class="input-group-btn">
+                                                <button type="button" class="btn default"><i class="fa fa-calendar"></i></button>
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-horizontal">
+                                <div class="form-group">
+                                    <label class="control-label col-md-4">Place of Birth</label>
+                                    <div class="col-md-8 form-control-static">
+                                        <input class="form-control" type="text" id="PlaceOfBirth" value="@Model.PlaceOfBirth"  @readStatus  />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-horizontal">
+                                <div class="form-group">
+                                    <label class="control-label col-md-4">State of Birth</label>
+                                    <div class="col-md-8 form-control-static">
+                                        <select id="StateOfBirth" class="form-control" @disabledStatus>
+                                            <option value="Kuala Lumpur">Kuala Lumpur</option>
+                                            <option value="Putrajaya">Putrajaya</option>
+                                            <option value="Johor">Johor</option>
+                                            <option value="Kedah">Kedah</option>
+                                            <option value="Kelantan">Kelantan</option>
+                                            <option value="Malacca">Malacca</option>
+                                            <option value="Negeri Sembilan">Negeri Sembilan</option>
+                                            <option value="Pahang">Pahang</option>
+                                            <option value="Perak">Perak</option>
+                                            <option value="Perlis">Perlis</option>
+                                            <option value="Penang">Penang</option>
+                                            <option value="Sabah">Sabah</option>
+                                            <option value="Sarawak">Sarawak</option>
+                                            <option value="Selangor">Selangor</option>
+                                            <option value="Terengganu">Terengganu</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">&nbsp;</div>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="form-horizontal">
+                                <div class="form-group">
+                                    <label class="control-label col-md-2">Description/Comment</label>
+                                    <div class="col-md-8">
+                                        <textarea maxlength="500" rows="5" class="form-control" id="ApplicantDescription" @readStatus>@ApplicantDescription</textarea>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Attachment -->
+       
+    </div>
+
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        @Html.Action("AttachmentControl", "Attachment", new { EmployeeID = SubmitterID, Mode = attachmentMode, SourceType = Model.GetDisplayName(), RequestID = Model.RequestID, ShowOptionField = "true", ControlType = "dropdown", DropdownList = attachmentDropdownItems, CustomTextLabel1 = "Checklist", Mandatory = "true" })
+    </div>
+</div>
+
+<script>
+    $(document).ready(function () {
+        InitDateAndTimePickers();
+        //setStartDate();
+
+        $("#StateOfBirth").val('@Model.StateOfBirth');
+    });
+
+    @*function applyReadOnlyOnStatus()
+    {
+        var status = '@Status';
+        var editable = ["Draft"];
+        console.log(status);
+        if ($.inArray(status, editable) == -1) {
+
+            //disable date inputs
+            $(".date-picker").each(function (i, val) {
+                $(this).datepicker('remove');
+            });
+
+            //disable form inputs
+            $("#divMainForm input:text").each(function () {
+                $(this).attr('readonly', true);
+            });
+
+            //disabled dropdowns
+            $("#divMainForm select").each(function () {
+                $(this).attr('disabled', true);
+            });
+        }
+    }*@
+
+    function InitDateAndTimePickers() {
+        $('.date-picker').datepicker({
+            format: 'dd/mm/yyyy',
+            autoclose: true
+        });
+
+        $('.time-picker').timepicker({
+            showMeridian: false,
+            autoclose: true
+        });
+    }
+
+    function setStartDate() {
+        $('.date-picker').datepicker('setDate', new Date());
+    }
+
+    function validate() {
+        var dateofbrith = $("#DOB").val();
+
+        var message = "";
+        if (dateofbrith != "") {
+            var startDate = moment(dateofbrith, 'DD/MM/YYYY').toDate();
+
+            var difference = moment().diff(startDate, 'days');
+            var result = Math.abs(difference);
+            if (Number(difference) < 0)
+                message += "- Date of birth must be ealier than today \n";
+        }
+       
+        if(dateofbrith == "")
+            message += "- Date of birth is required \n";
+
+        var placeofbirth = $("#PlaceOfBirth").val();
+        var stateofbirth = $("#StateOfBirth").val();
+        var dateofbirth = $("#DOB").val();
+
+        if (placeofbirth == "")
+            message += "- Place of birth is required \n";
+        if (stateofbirth == "")
+            message += "- State of birth is required \n";
+        if (dateofbirth == "")
+            message += "- Date of birth is required \n";
+       
+        if (message != "") {
+            alert("Please correct the following errors. \n" + message);
+            return false;
+        }
+        return true;
+    }
+
+    function GetData() {
+        var dateofbirth = $("#DOB").val();
+
+        return {
+            DOB: dateofbirth,
+            PlaceOfBirth: $("#PlaceOfBirth").val(),
+            StateOfBirth: $("#StateOfBirth").val()
+        }
+    }
+</script>

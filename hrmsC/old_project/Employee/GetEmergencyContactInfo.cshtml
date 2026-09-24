@@ -1,0 +1,211 @@
+﻿@model Tuple<List<ESS.Employee.Models.EmergencyContactInfo>, ESS.Employee.Models.Setting>
+@using ESS.Employee
+@{
+    string ID = "";
+    string module = "EmergencyContact";
+
+    string divMode = "";
+
+    bool runFieldVisible = false;
+    if (Model.Item2 != null)
+    {
+        runFieldVisible = true;
+    }
+}
+
+@if (Model.Item1 != null)
+{
+    <div class="form-body">
+        <div class="form-horizontal">
+            <div class="table-toolbar">
+
+                <table id="tblResultEmergencyContactInfo" class="table table-striped table-bordered table-hover table-full-width">
+                    <thead>
+                        <tr>
+                            <th class="hidden">
+                                <input id="RemoveEmergencyContactCheckboxHeader" type="checkbox" onchange="SelectAllEmergencyContact(this)" />
+                            </th>
+                            <th>Name</th>
+                            <th>Phone No. 1</th>
+                            <th>Phone No. 2</th>
+                            <th>Relationship</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in @Model.Item1)
+                        {
+                            <tr>
+                                <td class="hidden">
+                                    @{
+                                        ID = "RemoveEmergencyContactCheckbox_" + item.Name.Replace(" ", "");
+                                    }
+                                    <input type="checkbox" id="@ID" class="RemoveEmergencyContactCheckbox" value="@item.Name" />
+                                </td>
+                                <td><a href="#ProfileEmergencyContact" 
+                                       class="ViewEmergencyContact" 
+                                       data-FamilyNo="@item.FamilyNo">
+                                    @item.Name
+                                    </a>
+                                </td>
+                                <td>@((string.IsNullOrEmpty(item.Phone1)) ? "-" : item.Phone1)</td>
+                                <td>@((string.IsNullOrEmpty(item.Phone2)) ? "-" : item.Phone2)</td>
+                                <td>@((string.IsNullOrEmpty(item.Relationship)) ? "-" : item.Relationship)</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="form-horizontal">
+            <div class="table-toolbar">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="btn-group addEmergencyContactDiv hidden">
+                            <a class="btn green" id="btnAddEmergencyContact" onclick="OpenNewPanel('Add New Emergency Contact Info', '@module', 'INSERT');">
+                                Add
+                                <i class="fa fa-plus"></i>
+                            </a>
+                        </div>
+                        <div class="btn-group hidden">
+                            <a class="btn red" id="btnRemoveEmergencyContact" onclick="RemoveEmergencyContact();">
+                                Delete
+                                <i class="fa fa-minus"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <input type="hidden" id="CountClick" value="0" />
+
+    <script type="text/javascript">
+        transformTable("#tblResultEmergencyContactInfo");
+        function SelectAllEmergencyContact(element) {
+            $('#tblResultEmergencyContactInfo .RemoveEmergencyContactCheckbox').attr('checked', element.checked);
+        }
+
+        $(document).ready(function () {
+
+            App.initAjax();
+
+            var divMode = "@divMode";
+            var runFieldVisible = "@runFieldVisible";
+
+            if (runFieldVisible.toUpperCase() == "TRUE") {
+                Setting_FieldVisible = JSON.parse('@Html.Raw(Json.Encode(Model.Item2.FieldVisible))');
+                Setting_FieldEnable = JSON.parse('@Html.Raw(Json.Encode(Model.Item2.FieldEnable))');
+                Setting_FieldChecked = JSON.parse('@Html.Raw(Json.Encode(Model.Item2.FieldChecked))');
+                Setting_FieldValue = JSON.parse('@Html.Raw(Json.Encode(Model.Item2.FieldValue))');
+
+                PopulateSetting(divMode, "#SearchGetEmergencyContactInfo", "#SettingSection", Setting_FieldVisible, Setting_FieldEnable, Setting_FieldChecked, Setting_FieldValue);
+                //PopulateSetting(divMode, divMain, LogDiv, Setting_FieldVisible, Setting_FieldEnable, Setting_FieldChecked, Setting_FieldValue)
+            }
+
+            $('#uniform-RemoveEmergencyContactCheckboxHeader').click(function (e)
+            {
+                var CountClick = $("#CountClick").val();
+                CountClick++;
+                var divBoxes = $("div[id^='uniform-RemoveEmergencyContactCheckbox_']"); //checkbox items
+
+                if (CountClick % 2 === 0)
+                {
+                    /* we are even */
+                    if ($("#uniform-RemoveEmergencyContactCheckboxHeader span").hasClass("checked")) {
+                        $("#uniform-RemoveEmergencyContactCheckboxHeader span").removeClass("checked")
+                    }
+                    for (i = 0; i < divBoxes.length; i++) {
+
+                        var A = divBoxes[i].id;
+                        if ($("#" + A + " span").hasClass("checked")) {
+                            $("#" + A + " span").removeClass("checked");
+                        }
+                    }
+                }
+                else {
+                    /* we are odd */
+
+                    if (!$("#uniform-RemoveEmergencyContactCheckboxHeader span").hasClass("checked")) {
+                        $("#uniform-RemoveEmergencyContactCheckboxHeader span").addClass("checked")
+                    }
+
+                    for (i = 0; i < divBoxes.length; i++) {
+
+                        var A = divBoxes[i].id;
+                        if (!$("#" + A + " span").hasClass("checked")) {
+                            $("#" + A + " span").addClass("checked");
+                        }
+                    }
+                }
+
+
+                $("#CountClick").val(CountClick);
+            });
+
+            $('.RemoveEmergencyContactCheckbox').click(function (e)
+            {
+                var CountClick = $("#CountClick").val();
+                var id = this.id;
+                //uniform-id
+
+                if (!$("#uniform-" + id +" span").hasClass("checked"))
+                {
+                    //uncheck "select all", if one of the listed checkbox item is unchecked
+                    if ($("#uniform-RemoveEmergencyContactCheckboxHeader span").hasClass("checked"))
+                    {
+                        CountClick++;
+                        $("#uniform-RemoveEmergencyContactCheckboxHeader span").removeClass("checked");
+                    }
+
+                }
+
+                var divBoxes = $("div[id^='uniform-RemoveEmergencyContactCheckbox_']"); //checkbox items
+                var Count = 0;
+                for (i = 0; i < divBoxes.length; i++)
+                {
+                    var A = divBoxes[i].id;
+                    if ($("#" + A + " span").hasClass("checked"))
+                    {
+                        Count++;
+                    }
+                }
+
+                if(Count == divBoxes.length)
+                {
+                    if (!$("#uniform-RemoveEmergencyContactCheckboxHeader span").hasClass("checked"))
+                    {
+                        CountClick++;
+                        $("#uniform-RemoveEmergencyContactCheckboxHeader span").addClass("checked");
+                    }
+                }
+                $("#CountClick").val(CountClick);
+            });
+        });
+
+        $('.ViewEmergencyContact').click(function (e) {
+            e.preventDefault();
+            var FamilyNo = $(this).attr('data-FamilyNo');
+
+            var EmployeeCode = $("#divEPM_Modal #EmployeeCode").val();
+            var EmployeeID = $("#divEPM_Modal #EmployeeID").val();
+            //FamilyNo = FamilyNo.replace("&nbsp;", "");
+            var Action = 'View';
+
+            $("#divEPM_Modal #FormCategory").val("@module");
+            $("#divEPM_Modal #FormAction").val(Action);
+            var url="@Url.Content("~/Employee/_EmergencyContactForm")";
+            var data = {
+                EmployeeCode: EmployeeCode,
+                EmployeeID: EmployeeID,
+                FamilyNo: FamilyNo,
+                Mode: Action
+            };
+
+            OpenEditPanel('View Emergency Contact Info', Action, url, data)
+        });
+
+
+
+    </script>
+    }
+

@@ -1,0 +1,20 @@
+import type { RiskLevel, ConnectionStatus } from "@/domain/types";
+
+type Tone = "neutral" | "info" | "success" | "warning" | "danger" | "purple" | "cyan";
+const TONES: Record<string, Tone> = {
+  ACTIVE: "info", COMPLETED: "success", HEALTHY: "success", PASS: "success", PASSED: "success", APPROVED: "success", SUCCESS: "success", DONE: "success", RESOLVED: "success", CONNECTED: "success", VERIFIED: "success", RUNNING: "info", ONLINE: "success", ENABLED: "success", IMPLEMENTED: "success", PAID: "success",
+  BLOCKED: "danger", FAILED: "danger", FAIL: "danger", REJECTED: "danger", UNHEALTHY: "danger", ESCALATED: "danger", ERROR: "danger", QUARANTINED: "danger", REVOKED: "danger", SEV1: "danger", SEV2: "danger", CRITICAL: "danger", OPEN: "danger", DENIED: "danger", CANCELLED: "neutral",
+  AWAITING_APPROVAL: "warning", WAITING_APPROVAL: "warning", PENDING: "warning", PENDING_APPROVAL: "warning", DEGRADED: "warning", WARN: "warning", DIAGNOSING: "warning", RECOVERY: "warning", RETRY: "warning", HEALING: "warning", ROLLED_BACK: "warning", CHANGES_REQUESTED: "warning", MITIGATING: "warning", SEV3: "warning", UNDER_REVIEW: "warning", REVIEWING: "warning", INVITED: "warning", DEMO: "warning", NOT_STARTED: "neutral", RECOVERED: "warning",
+  DEPLOYING: "info", EXECUTING: "info", VERIFYING: "info", BUILDING: "info", TESTING: "info", PACKAGING: "info", QUEUED: "neutral", PLANNING: "neutral", DISCOVERING: "neutral", POLICY_CHECK: "neutral", DRAFT: "neutral", SKIPPED: "neutral", NOT_CONNECTED: "neutral", DISABLED: "neutral", NEW: "info", SEV4: "neutral", CLOSED: "neutral", SUSPENDED: "neutral", REMOVED: "neutral", EXPIRED: "neutral", IGNORED: "neutral", APPROVED_REC: "success", COMING_SOON: "purple", AI: "purple", MERGED: "purple", HIGH: "danger", MEDIUM: "warning", LOW: "success", AFFECTED: "info", NO_CHANGE: "neutral", REVIEW: "warning", TRIALING: "info", PAST_DUE: "danger",
+};
+const ICONS: Record<string, string> = { COMPLETED: "bi-check-lg", HEALTHY: "bi-check-lg", BLOCKED: "bi-x-octagon-fill", FAILED: "bi-x-lg", AWAITING_APPROVAL: "bi-hourglass-split", WAITING_APPROVAL: "bi-hourglass-split", PENDING: "bi-clock", DEGRADED: "bi-exclamation-triangle-fill", QUARANTINED: "bi-shield-x", EXECUTING: "bi-play-fill", DEPLOYING: "bi-rocket-takeoff", ESCALATED: "bi-exclamation-octagon-fill", RECOVERY: "bi-bandaid", RETRY: "bi-arrow-repeat", DIAGNOSING: "bi-search", ROLLED_BACK: "bi-arrow-counterclockwise", DEMO: "bi-flask", CONNECTED: "bi-plug-fill", NOT_CONNECTED: "bi-plug", ERROR: "bi-exclamation-circle", COMING_SOON: "bi-stars", ACTIVE: "bi-circle-fill", APPROVED: "bi-check-lg", REJECTED: "bi-x-lg", AI: "bi-robot", CRITICAL: "bi-radioactive", HIGH: "bi-exclamation-triangle-fill", MEDIUM: "bi-dash-circle", LOW: "bi-shield-check", VERIFIED: "bi-patch-check-fill", AFFECTED: "bi-record-circle", NO_CHANGE: "bi-circle", REVIEW: "bi-question-circle", SKIPPED: "bi-skip-forward" };
+
+export function StatusBadge({ status, label, outline, icon }: { status: string; label?: string; outline?: boolean; icon?: boolean }) {
+  const tone = TONES[status] ?? "neutral";
+  const ico = ICONS[status];
+  return <span className={`status tone-${tone}${outline ? " outline" : ""}`}>{icon !== false && ico ? <i className={`bi ${ico}`} aria-hidden /> : null}{label ?? status.replace(/_/g, " ")}</span>;
+}
+export function RiskBadge({ risk }: { risk: RiskLevel }) { return <StatusBadge status={risk} label={`Risk: ${risk}`} />; }
+export function ModeBadge({ mode }: { mode: ConnectionStatus | "COMING_SOON" }) { return <StatusBadge status={mode} label={mode === "COMING_SOON" ? "Coming soon" : mode.replace("_", " ")} />; }
+export function PermissionBadge({ permission }: { permission: string }) { return <span className="status tone-neutral outline mono">{permission}</span>; }
+export function ExecMode({ mode }: { mode: string }) { const t: Record<string, Tone> = { AI: "purple", TASK_ENGINE: "info", AGENT: "cyan", HUMAN: "neutral", AUTOMATION: "success", WEBHOOK: "neutral", SYSTEM: "neutral" }; return <span className={`status tone-${t[mode] ?? "neutral"}`}>{mode.replace("_", " ")}</span>; }

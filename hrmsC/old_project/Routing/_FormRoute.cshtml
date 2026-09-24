@@ -1,0 +1,264 @@
+﻿@model SEP.RoutingManagement.Models.Routing
+@{
+    string Disabled = "";
+    bool DisabledDDL = false;
+    if (ViewBag.Disabled == true)
+    {
+        Disabled = "disabled = 'disabled' ";
+    }
+    if (Model.ID != Guid.Empty)
+    {
+        DisabledDDL = true;
+    }
+}
+<div class="portlet box blue">
+    <div class="portlet-title">
+
+    </div>
+    <div class="portlet-body">
+        <form class="form-horizontal" role="form">
+            <div class="form-body">
+                <div class="form-group">
+                    <label class="col-md-2 control-label">Select System</label>
+                    <div class="col-md-10 SystemIDDiv">
+                        @Html.DropDownListFor(m => m.SystemID,
+                            (SelectList)ViewBag.ListOfSystem,
+                            DisabledDDL ? (object)new
+                            {
+                                @class = "form-control requiredFields",
+                                @id = "SystemID",
+                                disabled = true
+                            }
+                            : new
+                            {
+                                @class = "form-control requiredFields",
+                                @id = "SystemID"
+                            })
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-md-2 control-label">Select Application</label>
+                    <div class="col-md-10 ApplicationIDDiv">
+                        @Html.DropDownListFor(m => m.ApplicationID,
+                            (SelectList)ViewBag.ListOfApplication,
+                            DisabledDDL ? (object)new
+                            {
+                                @class = "form-control requiredFields",
+                                @id = "ApplicationID",
+                                disabled = true
+                            }
+                            : new
+                            {
+                                @class = "form-control requiredFields",
+                                @id = "ApplicationID"
+                            })
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-md-2 control-label">Select App Type</label>
+                    <div class="col-md-10 ApplicationTypeIDDiv">
+                        @Html.DropDownListFor(m => m.ApplicationTypeID,
+                            (SelectList)ViewBag.ListOfApplicationType,
+                        DisabledDDL ? (object)new
+                        {
+                            @class = "form-control requiredFields",
+                            @id = "ApplicationTypeID",
+                            disabled = true
+                        }
+                        : new
+                        {
+                            @class = "form-control requiredFields",
+                            @id = "ApplicationTypeID"
+                        })
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-md-2 control-label">Select App Sub Type</label>
+                    <div class="col-md-10 ApplicationSubTypeIDDiv">
+                        @Html.DropDownListFor(m => m.ApplicationSubTypeID,
+                            (SelectList)ViewBag.ListOfApplicationSubType,
+                        DisabledDDL ? (object)new
+                        {
+                            @class = "form-control requiredFields",
+                            @id = "ApplicationSubTypeID",
+                            disabled = true
+                        }
+                        : new
+                        {
+                            @class = "form-control requiredFields",
+                            @id = "ApplicationSubTypeID"
+                        })
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-md-2 control-label">Routing Name<span class="required">*</span></label>
+                    <div class="col-md-10 RoutingNameDiv">
+                        @Html.TextBoxFor(m => m.RoutingName,
+                                ViewBag.Disabled ? (object)new
+                                {
+                                    @class = "form-control requiredFields",
+                                    @placeholder = "Routing Name",
+                                    readOnly = true
+                                }
+                                : new
+                                {
+                                    @class = "form-control requiredFields",
+                                    @placeholder = "Routing Name"
+                                })
+                    </div>
+                </div>
+                @if (Model.ID != Guid.Empty)
+                {
+                    <div class="form-group">
+                        <label class="col-md-2 control-label">Active</label>
+                        <div class="col-md-10">
+                            <div class="checkbox-list">
+                                <label class="checkbox-inline">
+                                    <input type="checkbox"
+                                           id="Active"
+                                           name="Active"
+                                           value="true"
+                                           checked="@Model.Active"
+                                           string.empty"
+                                           @Disabled />
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                }
+                @if (Model.CreatedDate != null)
+                {
+                    <div class="form-group">
+                        <label class="col-md-2 control-label">Created By</label>
+                        <div class="col-md-4">
+                            @if (Model.CreatedBy != null)
+                            {
+                                @Html.TextBoxFor(m => m.CreatedBy,
+                                    new
+                                    {
+                                        @class = "form-control",
+                                        @placeholder = "Created By",
+                                        @readonly = true
+                                    })
+                            }
+                        </div>
+                        <label class="col-md-2 control-label">Created Date</label>
+                        <div class="col-md-4">
+                            <input type="text"
+                                   name="CreatedDate"
+                                   placeholder="Created Date"
+                                   class="form-control"
+                                   readonly="readonly"
+                                   value="@TNB_ESS_MVC.Helpers.GeneralHelper.FormatDateTime(Model.CreatedDate)">
+                        </div>
+                    </div>
+                }
+                @if (Model.ModifiedDate != null)
+                {
+                    <div class="form-group">
+                        <label class="col-md-2 control-label">Modified By</label>
+                        <div class="col-md-4">
+                            @if (Model.ModifiedBy != null)
+                            {
+                                @Html.TextBoxFor(m => m.ModifiedBy,
+                                    new
+                                    {
+                                        @class = "form-control",
+                                        @placeholder = "Modified By",
+                                        @readonly = true
+                                    })
+                            }
+                        </div>
+                        <label class="col-md-2 control-label">Modified Date</label>
+                        <div class="col-md-4">
+                            <input type="text"
+                                   name="ModifiedDate"
+                                   placeholder="Modified Date"
+                                   class="form-control"
+                                   readonly="readonly"
+                                   value="@TNB_ESS_MVC.Helpers.GeneralHelper.FormatDateTime(Model.ModifiedDate)">
+                        </div>
+                    </div>
+                }
+
+            </div>
+        </form>
+    </div>
+</div>
+<script>
+    $(function () {
+        var ddlSource1 = $('#SystemID').val();
+        var ddlTarget1 = '#ApplicationID';
+        var ddlTarget2 = '#ApplicationTypeID';
+        var ddlTarget3 = '#ApplicationSubTypeID';
+        var urlAction1 = "@Url.Action("GetListOfApplication", "Routing")";
+        var urlAction2 = "@Url.Action("GetListOfApplicationType", "Routing")";
+        var urlAction3 = "@Url.Action("GetListOfApplicationSubType", "Routing")";
+        var ddlSource2 = getApplication(ddlSource1, ddlTarget1, urlAction1);
+        var ddlSource3 = getApplication(ddlSource2, ddlTarget2, urlAction2);
+        var ddlSource4 = getApplication(ddlSource3, ddlTarget3, urlAction3);
+    });
+    $("#SystemID").change(function (e) {
+
+        var ddlSource1 = $('#SystemID').val();
+        var ddlTarget1 = '#ApplicationID';
+        var ddlTarget2 = '#ApplicationTypeID';
+        var ddlTarget3 = '#ApplicationSubTypeID';
+        var urlAction1 = "@Url.Action("GetListOfApplication", "Routing")";
+        var urlAction2 = "@Url.Action("GetListOfApplicationType", "Routing")";
+        var urlAction3 = "@Url.Action("GetListOfApplicationSubType", "Routing")";
+        var ddlSource2 = getApplication(ddlSource1, ddlTarget1, urlAction1);
+        var ddlSource3 = getApplication(ddlSource2, ddlTarget2, urlAction2);
+        var ddlSource4 = getApplication(ddlSource3, ddlTarget3, urlAction3);
+
+    });
+    $("#ApplicationID").change(function (e) {
+        var ddlSource2 = $('#ApplicationID').val();
+        var ddlTarget2 = '#ApplicationTypeID';
+        var ddlTarget3 = '#ApplicationSubTypeID';
+        var urlAction2 = "@Url.Action("GetListOfApplicationType", "Routing")";
+        var urlAction3 = "@Url.Action("GetListOfApplicationSubType", "Routing")";
+        var ddlSource3 = getApplication(ddlSource2, ddlTarget2, urlAction2);
+        var ddlSource4 = getApplication(ddlSource3, ddlTarget3, urlAction3);
+
+    });
+    $("#ApplicationTypeID").change(function (e)
+    {
+        var ddlSource3 = $('#ApplicationTypeID').val();
+        var ddlTarget3 = '#ApplicationSubTypeID';
+        var urlAction3 = "@Url.Action("GetListOfApplicationSubType", "Routing")";
+        var ddlSource4 = getApplication(ddlSource3, ddlTarget3, urlAction3);
+
+    });
+    function getApplication(ddlSource, ddlTarget, urlAction)
+    {
+        var ddlTargetValue = "";
+        $.ajax({
+            type: "GET",
+            url: urlAction,
+            data: { selValue: ddlSource },
+            contentType: "application/json;charset=utf-8",
+            dataType: "json",
+            async: false,
+            success: function (result) {
+                $(ddlTarget).empty();
+                if(result != "")
+                {
+                    $.each(result, function (index, optionData) {
+                        $(ddlTarget).append("<option value='" + optionData.Value + "'>" + optionData.Text + "</option>");
+                    })
+                }
+                else
+                {
+                    $(ddlTarget).append("<option value='0'>None</option>");
+                    $(ddlTarget).val("0");
+                }
+                ddlTargetValue = $(ddlTarget).val();
+
+            },
+        });
+        return ddlTargetValue;
+    }
+
+</script>
+

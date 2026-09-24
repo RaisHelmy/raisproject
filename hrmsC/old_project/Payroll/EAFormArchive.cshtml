@@ -1,0 +1,90 @@
+﻿@using ESS.Payroll.Models
+@using SEP.RoutingManagement
+@model TaxExemptionVM
+@{
+    ViewBag.Title = "Tax Exemption Record Form";
+    Service.AllowAction AllowActions = ViewBag.AllowActions;
+
+    String CurrentEmployeeID = ViewBag.CurrentEmployeeID;
+    String CurrentApproverID = ViewBag.ApproverID;
+    String TaskID = ViewBag.TaskID;
+
+    bool showApprovalAction = !String.IsNullOrEmpty(TaskID) &&
+                                !String.IsNullOrEmpty(CurrentApproverID) &&
+                                CurrentApproverID.Contains(CurrentEmployeeID);
+
+    bool isCurrentEmployeeRequest = Model.EmployeeID == CurrentEmployeeID;
+}
+
+<style type="text/css">
+    .hidden_1 {
+        display: none;
+    }
+</style>
+
+<div class="form-section">
+    <div class="row">
+        <div class="col-md-12">
+            <h1 class="page-title">
+                @ViewBag.Title
+                <span style="padding-left:20px;">
+                    <small></small>
+                </span>
+            </h1>
+        </div>
+    </div>
+</div>
+
+@using (Html.BeginForm("TaxExemptionForm", "Payroll", FormMethod.Post))
+{
+    <input type="hidden" name="EntryID" value="@Model.EntryID" />
+    <input type="hidden" name="EmployeeID" value="@Model.EmployeeID" />
+
+    @Html.Partial("_RequestDetails", Model)
+    <!-- Employee Details -->
+    @Html.Partial("_PayrollEmployeeDetails", Model.Submiter)
+    @Html.Partial("_IncomeTaxDetails", Model)
+    @Html.Partial("_OptionalDeductions", Model)
+    @Html.Action("AttachmentControl", "Payroll",
+                 new { EmployeeID = ViewBag.EmployeeID, Mode = "View", SourceType = "TaxExemption", RequestID = @Model.EntryID })
+    <br />
+    <div class="row">
+        <div class="col-md-12">
+            <label><b>Note:</b> This Tax Exemption Application will be processed depending on monthly payroll run date. </label>
+        </div>
+    </div>
+    <br />
+    <!-- Buttons -->
+    <div class="row">
+        <div class="col-md-12">
+            @if (showApprovalAction)
+            {
+                if (AllowActions.CanAgree == "1")
+                {
+                    <input type="button" class="btn green" value="Agree" id="btnAgree" onclick="ApproverAction('Agree')" />
+                }
+
+                if (AllowActions.CanApprove == "1")
+                {
+                    <input type="button" class="btn green" value="Approve" id="btnApprove" onclick="ApproverAction('Approve')" />
+                }
+
+                if (AllowActions.CanDecline == "1")
+                {
+                    <input type="button" class="btn red" value="Decline" id="btnDecline" onclick="ApproverAction('Decline')" />
+                }
+            }
+            <input type="button" class="btn green" value="Back" id="btnBack" onclick="window.history.back()" />
+        </div>
+    </div>
+}
+
+@Html.Partial("__Prompt")
+<script>
+    $(function () {
+    });
+
+    function ApproverAction(action) {
+
+    }
+</script>

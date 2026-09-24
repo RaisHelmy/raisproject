@@ -1,0 +1,148 @@
+﻿@using ESS.Payroll.Models
+@model Tuple<IncomeTaxDetail, string, bool>
+@{
+    Layout = null;
+    IncomeTaxDetail taxDetail = Model.Item1;
+    String EmployeeID = Model.Item2;
+    bool PullFromSAP = Model.Item3;
+}
+<div class="row">
+    <div class="col-md-12">
+        <div class="portlet box blue">
+            <div class="mini-triangle"><img src="../Assets/img/menu-red-triangle.png" /></div>
+            <div class="portlet-title">
+                <div class="caption">
+                    <i class="fa fa-reorder"></i>Income Tax Details
+                </div>
+            </div>
+            <div class="portlet-body form">
+                <div class="form-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-horizontal">
+                                <div class="form-group">
+                                    <label class="control-label col-md-4 ">
+                                        Tax Type - Malaysia
+                                    </label>
+                                    <div class="col-md-8 form-control-static">
+                                        <input type="text" class="form-control" name="IncomeTaxDetail.TaxType" readonly="readonly" 
+                                               value="@taxDetail.TaxType" />
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="control-label col-md-4 ">
+                                        Income Tax Number
+                                    </label>
+                                    <div class="col-md-8 form-control-static">
+                                        <input type="text" class="form-control" name="IncomeTaxDetail.IncomeTaxNo" readonly="readonly" 
+                                               value="@taxDetail.IncomeTaxNo" />
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="control-label col-md-4">
+                                        Income Tax Office
+                                    </label>
+                                    <div class="col-md-8 form-control-static">
+                                        <input type="text" class="form-control" name="IncomeTaxDetail.IncomeTaxOffice" readonly="readonly" 
+                                               value="@taxDetail.IncomeTaxOffice" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-horizontal">
+                                <div class="form-group">
+                                    <label class="control-label col-md-4 ">
+                                        Disabled Individual
+                                    </label>
+                                    <div class="col-md-8  form-control-static">
+                                        <input type="text" class="form-control" name="IncomeTaxDetail.DisabledIndividual" readonly="readonly" 
+                                               value="@taxDetail.DisabledIndividual" />
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="control-label col-md-4 ">
+                                        Disabled Spouse
+                                    </label>
+                                    <div class="col-md-8  form-control-static">
+                                        <input type="text" class="form-control" name="IncomeTaxDetail.DisabledSpause" readonly="readonly" 
+                                               value="@taxDetail.DisabledSpause" />
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="control-label col-md-4 ">
+                                        Financial End
+                                    </label>
+                                    <div class="col-md-8  form-control-static">
+                                        <input type="text" class="form-control" name="IncomeTaxDetail.FinancialYear" readonly="readonly" 
+                                               value="@taxDetail.FinancialYear" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <hr />
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-horizontal">
+                                <div class="form-group">
+                                    <label class="control-label col-md-4 ">
+                                        ER Tax Reference Number
+                                    </label>
+                                    <div class="col-md-8 form-control-static">
+                                        <input type="text" class="form-control" name="IncomeTaxDetail.ERTaxRefNo" readonly="readonly" 
+                                               value="@taxDetail.ERTaxRefNo" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-horizontal">
+                                <div class="form-group">
+                                    <label class="control-label col-md-4 ">
+                                        Payee Name
+                                    </label>
+                                    <div class="col-md-8  form-control-static">
+                                        <input type="text" class="form-control" name="IncomeTaxDetail.PayeeName" readonly="readonly" 
+                                               value="@taxDetail.PayeeName" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(function () {
+        if ('@PullFromSAP' == 'True') {
+            UpdateIncomeTaxDetailsFromSAP();
+        }
+    });
+
+    function UpdateIncomeTaxDetailsFromSAP() {
+        var data = {
+            EmployeeID : '@EmployeeID'
+        };
+
+        $.post('@Url.Action("_IncomeTaxDetails", "Payroll")', data, function (result) {
+            if (result.ErrorMessage) {
+                return;
+            }
+
+            var data = result.Data;
+
+            $('input[name="IncomeTaxDetail.TaxType"]').val(data.TaxType);
+            $('input[name="IncomeTaxDetail.IncomeTaxNo"]').val(data.IncomeTaxNo);
+            $('input[name="IncomeTaxDetail.IncomeTaxOffice"]').val(data.IncomeTaxOffice);
+            $('input[name="IncomeTaxDetail.DisabledIndividual"]').val(data.DisabledIndividual);
+            $('input[name="IncomeTaxDetail.DisabledSpause"]').val(data.DisabledSpause);
+            $('input[name="IncomeTaxDetail.FinancialYear"]').val(data.FinancialYear);
+            $('input[name="IncomeTaxDetail.ERTaxRefNo"]').val(data.ERTaxRefNo);
+            $('input[name="IncomeTaxDetail.PayeeName"]').val(data.PayeeName);
+        });
+    }
+</script>

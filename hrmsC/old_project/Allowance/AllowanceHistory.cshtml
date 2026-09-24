@@ -1,0 +1,166 @@
+﻿@using ESS.Allowance.Models
+
+@model List<AllowanceTypeVM>
+
+@{
+    ViewBag.Title = "Allowance History";
+
+    String StartDate = DateTime.Today.AddDays(-60).ToString("dd/MM/yyyy");
+    String EndDate = DateTime.Today.ToString("dd/MM/yyyy");
+
+    DateTime d1 = DateTime.Now.AddYears(-20);
+    DateTime d2 = DateTime.Now.AddYears(20);
+    string dtStrStart = d1.ToString("dd MMM yyyy");
+    string dtStrEnd = d2.ToString("dd MMM yyyy");
+}
+
+<div class="row">
+    <div class="col-md-12">
+        <br />
+        <h1 class="page-title">
+            Allowance History<span style="padding-left:20px;"><small></small></span>
+        </h1>
+    </div>
+</div>
+<br />
+<div class="form-body">
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-4 control-label">Submission Date (From)</label>
+                    <div class="col-md-8 form-control-static">
+                        <div class="input-group date date-picker" data-date-format="dd MM yyyy">
+                            <input type="text" class="form-control" id="SubDateFrom" name="SubDateFrom" />
+                            <span class="input-group-btn">
+                                <button type="button" class="btn default"><i class="fa fa-calendar"></i></button>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-4 control-label">Submission Date (To)</label>
+                    <div class="col-md-8 form-control-static">
+                        <div class="input-group date date-picker" data-date-format="dd MM yyyy">
+                            <input type="text" class="form-control" id="SubDateTo" name="SubDateTo" />
+                            <span class="input-group-btn">
+                                <button type="button" class="btn default"><i class="fa fa-calendar"></i></button>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-4 control-label">Allowance Type</label>
+                    <div class="col-md-8 form-control-static">
+                        <select class="form-control" id="AllowanceCode" name="AllowanceCode">
+                            <option value="">- All -</option>
+                            @foreach (var allowanceType in Model)
+                            {
+                                <option value="@allowanceType.AllowanceCode">@allowanceType.AllowanceCode - @allowanceType.AllowanceType</option>
+                            }
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-4 control-label">Status</label>
+                    <div class="col-md-8 form-control-static">
+                        <select class="form-control" id="Status">
+                            <option value="">- All -</option>
+                            <option value="Draft">Draft</option>
+                            <option value="Pending">Pending</option>
+                            <option value="Processed">Processed</option>
+                            <option value="Verified">Verified</option>
+                            <option value="Declined">Declined</option>
+                            <option value="Reworked">Reworked</option>
+                            <option value="Withdrawn">Withdrawn</option>
+                            <option value="Renewed">Renewed</option>
+                            <option value="Terminate">Terminate</option>
+                            <option value="Terminated">Terminated</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-4 control-label">Employee</label>
+                    <div class="col-md-8 form-control-static">
+                        @Html.Partial("_PeoplePicker")
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">&nbsp;</div>
+    <div class="row">
+        <div class="col-md-12">
+            <div class="text-right">
+                <input type="button" id="btn-Search" class="btn green btn-Search" value="Search" onclick="SearchListing();">
+            </div>
+        </div>
+    </div>
+    <div class="row">&nbsp;</div>
+    <div class="row">
+        <div class="col-md-12">
+            <div id="SearchResult">
+
+            </div>
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+    $(function () {
+        $('.date-picker').datepicker({
+            format: 'dd/mm/yyyy',
+            autoclose: true,
+            setStartDate: '@dtStrStart',
+            setEndDate: '@dtStrEnd'
+        });
+
+        $('#SubDateFrom').val('@StartDate');
+        $('#SubDateTo').val('@EndDate');
+
+        SearchListing();
+    });
+
+    function SearchListing() {
+        var _DateFrom = $('#SubDateFrom').val();
+        var _DateTo = $('#SubDateTo').val();
+        var _AllowanceCode = $('#AllowanceCode').val();
+        var _Status = $('#Status').val();
+        var _EmpID = $('#hfEmpID').val();
+
+        $("#SearchResult").html("LOADING...");
+
+        $.ajax({
+            type: "GET",
+            url: '@Url.Content("~/Allowance/_AllowanceHistoryResult")',
+            cache: false,
+            dataType: "html",
+            data: { DateFrom: _DateFrom, DateTo: _DateTo, AllowanceCode: _AllowanceCode, Status: _Status, EmpID: _EmpID },
+            success: function (content) {
+                $("#SearchResult").html(content);
+            },
+            error: function (e) {
+                console.log(e);
+            }
+        });
+    }
+</script>

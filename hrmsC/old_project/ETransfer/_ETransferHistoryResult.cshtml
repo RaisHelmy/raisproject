@@ -1,0 +1,91 @@
+﻿@model List<ESS.ETransfer.Models.ETransferHistory>
+@{
+    Layout = null;
+}
+
+<div class="portlet box blue">
+    <div class="mini-triangle"><img src="../Assets/img/menu-red-triangle.png" /></div>
+    <div class="portlet-title">
+        <div class="caption">
+            <i class="fa fa-reorder"></i>My Online Transfer History
+        </div>
+        <div class="tools">
+        </div>
+    </div>
+    <div class="portlet-body form">
+        <div class="form-body">
+            <div class="form-horizontal">
+                <div class="table-toolbar">
+                    <table id="tblResult" class="table table-striped table-bordered table-hover table-full-width">
+                        <thead>
+                            <tr>
+                                <th></th>
+                                <th>Reference No.</th>
+                                <th>Transfer Type</th>
+                                <th>Requested Department</th>
+                                <th>Status</th>
+                                <th>Submission Date</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            @foreach (var item in @Model)
+                            {
+                                <tr>
+                                    <td>
+                                        <a class="btn blue btn-sm" href="@Url.Content("~/ETransfer/ETransferViewForm")?RequestID=@item.RequestID&Source=History">
+                                            <i class="fa fa-search"></i>
+                                        </a>
+                                    </td>
+                                    <td>@item.RequestNo</td>
+                                    <td>@item.TransferType</td>
+                                    
+                                        @if (!string.IsNullOrEmpty(item.RequestedDepartment))
+                                        {
+                                            <td>
+                                                <ul>
+                                                    @{
+                                                        string[] dep = item.RequestedDepartment.Split(',');
+                                                     }
+                                                     @foreach (string a in dep)
+                                                     { 
+                                                         <li>@System.Web.HttpUtility.HtmlDecode(a)</li>
+                                                     }
+                                                    
+                                                </ul>
+                                            </td>
+                                        }
+                                        else
+                                        {
+                                        <td>-</td>
+                                        } 
+
+                                    
+                                    @if (item.StatusName == "Declined" || item.StatusName == "Withdrawn")
+                                    {
+                                        <td style="color:red;"><b>@item.StatusName</b></td>
+                                    }
+                                    else
+                                    {
+                                        <td style="color:green;"><b>@item.StatusName</b></td>
+                                    }
+                                    @if (item.CreatedDate.HasValue)
+                                    {
+                                        <td>@item.CreatedDate.Value.ToString("dd-MM-yyyy")</td>
+                                    }
+                                    else
+                                    {
+                                        <td>-</td>
+                                    }                                   
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+    transformTable("#tblResult");
+</script>

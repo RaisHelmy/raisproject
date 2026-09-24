@@ -1,0 +1,166 @@
+﻿@{
+    ViewBag.Title = "Leave Calculator";
+
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+    bool isEarlyRetirement = ViewBag.EarlyRetirement;
+}
+
+<div class="form-section">
+    <div class="row">
+        <div class="col-md-12">
+            <h1 class="page-title">
+                Leave Calculator
+                <span style="padding-left:20px;">
+                    <small></small>
+                </span>
+            </h1>
+        </div>
+    </div>
+</div>
+
+@using (Html.BeginForm("", "LeaveCalculator", FormMethod.Post, new { @class = "form-horizontal", @id = "MainForm" }))
+{
+    <input type="hidden" id="hfCurrEmployeeID" value="@ViewBag.CurrEmployeeID" />
+
+    if (ViewBag.IsEmployeeInRole == "true")
+    {
+        <div class="row">
+            <div class="col-md-12">
+                <div class="portlet box blue">
+                    <div class="mini-triangle"><img src="../Assets/img/menu-red-triangle.png" /></div>
+                    <div class="portlet-title">
+                        <div class="caption">
+                            <i class="fa fa-reorder"></i>Employee
+                        </div>
+                    </div>
+                    <div class="portlet-body form">
+                        <div class="form-body" id="ct00_CustomFieldFormView">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-horizontal">
+                                        <div class="form-group">
+                                            <label class="col-md-4 control-label">Employee</label>
+                                            <div class="col-md-6 form-control-static">
+                                                @Html.Partial("_PeoplePicker")
+                                            </div>
+                                            <div class="col-md-2 form-control-static">
+                                                <input type="button" id="btn-Search" class="btn green btn-Search" value="Search" onclick="CalculateRetirementDateDetails();">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+    <div id="SearchResult"></div>
+
+    
+    @* Temporarily remove 8 months checking
+        if (ViewBag.IsAbleAccess)
+        {
+            if (ViewBag.IsEmployeeInRole == "true")
+            {
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="portlet box blue">
+                            <div class="mini-triangle"><img src="../Assets/img/menu-red-triangle.png" /></div>
+                            <div class="portlet-title">
+                                <div class="caption">
+                                    <i class="fa fa-reorder"></i>Employee
+                                </div>
+                            </div>
+                            <div class="portlet-body form">
+                                <div class="form-body" id="ct00_CustomFieldFormView">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="form-horizontal">
+                                                <div class="form-group">
+                                                    <label class="col-md-4 control-label">Employee</label>
+                                                    <div class="col-md-6 form-control-static">
+                                                        @Html.Partial("_PeoplePicker")
+                                                    </div>
+                                                    <div class="col-md-2 form-control-static">
+                                                        <input type="button" id="btn-Search" class="btn green btn-Search" value="Search" onclick="CalculateRetirementDateDetails();">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+
+
+            <div id="SearchResult"></div>
+        }
+        else
+        {
+            <br />
+            <p>
+                This function only applicable for them who will retire in the next 8 months
+            </p>
+        }*@
+
+
+    <script>
+        jQuery(document).ready(function () {
+            if ('@ViewBag.IsEmployeeInRole' == "false") {
+
+                CalculateSelfRetirementDate();
+            }
+
+        });
+
+        function CalculateSelfRetirementDate() {
+            //Clear Data
+            $("#SearchResult").html("Loading...");
+
+            var SelectedEmployeeID = $("#hfCurrEmployeeID").val();
+
+            $.ajax({
+                type: "GET",
+                url: '@Url.Content("~/LeaveApplication/RetirementCalculator")',
+                cache: false,
+                dataType: "html",
+                data: { EmployeeID: SelectedEmployeeID, EarlyRetirement : @isEarlyRetirement.ToString().ToLower() },
+                success: function (content) {
+                    $("#SearchResult").html(content);
+                },
+                error: function (e) {
+                    console.log(e);
+                }
+            });
+        }
+
+        function CalculateRetirementDateDetails() {
+            //Clear Data
+            $("#SearchResult").html("loading");
+
+            var SelectedEmployeeID = $("#hfEmpID").val();
+
+            $.ajax({
+                type: "GET",
+                url: '@Url.Content("~/LeaveApplication/RetirementCalculator")',
+                cache: false,
+                dataType: "html",
+                data: { EmployeeID: SelectedEmployeeID, EarlyRetirement : @isEarlyRetirement.ToString().ToLower() },
+                success: function (content) {
+                    $("#SearchResult").html(content);
+                },
+                error: function (e) {
+                    console.log(e);
+                }
+            });
+        }
+    </script>
+}
+

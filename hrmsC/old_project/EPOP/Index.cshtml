@@ -1,0 +1,77 @@
+﻿@using System.Data;
+@{
+    ViewBag.Title = "Index";
+    string Group = "Non-Executive";
+    DataTable dt = new DataTable();
+
+    string CAMLQuery = @"<Where><Eq><FieldRef Name='Category' /><Value Type='Text'>" + Group + @"</Value></Eq></Where><OrderBy><FieldRef Name='Order0' /></OrderBy>";
+
+    dt = ESS.Core.SP.GetList("EPop - Assessment Factor", "", CAMLQuery);
+
+    List<ESS.EPop.Models.EPopOnlineAssessmentDetailsVM> _EPopOnlineAssessmentDetailsVM = new List<ESS.EPop.Models.EPopOnlineAssessmentDetailsVM>();
+
+    if (dt != null && dt.Rows.Count > 0)
+    {
+        foreach (DataRow dr in dt.Rows)
+        {
+            ESS.EPop.Models.EPopOnlineAssessmentDetailsVM currEPopOnlineAssessmentDetailsVM = new ESS.EPop.Models.EPopOnlineAssessmentDetailsVM();
+
+            currEPopOnlineAssessmentDetailsVM.ID = "";
+            currEPopOnlineAssessmentDetailsVM.AssessmentID = "";
+            //Assessment Factor (MALAY)
+            currEPopOnlineAssessmentDetailsVM.Title = dr["Title"] + "";
+            //Assessment Factor (english)
+            currEPopOnlineAssessmentDetailsVM.AssessmentFactor2 = dr["AssessmentFactor2"] + "";
+            currEPopOnlineAssessmentDetailsVM.Remarks = "";
+
+            currEPopOnlineAssessmentDetailsVM.Rate = null;
+
+            string orderNos = dr["Order0"] + "";
+            int OrderNo = 0;
+            int.TryParse(orderNos, out OrderNo);
+
+            currEPopOnlineAssessmentDetailsVM.OrderNo = OrderNo;
+
+            _EPopOnlineAssessmentDetailsVM.Add(currEPopOnlineAssessmentDetailsVM);
+        }
+
+
+    }
+    //dt = ESS.Core.SP.GetList("EPop - Assessment Factor", "", "<Where><Eq><FieldRef Name='Category' /><Value Type='Text'>" + abc + @"</Value></Eq></Where><OrderBy><FieldRef Name='Order0' /></OrderBy>");
+}
+
+<h2>Index</h2>
+
+<table id="tbl_Index_DetailsResult" class="table table-striped table-bordered table-hover table-full-width table-font-size">
+    <thead>
+        <tr>
+            @foreach (System.Data.DataColumn col in dt.Columns)
+            {
+                <th class="long-header" style="width:0px;">@col.Caption</th>
+            }
+
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (System.Data.DataRow item in dt.Rows)
+        {
+        <tr>
+            <!--Hide this Checkbox column, since Revert Assessment button is already hide-->
+            @*<td class="">
+            <input type="checkbox" class="AssessmentCheckBox" value="@item.ID.Trim()" data-category="@item.Category"/>
+        </td>*@
+
+            @for (int j = 0; j < item.ItemArray.Count(); j++)
+            {
+                <td class="long-header">
+                    <label>@item.ItemArray[j].ToString()</label>
+                </td>
+            }
+        </tr>
+
+        }
+    </tbody>
+
+</table>
+
+

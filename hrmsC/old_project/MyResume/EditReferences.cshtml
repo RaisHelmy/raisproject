@@ -1,0 +1,58 @@
+﻿@model List<OJA.Models.Reference>
+@{
+    Layout = null;
+
+}
+ 
+<form id="referencesForm"> 
+    <div class="row">
+        <div class="col-md-12">
+            <div class="form-horizontal">
+                @for (int i = 0; i < Model.Count; i++)
+                {
+                    @Html.HiddenFor(m => Model[i].Relationship)
+                    @Html.HiddenFor(m => Model[i].ReferEmployeeID)
+                    <div class="portlet box blue">
+                        <div class="portlet-title">
+                            <div class="caption">
+                                <i class="fa fa-reorder"></i> @Model[i].Relationship <!--Co-Worker / Peer @(i + 1))-->
+                            </div>
+                        </div>
+
+                        <div class="portlet-body form">
+                            <div class="form-body">
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <label class="control-label col-md-2">Name</label>
+                                        <div class="col-md-4 form-control-static">
+                                            @*@Html.TextBoxFor(m => Model[i].EmployeeName, new { @class = "form-control", @readonly = "readonly" })*@
+                                            @Html.Partial("_PeoplePickerControl", new ViewDataDictionary { { "PPID", "ReferEmployeeID" + (i) }, { "TextBox", Model[i].EmployeeCode + " - " + Model[i].EmployeeName} })                                      
+                                        </div>
+                                        <div class="form-control-static">
+                                            <a class="btn btn-primary" onclick="javascript: clearReference(@(i));">Clear</a>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="control-label col-md-2">Office Phone No.</label>
+                                        <div class="col-md-4 form-control-static">
+                                            @Html.TextBoxFor(m => Model[i].PhoneNo, new { @class = "form-control" })
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="control-label col-md-2">Mobile Phone No.</label>
+                                        <div class="col-md-4 form-control-static">
+                                            @Html.TextBoxFor(m => Model[i].HPNo, new { @class = "form-control" })
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+
+        </div>
+    </div>
+</form>
+
+@Html.Partial("_PeoplePickerInit")

@@ -1,0 +1,1438 @@
+﻿@model Tuple<ESS.Employee.Models.EducationInfo, ESS.Employee.Models.Setting>
+@using ESS.Employee;
+@{
+    Layout = null;
+
+    #region
+    string module = "Education";
+
+    Layout = null;
+    bool ReadOnly = false;
+    bool EditReadOnly = false;
+    bool Create = false;
+
+    string classViewReadOnly = "";
+    string EmployeeCategory_Education = ViewBag.EmployeeCategory_Education + "";
+
+    string Mode = ViewBag.Mode + "";
+    string divMode = "";
+    if (String.Equals(Mode, "View", StringComparison.OrdinalIgnoreCase))
+    {
+        ReadOnly = true;
+        classViewReadOnly = "disabled = 'disabled' ";
+        divMode = "";
+    }
+    else if (String.Equals(Mode, "Edit", StringComparison.OrdinalIgnoreCase))
+    {
+        ReadOnly = false;
+        EditReadOnly = true;
+        classViewReadOnly = "";
+        divMode = "Edit";
+    }
+    else
+    {
+        Create = true;
+        divMode = "Insert";
+    }
+
+    bool runFieldVisible = false;
+    if (Model.Item2 != null)
+    {
+        runFieldVisible = true;
+    }
+
+    DateTime setdateEnd = DateTime.Now;
+    string dtStrEnd = setdateEnd.ToString("dd/MM/yyyy");
+    #endregion
+}
+
+<div id="_EducationInfo" class="row">
+    <div class="col-md-12">
+        <div class="portlet box blue">
+            <div class="mini-triangle"><img src="../Assets/img/menu-red-triangle.png" /></div>
+            <div class="portlet-title">
+                <div class="caption">
+                    <i class="fa fa-reorder"></i>Education Info
+                </div>
+            </div>
+            <div class="portlet-body form" id="SearchGet_EducationInfo">
+                <div class="form-body">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="form-horizontal">
+                                <div class="form-group divEducation">
+                                    <label class="control-label col-md-2">
+                                        Education<span class="required">*</span>
+                                    </label>
+                                    <div class="col-md-10 form-control-static">
+                                        <input type="hidden" class="form-control"
+                                               name="HiddenEducation" id="HiddenEducation" value="@Model.Item1.Education">
+                                        <input type="hidden" name="EducationCode" id="EducationCode" value="@Model.Item1.EducationCode" />
+                                        @if (ReadOnly)
+                                        {
+                                            <input type="text" class="form-control" id="EducationName" name="EducationName" value="@Model.Item1.Education" readonly="readonly" @classViewReadOnly />
+                                        }
+                                        else
+                                        {
+                                            <input type="hidden" name="EducationName" id="EducationName" value="@Model.Item1.Education" />
+                                            <select tabindex="0" id="ddlEducation" class="form-control" onchange="Checking();" @classViewReadOnly></select>
+                                        }
+                                    </div>
+                                </div>
+                                <div class="form-group divCountry">
+                                    <label class="control-label col-md-2 ">
+                                        Country<span class="required">*</span>
+                                    </label>
+                                    <div class="col-md-10 form-control-static">
+                                        <input type="hidden" class="form-control"
+                                               name="HiddenCountry" id="HiddenCountry" value="@Model.Item1.Country">
+                                        <input type="hidden" name="CountryCode" id="CountryCode" value="@Model.Item1.CountryCode" />
+                                        @if (ReadOnly)
+                                        {
+                                            <input type="text" class="form-control" id="CountryName" name="CountryName" value="@Model.Item1.Country" readonly="readonly" @classViewReadOnly />
+                                        }
+                                        else
+                                        {
+                                            <input type="hidden" name="CountryName" id="CountryName" value="@Model.Item1.Country" />
+                                            <select tabindex="0" id="ddlCountry" class="form-control" @classViewReadOnly></select>
+                                        }
+                                    </div>
+                                </div>
+                                <div class="form-group divSchool">
+                                    <label class="control-label col-md-2 ">
+                                        School
+                                    </label>
+                                    <div class="col-md-10 form-control-static">
+                                        <input type="hidden" class="form-control"
+                                               name="HiddenSchool" id="HiddenSchool" value="@Model.Item1.School">
+                                        <input type="hidden" name="SchoolCode" id="SchoolCode" value="@Model.Item1.SchoolCode" />
+                                        @if (ReadOnly)
+                                        {
+                                            <input type="text" class="form-control" id="SchoolName" name="SchoolName" value="@Model.Item1.School" readonly="readonly" @classViewReadOnly />
+                                        }
+                                        else
+                                        {
+                                            <input type="hidden" name="SchoolName" id="SchoolName" value="@Model.Item1.School" />
+                                            <select tabindex="0" id="ddlSchool" class="form-control" @classViewReadOnly></select>
+                                        }
+                                    </div>
+                                </div>
+                                <div class="form-group divCertificate">
+                                    <label class="control-label col-md-2 ">
+                                        Certificate<span class="required">*</span>
+                                    </label>
+                                    <div class="col-md-10 form-control-static">
+                                        <input type="hidden" class="form-control"
+                                               name="HiddenCertificate" id="HiddenCertificate" value="@Model.Item1.Certificate">
+                                        <input type="hidden" name="CertificateCode" id="CertificateCode" value="@Model.Item1.CertificateCode" />
+                                        @if (ReadOnly)
+                                        {
+                                            <input type="text" class="form-control" id="CertificateName" name="CertificateName" value="@Model.Item1.Certificate" readonly="readonly" @classViewReadOnly />
+                                        }
+                                        else
+                                        {
+                                            <input type="hidden" name="CertificateName" id="CertificateName" value="@Model.Item1.Certificate" />
+                                            <select tabindex="0" id="ddlCertificate" class="form-control" @classViewReadOnly></select>
+                                        }
+                                    </div>
+                                </div>
+                                
+                                <div class="form-group ">
+                                    <div class="divCGPA">
+                                        <label class="control-label col-md-2">
+                                            CGPA<span class="required spanCGPARequired">*</span>
+                                        </label>
+                                        <div class="col-md-4 form-control-static">
+                                            <input type="text" class="form-control" MaxLength="7"
+                                                   name="CGPA" value="@Model.Item1.CGPA" id="CGPA" @classViewReadOnly>
+                                            <input type="hidden" class="form-control"
+                                                   name="HiddenCGPA" value="@Model.Item1.CGPA" id="HiddenCGPA">
+                                        </div>
+                                    </div>
+                                    <div class="divClass">
+                                        <label class="control-label col-md-2">
+                                            Class<span class="required spanClassRequired">*</span>
+                                        </label>
+                                        <div class="col-md-4 form-control-static">
+                                            <input type="hidden" class="form-control"
+                                                   name="HiddenClass" id="HiddenClass" value="@Model.Item1.Class">
+                                            <input type="hidden" name="ClassCode" id="ClassCode" value="@Model.Item1.ClassCode" />
+                                            @if (ReadOnly)
+                                            {
+                                                <input type="text" class="form-control" id="ClassName" name="ClassName" value="@Model.Item1.Class" readonly="readonly" @classViewReadOnly />
+                                            }
+                                            else
+                                            {
+                                                <input type="hidden" name="ClassName" id="ClassName" value="@Model.Item1.Class" />
+                                                <select tabindex="0" id="ddlClass" class="form-control" @classViewReadOnly></select>
+                                            }
+                                        </div>
+                                    </div>
+
+                                </div>
+                                <div class="form-group divFinalGrade">
+                                    <label class="control-label col-md-2 ">
+                                        Final Grade
+                                    </label>
+                                    <div class="col-md-4 form-control-static">
+                                        <input type="text" class="form-control" MaxLength="7"
+                                               name="FinalGrade" value="@Model.Item1.FinalGrade" id="FinalGrade" @classViewReadOnly>
+                                        <input type="hidden" class="form-control"
+                                               name="HiddenFinalGrade" value="@Model.Item1.FinalGrade" id="HiddenFinalGrade">
+                                    </div>
+                                    
+                                </div>
+                                <div class="form-group divBranchOfStudy1">
+                                    <label class="control-label col-md-2 ">
+                                        Branch of Study 1<span class="required">*</span>
+                                    </label>
+                                    <div class="col-md-10 form-control-static">
+                                        <input type="hidden" class="form-control"
+                                               name="HiddenBranchOfStudy1" id="HiddenBranchOfStudy1" value="@Model.Item1.BranchOfStudy1">
+                                        <input type="hidden" name="BranchOfStudy1Code" id="BranchOfStudy1Code" value="@Model.Item1.BranchOfStudy1Code" />
+                                       @if (ReadOnly)
+                                       {
+                                        <input type="text" class="form-control" id="BranchOfStudy1Name" name="BranchOfStudy1Name" value="@Model.Item1.BranchOfStudy1" readonly="readonly" @classViewReadOnly />
+                                       }
+                                       else
+                                       {
+                                        <input type="hidden" name="BranchOfStudy1Name" id="BranchOfStudy1Name" value="@Model.Item1.BranchOfStudy1" />
+                                            <select tabindex="0" id="ddlBranchOfStudy1" class="form-control" @classViewReadOnly></select>
+                                       }
+                                    </div>
+                                </div>
+                                <div class="form-group divBranchOfStudy2">
+                                    <label class="control-label col-md-2 ">
+                                        Branch of Study 2
+                                    </label>
+                                    <div class="col-md-10 form-control-static">
+                                        <input type="hidden" class="form-control"
+                                               name="HiddenBranchOfStudy2" id="HiddenBranchOfStudy2" value="@Model.Item1.BranchOfStudy2">
+                                        <input type="hidden" name="BranchOfStudy2Code" id="BranchOfStudy2Code" value="@Model.Item1.BranchOfStudy2Code" />
+                                       @if (ReadOnly)
+                                       {
+                                        <input type="text" class="form-control" id="BranchOfStudy2Name" name="BranchOfStudy2Name" value="@Model.Item1.BranchOfStudy2" readonly="readonly" @classViewReadOnly />
+                                       }
+                                       else
+                                       {
+                                        <input type="hidden" name="BranchOfStudy2Name" id="BranchOfStudy2Name" value="@Model.Item1.BranchOfStudy2" />
+                                            <select tabindex="0" id="ddlBranchOfStudy2" class="form-control" @classViewReadOnly></select>
+                                       }
+                                    </div>
+                                </div>
+                                <div class="form-group divGraduatedDate">
+                                    <label class="control-label col-md-2">
+                                        Graduated Date<span class="required">*</span>
+                                    </label>
+                                    <div class="col-md-10 form-control-static">
+                                        @if (ReadOnly)
+                                        {
+                                            <input type="text" class="form-control" id="GraduatedDate" name="GraduatedDate" value="@Service.FormatDateInNumber(Model.Item1.GraduatedDate, "dd/MM/yyyy")" readonly="readonly" />
+                                        }
+                                        else
+                                        {
+                                            <div class="input-group date date-picker" id="boxGraduatedDate" data-date-format="dd/mm/yyyy">
+                                                <input type="text" class="form-control GraduatedDate"
+                                                       id="GraduatedDate" name="GraduatedDate" value="@Service.FormatDateInNumber(Model.Item1.GraduatedDate, "dd/MM/yyyy")" />
+                                                <span class="input-group-btn">
+                                                    <button type="button" id="btnGraduatedDate" class="btn default"><i class="fa fa-calendar"></i></button>
+                                                </span>
+                                            </div>
+                                        }
+                                        <input type="hidden" class="form-control"
+                                               name="HiddenGraduatedDate" id="HiddenGraduatedDate" value="@Service.FormatDateInNumber(Model.Item1.GraduatedDate, "dd/MM/yyyy")">
+                                    </div>
+                                </div>
+                                <div class="form-group divBahasaMalaysiaGrade" >
+                                    <label class="control-label col-md-2 ">
+                                        SPM/MCE Bahasa Malaysia Grad<span class="required spanSPMRequired">*</span>
+                                    </label>
+                                    <div class="col-md-10 form-control-static">
+                                        <input type="text" class="form-control"
+                                               name="BahasaMalaysiaGrade" value="@Model.Item1.BahasaMalaysiaGrade" id="BahasaMalaysiaGrade" @classViewReadOnly>
+                                        <input type="hidden" class="form-control"
+                                               name="HiddenBahasaMalaysiaGrade" value="@Model.Item1.BahasaMalaysiaGrade" id="HiddenBahasaMalaysiaGrade">
+                                    </div>
+                                </div>
+                                <div class="form-group divEducationSponsorshipStatus">
+                                    <label class="control-label col-md-2 ">
+                                        Education Sponsorship Status
+                                    </label>
+                                    <div class="col-md-10 form-control-static">
+                                        <input type="hidden" class="form-control"
+                                               name="HiddenEducationSponsorshipStatus" id="HiddenEducationSponsorshipStatus" value="@Model.Item1.EducationSponsorshipStatus">
+                                        <input type="hidden" name="EducationSponsorshipStatusCode" id="EducationSponsorshipStatusCode" value="@Model.Item1.EducationSponsorshipStatusCode" />
+                                        @if (ReadOnly)
+                                        {
+                                            <input type="text" class="form-control" id="EducationSponsorshipStatusName" name="EducationSponsorshipStatusName" value="@Model.Item1.EducationSponsorshipStatus" readonly="readonly" @classViewReadOnly />
+                                        }
+                                        else
+                                        {
+                                            <input type="hidden" name="EducationSponsorshipStatusName" id="EducationSponsorshipStatusName" value="@Model.Item1.EducationSponsorshipStatus" />
+                                            <select tabindex="0" id="ddlEducationSponsorshipStatus" class="form-control" @classViewReadOnly></select>
+                                        }
+                                    </div>
+                                </div>
+                                <div class="form-group hidden">
+                                    <label class="control-label col-md-2">
+                                        StartDate
+                                    </label>
+                                    <div class="col-md-4">
+                                        <input id="HiddenStartDate" class="form-control" type="text" disabled value="@Service.FormatDateInNumber(Model.Item1.StartDate, "dd/MM/yyyy")">
+                                    </div>
+                                    <label class="control-label col-md-2">
+                                        EndDate
+                                    </label>
+                                    <div class="col-md-4">
+                                        <input type="text" id="HiddenEndDate" class="form-control" disabled value="@Service.FormatDateInNumber(Model.Item1.EndDate, "dd/MM/yyyy")">
+                                    </div>
+                                </div>
+                                <div class="form-group hidden">
+                                    <label class="control-label col-md-2 ">
+                                        Lock Indicator
+                                    </label>
+                                    <div class="col-md-4 form-control-static">
+                                        <input type="text" class="form-control" MaxLength="80"
+                                               name="LockIndicator" value="@Model.Item1.LockIndicator" id="LockIndicator" @classViewReadOnly>
+                                        <input type="hidden" class="form-control"
+                                               name="HiddenLockIndicator" value="@Model.Item1.LockIndicator" id="HiddenLockIndicator">
+                                    </div>
+                                    <label class="control-label col-md-2 ">
+                                        ObjectID
+                                    </label>
+                                    <div class="col-md-4 form-control-static">
+                                        <input type="text" class="form-control" MaxLength="80"
+                                               name="ObjectID" value="@Model.Item1.ObjectID" id="ObjectID" @classViewReadOnly>
+                                        <input type="hidden" class="form-control"
+                                               name="HiddenObjectID" value="@Model.Item1.ObjectID" id="HiddenObjectID">
+                                    </div>
+                                </div>
+                                <div class="form-group hidden">
+                                    <label class="control-label col-md-2 ">
+                                        Record Number
+                                    </label>
+                                    <div class="col-md-4 form-control-static">
+                                        <input type="text" class="form-control" MaxLength="80"
+                                               name="RecordNumber" value="@Model.Item1.RecordNumber" id="RecordNumber" @classViewReadOnly>
+                                        <input type="hidden" class="form-control"
+                                               name="HiddenRecordNumber" value="@Model.Item1.RecordNumber" id="HiddenRecordNumber">
+                                    </div>
+                                    
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="form-horizontal">
+                                <div class="form-group divCommentInsert hidden divCommentEdit">
+                                    <label class="control-label col-md-2 ">
+                                        Comment
+                                    </label>
+                                    <div class="col-md-10  form-control-static">
+                                        <textarea id="Comment" class="form-control" name="Comment" Rows="4" @classViewReadOnly>@Model.Item1.Comment</textarea>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="EducationSecretInformation" class="hidden">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <label class="control-label col-md-2">
+                                            Attach Man
+                                        </label>
+                                        <div class="col-md-4">
+                                            <input id="EducationAttachMandatory" class="form-control" type="text" disabled value="false" />
+                                        </div>
+                                        <label class="control-label col-md-2">
+                                            Attach Man (Default)
+                                        </label>
+                                        <div class="col-md-4">
+                                            <input type="text" id="HiddenEducationAttachMandatory" class="form-control" disabled value="false" />
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="control-label col-md-2">
+                                            StartDate
+                                        </label>
+                                        <div class="col-md-4">
+                                            <input id="HiddenStartDate2" class="form-control" type="text" disabled value="@Service.FormatDateInNumber(Model.Item1.StartDate, "dd/MM/yyyy")">
+                                        </div>
+                                        <label class="control-label col-md-2">
+                                            EndDate
+                                        </label>
+                                        <div class="col-md-4">
+                                            <input type="text" id="HiddenEndDate2" class="form-control" disabled value="@Service.FormatDateInNumber(Model.Item1.EndDate, "dd/MM/yyyy")">
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="control-label col-md-2">
+                                            Eudcation
+                                        </label>
+                                        <div class="col-md-4">
+                                            <input id="HiddenEducation2" class="form-control" type="text" disabled value="@Model.Item1.Education" />
+                                        </div>
+                                        <label class="control-label col-md-2">
+                                            Country
+                                        </label>
+                                        <div class="col-md-4">
+                                            <input type="text" id="HiddenCountry2" class="form-control" disabled value="@Model.Item1.Country" />
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="control-label col-md-2">
+                                            School
+                                        </label>
+                                        <div class="col-md-4">
+                                            <input id="HiddenSchool2" class="form-control" type="text" disabled value="@Model.Item1.School" />
+                                        </div>
+                                        <label class="control-label col-md-2">
+                                            Certificate
+                                        </label>
+                                        <div class="col-md-4">
+                                            <input type="text" id="HiddenCertificate2" class="form-control" disabled value="@Model.Item1.Certificate" />
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="control-label col-md-2">
+                                            CGPA
+                                        </label>
+                                        <div class="col-md-4">
+                                            <input id="HiddenCGPA2" class="form-control" type="text" disabled value="@Model.Item1.CGPA" />
+                                        </div>
+                                        <label class="control-label col-md-2">
+                                            Class
+                                        </label>
+                                        <div class="col-md-4">
+                                            <input id="HiddenClass2" class="form-control" type="text" disabled value="@Model.Item1.Class" />
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="control-label col-md-2">
+                                            Final Grade
+                                        </label>
+                                        <div class="col-md-4">
+                                            <input id="HiddenFinalGrade2" class="form-control" type="text" disabled value="@Model.Item1.FinalGrade" />
+                                        </div>
+                                        <label class="control-label col-md-2">
+                                            BranchOfStudy1
+                                        </label>
+                                        <div class="col-md-4">
+                                            <input id="HiddenBranchOfStudy12" class="form-control" type="text" disabled value="@Model.Item1.BranchOfStudy1" />
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="control-label col-md-2">
+                                            BranchOfStudy2
+                                        </label>
+                                        <div class="col-md-4">
+                                            <input id="HiddenBranchOfStudy22" class="form-control" type="text" disabled value="@Model.Item1.BranchOfStudy2" />
+                                        </div>
+                                        <label class="control-label col-md-2">
+                                            GraduatedDate
+                                        </label>
+                                        <div class="col-md-4">
+                                            <input id="HiddenGraduatedDate2" class="form-control" type="text" disabled value="@Service.FormatDateInNumber(Model.Item1.GraduatedDate, "dd/MM/yyyy")" />
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="control-label col-md-2">
+                                            BahasaMalaysiaGrade
+                                        </label>
+                                        <div class="col-md-4">
+                                            <input id="HiddenBahasaMalaysiaGrade2" class="form-control" type="text" disabled value="@Model.Item1.BahasaMalaysiaGrade" />
+                                        </div>
+                                        <label class="control-label col-md-2">
+                                            EducationSponsorshipStatus
+                                        </label>
+                                        <div class="col-md-4">
+                                            <input id="HiddenEducationSponsorshipStatus2" class="form-control" type="text" disabled value="@Model.Item1.EducationSponsorshipStatus" />
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="control-label col-md-2">
+                                            LockIndicator
+                                        </label>
+                                        <div class="col-md-4">
+                                            <input id="HiddenLockIndicator2" class="form-control" type="text" disabled value="@Model.Item1.LockIndicator" />
+                                        </div>
+                                        <label class="control-label col-md-2">
+                                            Object ID
+                                        </label>
+                                        <div class="col-md-4">
+                                            <input id="HiddenObjectID2" class="form-control" type="text" disabled value="@Model.Item1.ObjectID" />
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="control-label col-md-2">
+                                            Record Number
+                                        </label>
+                                        <div class="col-md-4">
+                                            <input id="HiddenRecordNumber2" class="form-control" type="text" disabled value="@Model.Item1.RecordNumber" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@*script Main Function *@
+<script type="text/javascript">
+    function LoadFormConfiguration() {
+        $("#divEPM_Modal #AttachmentSessionName").val("@ViewBag.AttachmentSessionName");
+        $("#divEPM_Modal #AttachmentSourceType").val("@ViewBag.AttachmentSourceType");
+
+        //$('#divEPM_Modal #ddlEducation').select2({
+        //    showSearchInput: false,
+        //    minimumResultsForSearch: -1
+        //});
+
+        //$('#divEPM_Modal #ddlCountry').select2({
+        //    showSearchInput: false,
+        //    minimumResultsForSearch: -1
+        //});
+
+        //$('#divEPM_Modal #ddlCertificate').select2({
+        //    showSearchInput: false,
+        //    minimumResultsForSearch: -1
+        //});
+
+        //$('#divEPM_Modal #ddlSchool').select2({
+        //    showSearchInput: false,
+        //    minimumResultsForSearch: -1
+        //});
+
+        //$('#divEPM_Modal #ddlClass').select2({
+        //    showSearchInput: false,
+        //    minimumResultsForSearch: -1
+        //});
+
+        //$('#divEPM_Modal #ddlBranchOfStudy1').select2({
+        //    showSearchInput: false,
+        //    minimumResultsForSearch: -1
+        //});
+
+        //$('#ddlBranchOfStudy2').select2({
+        //    showSearchInput: false,
+        //    minimumResultsForSearch: -1
+        //});
+
+        //$('#divEPM_Modal #ddlEducationSponsorshipStatus').select2({
+        //    showSearchInput: false,
+        //    minimumResultsForSearch: -1
+        //});
+
+        $("#divEPM_Modal #GraduatedDate").datepicker({
+            format: 'dd/mm/yyyy',
+            autoclose: true,
+            endDate: "@dtStrEnd"
+        });
+
+        @Html.Raw("RetrieveEducationOptions();");
+        @Html.Raw("RetrieveCountryOptions();");
+        @Html.Raw("RetrieveCertificateOptions();");
+        @Html.Raw("RetrieveSchoolOptions();");
+        @Html.Raw("RetrieveClassOptions();");
+        @Html.Raw("RetrieveBranchOfStudyOptions();");
+        @Html.Raw("RetrieveEducationSponsorshipStatusOptions();");
+        Checking();
+        var ReadOnly = "@ReadOnly";
+        if (ReadOnly.toUpperCase() == "FALSE")
+        {
+             Attachment();
+        }
+    }
+
+    function LoadFormOnChange() {
+
+        $('#divEPM_Modal #ddlEducation').change(function () {
+            // if changed to, for example, the last option, then
+            // $(this).find('option:selected').text() == D
+            // $(this).val() == 4
+            // get whatever value you want into a variable
+            var HiddenEducationValue = $("#divEPM_Modal #ddlEducation option:selected").val() + "";
+            var HiddenEducationText = $("#divEPM_Modal #ddlEducation option:selected").text() + "";
+
+            // and update the hidden input's value
+            $('#divEPM_Modal #EducationName').val(HiddenEducationText);
+            $('#divEPM_Modal #EducationCode').val(HiddenEducationValue);
+            EducationChange();
+        });
+
+        $('#divEPM_Modal #ddlCountry').change(function () {
+            // if changed to, for example, the last option, then
+            // $(this).find('option:selected').text() == D
+            // $(this).val() == 4
+            // get whatever value you want into a variable
+            var HiddenCountryValue = $("#divEPM_Modal #ddlCountry option:selected").val() + "";
+            var HiddenCountryText = $("#divEPM_Modal #ddlCountry option:selected").text() + "";
+
+            // and update the hidden input's value
+            $('#divEPM_Modal #CountryName').val(HiddenCountryText);
+            $('#divEPM_Modal #CountryCode').val(HiddenCountryValue);
+            CountryChange();
+        });
+
+        $('#divEPM_Modal #ddlCertificate').change(function () {
+            // if changed to, for example, the last option, then
+            // $(this).find('option:selected').text() == D
+            // $(this).val() == 4
+            // get whatever value you want into a variable
+            var HiddenCertificateValue = $("#divEPM_Modal #ddlCertificate option:selected").val() + "";
+            var HiddenCertificateText = $("#divEPM_Modal #ddlCertificate option:selected").text() + "";
+
+            // and update the hidden input's value
+            $('#divEPM_Modal #CertificateName').val(HiddenCertificateText);
+            $('#divEPM_Modal #CertificateCode').val(HiddenCertificateValue);
+        });
+
+        $('#divEPM_Modal #ddlSchool').change(function () {
+            // if changed to, for example, the last option, then
+            // $(this).find('option:selected').text() == D
+            // $(this).val() == 4
+            // get whatever value you want into a variable
+            var HiddenSchoolValue = $("#divEPM_Modal #ddlSchool option:selected").val() + "";
+            var HiddenSchoolText = $("#divEPM_Modal #ddlSchool option:selected").text() + "";
+
+            // and update the hidden input's value
+            $('#divEPM_Modal #SchoolName').val(HiddenSchoolText);
+            $('#divEPM_Modal #SchoolCode').val(HiddenSchoolValue);
+        });
+
+        $('#divEPM_Modal #ddlClass').change(function () {
+            // if changed to, for example, the last option, then
+            // $(this).find('option:selected').text() == D
+            // $(this).val() == 4
+            // get whatever value you want into a variable
+            var HiddenClassValue = $("#divEPM_Modal #ddlClass option:selected").val() + "";
+            var HiddenClassText = $("#divEPM_Modal #ddlClass option:selected").text() + "";
+
+            // and update the hidden input's value
+            $('#divEPM_Modal #ClassName').val(HiddenClassText);
+            $('#divEPM_Modal #ClassCode').val(HiddenClassValue);
+        });
+
+        $('#divEPM_Modal #ddlBranchOfStudy1').change(function () {
+            // if changed to, for example, the last option, then
+            // $(this).find('option:selected').text() == D
+            // $(this).val() == 4
+            // get whatever value you want into a variable
+            var HiddenBranchOfStudy1Value = $("#divEPM_Modal #ddlBranchOfStudy1 option:selected").val() + "";
+            var HiddenBranchOfStudy1Text = $("#divEPM_Modal #ddlBranchOfStudy1 option:selected").text() + "";
+
+            // and update the hidden input's value
+            $('#divEPM_Modal #BranchOfStudy1Name').val(HiddenBranchOfStudy1Text);
+            $('#divEPM_Modal #BranchOfStudy1Code').val(HiddenBranchOfStudy1Value);
+        });
+
+        $('#divEPM_Modal #ddlBranchOfStudy2').change(function () {
+            // if changed to, for example, the last option, then
+            // $(this).find('option:selected').text() == D
+            // $(this).val() == 4
+            // get whatever value you want into a variable
+            var HiddenBranchOfStudy2Value = $("#divEPM_Modal #ddlBranchOfStudy2 option:selected").val() + "";
+            var HiddenBranchOfStudy2Text = $("#divEPM_Modal #ddlBranchOfStudy2 option:selected").text() + "";
+
+            // and update the hidden input's value
+            $('#divEPM_Modal #BranchOfStudy2Name').val(HiddenBranchOfStudy2Text);
+            $('#divEPM_Modal #BranchOfStudy2Code').val(HiddenBranchOfStudy2Value);
+        });
+
+        $('#divEPM_Modal #ddlEducationSponsorshipStatus').change(function () {
+            // if changed to, for example, the last option, then
+            // $(this).find('option:selected').text() == D
+            // $(this).val() == 4
+            // get whatever value you want into a variable
+            var HiddenEducationSponsorshipStatusValue = $("#divEPM_Modal #ddlEducationSponsorshipStatus option:selected").val() + "";
+            var HiddenEducationSponsorshipStatusText = $("#divEPM_Modal #ddlEducationSponsorshipStatus option:selected").text() + "";
+
+            // and update the hidden input's value
+            $('#divEPM_Modal #EducationSponsorshipStatusName').val(HiddenEducationSponsorshipStatusText);
+            $('#divEPM_Modal #EducationSponsorshipStatusCode').val(HiddenEducationSponsorshipStatusValue);
+        });
+
+    }
+</script>
+
+@*script Sub Function -->Get DDL Value *@
+<script type="text/javascript">
+   function RetrieveEducationOptions() {
+         $.get('@Url.Action("GetEducationEstablishmentOptions", "Employee")', function (result) {
+            Education = result;
+            PopulateEducation();
+        });
+    }
+
+    function RetrieveCountryOptions() {
+        $.get('@Url.Action("GetCountryOptions", "Employee")', function (result) {
+            Country = result;
+            PopulateCountry();
+        });
+    }
+
+    function RetrieveCertificateOptions() {
+        var EducationCode = $("#divEPM_Modal #EducationCode").val() + "";
+        var url = '@Url.Action("GetCertificateOptions", "Employee")?educationCode=' + EducationCode;
+        $.get(url, function (result) {
+            Certificate = result;
+            PopulateCertificate();
+        });
+    }
+
+    function RetrieveSchoolOptions() {
+        var CountryCode = $("#divEPM_Modal #CountryCode").val() + "";
+        var EducationCode = $("#divEPM_Modal #EducationCode").val() + "";
+
+        var url = '@Url.Action("GetSchoolOptions", "Employee")?countryCode=' + CountryCode + '&educationCode=' + EducationCode;
+        $.get(url, function (result) {
+            School = result;
+            PopulateSchool();
+        });
+    }
+
+    function RetrieveClassOptions() {
+        $.get('@Url.Action("GetClassOptions", "Employee")', function (result) {
+            Class = result;
+            PopulateClass();
+        });
+    }
+
+    function RetrieveBranchOfStudyOptions() {
+        var EducationCode = $("#divEPM_Modal #EducationCode").val() + "";
+        var url = '@Url.Action("GetBranchOfStudyOptions", "Employee")?educationCode=' + EducationCode;
+        $.get(url, function (result) {
+            BranchOfStudy = result;
+            // Populate Branch Of Study 1 dropdown && Branch Of Study 2 dropdown
+            PopulateBranchOfStudy1();
+            PopulateBranchOfStudy2();
+        });
+    }
+
+    function RetrieveEducationSponsorshipStatusOptions() {
+        $.get('@Url.Action("GetEducationSponsorshipStatusOptions", "Employee")', function (result) {
+            EducationSponsorshipStatus = result;
+            PopulateEducationSponsorshipStatus();
+        });
+    }
+
+    function CountryChange()
+    {
+        RetrieveSchoolOptions();
+        //$('#SchoolCode').val("");
+        //$('#SchoolName').val("");
+    }
+
+    function EducationChange() {
+        RetrieveSchoolOptions();
+        //$('#SchoolCode').val("");
+        //$('#SchoolName').val("");
+
+        RetrieveCertificateOptions();
+        //$('#CertificateCode').val("");
+        //$('#CertificateName').val("");
+
+        RetrieveBranchOfStudyOptions();
+        //$('#BranchOfStudy1Code').val("");
+        //$('#BranchOfStudy1Name').val("");
+        //$('#BranchOfStudy2Code').val("");
+        //$('#BranchOfStudy2Name').val("");
+    }
+
+    // Populate Education dropdown
+    function PopulateEducation() {
+        var ddlEducation = $('#divEPM_Modal #ddlEducation');
+
+        var i = 0;
+        ddlEducation.empty();
+        ddlEducation.append('<option value="" selected="selected"> - Please Select - </option>');
+        for (i = 0; i < Education.length; i++) {
+            ddlEducation.append('<option value="' + Education[i].Value + '">' + Education[i].Text + '</option>');
+        }
+
+        var selectedEducationCode = $('input[name="EducationCode"]');
+        var selectedEducationName = $('input[name="EducationName"]');
+
+        // Set dropdown value if has previous value available
+
+        var checkSelectedEducationCode = "";
+        // Check if has previous value available in DDL
+        $('#divEPM_Modal #ddlEducation option').each(function () {
+            if (this.value == selectedEducationCode.val()) {
+                checkSelectedEducationCode = selectedEducationCode.val();
+                return false;
+            }
+        });
+        ddlEducation.val(checkSelectedEducationCode).change();
+
+
+        //$('#divEPM_Modal #ddlEducation').select2({
+        //    showSearchInput: false,
+        //    minimumResultsForSearch: -1
+        //});
+    }
+
+    // Populate Country dropdown
+    function PopulateCountry() {
+        var ddlCountry = $('#divEPM_Modal #ddlCountry');
+
+        var i = 0;
+        ddlCountry.empty();
+        ddlCountry.append('<option value="" selected="selected"> - Please Select - </option>');
+        for (i = 0; i < Country.length; i++) {
+            ddlCountry.append('<option value="' + Country[i].Value + '">' + Country[i].Text + '</option>');
+        }
+
+        var selectedCountryCode = $('input[name="CountryCode"]');
+        var selectedCountryName = $('input[name="CountryName"]');
+
+        // Set dropdown value if has previous value available
+        if (selectedCountryCode.val()) {
+            var checkSelectedCountryCode = "";
+            // Check if has previous value available in DDL
+            $('#divEPM_Modal #ddlCountry option').each(function () {
+                if (this.value == selectedCountryCode.val()) {
+                    checkSelectedCountryCode = selectedCountryCode.val();
+                    return false;
+                }
+            });
+            ddlCountry.val(checkSelectedCountryCode).change();
+        }
+
+        //$('#divEPM_Modal #ddlCountry').select2({
+        //    showSearchInput: false,
+        //    minimumResultsForSearch: -1
+        //});
+    }
+
+    // Populate Certificate dropdown
+    function PopulateCertificate() {
+        var ddlCertificate = $('#divEPM_Modal #ddlCertificate');
+
+        var i = 0;
+        ddlCertificate.empty();
+        ddlCertificate.append('<option value="" selected="selected"> - Please Select - </option>');
+        for (i = 0; i < Certificate.length; i++) {
+            ddlCertificate.append('<option value="' + Certificate[i].Value + '">' + Certificate[i].Text + '</option>');
+        }
+
+        var selectedCertificateCode = $('input[name="CertificateCode"]');
+        var selectedCertificateName = $('input[name="CertificateName"]');
+
+        // Set dropdown value if has previous value available
+        var checkSelectedCertificateCode = "";
+        // Check if has previous value available in DDL
+        $('#divEPM_Modal #ddlCertificate option').each(function () {
+            if (this.value == selectedCertificateCode.val()) {
+                checkSelectedCertificateCode = selectedCertificateCode.val();
+                return false;
+            }
+        });
+        ddlCertificate.val(checkSelectedCertificateCode).change();
+
+        //$('#divEPM_Modal #ddlCertificate').select2({
+        //    showSearchInput: false,
+        //    minimumResultsForSearch: -1
+        //});
+    }
+
+    // Populate School dropdown
+    function PopulateSchool() {
+        var ddlSchool = $('#divEPM_Modal #ddlSchool');
+
+        var i = 0;
+        ddlSchool.empty();
+        ddlSchool.append('<option value="" selected="selected"> - Please Select - </option>');
+        for (i = 0; i < School.length; i++) {
+            ddlSchool.append('<option value="' + School[i].Value + '">' + School[i].Text + '</option>');
+        }
+
+        var selectedSchoolCode = $('input[name="SchoolCode"]');
+        var selectedSchoolName = $('input[name="SchoolName"]');
+
+        // Set dropdown value if has previous value available
+        var checkSelectedSchoolCode = "";
+        // Check if has previous value available in DDL
+        $('#divEPM_Modal #ddlSchool option').each(function () {
+            if (this.value == selectedSchoolCode.val()) {
+                checkSelectedSchoolCode = selectedSchoolCode.val();
+                return false;
+            }
+        });
+        ddlSchool.val(checkSelectedSchoolCode).change();
+
+        //$('#divEPM_Modal #ddlSchool').select2({
+        //    showSearchInput: false,
+        //    minimumResultsForSearch: -1
+        //});
+    }
+
+    // Populate Class dropdown
+    function PopulateClass() {
+        var ddlClass = $('#divEPM_Modal #ddlClass');
+
+        var i = 0;
+        ddlClass.empty();
+        ddlClass.append('<option value="" selected="selected"> - Please Select - </option>');
+        for (i = 0; i < Class.length; i++) {
+            ddlClass.append('<option value="' + Class[i].Value + '">' + Class[i].Text + '</option>');
+        }
+
+        var selectedClassCode = $('input[name="ClassCode"]');
+        var selectedClassName = $('input[name="ClassName"]');
+
+        // Set dropdown value if has previous value available
+        var checkSelectedClassCode = "";
+        // Check if has previous value available in DDL
+        $('#divEPM_Modal #ddlClass option').each(function () {
+            if (this.value == selectedClassCode.val()) {
+                checkSelectedClassCode = selectedClassCode.val();
+                return false;
+            }
+        });
+        ddlClass.val(checkSelectedClassCode).change();
+
+        //$('#divEPM_Modal #ddlClass').select2({
+        //    showSearchInput: false,
+        //    minimumResultsForSearch: -1
+        //});
+    }
+
+    // Populate Branch Of Study 1 dropdown
+    function PopulateBranchOfStudy1() {
+        var ddlBranchOfStudy1 = $('#divEPM_Modal #ddlBranchOfStudy1');
+
+        var i = 0;
+        ddlBranchOfStudy1.empty();
+        ddlBranchOfStudy1.append('<option value="" selected="selected"> - Please Select - </option>');
+        for (i = 0; i < BranchOfStudy.length; i++) {
+            ddlBranchOfStudy1.append('<option value="' + BranchOfStudy[i].Value + '">' + BranchOfStudy[i].Text + '</option>');
+        }
+
+        var selectedBranchOfStudy1Code = $('input[name="BranchOfStudy1Code"]');
+        var selectedBranchOfStudy1Name = $('input[name="BranchOfStudy1Name"]');
+
+        // Set dropdown value if has previous value available
+        var checkSelectedBranchOfStudy1Code = "";
+        // Check if has previous value available in DDL
+        $('#divEPM_Modal #ddlBranchOfStudy1 option').each(function () {
+            if (this.value == selectedBranchOfStudy1Code.val()) {
+                checkSelectedBranchOfStudy1Code = selectedBranchOfStudy1Code.val();
+                return false;
+            }
+        });
+        ddlBranchOfStudy1.val(checkSelectedBranchOfStudy1Code).change();
+
+        //$('#divEPM_Modal #ddlBranchOfStudy1').select2({
+        //    showSearchInput: false,
+        //    minimumResultsForSearch: -1
+        //});
+    }
+
+    // Populate Branch Of Study 2 dropdown
+    function PopulateBranchOfStudy2() {
+        var ddlBranchOfStudy2 = $('#divEPM_Modal #ddlBranchOfStudy2');
+
+        var i = 0;
+        ddlBranchOfStudy2.empty();
+        ddlBranchOfStudy2.append('<option value="" selected="selected"> - Please Select - </option>');
+        for (i = 0; i < BranchOfStudy.length; i++) {
+            ddlBranchOfStudy2.append('<option value="' + BranchOfStudy[i].Value + '">' + BranchOfStudy[i].Text + '</option>');
+        }
+
+        var selectedBranchOfStudy2Code = $('input[name="BranchOfStudy2Code"]');
+        var selectedBranchOfStudy2Name = $('input[name="BranchOfStudy2Name"]');
+
+        // Set dropdown value if has previous value available
+        var checkSelectedBranchOfStudy2Code = "";
+        // Check if has previous value available in DDL
+        $('#divEPM_Modal #ddlBranchOfStudy2 option').each(function () {
+            if (this.value == selectedBranchOfStudy2Code.val()) {
+                checkSelectedBranchOfStudy2Code = selectedBranchOfStudy2Code.val();
+                return false;
+            }
+        });
+        ddlBranchOfStudy2.val(checkSelectedBranchOfStudy2Code).change();
+
+        //$('#divEPM_Modal #ddlBranchOfStudy2').select2({
+        //    showSearchInput: false,
+        //    minimumResultsForSearch: -1
+        //});
+    }
+
+    // Populate EducationSponsorshipStatus dropdown
+    function PopulateEducationSponsorshipStatus() {
+        var ddlEducationSponsorshipStatus = $('#divEPM_Modal #ddlEducationSponsorshipStatus');
+
+        var i = 0;
+        ddlEducationSponsorshipStatus.empty();
+        ddlEducationSponsorshipStatus.append('<option value="" selected="selected"> - Please Select - </option>');
+        for (i = 0; i < EducationSponsorshipStatus.length; i++) {
+            ddlEducationSponsorshipStatus.append('<option value="' + EducationSponsorshipStatus[i].Value + '">' + EducationSponsorshipStatus[i].Text + '</option>');
+        }
+
+        var selectedEducationSponsorshipStatusCode = $('input[name="EducationSponsorshipStatusCode"]');
+        var selectedEducationSponsorshipStatusName = $('input[name="EducationSponsorshipStatusName"]');
+
+        // Set dropdown value if has previous value available
+        var checkSelectedEducationSponsorshipStatusCode = "";
+        // Check if has previous value available in DDL
+        $('#divEPM_Modal #ddlEducationSponsorshipStatus option').each(function () {
+            if (this.value == selectedEducationSponsorshipStatusCode.val()) {
+                checkSelectedEducationSponsorshipStatusCode = selectedEducationSponsorshipStatusCode.val();
+                return false;
+            }
+        });
+        ddlEducationSponsorshipStatus.val(checkSelectedEducationSponsorshipStatusCode).change();
+
+        //$('#divEPM_Modal #ddlEducationSponsorshipStatus').select2({
+        //    showSearchInput: false,
+        //    minimumResultsForSearch: -1
+        //});
+    }
+
+    function Checking() {
+        var HiddenFormMode = "@Mode";
+        var HiddenEducationText = $('#divEPM_Modal #EducationName').val();
+        var HiddenEducationValue = $('#divEPM_Modal #EducationCode').val();
+        var HiddenCGPAValue = "";
+        var HiddenSchoolValue = "";
+        var HiddenEducationSponsorshipStatusValue = "";
+        var HiddenClassValue = "";
+        var HiddenBranchOfStudy1Value = "";
+        var HiddenBranchOfStudy2Value = "";
+        var checkBool = "@Create";
+        var divMode = "@divMode";
+
+        var HiddenCountryValue = $('#divEPM_Modal #CountryCode').val();
+        var ModelHiddenEducationValue = "@Model.Item1.EducationCode";
+        var ModelHiddenCountryValue = "@Model.Item1.CountryCode";
+
+        if (checkBool.toUpperCase() == "FALSE") {
+            if (HiddenEducationValue.toUpperCase() == ModelHiddenEducationValue.toUpperCase()) {
+                HiddenCGPAValue = "@Model.Item1.CGPA";
+                HiddenEducationSponsorshipStatusValue = "@Model.Item1.EducationSponsorshipStatusCode";
+                HiddenClassValue = "@Model.Item1.ClassCode";
+                HiddenBranchOfStudy1Value = "@Model.Item1.BranchOfStudy1Code";
+                HiddenBranchOfStudy2Value = "@Model.Item1.BranchOfStudy2Code";
+
+                if (HiddenCountryValue.toUpperCase() == ModelHiddenCountryValue.toUpperCase())
+                    HiddenSchoolValue = "@Model.Item1.SchoolCode";
+            }
+
+        }
+
+
+        $.get('@Url.Action("GetEducationSetting", "Employee")?HiddenFormMode=' + HiddenFormMode
+                            + '&HiddenEducationValue=' + HiddenEducationValue
+                            + '&HiddenEducationText=' + HiddenEducationText
+                            + '&HiddenCGPAValue=' + HiddenCGPAValue
+                            + '&HiddenSchoolValue=' + HiddenSchoolValue
+                            + '&HiddenEducationSponsorshipStatusValue=' + HiddenEducationSponsorshipStatusValue
+                            + '&HiddenClassValue=' + HiddenClassValue
+                            + '&HiddenBranchOfStudy1Value=' + HiddenBranchOfStudy1Value
+                            + '&HiddenBranchOfStudy2Value=' + HiddenBranchOfStudy2Value,
+        function (result) {
+            Setting_FieldVisible = result.FieldVisible;
+            Setting_FieldEnable = result.FieldEnable;
+            Setting_FieldChecked = result.FieldChecked;
+            Setting_FieldValue = result.FieldValue;
+            PopulateSetting(divMode, "#divEPM_Modal", "#SettingFormChange", Setting_FieldVisible, Setting_FieldEnable, Setting_FieldChecked, Setting_FieldValue);
+            //PopulateSetting(divMode, divMain, LogDiv, Setting_FieldVisible, Setting_FieldEnable, Setting_FieldChecked, Setting_FieldValue)
+        });
+    }
+
+    function Attachment() {
+        var Category = "@EmployeeCategory_Education" + "";
+        var RequestID = "";
+        var HiddenEducationText = $('#divEPM_Modal #EducationName').val();
+        var HiddenEducationValue = $('#divEPM_Modal #EducationCode').val();
+
+        SearchGet_AttachmentInfo(Category, "", RequestID);
+    }
+</script>
+
+@*script Submission Activity *@
+<script type="text/javascript">
+
+
+    function FormValidation(btn) {
+        btn.disabled = true;
+
+        var _ValidationMsg = '';
+        var EducationCode = document.getElementById('EducationCode').value;
+        var CountryCode = document.getElementById('CountryCode').value;
+        var CertificateCode = document.getElementById('CertificateCode').value;
+        var CGPA = document.getElementById('CGPA').value;
+        var ClassCode = document.getElementById('ClassCode').value;
+        var BranchOfStudy1Code = document.getElementById('BranchOfStudy1Code').value;
+        var GraduatedDate = $("#divEPM_Modal #GraduatedDate").val() + "";
+        var _GraduatedDateValue = ReformatDate($("#divEPM_Modal #GraduatedDate").val() + "", "Graduated Date");
+        var BahasaMalaysiaGrade = $("#divEPM_Modal #BahasaMalaysiaGrade").val() + "";
+        var EducationAttachMandatory = document.getElementById('EducationAttachMandatory').value;
+        var CreateONLY = "@Create";
+
+        var CountTotal_Attachment = "";
+        if (EducationAttachMandatory == "true") {
+            CountTotal_Attachment = document.getElementById('CountTotal_Attachment').value;
+        }
+        // SubAttachment/_AttachmentListing
+
+        if (EducationCode == "") {
+            _ValidationMsg += '- Education is required.\n';
+        }
+
+        if (CountryCode == "") {
+            _ValidationMsg += '- Country is required.\n';
+        }
+
+        if (CGPA != "")
+        {
+            var re = /^\d{1,4}(\.\d{1,2})?$/;
+
+            if (!re.test(CGPA)) {
+                // Wrong
+                _ValidationMsg += '- CGPA is invalid.\n';
+            }
+
+        }
+        else
+        {
+            if (!$("#divEPM_Modal .spanCGPARequired").hasClass("hidden")) {
+                _ValidationMsg += '- CGPA is required.\n';
+            }
+            
+        }
+
+        if (ClassCode == "") {
+            if (!$("#divEPM_Modal .spanClassRequired").hasClass("hidden")) {
+                _ValidationMsg += '- Class is required.\n';
+            }
+        }
+
+        if (BranchOfStudy1Code == "") {
+            _ValidationMsg += '- Branch Of Study 1 is required.\n';
+        }
+
+        if (BahasaMalaysiaGrade == "") {
+            if (!$("#divEPM_Modal .spanSPMRequired").hasClass("hidden")) {
+                _ValidationMsg += '- SPM/MCE Bahasa Malaysia Grad is required.\n';
+            }
+        }
+
+        if (GraduatedDate == "") {
+            _ValidationMsg += '- Graduated Date is required.\n';
+        }
+        else if (_GraduatedDateValue.toUpperCase() == "ERROR") {
+            _ValidationMsg += '- Invalid Graduated Date Format (dd/MM/yyyy).\n';
+        }
+
+        //if (EducationAttachMandatory.toUpperCase() == "TRUE" && CreateONLY.toUpperCase() == "TRUE") {
+        //    if (CountTotal_Attachment == "0") {
+        //        _ValidationMsg += '- Attachment is required.\n';
+        //    }
+        //}
+
+        if (_ValidationMsg != null && _ValidationMsg != '') {
+            alert(_ValidationMsg);
+        }
+        else {
+            $("#ConfirmUpdate .modal-body .well").html('Clicking Confirm will submit this application. If you want to make changes, click Close.');
+            $("#divLoading2").show();
+            $("#ConfirmUpdate").modal('show');
+
+        }
+        btn.disabled = false;
+    }
+
+    function ConfirmAction_Education(btn, FormAction) {
+
+        //at index page
+        var _EmployeeID = $("#divEPM_Modal #EmployeeID").val() + "";
+        var _createdBy = $("#divEPM_Modal #ActionerID").val() + "";
+        var _Comment = $("#divEPM_Modal #Comment").val() + "";
+
+        var _EducationSelectedValue = $("#divEPM_Modal #EducationCode").val() + "";
+        var _EducationSelectedText = $("#divEPM_Modal #EducationName").val() + "";
+        var _CountrySelectedValue = $("#divEPM_Modal #CountryCode").val() + "";
+        var _CountrySelectedText = $("#divEPM_Modal #CountryName").val() + "";
+        var _SchoolSelectedValue = $("#divEPM_Modal #SchoolCode").val() + "";
+        var _SchoolSelectedText = $("#divEPM_Modal #SchoolName").val() + "";
+        var _CertificateSelectedValue = $("#divEPM_Modal #CertificateCode").val() + "";
+        var _CertificateSelectedText = $("#divEPM_Modal #CertificateName").val() + "";
+        var _CGPA = $("#divEPM_Modal #CGPA").val() + "";
+        var _ClassSelectedValue = $("#divEPM_Modal #ClassCode").val() + "";
+        var _ClassSelectedText = $("#divEPM_Modal #ClassName").val() + "";
+        var _FinalGrade = $("#divEPM_Modal #FinalGrade").val() + "";
+        var _BranchOfStudy1SelectedValue = $("#divEPM_Modal #BranchOfStudy1Code").val() + "";
+        var _BranchOfStudy1SelectedText = $("#divEPM_Modal #BranchOfStudy1Name").val() + "";
+        var _BranchOfStudy2SelectedValue = $("#divEPM_Modal #BranchOfStudy2Code").val() + "";
+        var _BranchOfStudy2SelectedText = $("#divEPM_Modal #BranchOfStudy2Name").val() + "";
+
+        var _GraduatedDateText = $("#divEPM_Modal #GraduatedDate").val() + "";
+        var _GraduatedDateValue = ReformatDate($("#divEPM_Modal #GraduatedDate").val() + "", "Date of Graduated");
+
+        var _BahasaMalaysiaGrade = $("#BahasaMalaysiaGrade").val() + "";
+        var _EducationSponsorshipStatusSelectedValue = $("#divEPM_Modal #EducationSponsorshipStatusCode").val() + "";
+        var _EducationSponsorshipStatusSelectedText = $("#divEPM_Modal #EducationSponsorshipStatusName").val() + "";
+
+        var _EducationAttachMandatory = $("#divEPM_Modal #EducationAttachMandatory").val() + "";
+        var _AttachmentSessionName = $("#divEPM_Modal #AttachmentSessionName").val() + "";
+        var _AttachmentSourceType = $("#divEPM_Modal #AttachmentSourceType").val() + "";
+        var _AttachmentCategory = "@EmployeeCategory_Education" + "";
+
+
+        var _HiddenRecordNumber = $("#divEPM_Modal #HiddenRecordNumber").val() + "";
+        var _HiddenObjectID = $("#divEPM_Modal #HiddenObjectID").val() + "";
+        var _HiddenLockIndicator = $("#divEPM_Modal #HiddenLockIndicator").val() + "";
+        var _HiddenStartDate = $("#divEPM_Modal #HiddenStartDate").val() + "";
+        var _HiddenEndDate = $("#divEPM_Modal #HiddenEndDate").val() + "";
+        var _HiddenEducation = $("#divEPM_Modal #HiddenEducation").val() + "";
+        var _HiddenCountry = $("#divEPM_Modal #HiddenCountry").val() + "";
+        var _HiddenSchool = $("#divEPM_Modal #HiddenSchool").val() + "";
+        var _HiddenCertificate = $("#divEPM_Modal #HiddenCertificate").val() + "";
+        var _HiddenCGPA = $("#divEPM_Modal #HiddenCGPA").val() + "";
+        var _HiddenClass = $("#divEPM_Modal #HiddenClass").val() + "";
+        var _HiddenFinalGrade = $("#divEPM_Modal #HiddenFinalGrade").val() + "";
+        var _HiddenBranchOfStudy1 = $("#divEPM_Modal #HiddenBranchOfStudy1").val() + "";
+        var _HiddenBranchOfStudy2 = $("#divEPM_Modal #HiddenBranchOfStudy2").val() + "";
+        var _HiddenGraduatedDate = $("#divEPM_Modal #HiddenGraduatedDate").val() + "";
+        var _HiddenBahasaMalaysiaGrade = $("#divEPM_Modal #HiddenBahasaMalaysiaGrade").val() + "";
+        var _HiddenEducationSponsorshipStatus = $("#divEPM_Modal #HiddenEducationSponsorshipStatus").val() + "";
+
+
+        var Url = "";
+
+        if (FormAction.toUpperCase() == "INSERT") {
+            var form = {
+                EmployeeID: _EmployeeID,
+                EducationSelectedValue: _EducationSelectedValue,
+                EducationSelectedText: _EducationSelectedText,
+                CountrySelectedValue: _CountrySelectedValue,
+                CountrySelectedText: _CountrySelectedText,
+                SchoolSelectedValue: _SchoolSelectedValue,
+                SchoolSelectedText: _SchoolSelectedText,
+                CertificateSelectedValue: _CertificateSelectedValue,
+                CertificateSelectedText: _CertificateSelectedText,
+                CGPA: _CGPA,
+                ClassSelectedValue: _ClassSelectedValue,
+                ClassSelectedText: _ClassSelectedText,
+                FinalGrade:_FinalGrade,
+                BranchOfStudy1SelectedValue: _BranchOfStudy1SelectedValue,
+                BranchOfStudy1SelectedText: _BranchOfStudy1SelectedText,
+                BranchOfStudy2SelectedValue: _BranchOfStudy2SelectedValue,
+                BranchOfStudy2SelectedText: _BranchOfStudy2SelectedText,
+                GraduatedDateValue: _GraduatedDateValue,
+                GraduatedDateText: _GraduatedDateText,
+                BahasaMalaysiaGrade: _BahasaMalaysiaGrade,
+                EducationSponsorshipStatusSelectedValue: _EducationSponsorshipStatusSelectedValue,
+                EducationSponsorshipStatusSelectedText: _EducationSponsorshipStatusSelectedText,
+                Comment: _Comment,
+                EducationAttachMandatory: _EducationAttachMandatory,
+                AttachmentSessionName: _AttachmentSessionName,
+                AttachmentSourceType: _AttachmentSourceType,
+                AttachmentCategory: _AttachmentCategory,
+                createdBy: _createdBy
+            };
+            ResultMsg = "The request (Add Education Information) has been successfully submitted.";
+            Url = '@Url.Content("~/Employee/SubmitEducationForm")';
+        }
+        else if (FormAction.toUpperCase() == "EDIT") {
+            var form = {
+                EmployeeID: _EmployeeID,
+                EducationSelectedValue: _EducationSelectedValue,
+                EducationSelectedText: _EducationSelectedText,
+                CountrySelectedValue: _CountrySelectedValue,
+                CountrySelectedText: _CountrySelectedText,
+                SchoolSelectedValue: _SchoolSelectedValue,
+                SchoolSelectedText: _SchoolSelectedText,
+                CertificateSelectedValue: _CertificateSelectedValue,
+                CertificateSelectedText: _CertificateSelectedText,
+                CGPA: _CGPA,
+                ClassSelectedValue: _ClassSelectedValue,
+                ClassSelectedText: _ClassSelectedText,
+                FinalGrade: _FinalGrade,
+                BranchOfStudy1SelectedValue: _BranchOfStudy1SelectedValue,
+                BranchOfStudy1SelectedText: _BranchOfStudy1SelectedText,
+                BranchOfStudy2SelectedValue: _BranchOfStudy2SelectedValue,
+                BranchOfStudy2SelectedText: _BranchOfStudy2SelectedText,
+                GraduatedDateValue: _GraduatedDateValue,
+                GraduatedDateText: _GraduatedDateText,
+                BahasaMalaysiaGrade: _BahasaMalaysiaGrade,
+                EducationSponsorshipStatusSelectedValue: _EducationSponsorshipStatusSelectedValue,
+                EducationSponsorshipStatusSelectedText: _EducationSponsorshipStatusSelectedText,
+                Comment: _Comment,
+                EducationAttachMandatory: _EducationAttachMandatory,
+                AttachmentSessionName: _AttachmentSessionName,
+                AttachmentSourceType: _AttachmentSourceType,
+                AttachmentCategory: _AttachmentCategory,
+                createdBy: _createdBy,
+                HiddenRecordNumber: _HiddenRecordNumber,
+                HiddenObjectID: _HiddenObjectID,
+                HiddenLockIndicator: _HiddenLockIndicator,
+                HiddenStartDate: _HiddenStartDate,
+                HiddenEndDate: _HiddenEndDate,
+                HiddenEducation: _HiddenEducation,
+                HiddenCountry: _HiddenCountry,
+                HiddenSchool: _HiddenSchool,
+                HiddenCertificate: _HiddenCertificate,
+                HiddenCGPA: _HiddenCGPA,
+                HiddenClass: _HiddenClass,
+                HiddenFinalGrade: _HiddenFinalGrade,
+                HiddenBranchOfStudy1: _HiddenBranchOfStudy1,
+                HiddenBranchOfStudy2: _HiddenBranchOfStudy2,
+                HiddenGraduatedDate: _HiddenGraduatedDate,
+                HiddenBahasaMalaysiaGrade: _HiddenBahasaMalaysiaGrade,
+                HiddenEducationSponsorshipStatus: _HiddenEducationSponsorshipStatus,
+
+            };
+
+            ResultMsg = "The request (Edit Education Information) has been successfully submitted.";
+            Url = '@Url.Content("~/Employee/UpdateEducationForm")';
+        }
+
+        if ($('#divLoading').is(':visible')) {
+
+            $.ajax({
+                type: "POST",
+                url: Url,
+                cache: false,
+                async: false,
+                dataType: "json",
+                data: form,
+                success: function (result) {
+                    if (result.Success) {
+                        $("#ConfirmUpdate").modal('toggle');
+                        $("#divLoading").hide();
+                        $("#divLoading2").show();
+
+                        ResultMsg += "<br/><br/>Request No: <label class='refno'>" + result.RequestNo + "</label>";
+                        $(".Success-body .well").html(ResultMsg);
+                        $("#SuccessSubmit").modal();
+
+                        $("#btnOK").click(function () { RedirectTo(FormAction.toUpperCase()); });
+                    }
+                    else {
+                        $("#ConfirmUpdate").modal('toggle');
+                        $("#divLoading").hide();
+                        $("#divLoading2").hide();
+                        btn.disabled = false;
+
+                        alert(result.ErrorMsg);
+
+                    }
+                },
+                error: function (e) {
+
+                }
+            });
+        }
+    }
+
+    function RedirectTo(_Action) {
+        switch (_Action) {
+            case "INSERT":
+                location.reload();
+                break;
+            case "EDIT":
+                location.reload();
+                break;
+            default:
+                window.location.href = '/Pages/default.aspx';
+        }
+    }
+
+
+    function AllowEdit_Education(btn, FormAction) {
+
+        var EmployeeCode = "@Model.Item1.EmployeeCode";
+        var EmployeeID = "@Model.Item1.EmployeeID";
+
+        var Education = "@Model.Item1.EducationCode";
+        var RecordNumber = "@Model.Item1.RecordNumber";
+        var StartDate = "@Service.FormatDateInNumber(Model.Item1.StartDate, "dd/MM/yyyy")";
+        var EndDate = "@Service.FormatDateInNumber(Model.Item1.EndDate, "dd/MM/yyyy")";
+        var Action = 'Edit';
+
+        $("#divEPM_Modal #FormCategory").val("@module");
+        $("#divEPM_Modal #FormAction").val(Action);
+        var url = "@Url.Content("~/Employee/_EducationForm")";
+        var data = {
+            EmployeeCode: EmployeeCode,
+            EmployeeID: EmployeeID,
+            Education: Education,
+            RecordNumber: RecordNumber,
+            StartDate: StartDate,
+            EndDate: EndDate,
+            Mode: Action
+        };
+        btn.disabled = false;
+        OpenEditPanel('Edit Education Info', Action, url, data)
+    }
+
+
+</script>
+
+@*Script Load Form Function*@
+<script type="text/javascript">
+    function ReformatDate(edate, Type) {
+        try {
+            if (edate.length > 0)
+            {
+                var myDate = $.datepicker.parseDate("dd/mm/yy", edate);
+                var d = myDate.getDate();
+                var m = myDate.getMonth();
+                m += 1;
+                var y = myDate.getFullYear();
+
+                var newdate = (y + "-" + m + "-" + d);
+                return newdate;
+            }
+            return "";
+        }
+
+        catch (e) {
+            var Error = "ERROR";
+            //alert('Invalid Date Format ('+Type+')' + e);
+            //alert(e);
+            return Error;
+        }
+
+    }
+
+</script>
+
+@*script Load Form *@
+<script type="text/javascript">
+
+    $(document).ready(function () {
+        App.initAjax();
+
+        var divMode = "@divMode";
+        var runFieldVisible = "@runFieldVisible";
+
+        if (runFieldVisible.toUpperCase() == "TRUE") {
+            Setting_FieldVisible = JSON.parse('@Html.Raw(Json.Encode(Model.Item2.FieldVisible))');
+            Setting_FieldEnable = JSON.parse('@Html.Raw(Json.Encode(Model.Item2.FieldEnable))');
+            Setting_FieldChecked = JSON.parse('@Html.Raw(Json.Encode(Model.Item2.FieldChecked))');
+            Setting_FieldValue = JSON.parse('@Html.Raw(Json.Encode(Model.Item2.FieldValue))');
+
+            PopulateSetting(divMode, "#divEPM_Modal", "#SettingFormLoad", Setting_FieldVisible, Setting_FieldEnable, Setting_FieldChecked, Setting_FieldValue);
+            //PopulateSetting(divMode, divMain, LogDiv, Setting_FieldVisible, Setting_FieldEnable, Setting_FieldChecked, Setting_FieldValue)
+
+        }
+
+        LoadFormConfiguration();
+
+        LoadFormOnChange();
+
+    });
+
+</script>

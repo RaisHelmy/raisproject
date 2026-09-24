@@ -1,0 +1,87 @@
+﻿@model List<OJA.Models.Specialization>
+@{
+    Layout = null;
+}
+<div class="portlet box blue">
+    <div class="mini-triangle"><img src="../Assets/img/menu-red-triangle.png" /></div>
+    <div class="portlet-title">
+        <div class="caption">
+            <i class="fa fa-reorder"></i>Technical / Professional Certification / Membership & Licenses
+        </div>
+        <div class="tools">
+            <a style="margin-left:10px" href="javascript:;" class="expand arrow-down">
+            </a>
+        </div>
+    </div>
+
+    <div class="portlet-body form" style="display:none">
+        <div class="form-body">
+            <div class="form-horizontal">
+                <table id="tblList" class="table table-striped table-bordered table-hover table-full-width">
+                    <thead>
+                        <tr>
+                            <th>Technical / Professional Certification / Membership & Licenses</th>
+                            <th>Start Date</th>
+                            <th>End Date</th> 
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td>
+                                    <a href="javascript: EditCertificationInfo('@item.SpecializationID')">@item.SpecializationName</a>
+                                </td>
+                                <td>@item.StartDate</td>
+                                <td>@item.EndDate</td> 
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            @if (ViewBag.CanEdit)
+            {
+                <div class="row">
+                    <div class="col-md-12">
+                        <a class="btn btn-primary" onclick="ShowCertificationList()">Add <i class="fa fa-plus"></i></a>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<script>
+    function ShowCertificationList() {
+        ShowLoading();
+
+        $.ajax({
+            url: '@Url.Action("AddSpecializationFromList")',
+            data: {SpecializationType: "CERTIFICATION"},
+            success: function (content) {
+                $("#certificationDiv #EducationInfoBody").html(content);
+                $("#certificationDiv #AddEducationInfoModal").modal();
+            },
+            error: function (err) {
+                alert('Unable to retrieve professional certification list');
+            }
+        });
+    }
+
+    function EditCertificationInfo(specId) {
+        ShowLoading();
+        $.ajax({
+            url: '@Url.Action("EditSpecializationFromList")',
+            data: { Id: specId, specializationType: 'CERTIFICATION' },
+            success: function (responseHtml) {
+                $("#certificationDiv #EducationInfoBody").html(responseHtml);
+                $("#certificationDiv #AddEducationInfoModal").modal();
+            },
+            error: function (err) {
+                alert('Unable to get professional certification details')
+            }
+        });
+    }
+
+</script>

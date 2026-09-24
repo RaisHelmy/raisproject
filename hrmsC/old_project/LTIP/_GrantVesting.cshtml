@@ -1,0 +1,208 @@
+﻿@using System.Globalization
+@using LTIP.Models
+@model Tuple<GrantDetail, string>
+@{
+    GrantDetail gd = Model.Item1;
+    string vestingNo = Model.Item2;
+    string year = "";
+
+    string VestingDate = "",
+           Vested = "",
+           VestingStatus = "",
+           FMV = "",
+           VestID = "";
+
+    switch (vestingNo)
+    {
+        case "1":
+            VestID = gd.VestID1;
+            VestingDate = gd.VestingDate1;
+            Vested = gd.Vested1;
+            FMV = gd.FMV1;
+            VestingStatus = gd.VestingStatus1;
+            break;
+        case "2":
+            VestID = gd.VestID2;
+            VestingDate = gd.VestingDate2;
+            Vested = gd.Vested2;
+            FMV = gd.FMV2;
+            VestingStatus = gd.VestingStatus2;
+            break;
+        case "3":
+            VestID = gd.VestID3;
+            VestingDate = gd.VestingDate3;
+            Vested = gd.Vested3;
+            FMV = gd.FMV3;
+            VestingStatus = gd.VestingStatus3;
+            break;
+    }
+}
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="portlet box blue">
+            <div class="mini-triangle"><img src="../Assets/img/menu-red-triangle.png" /></div>
+            <div class="portlet-title">
+                <div class="caption">
+                    <i class="fa fa-reorder"></i> Vesting #@vestingNo
+                    @(!string.IsNullOrEmpty(VestingDate) ? "(" + DateTime.ParseExact(VestingDate, "dd/MM/yyyy", CultureInfo.InvariantCulture, DateTimeStyles.None).Year.ToString() + ")" : "")
+                </div>
+                <div class="tools">
+                    <a id="subtypeToggle" title="" data-original-title="" href="javascript:;" class="collapse"> </a>
+                </div>
+            </div>
+            <div class="portlet-body form">
+                <div class="form-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-horizontal">
+                                <div class="form-group">
+                                    <label class="control-label col-md-5">
+                                        Vesting Date
+                                    </label>
+                                    <div class="col-md-7 form-control-static">
+                                        @if (string.IsNullOrEmpty(VestingDate) || DateTime.Now < DateTime.Parse(VestingDate))
+                                        {
+                                            <label> - </label>
+                                        }
+                                        else
+                                        {
+                                            <label>@VestingDate</label>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-horizontal">
+                                <div class="form-group">
+                                    <label class="control-label col-md-5">
+                                        Vested (Share)
+                                    </label>
+                                    <div class="col-md-7 form-control-static">
+                                        @if (string.IsNullOrEmpty(Vested))
+                                        {
+                                            <label> - </label>
+                                        }
+                                        else
+                                        {
+                                            if (VestingStatus == "Not Vested")
+                                            {
+                                                <label></label>
+                                            }
+                                            else
+                                            {
+                                                <label>@Vested</label>
+                                            }
+
+                                            
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-horizontal">
+                                <div class="form-group">
+                                    <label class="control-label col-md-5">
+                                        Vesting Status
+                                    </label>
+                                    <div class="col-md-7 form-control-static">
+                                        @if (string.IsNullOrEmpty(VestingStatus))
+                                        {
+                                            <label> - </label>
+                                        }
+                                        else
+                                        {
+                                            if (VestingStatus == "Vested")
+                                            {
+                                                <label style="color:green;">@VestingStatus</label>
+                                            }
+                                            else if (VestingStatus == "Not Vested")
+                                            {
+                                                <label style="color:red;">@VestingStatus</label>
+                                            }
+                                            else
+                                            {
+                                                <label>@VestingStatus</label>
+                                            }
+
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-horizontal">
+                                <div class="form-group">
+                                    <label class="control-label col-md-5">
+                                        Fair Market Value (RM)
+                                    </label>
+                                    <div class="col-md-7 form-control-static">
+                                        @if (string.IsNullOrEmpty(FMV))
+                                        {
+                                            <label></label>
+                                        }
+                                        else
+                                        {
+									        <label>@FMV</label>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-horizontal">
+                                <div class="form-group">
+                                    <label class="control-label col-md-5">
+                                        Notice of Vesting
+                                    </label>
+                                    <div class="col-md-7 form-control-static">
+                                        @if (!string.IsNullOrEmpty(VestID))
+                                        {
+                                            <a href="javascript:openWindow('@Url.Action("ViewVestNotice", "LTIP", new
+                                                                     { VestID = VestID,
+                                                                       CompPlan = gd.CompPlan,
+                                                                       CompReviewItem = gd.CompReviewItem,
+                                                                       VestNumber = "01" })', 'View_LTIP_Vesting_Notice', 500, 500)">
+                                                Vesting #@vestingNo - @gd.CompPlan
+                                            </a>
+                                        }
+                                        else
+                                        {
+                                            <span> - </span>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function openWindow(url, title, w, h) {
+        // Fixes dual-screen position                         Most browsers      Firefox
+        var dualScreenLeft = window.screenLeft != undefined ? window.screenLeft : screen.left;
+        var dualScreenTop = window.screenTop != undefined ? window.screenTop : screen.top;
+
+        var width = window.innerWidth ? window.innerWidth : document.documentElement.clientWidth ? document.documentElement.clientWidth : screen.width;
+        var height = window.innerHeight ? window.innerHeight : document.documentElement.clientHeight ? document.documentElement.clientHeight : screen.height;
+
+        var left = ((width / 2) - (w / 2)) + dualScreenLeft;
+        var top = ((height / 2) - (h / 2)) + dualScreenTop;
+        var newWindow = window.open(url, title, 'scrollbars=yes, width=' + w + ', height=' + h + ', top=' + top + ', left=' + left);
+
+        // Puts focus on the newWindow
+        if (window.focus) {
+            newWindow.focus();
+        }
+    }
+</script>

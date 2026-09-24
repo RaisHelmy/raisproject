@@ -1,0 +1,106 @@
+﻿@model IEnumerable<ESS.ReRouting.Models.Task>
+@{
+    Layout = null;
+}
+<div class="portlet box blue">
+    <div class="mini-triangle"><img src="../Assets/img/menu-red-triangle.png"></div>
+    <div class="portlet-title">
+        <div class="caption">
+            <i class="fa fa-reorder"></i>Pending List
+        </div>
+    </div>
+    <div class="portlet-body form">
+        <div class="form-horizontal">
+            <div class="form-body">
+                <div class="table-toolbar">
+                    <table id="tblTasklist" class="table table-striped table-bordered table-hover table-full-width">
+                        <thead>
+                            <tr>
+                                <th></th>
+                                <th></th>
+                                <th>Reference No.</th>
+                                <th>Module</th>
+                                <th>Applicant</th>
+                                <th>Current IM</th>
+                                <th>Current Approver</th>
+                                <th>Activity Name</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model)
+                            {
+                                <tr>
+                                    <td><input type="checkbox" class="selectedTask" value="@item.ID"></td>
+                                    <td>
+                                        <a class="btn blue btn-sm" onclick="javascript: ViewTask('@item.ID', '@item.DisplayText6', '@item.DisplayText16', '@item.DisplayText17', '@item.SourceID', '@item.ApplicationId')"><i class="fa fa-search"></i></a>
+                                    </td>
+                                    <td>
+                                        @Html.DisplayFor(modelItem => item.ReferenceNo)
+                                    </td>
+                                    <td>@item.ApplicationName</td>
+                                    <td>
+                                        @Html.DisplayFor(modelItem => item.Applicant)
+                                    </td>
+                                    <td>
+                                        @{ string CurrentIM =  item.ManagerCode + " - " + item.ManagerName; }
+                                        @Html.DisplayFor(modelItem => CurrentIM)
+                                    </td>
+                                    <td>
+                                        @Html.DisplayFor(modelItem => item.CurrentApprover)
+                                    </td>
+                                    <td>
+                                        @Html.DisplayFor(modelItem => item.ActivityName)
+                                    </td>
+                                    <td style="color:green">
+                                        <b>@item.Status</b>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function () {
+        $('#tblTasklist').dataTable()
+        var tableWrapper = "#tblTasklist_wrapper";
+        jQuery(tableWrapper + ' .dataTables_filter input').addClass("form-control input-medium input-inline"); // modify table search input
+        jQuery(tableWrapper + ' .dataTables_length select').addClass("form-control input-small"); // modify table per page dropdown
+        jQuery(tableWrapper + ' .dataTables_length select').select2({
+            showSearchInput: false 
+        });
+    });
+
+
+    function ViewTask(TaskID, DisplayText6, DisplayText16, DisplayText17, SourceID, ApplicationId)
+    {
+        var currentApproverId = $("#CurrentApprover").val();
+        
+        $.ajax({
+            type: "GET",
+            url: "@Url.Action("ViewTaskDetails")",
+            data: { ID: TaskID, DisplayText6: DisplayText6, DisplayText16:DisplayText16, DisplayText17:DisplayText17, SourceID:SourceID, ApplicationId:ApplicationId},
+            success: function(content)
+            {
+                if (content.Success == true)
+                {
+                    window.open(content.Url);
+                 //  window.location.href = content.Url;
+                }
+                else
+                {
+                    alert("Error in viewing task item \n" + content.Error);
+                }
+            },
+            error: function (err)
+            {
+                console.log("Error jquery post to view item\n" + err);
+            }
+        });
+    }
+</script>

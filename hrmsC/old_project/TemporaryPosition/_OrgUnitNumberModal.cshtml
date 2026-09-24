@@ -1,0 +1,150 @@
+﻿@{
+    Layout = null;
+}
+
+<div class="row">
+    <!--PORTLET START-->
+    <div class="col-md-12">
+        <!--PORTLET BODY-->
+        <div class="portlet-body form">
+            <form action="#" class="form-horizontal form-row-sepe">
+                <div class="form-body">
+                    <div class="form-group">
+                        <label class="control-label col-md-3">Org Unit No</label>
+                        <div class="col-md-3">
+                            <input name="" type="text" id="orgUnitNumber" class="form-control" />
+                        </div>
+                        <label class="control-label col-md-3">Divisions</label>
+                        <div class="col-md-3">
+                            <select id="ddlDivisionCode" class="form-control">
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="control-label col-md-3">Personnel Areas</label>
+                        <div class="col-md-3">
+                            <select id="ddlPersonnelArea" class="form-control">
+                            </select>
+                        </div>
+                        <label class="control-label col-md-3">Personnel Sub Areas</label>
+                        <div class="col-md-3">
+                            <select id="ddlPersonnelSubArea" class="form-control">
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <div class="col-md-offset-9 col-md-3">
+                            <span class="input-group-btn">
+                                <button class="btn blue" type="button" onclick="javascript: SearchOrgUnitNumber();">Search</button>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+        <!--END OF PORTLET BODY-->
+    </div>
+</div>
+
+<hr />
+<div class="row">
+    <div class="col-md-12">
+        <div id="OrgUnitNumberResult">
+
+        </div>
+    </div>
+</div>
+<script>
+    var __Divisions = @Html.Raw(Json.Encode(TemporaryPosition.Service.GetDivisions()));
+    var __CurrentDivision = null;
+    var __CurrentPersonnelArea = null;
+
+    $(function () {
+        $('#ddlDivisionCode').on('change', UpdatePersonnelAreas);
+        $('#ddlPersonnelArea').on('change', UpdatePersonnelSubAreas);
+
+        UpdateDivisions();
+    });
+
+    function UpdateDivisions() {
+        $('#ddlDivisionCode').append("<option value=''> -- All -- </option>");
+        $('#ddlPersonnelArea').append("<option value=''> -- All -- </option>");
+        $('#ddlPersonnelSubArea').append("<option value=''> -- All -- </option>");
+
+        for (var i = 0; i < __Divisions.length; i++) {
+            var div = __Divisions[i];
+            $('#ddlDivisionCode').append("<option value='" + div.DivisionCode + "'>" + div.DivisionCode + "-" + div.DivisionName + "</option>");
+        }
+    }
+
+    function UpdatePersonnelAreas() {
+        var ddlPersonnelArea = $('#ddlPersonnelArea');
+        var ddlPersonnelSubArea = $('#ddlPersonnelSubArea');
+
+        __CurrentDivision = __Divisions.find(function (x) { return x.DivisionCode == $('#ddlDivisionCode').val(); });
+
+        if (__CurrentDivision) {
+            ddlPersonnelArea.empty();
+            ddlPersonnelSubArea.empty();
+            ddlPersonnelArea.append("<option value=''> -- All -- </option>");
+            ddlPersonnelSubArea.append("<option value=''> -- All -- </option>");
+
+            for (var i = 0; i < __CurrentDivision.PersonnelAreas.length; i++) {
+                var pa = __CurrentDivision.PersonnelAreas[i];
+                ddlPersonnelArea.append("<option value='" + pa.PersonnelAreaCode + "'>" + pa.PersonnelAreaCode + "-" + pa.PersonnelAreaName + "</option>");
+            }
+        }
+        else {
+            ddlPersonnelArea.empty();
+            ddlPersonnelSubArea.empty();
+            ddlPersonnelArea.append("<option value=''> -- All -- </option>");
+            ddlPersonnelSubArea.append("<option value=''> -- All -- </option>");
+        }
+    }
+
+    function UpdatePersonnelSubAreas() {
+        var ddlPersonnelArea = $('#ddlPersonnelArea');
+        var ddlPersonnelSubArea = $('#ddlPersonnelSubArea');
+
+        __CurrentPersonnelArea = __CurrentDivision.PersonnelAreas.find(function (x) { return x.PersonnelAreaCode == ddlPersonnelArea.val(); });
+
+        if (__CurrentPersonnelArea) {
+            ddlPersonnelSubArea.empty();
+            ddlPersonnelSubArea.append("<option value=''> -- All -- </option>");
+
+            for (var i = 0; i < __CurrentPersonnelArea.PersonnelSubAreas.length; i++) {
+                var psa = __CurrentPersonnelArea.PersonnelSubAreas[i];
+                ddlPersonnelSubArea.append("<option value='" + psa.PersonnelSubAreaCode + "'>" + psa.PersonnelSubAreaCode + "-" + psa.PersonnelSubAreaName + "</option>");
+            }
+        }
+        else {
+            ddlPersonnelSubArea.empty();
+            ddlPersonnelSubArea.append("<option value=''> -- All -- </option>");
+        }
+    }
+
+	function SearchOrgUnitNumber()
+	{
+		$("#OrgUnitNumberResult").html("LOADING...");
+
+		$.ajax({
+			type: "POST",
+			url: "@Url.Action("_OrgUnitNumberSearchResult","TemporaryPosition")",
+			dataType: "html",
+            data: {
+                OrgUnitNumber: $("#orgUnitNumber").val(),
+                DivisionCode: $("#ddlDivisionCode").val(),
+                PersonnelAreaCode: $("#ddlPersonnelArea").val(),
+                PersonnelSubAreaCode: $("#ddlPersonnelSubArea").val()
+            },
+			success: function (content) {
+				$("#OrgUnitNumberResult").html(content);
+            },
+			error: function (err) {
+                alert("Error in the ajax call.");
+            }
+		});
+	}
+</script>

@@ -1,0 +1,123 @@
+﻿@model ETKEMS.Models.ETKEMSViewModel
+
+@{
+    Layout = null;
+}
+
+<table id="tblExtensionRequest" class="table table-striped table-bordered table-hover table-full-width">
+    <thead>
+        <tr>
+            <th>Employee</th>
+            <th>Extension Start Date</th>
+            <th>Extension End Date</th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (!Model.AllowExtension && Model.Extended)
+        {
+            <tr>
+                <td class="EREmployee">
+                    <input type="text" class="form-control EmployeeDesc"
+                           name="EmployeeDesc" value="@Model.EmployeeDesc" readonly="readonly" />
+                </td>
+                <td class="ERStartDate">
+                    <input type="text" class="form-control ExtensionStartDate"
+                           name="ExtensionStartDate" value="@Model.ExtensionStartDate" readonly="readonly" />
+                </td>
+                <td class="EREndDate">
+                    <input type="text" class="form-control ExtensionEndDate"
+                           name="ExtensionEndDate" value="@Model.ExtensionEndDate" readonly="readonly" />
+                </td>
+            </tr>
+        }
+        else if (Model.AllowExtension &&
+                (Model.EStatus == ETKEMS.Status.ExtensionRequest_Submitted
+                || Model.EStatus == ETKEMS.Status.ExtensionRequest_Agreed
+                || Model.EStatus == ETKEMS.Status.ExtensionRequest_Approved))
+        {
+            <tr>
+                <td class="EREmployee">           
+                    <input type="text" class="form-control EmployeeDesc"
+                           name="EmployeeDesc" value="@Model.EmployeeDesc" readonly="readonly" />
+                </td>
+                <td class="ERStartDate">      
+                    <input type="text" class="form-control ExtensionStartDate"
+                           name="ExtensionStartDate" value="@Model.ExtensionStartDate" readonly="readonly" />
+                </td>
+                <td class="EREndDate">     
+                    <input type="text" class="form-control ExtensionEndDate"
+                           name="ExtensionEndDate" value="@Model.ExtensionEndDate" readonly="readonly" />
+                </td>
+            </tr>
+        }
+        else if (Model.AllowExtension && 
+                (Model.EStatus == ETKEMS.Status.Approved
+                || Model.EStatus == ETKEMS.Status.PaymentProcessing_Approved
+                || Model.EStatus == ETKEMS.Status.PaymentProcessing_Declined
+                || Model.EStatus == ETKEMS.Status.ExtensionRequest_Declined))
+        {
+            <tr>
+                <td class="EREmployee">@Model.EmployeeDesc</td>
+                <td class="ERStartDate">
+                    @*<div class="input-group date date-picker ExtensionStartDatePicker" data-date-format="dd/mm/yyyy">
+                        <input type="text" class="form-control ExtensionStartDate" 
+                               name="ExtensionStartDate" value="@Model.ExtensionStartDate" />
+                        <span class="input-group-btn">
+                            <button type="button" class="btn default">
+                                <i class="fa fa-calendar">
+                                </i>
+                            </button>
+                        </span>
+                    </div>*@
+                    <input type="text" class="form-control ExtensionStartDate"
+                           name="ExtensionStartDate" value="@Model.ExtensionStartDate" readonly="readonly" />
+                </td>
+                <td class="EREndDate">
+                    <div class="input-group date date-picker ExtensionEndDatePicker" data-date-format="dd/mm/yyyy">
+                        <input type="text" class="form-control ExtensionEndDate" 
+                               name="ExtensionEndDate" value="@Model.ExtensionEndDate" />
+                        <span class="input-group-btn">
+                            <button type="button" class="btn default">
+                                <i class="fa fa-calendar">
+                                </i>
+                            </button>
+                        </span>
+                    </div>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<script>
+    $(function () {
+        $('.ExtensionStartDatePicker,.ExtensionEndDatePicker').datepicker({
+            format: 'dd/mm/yyyy',
+            autoclose: true,
+        });
+
+        ExtRequest_UpdateMinMaxDate();
+    });
+
+    function ExtRequest_UpdateMinMaxDate() {
+        //var dpkExtStartDate = $('.ExtensionStartDatePicker');
+        var dpkExtEndDate = $('.ExtensionEndDatePicker');
+        
+        var vacStartDate = '@Model.FromDate';
+        var vacEndDate = '@Model.ToDate';
+        var dtStartDate = moment(vacStartDate, 'DD/MM/YYYY');
+        var dtEndDate = moment(vacEndDate, 'DD/MM/YYYY');
+
+        $('.ExtensionStartDate').val(dtEndDate.clone().add(1, 'days').format('DD/MM/YYYY'));
+        //dpkExtStartDate.datepicker('setDate', dtEndDate.clone().add(1, 'days').toDate());
+        //dpkExtStartDate.datepicker('setStartDate', dtEndDate.clone().add(1, 'days').toDate());
+
+        var extStartDate = $('.ExtensionStartDate').val();
+        var extEndDate = $('.ExtensionEndDate').val();
+        var dtExtStartDate = moment(extStartDate, 'DD/MM/YYYY');
+        var dtExtEndDate = moment(extEndDate, 'DD/MM/YYYY');
+
+        dpkExtEndDate.datepicker('setStartDate', dtExtStartDate.toDate());
+        dpkExtEndDate.datepicker('setEndDate', dtExtStartDate.clone().add(179, 'days').toDate());
+    }
+</script>

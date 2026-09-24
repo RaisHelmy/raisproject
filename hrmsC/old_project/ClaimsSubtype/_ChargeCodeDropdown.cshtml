@@ -1,0 +1,28 @@
+﻿@using ESS.Claim.ClaimSubtype
+@using ESS.Claim.ViewModels
+@model Tuple<ColumnTemplate, ClaimsSubtype>
+
+@{
+    ColumnTemplate col = Model.Item1;
+    ClaimsSubtype subtype = Model.Item2;
+
+    if (subtype.Template.IsReadonly)
+    {
+        <input type="text"
+               class="form-control SubTypeColumn0"
+               style="min-width:130px;max-width:200px;@col.ColumnStyle"
+               name="ClaimsSubtypeCategory[@subtype.categoryIndex].ClaimSubtype[@subtype.subtypeIndex].SubTypeDetails[0].@col.ColumnName"
+               value="@col.ColumnValue"
+               readonly="readonly"/>
+    }
+    else
+    {
+        <input type="hidden" class="hfChargeCode" value="@col.ColumnValue" />
+        <select class="form-control ddlChargeCode SubTypeColumn0"
+                style="min-width:130px;max-width:200px;@col.ColumnStyle"
+                onchange="ChargeCodeChange(this); CalculateChargeCodeSummary();@col.OnChange"
+                name="ClaimsSubtypeCategory[@subtype.categoryIndex].ClaimSubtype[@subtype.subtypeIndex].SubTypeDetails[0].@col.ColumnName">
+            <option value="">Select One</option>
+        </select>
+    }
+}

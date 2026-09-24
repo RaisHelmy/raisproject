@@ -1,0 +1,109 @@
+﻿@model System.Data.DataTable
+@using System.Data;
+@{
+    ViewBag.Title = "EASy Door Access Record";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    int i = 0;
+    int j = 0;
+    string ErrorMessage = ViewBag.ErrorMessage;
+    string EmployeeCode = ViewBag.EmployeeCode;
+    string EmployeeName = ViewBag.EmployeeName;
+}
+
+
+
+@if (!string.IsNullOrEmpty(ErrorMessage))
+{
+    <div class="row">
+        <div class="col-md-12">
+            <div class="note note-danger">
+                <h4 class="block">
+                    @ErrorMessage
+                </h4>
+
+            </div>
+        </div>
+    </div>
+}
+<br>
+<div class="row">
+    <div class="col-md-12">
+        Employee: @EmployeeCode - @EmployeeName
+    </div>
+</div>
+<br>
+<div class="row" id="trAuditLog">
+    <div class="col-md-12">
+        <div class="portlet box blue">
+            <div class="mini-triangle"><img src="../Assets/img/menu-red-triangle.png" /></div>
+            <div class="portlet-title">
+                <div class="caption">
+                    <i class="fa fa-reorder"></i>
+                    @ViewBag.Title
+                </div>
+                <div class="tools">
+                    <a title="" data-original-title="" href="javascript:;" class="collapse"> </a>
+                </div>
+            </div>
+            <div class="portlet-body form">
+                <div class="form-horizontal">
+                    <div class="form-body">
+                        <div class="table-toolbar">
+                            <table id="tblEASy" class="table table-striped table-bordered table-hover table-full-width">
+                                <thead>
+                                    <tr>
+                                        @foreach (System.Data.DataColumn col in Model.Columns)
+                                        {
+                                            if (i == 0)
+                                            {
+                                                <th style="width: 20px;">
+
+                                                </th>
+                                            }
+                                            else
+                                            {
+                                                <th class="long-header" style="width:0px;">@col.Caption</th>
+                                            }
+
+                                            i++;
+                                        }
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (System.Data.DataRow row in Model.Rows)
+                                    {
+                                        j = 0;
+                                        <tr>
+                                            @foreach (var cell in row.ItemArray)
+                                            {
+                                                <td>
+                                                    @cell.ToString()
+                                                </td>
+                                                j++;
+                                            }
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+
+    $(document).ready(function () {
+        $('#tblEASy').DataTable({
+            "bLengthChange": false,
+            "bFilter": false,
+            "bPaginate": false,
+            "bInfo": false,
+            "bSort": false
+        });
+
+        //$(".page-sidebar-wrapper").remove();
+        //$(".page-content").css("margin-left", "0");
+    });
+</script>

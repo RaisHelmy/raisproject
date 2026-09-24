@@ -1,0 +1,494 @@
+﻿@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewBag.Title = "Overtime Planning In-Tray";
+    DateTime d1 = DateTime.Now.AddYears(-20);
+    DateTime d2 = DateTime.Now.AddYears(20);
+    string dtStrStart = d1.ToString("dd MMM yyyy");
+    string dtStrEnd = d2.ToString("dd MMM yyyy");
+}
+
+<div class="row">
+    <div class="col-md-12">
+        <br />
+        <h1 class="page-title">
+            @ViewBag.Title <span style="padding-left:20px;"><small></small></span>
+        </h1>
+    </div>
+</div>
+<br />
+<div class="form-body">
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-4 control-label">Start Date</label>
+                    <div class="col-md-8 form-control-static">
+                        <div class="input-group date date-picker" data-date-format="dd MM yyyy">
+                            <input type="text" class="form-control" id="StartDate" name="StartDate" />
+                            <span class="input-group-btn">
+                                <button type="button" class="btn default"><i class="fa fa-calendar"></i></button>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-4 control-label">End Date</label>
+                    <div class="col-md-8 form-control-static">
+                        <div class="input-group date date-picker" data-date-format="dd MM yyyy">
+                            <input type="text" class="form-control" id="EndDate" name="EndDate" />
+                            <span class="input-group-btn">
+                                <button type="button" class="btn default"><i class="fa fa-calendar"></i></button>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-4 control-label">Charge Type</label>
+                    <div class="col-md-8 form-control-static">
+                        <select class="form-control" id="ChargeType">
+                            <option value="">- All -</option>
+                            <option value="CC">Cost Center</option>
+                            <option value="PM">Order Number (Plant Maintenance)</option>
+                            <option value="JO">Order Number (Job Order)</option>
+                            <option value="WB">WBS Element</option>
+                            <option value="NT">Network Number And Operation Activity Number</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-4 control-label">Charge Code</label>
+                    <div class="col-md-8 form-control-static">
+                        <input id="SearchChargeCode" name="SearchChargeCode" class="form-control" type="text" />
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-4 control-label">Status</label>
+                    <div class="col-md-8 form-control-static">
+                        <select class="form-control" id="Status">
+                            <option value="">- All -</option>
+                            <option value="Pending">Pending</option>
+                            <option value="Verified">Verified</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-4 control-label">Employee</label>
+                    <div class="col-md-8 form-control-static">
+                        <input id="SearchEmpID" name="SearchEmpID" class="form-control" type="text" />
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    @*<div class="col-md-6">
+        <div class="form-horizontal">
+            <div class="form-group">
+                <label class="col-md-4 control-label">Employee</label>
+                <div class="col-md-8 form-control-static">
+                    @Html.Partial("_PeoplePicker")
+                    --commentout PeoplePicker hiddenfieldid = hfEmpID, textboxid =txtEmpName
+                </div>
+            </div>
+        </div>
+    </div>*@
+
+    <div class="row">&nbsp;</div>
+    <div class="row">
+        <div class="col-md-12">
+            <div class="text-right">
+                <input type="button" id="btn-Search" class="btn green btn-Search" value="Search" onclick="SearchListing();">
+                <input id="btn-Clear" type="button" class="btn default " value="Clear" onclick="ClearFilter();">
+            </div>
+        </div>
+    </div>
+    <div class="row">&nbsp;</div>
+    <div class="row">
+        <div class="col-md-12">
+            <div id="SearchResult">
+
+            </div>
+        </div>
+    </div>
+
+    <div class="row" id="PreActionButtonDiv">
+        <div class="col-md-12">
+            <input type="button" id="btn-PreVerify" class="btn green btn default " value="Verify" onclick="ShowApprovalComment('Verify');">
+                <input type="button" id="btn-PreApprove" class="btn green btn-Search" value="Approve" onclick="ShowApprovalComment('Approve');">
+                <input type="button" id="btn-PreDecline" class="btn green btn default " value="Decline" onclick="ShowApprovalComment('Decline');">
+        </div>
+    </div>
+
+    <div id="ActionButtonDiv" style="display:none;">
+        <div>
+            <div class="col-md-6">
+                <label class="control-label col-md-4">Selected Action</label>
+                <label class="control-label col-md-4" name="SelectedAction"></label>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12">
+                <div class="portlet box blue">
+                    <div class="mini-triangle"><img src="../Assets/img/menu-red-triangle.png" /></div>
+                    <div class="portlet-title">
+                        <div class="caption">
+                            <i class="fa fa-reorder"></i>Approval Comments
+                        </div>
+                    </div>
+                    <div class="portlet-body form">
+                        <div class="form-body">
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="form-horizontal">
+                                        <div class="form-group">
+                                            <label class="control-label col-md-2">Comments</label>
+                                            <div class="col-md-10 form-control-static">
+                                                <textarea class="form-control" id="txtAppComment" rows="5" cols="60"
+                                                          maxlength="1000"></textarea>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="ActionButtonDiv">
+            <div class="row">
+                <div class="col-md-12">
+                    <input type="button" id="btn-Verify" class="btn green btn default " value="Verify" onclick="PostApproverAction('Verify');">
+                    <input type="button" id="btn-Approve" class="btn green btn-Search" value="Approve" onclick="PostApproverAction('Approve');">
+                    <input type="button" id="btn-Decline" class="btn green btn default " value="Decline" onclick="PostApproverAction('Decline');">
+                    <input type="button" id="btn-Back" class="btn green btn default " value="Back" onclick="HideApprovalComment();">
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    
+    <!-- Success Message -->
+    <div class="modal fade" id="SuccessSubmit" tabindex="-1" role="basic" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header Success-header">
+                    @*<button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>*@
+                    <h4 class="Success-title">Action Successfully Completed</h4>
+                </div>
+                <div class="modal-body Success-body">
+                    <div class="well" id="SuccessMessage">
+                        Claims has been successfully submitted.
+                    </div>
+                </div>
+                <div class="modal-footer Success-footer">
+                    <a class="btn default blue" id="btnOK">
+                        <i class="fa fa-check"></i>
+                        OK
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Gif -->
+    <div id="divLoading" style="margin: 0px; padding: 0px; position: fixed; right: 0px;
+        top: 0px; width: 100%; height: 100%; background-color:gainsboro; z-index: 30001;
+        opacity: .8; filter: alpha(opacity=70);display:none">
+        <p style="position: absolute; top: 30%; left: 30%; color: black;">
+            Loading, please wait...<img src="../Assets/img/ajax-loading.gif" />
+
+        </p>
+    </div>
+</div>
+
+<script type="text/javascript">
+
+    function HideApprovalComment()
+    {
+        $('#PreActionButtonDiv').show();
+        $('#ActionButtonDiv').hide();
+        $('#txtAppComment').val('');
+    }
+
+    function ShowApprovalComment(Action)
+    {
+
+        HideErrorWarningMessage();
+        var _TaskIDs = "";
+        var MatchApproverAction = true;
+
+        $("#tblResult td input[type=checkbox]:checked").each(function (i, value) {
+            var row = $(this).closest("tr");
+            _TaskIDs += row.find('.OTPlanningCheckBox').val() + ',';
+            var YesAction = (row.find('.YesAction').text()).trim();
+            if (YesAction != Action) {
+                if (Action != "Decline")
+                {
+                    var status = row.find('.Status').text();
+                    row.find('.ErrorMsg').attr('title', status + ' entry cannot be ' + Action);
+                    row.find('.ErrorMsg').show();
+                    MatchApproverAction = false;
+                }
+            }
+        });
+
+        if (_TaskIDs != "")
+        {
+            if (MatchApproverAction) {
+                $('#PreActionButtonDiv').hide();
+                $('#ActionButtonDiv').show();
+                $('label[name="SelectedAction"]').val(Action);
+                $('label[name="SelectedAction"]').text(Action);
+                $('#btn-Approve').hide();
+                $('#btn-Verify').hide();
+                $('#btn-Decline').hide();
+                if (Action == 'Approve') {
+                    $('#btn-Approve').show();
+                }
+                else if (Action == 'Verify') {
+                    $('#btn-Verify').show();
+                }
+                else if (Action == 'Decline') {
+                    $('#btn-Decline').show();
+                }
+            }
+            else {
+                alert('Approval action is not allowed.');
+            }
+        }
+        else
+        {
+            alert('Please select entry to proceed.');
+        }
+        
+
+        
+    }
+
+    function PostApproverAction(Action)
+    {
+        DisableActionButton();
+        HideErrorWarningMessage();
+        var _TaskIDs = "";
+        var _ApproverAction = Action;
+        var _ApproverComment = $('#txtAppComment').val();
+        var MatchApproverAction = true;
+
+        $("#tblResult td input[type=checkbox]:checked").each(function (i, value) {
+            var row = $(this).closest("tr");
+            _TaskIDs += row.find('.OTPlanningCheckBox').val() + ',';
+            var YesAction = (row.find('.YesAction').text()).trim();
+            if (YesAction != Action)
+            {
+                if (Action != "Decline")
+                {
+                    var status = row.find('.Status').text();
+                    row.find('.ErrorMsg').attr('title', status + ' entry cannot be ' + Action);
+                    row.find('.ErrorMsg').show();
+                    MatchApproverAction = false;
+                }
+            }
+        });
+
+
+        if (!(_ApproverComment === '' && Action === 'Decline')) {
+            if (_TaskIDs != "" )
+            {
+                if (MatchApproverAction)
+                {
+                    $.ajax({
+                        type: "POST",
+                        url: '@Url.Content("~/TimeAttendance/OTPostApproverAction")',
+                        data: {
+                            TaskIDs: _TaskIDs,
+                            ApproverAction: _ApproverAction,
+                            ApproverComment: _ApproverComment
+                        },
+                        success: function (result) {
+                            EnableActionButton();
+                            if (result.result == true) {
+
+                                $('#SuccessSubmit').modal();
+                                var ActionMessage = Action;
+                                if (Action === "Approve") ActionMessage = "Approved";
+                                if (Action === "Decline") ActionMessage = "Declined";
+                                if (Action === "Verify") ActionMessage = "Verified";
+                                $('#SuccessMessage').html("Overtime Planning has been successfully " + ActionMessage);
+                                $('#btnOK').attr('href', '../TimeAttendance/OvertimePlanningInTray');
+                                EnableActionButton();
+                            }
+                            else
+                            {
+                                if(CheckEmptyKeyValueMessage(result.EntryErrorMessage))
+                                {
+                                    ShowErrorWarningMessage(result.EntryErrorMessage);
+                                } else {
+                                    alert('Unknown error occurs. Please contact your system administrator.');
+                                }
+                            }
+                        },
+                        error: function (e) {
+                            console.log(e);
+                            EnableActionButton();
+                        }
+                    });
+                }
+                else {
+                    alert('Approval action is not allowed.');
+                    EnableActionButton();
+                }
+            }
+            else {
+                alert('Please select entry to proceed.');
+                EnableActionButton();
+            }
+        }
+        else {
+            alert('Please fill in the comments.');
+            EnableActionButton();
+        }
+        
+    }
+
+    function SearchListing() {
+        HideApprovalComment();
+        var _DateFrom = $('#StartDate').val();
+        var _DateTo = $('#EndDate').val();
+        var _ChargeType = $('#ChargeType').val();
+        var _SearchChargeCode = $('#SearchChargeCode').val();
+        var _Status = $('#Status').val();
+        var _SearchEmpID = $('#SearchEmpID').val();
+
+        $("#SearchResult").html("LOADING...");
+
+        $.ajax({
+            type: "GET",
+            url: '@Url.Content("~/TimeAttendance/_OvertimePlanningInTrayResult")',
+            cache: false,
+            dataType: "html",
+            data: {
+                DateFrom: _DateFrom,
+                DateTo: _DateTo,
+                ChargeType: _ChargeType,
+                SearchChargeCode: _SearchChargeCode,
+                Status: _Status,
+                SearchEmpID: _SearchEmpID
+            },
+            success: function (content) {
+                $("#SearchResult").html(content);
+            },
+            error: function (e) {
+                console.log(e);
+            }
+        });
+    }
+
+    function DisableActionButton() {
+        $('#ActionButtonDiv').children().children().children('.btn').attr('disabled', true);
+        $('#divLoading').show();
+    }
+
+    function EnableActionButton() {
+        $('#divLoading').hide();
+        $('#ActionButtonDiv').children().children().children('.btn').attr('disabled', false);
+    }
+
+    function CheckEmptyKeyValueMessage(Message) {
+        var count = 0;
+        for (var key in Message) {
+            count++;
+            break;
+        }
+        if (count == 0) {
+            return false;
+        } else {
+            return true;
+        }
+    }
+
+    function ShowErrorWarningMessage(Message) {
+
+        for (var k in Message) {
+            if (Message.hasOwnProperty(k)) {
+                //console.log("Key is " + k + ", value is" + Message[k]);
+
+                $("#tblResult td input[type=checkbox]:checked").each(function (i, value) {
+                    var row = $(this).closest("tr");
+                    var EntryID = row.find('.EntryID').val()
+                    if (k == EntryID) {
+                        row.find('.ErrorMsg').attr('title', Message[k]);
+                        row.find('.ErrorMsg').show();
+
+                        return;
+                    }
+                });
+            }
+        }
+    }
+
+    function HideErrorWarningMessage() {
+        $('.ErrorMsg').attr('title', '');
+        $('.ErrorMsg').hide();
+    }
+
+    function SelectUnselectAll(element) {
+        $('#tblResult .OTPlanningCheckBox').prop('checked', element.checked);
+        $.uniform.update();
+    }
+
+    jQuery(document).ready(function () {
+        $('.date-picker').datepicker({
+            format: 'dd/mm/yyyy',
+            autoclose: true,
+            setStartDate: '@dtStrStart',
+            setEndDate: '@dtStrEnd'
+        });
+
+        SearchListing();
+    });
+
+    function ClearFilter() {
+        $('#StartDate').val('');
+        $('#EndDate').val('');
+        $('#ChargeType').val('');
+        $('#SearchChargeCode').val('');
+        $('#Status').val('');
+        $('#SearchEmpID').val('');
+
+        var _DateFrom = $('#StartDate').val();
+        var _DateTo = $('#EndDate').val();
+        var _ChargeType = $('#ChargeType').val();
+        var _SearchChargeCode = $('#SearchChargeCode').val();
+        var _Status = $('#Status').val();
+        var _SearchEmpID = $('#SearchEmpID').val();
+        SearchListing();
+    }
+</script>

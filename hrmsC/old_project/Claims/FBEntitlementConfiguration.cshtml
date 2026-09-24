@@ -1,0 +1,217 @@
+﻿@{
+    ViewBag.Title = "Flexi Benefits Entitlement Configuration";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="row">
+    <div class="col-md-12">
+        <br />
+        <h1 class="page-title">
+            Flexi Benefits Entitlement Configuration
+        </h1>
+    </div>
+</div>
+<br />
+<div class="form-body">
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-4 control-label">Pay Scale Group</label>
+                    <div class="col-md-8 form-control-static">
+                        @Html.DropDownList("PayScaleGroup", (IEnumerable<SelectListItem>)ViewBag.PayScaleGroupDDL, new { @id = "PayScaleGroup", @class = "bs-select form-control"})
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+    </div>
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-4 control-label">Entitlement (RM)</label>
+                    <div class="col-md-8 form-control-static">
+                        <input type="text" id="Entitlement" class="form-control text-right" onkeypress="return CurrencyOnly(event,2);" onpaste="return false" onfocus="$(this).val('')" />
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-4 control-label">Year</label>
+                    <div class="col-md-8 form-control-static">
+                        <select class="form-control" id="Year"></select>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">&nbsp;</div>
+    <div class="row">
+        <div class="col-md-12">
+            <div class="text-right">
+                <input type="button" id="btn-Search" class="btn green btn-Search" value="Add" onclick="EntitlementConfigValidation();">
+            </div>
+        </div>
+    </div>
+    <div class="row">&nbsp;</div>
+    <div class="row">
+        <div class="col-md-12">
+            <div id="SearchResult">
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Confirmation Message -->
+<div class="modal fade" id="ConfirmUpdate" tabindex="-1" role="basic" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                <h4 class="modal-title">Confirmation</h4>
+            </div>
+            <div class="modal-body">
+                <div class="well">
+                    Are you sure you want to add/update entitlement this group of employee? If you want to make changes, click Close.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn default blue" id="btnSubmitForm" onclick="AddEntitlement(); return false;">
+                    <i class="fa fa-check"></i>
+                    Confirm
+                </button>
+                <button type="button" class="btn default" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Success Message -->
+<div class="modal fade" id="SuccessSubmit" tabindex="-1" role="basic" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header Success-header">
+                @*<button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>*@
+                <h4 class="Success-title">Action Successfully Completed</h4>
+            </div>
+            <div class="modal-body Success-body">
+                <div class="well">
+                    Entitlement has been successfully updated.
+                </div>
+            </div>
+            <div class="modal-footer Success-footer">
+                <a class="btn default blue" id="btnOK" onclick="SearchListing();">
+                    <i class="fa fa-check"></i>
+                    OK
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+    jQuery(document).ready(function () {
+        YearDropdown();
+        SearchListing();
+    });
+
+    function SearchListing() {
+        $("#SearchResult").html("LOADING...");
+
+        $.ajax({
+            type: "GET",
+            url: '@Url.Content("~/Claims/_FBEntitlementConfigurationResult")',
+            cache: false,
+            dataType: "html",
+            success: function (content) {
+                $("#SearchResult").html(content);
+                $('#SuccessSubmit').modal('hide');
+            },
+            error: function (e) {
+                console.log(e);
+            }
+        });
+    }
+
+    function YearDropdown() {
+        var min = new Date().getFullYear();
+        var max = min + 1;
+
+        select = document.getElementById('Year');
+        var length = $('#Year > option').length;
+
+        if (length <= 0) {
+            for (var i = min; i <= max; i++) {
+                var opt = document.createElement('option');
+                opt.value = i;
+                opt.innerHTML = i;
+                select.appendChild(opt);
+            }
+        }
+    }
+
+    function CurrencyOnly(evt, allow) {
+
+        if (!(evt.keyCode == 46 || (evt.keyCode >= 48 && evt.keyCode <= 57))) return false;
+        var parts = evt.srcElement.value.split('.');
+        if (parts.length > 2) return false;
+        if (evt.keyCode == 46) return (parts.length == 1);
+        if (parts[0].length >= 14) return false;
+        if (parts.length == 2 && parts[1].length >= allow) return false;
+    }
+
+    function EntitlementConfigValidation()
+    {
+        var ValidationMsg = '';
+        var Entitlement = document.getElementById('Entitlement').value;
+
+        if (Entitlement == null || Entitlement == "")
+            ValidationMsg += '- Entitlement is required.\n'
+
+        if (ValidationMsg != null && ValidationMsg != '') {
+            alert(ValidationMsg);
+        }
+        else {
+            $("#ConfirmUpdate").modal();
+        }
+    }
+
+    function AddEntitlement()
+    {
+        var _Year = $('#Year').val();
+        var _Entitlement = $('#Entitlement').val();
+        var _PayScaleGroup = $('#PayScaleGroup').val();
+
+        var form = {
+            Year: _Year,
+            Entitlement: _Entitlement,
+            PayScaleGroup: _PayScaleGroup,
+        };
+
+        $.ajax({
+            url: '@Url.Content("~/Claims/InsertEntitlementConfig")',
+            type: 'POST',
+            data: JSON.stringify(form),
+            contentType: "application/json;charset=utf-8",
+            success: function (data) {
+                if (data.Success == true) {
+                    $("#ConfirmUpdate").modal('toggle');
+                    $('#SuccessSubmit').modal();              
+                }
+                else {
+                    alert(data.ErrorMessage);
+                }
+            },
+            error: function (x, y, z) {
+                alert(x + '\n' + y + '\n' + z);
+            }
+        });
+    }
+
+</script>

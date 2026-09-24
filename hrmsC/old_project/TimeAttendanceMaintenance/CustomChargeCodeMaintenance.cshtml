@@ -1,0 +1,193 @@
+﻿@model TimeAttendance.Models.TSChargeCodeMaintenanceModel
+@{
+    ViewBag.Title = "Timesheet Charge Code Maintenance";
+}
+
+@using (Html.BeginForm("CustomChargeCodeMaintenance", "TimeAttendanceMaintenance", FormMethod.Post))
+{
+    <div class="form-section">
+        <div class="row">
+            <div class="col-md-12">
+                <h1 class="page-title">
+                    @ViewBag.Title
+                    <span style="padding-left:20px;">
+                    </span>
+                </h1>
+            </div>
+        </div>
+    </div>
+
+    @Html.HiddenFor(c => c.IsNewRecord)
+    @Html.HiddenFor(c => c.MaintenanceID)
+
+    <div class="portlet box blue">
+        <div class="mini-triangle"><img src="../Assets/img/menu-red-triangle.png"></div>
+        <div class="portlet-title">
+            <div class="caption">
+                <i class="fa fa-reorder"></i>
+                Timesheet Charge Code Rule Details
+            </div>
+            <div class="tools">
+            </div>
+        </div>
+        <div class="portlet-body form">
+            <div class="form-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-horizontal">
+                            <div class="form-group">
+                                <label class="control-label col-md-4 ">
+                                    Employee
+                                </label>
+                                <div class="col-md-8 form-control-static">
+                                    @Html.Action("_PeoplePickerExt", "PeoplePicker", new { CurrEmpID = ESS.Core.Common.GetEmployeeID(), SearchType = "" })
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-horizontal">
+                            <div class="form-group">
+                                <label class="control-label col-md-4 ">
+                                    Current Company Code
+                                </label>
+                                <div class="col-md-8 form-control-static">
+                                    <input type="text" class="form-control" name="CurrentCompanyCode" value="@Model.CurrentCompanyCode" readonly="readonly" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-horizontal">
+                            <div class="form-group">
+                                <label class="control-label col-md-4">
+                                    Valid From
+                                </label>
+                                <div class="col-md-8 form-control-static">
+                                    <div class="input-group date date-picker ValidFrom" data-date-format="yyyy-mm-dd">
+                                        <input type="text" class="form-control" name="ValidFrom" value="@Model.InputValidFrom" />
+                                        <span class="input-group-btn">
+                                            <button type="button" id="btnValidFrom" class="btn default"><i class="fa fa-calendar"></i></button>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-horizontal">
+                            <div class="form-group">
+                                <label class="control-label col-md-4">
+                                    Valid To
+                                </label>
+                                <div class="col-md-8 form-control-static">
+                                    <div class="input-group date date-picker ValidTo" data-date-format="yyyy-mm-dd">
+                                        <input type="text" class="form-control" name="ValidTo" value="@Model.InputValidTo" />
+                                        <span class="input-group-btn">
+                                            <button type="button" id="btnValidTo" class="btn default"><i class="fa fa-calendar"></i></button>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-horizontal">
+                            <div class="form-group">
+                                <label class="control-label col-md-4">
+                                    Allowed Charge Types
+                                </label>
+                                <div class="col-md-8 form-control-static">
+                                    <textarea class="form-control" rows="5" name="AllowedChargeTypes">@Model.AllowedChargeTypes</textarea>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-horizontal">
+                            <div class="form-group">
+                                <label class="control-label col-md-4">
+                                    Allowed Charge Codes
+                                </label>
+                                <div class="col-md-8 form-control-static">
+                                    <textarea class="form-control" rows="5" name="AllowedChargeCodes">@Model.AllowedChargeCodes</textarea>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-horizontal">
+                            <div class="form-group">
+                                <label class="control-label col-md-4">
+                                    Allowed Company Codes
+                                </label>
+                                <div class="col-md-8 form-control-static">
+                                    <textarea class="form-control" rows="5" name="AllowedCompanyCodes">@Model.AllowedCompanyCodes</textarea>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    @*<div class="col-md-6">
+                            <div class="form-horizontal">
+                                <div class="form-group">
+                                    <label class="control-label col-md-4">
+                                        Allowed Business Areas
+                                    </label>
+                                    <div class="col-md-8 form-control-static">
+                                        <textarea class="form-control" rows="5" name="AllowedBusinessAreas">@Model.AllowedBusinessAreas</textarea>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>*@
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-12">
+        <input type="button" class="btn green" value="Submit" id="btnSave" onclick="$('form').submit();" />
+        <input type="button" class="btn green" value="Back" id="btnBack" onclick="BackToHistory();" />
+    </div>
+}
+
+@Html.Partial("__Prompt")
+
+<script>
+    $(function () {
+        $('.date-picker').datepicker({
+            format: 'yyyy-mm-dd',
+            autoclose: true,
+        });
+
+        $('.ValidFrom').datepicker('setDate', '@Model.InputValidFrom');
+        $('.ValidTo').datepicker('setDate', '@Model.InputValidTo');
+
+        @if (!String.IsNullOrEmpty(Model.EmployeeName))
+        {
+    <text>
+        $("#txtEmpName").val('@(Model.EmployeeCode + " - " + Model.EmployeeName)');
+        $("#hfEmpID").val('@Model.EmployeeID');
+    </text>
+        }
+    });
+
+    function BackToHistory() {
+        location.href = '@Url.Action("CustomChargeCodeConfigurationListing", "TimeAttendanceMaintenance")';
+    }
+
+    function _PeoplePickerExtCallback() {
+        var employeeID = $('[name=EmployeeID]').val();
+        $.get('@Url.Action("GetCurrentCompanyCode", "TimeAttendanceMaintenance")' + '?EmployeeID=' + employeeID, function (result) {
+            $('[name="CurrentCompanyCode"]').val(result);
+        });
+    }
+</script>

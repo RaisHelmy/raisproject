@@ -1,0 +1,193 @@
+﻿
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewBag.Title = "Feedback and Status Report";
+}
+
+<div class="row">
+    <div class="col-md-12">
+        <br />
+        <h1 class="page-title">
+            @ViewBag.Title <span style="padding-left:20px;"><small></small></span>
+        </h1>
+    </div>
+</div>
+<br />
+<div class="form-body">
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-4 control-label">Start Date</label>
+                    <div class="col-md-8 form-control-static">
+                        <div class="input-group date date-picker" data-date-format="dd MM yyyy">
+                            <input type="text" class="form-control" id="StartDate" name="StartDate" value="@ViewBag.FromDate" />
+                            <span class="input-group-btn">
+                                <button type="button" class="btn default"><i class="fa fa-calendar"></i></button>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-4 control-label">End Date</label>
+                    <div class="col-md-8 form-control-static">
+                        <div class="input-group date date-picker" data-date-format="dd MM yyyy">
+                            <input type="text" class="form-control" id="EndDate" name="EndDate" value="@ViewBag.ToDate" />
+                            <span class="input-group-btn">
+                                <button type="button" class="btn default"><i class="fa fa-calendar"></i></button>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-4 control-label">Category Type</label>
+                    <div class="col-md-8 form-control-static">
+                        <select class="form-control" id="Category">
+                            <option selected value="">- All -</option>
+                            <option value="0">Yearly Cycle</option>
+                            <option value="1">Special Requirement</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-4 control-label">Item Status</label>
+                    <div class="col-md-8 form-control-static">
+                        <select class="form-control" id="Status">
+                            <option selected value="">- All -</option>
+                            <option value="RC">Received</option>
+                            <option value="RT">Returned</option>
+                            <option value="PR">Partial Return</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-4 control-label">Item</label>
+                    <div class="col-md-8 form-control-static">
+                        <input class="form-control" type="text" id="Item" />
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-4 control-label">Employee State</label>
+                    <div class="col-md-8 form-control-static">
+                        @Html.Action("_DDLEmployeeState", "UniformApplication", new { ForFilter = true })
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">&nbsp;</div>
+    <div class="row">
+        <div class="col-md-12">
+            <div class="text-right">
+                <input type="button" id="btn-Search" class="btn green btn-Search" value="Search" onclick="SearchListing();">
+                <input id="btn-Clear" type="button" class="btn default " value="Clear" onclick="ClearFilter();">
+            </div>
+        </div>
+    </div>
+    <div class="row">&nbsp;</div>
+    <div class="row">
+        <div class="col-md-12">
+            <div id="SearchResult">
+
+            </div>
+        </div>
+    </div>
+</div>
+
+@Html.Partial("_ExcelExport")
+
+<!-- Loading Gif -->
+<div id="divLoading" style="margin: 0px; padding: 0px; position: fixed; right: 0px;
+        top: 0px; width: 100%; height: 100%; background-color:gainsboro; z-index: 30001;
+        opacity: .8; filter: alpha(opacity=70);display:none">
+    <p style="position: absolute; top: 30%; left: 30%; color: black;">
+        Loading, please wait...<img src="../Assets/img/ajax-loading.gif" />
+
+    </p>
+</div>
+
+<script type="text/javascript">
+
+    function SearchListing() {
+        var _StartDate =    $('#StartDate').val();
+        var _EndDate =      $('#EndDate').val();
+        var _Category =     $('#Category').val();
+        var _Status =       $('#Status').val();
+        var _Item =         $('#Item').val();
+        var _EmployeeState =$('#EmployeeState').val();
+
+        $("#SearchResult").html("LOADING...");
+
+        $.ajax({
+            type: "GET",
+            url: '@Url.Content("~/UniformApplication/_FeedbackReportResult")',
+            cache: false,
+            dataType: "html",
+            data: {
+                StartDate: _StartDate,
+                EndDate: _EndDate,
+                Category: _Category,
+                Status: _Status,
+                Item: _Item,
+                EmployeeState: _EmployeeState
+            },
+            success: function (content) {
+                $("#SearchResult").html(content);
+                //ExportToExcel();
+            },
+            error: function (e) {
+                console.log(e);
+            }
+        });
+    }
+
+    function ClearFilter() {
+
+        $('#StartDate').val('');
+        $('#EndDate').val('');
+        $('#Category').val('');
+        $('#Status').val('');
+        $('#Item').val('');
+        $('#EmployeeState').val('');
+    }
+
+
+    jQuery(document).ready(function () {
+        $('.date-picker').datepicker({
+            format: 'dd/mm/yyyy',
+            autoclose: true
+        });
+
+        //SearchListing();
+
+    });
+
+
+
+</script>
+

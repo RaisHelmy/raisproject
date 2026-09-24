@@ -1,0 +1,69 @@
+﻿@model string
+@{
+    ViewBag.Title = "LTIP Offer/Acceptance";
+    string Message = ViewBag.Message;
+    string EmployeeID = ViewBag.CurrentEmployeeID;
+}
+
+<div class="row">
+    <div class="col-md-12">
+        <br />
+        <h1 class="page-title">
+            @ViewBag.Title
+            <span style="padding-left:20px;">
+                <small></small>
+            </span>
+        </h1>
+    </div>
+</div>
+<br />
+<div class="form-body">
+    <div class="row">
+        <div class="col-md-12">
+            <div id="SearchResult">
+            </div>
+        </div>
+    </div>
+
+    <div id="NoOfferNotes" class="row" style="display: none;">
+        <div class="col-md-12">
+            <div class="note note-danger">
+                <h4>
+                    <img src="../../images/info16by16.gif">
+                    @Html.Raw(Message.Substring(3))
+                </h4>
+            </div>
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+    function SearchListing() {
+        $("#SearchResult").html("LOADING...");
+
+        $.ajax({
+            type: "GET",
+            url: '@Url.Action("_OfferAcceptanceResults", "LTIP")',
+            data: {
+                EmployeeID : '@EmployeeID'
+            },
+            success: function (content) {
+                $("#SearchResult").html(content);
+
+                if (tblMain.fnGetNodes().length > 0) {
+                    $('#NoOfferNotes').hide();
+                }
+                else {
+                    $('#NoOfferNotes').show();
+                }
+            },
+            error: function (e) {
+                console.log(e);
+            }
+        });
+    }
+
+    $(function () {
+        SearchListing();
+    });
+</script>
+

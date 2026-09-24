@@ -1,0 +1,752 @@
+﻿@using ESS.Core;
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewBag.Title = "Payslip Admin";
+
+    List<ESS.Core.DropDownObject> DDLDivision = ViewBag.Division;
+
+    DateTime date = DateTime.Now;
+    DateTime firstDayOfMonth = new DateTime(date.Year, date.Month, 1);
+    DateTime lastDayOfMonth = firstDayOfMonth.AddMonths(1).AddDays(-1);
+}
+@helper MonthOption(int month, string MonthName)
+    {
+        if (DateTime.Now.Month == month)
+        {
+            <option value="@month" selected>@MonthName</option>
+        }
+        else
+        {
+            <option value="@month">@MonthName</option>
+        }
+
+}
+
+<style>
+    .form-group {
+        margin-bottom: 2px;
+    }
+</style>
+<div class="row">
+    <div class="col-md-12">
+        <br />
+        <h1 class="page-title">
+            E-Payslip Admin
+        </h1>
+        <!-- END PAGE TITLE & BREADCRUMB-->
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="form-horizontal">
+            <div class="form-body">
+                <div class="form-body">
+                    <div class="row">
+                        <div class="form-group">
+                            <label class="col-md-2  control-label">
+                                Import Date From
+                            </label>
+                            <div class="col-md-4">
+                                <div class=" input-group date date-picker" data-date-format="dd MM yyyy">
+                                    <input type="text" class="form-control" name="StartDate" id="DateFrom" value="@firstDayOfMonth.ToString("dd/MM/yyyy")">
+                                    <span class="input-group-btn" style="">
+                                        <button class="btn default" type="button"><i class="fa fa-calendar"></i></button>
+                                    </span>
+                                </div>
+                            </div>
+
+                            <label class="col-md-2 control-label">
+                                Import Date To
+                            </label>
+                            <div class="col-md-4">
+                                <div class=" input-group  date date-picker" data-date-format="dd MM yyyy">
+                                    <input type="text" class="form-control" name="EndDate" id="DateTo" value="@lastDayOfMonth.ToString("dd/MM/yyyy")">
+                                    <span class="input-group-btn" style="">
+                                        <button class="btn default" type="button"><i class="fa fa-calendar"></i></button>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="form-group">
+                            <label class="col-md-2  control-label">
+                                Division
+                            </label>
+                            <div class="col-md-4">
+                                <select class="form-control bs-select" name="ddlDivision" id="ddlDivision" onchange="ddlDivisionChange();">
+                                    <option value="">- All -</option>
+                                    @foreach (var division in DDLDivision)
+                                    {
+                                        <option value="@division.Value">@division.Text</option>
+                                    }
+
+                                </select>
+                            </div>
+
+                            <label class="col-md-2  control-label">
+                                Department
+                            </label>
+                            <div class="col-md-4">
+                                <select class="form-control bs-select" name="ddlDepartment" id="ddlDepartment" onchange="ddlDepartmentChange()">
+                                    <option value="">- All -</option>
+
+
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="form-group">
+                            <label class="col-md-2  control-label">
+                                Unit / Section
+                            </label>
+                            <div class="col-md-4">
+                                <select class="form-control bs-select" name="ddlUnit" id="ddlUnit">
+                                    <option value="">- All -</option>
+
+                                </select>
+                            </div>
+                            <label class="col-md-2  control-label">
+                                Type
+                            </label>
+                            <div class="col-md-4">
+                                <select class="form-control bs-select" name="Type" id="Type">
+                                    <option value="Normal">Normal</option>
+                                    <option value="Special">Special</option>
+                                </select>
+                            </div>
+
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="form-group">
+                            <label class="col-md-2  control-label">
+                                Employee Code Range
+                            </label>
+                            <div class="col-md-4">
+                                <input type="number" class="form-control" id="EmployeeCodeFrom" />
+                            </div>
+                            <label class="col-md-2  control-label">
+                                To
+                            </label>
+                            <div class="col-md-4">
+                                <input type="number" class="form-control" id="EmployeeCodeTo" />
+                            </div>
+
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="form-group">
+                            <label class="col-md-2  control-label">
+                                Year
+                            </label>
+                            <div class="col-md-4">
+                                <select id="Year" name="Year" class="form-control bs-select">
+
+                                    @{var addYear = DateTime.Today.AddYears(5).Year;}
+                                    @for (int i = 15; i >= 0; i--)
+                                    {
+                                        var year = @addYear - @i;
+                                        // Now just add an entry that's the current year minus the counter
+                                        var selected = "";
+                                        // Now just add an entry that's the current year minus the counter
+                                        if (year == DateTime.Today.Year) @selected = "selected";
+                                        <option @selected>@year</option>
+
+
+
+                                    }
+                                </select>
+                            </div>
+                            <label class="col-md-2  control-label">
+                                Month
+                            </label>
+                            <div class="col-md-4">
+                                <select id="Month" name="Month" class="form-control">
+                                    @MonthOption(1, "January")
+                                    @MonthOption(2, "February")
+                                    @MonthOption(3, "March")
+                                    @MonthOption(4, "April")
+                                    @MonthOption(5, "May")
+                                    @MonthOption(6, "June")
+                                    @MonthOption(7, "July")
+                                    @MonthOption(8, "August")
+                                    @MonthOption(9, "September")
+                                    @MonthOption(10, "October")
+                                    @MonthOption(11, "November")
+                                    @MonthOption(12, "December")
+                                </select>
+                            </div>
+
+                        </div>
+                    </div>
+                    <div class="row" style="margin-top:15px;">
+                        <div class="form-group ">
+                            <div class="col-md-12">
+
+                                <div class="text-right">
+                                    @if (ESS.EPayslip.Service.IsPayslipAdmin(Common.GetEmployeeID()))
+                                    {
+                                        <a href="~/EPayslip/ReleaseDateConfiguration" class="btn green" style="margin-right:10px;">Release Date Configuration</a>
+                                    }
+                                    <input id="btn-Search" type="button" value="Search" class="btn green btn-Search" onclick="SearchPayslip();">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="PayslipResult">
+
+
+
+        </div>
+
+    </div>
+</div>
+
+
+<div class="modal fade bs-modal-lg in" id="DeleteConfiguration" tabindex="-1" role="dialog" aria-hidden="false">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                <h4 class="modal-title">Delete Payslip</h4>
+            </div>
+            <div class="modal-body">
+                <div class="form-body">
+                    <div class="form-body">
+                        <div class="row" id="DeleteControl">
+                            <input hidden id="hdnDeleteID" value="" />
+                            <div class="alert alert-info">
+                                <strong>Alert!</strong> Do you want to delete this Payslip?
+                            </div>
+
+                        </div>
+
+                        <div id="DeleteResult">
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn default" data-dismiss="modal">Close</button>
+                <button id="DeleteConfigurationBtn" type="button" class="btn Red" onclick="DeleteConfiguration()">Delete</button>
+            </div>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+
+<div class="modal fade bs-modal-lg in" id="DeleteAll" tabindex="-1" role="dialog" aria-hidden="false">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                <h4 class="modal-title">Delete Payslip(s)</h4>
+            </div>
+            <div class="modal-body">
+                <div class="form-body">
+                    <div class="form-body">
+                        <div class="row" id="DeleteAllControl">
+
+                            <div class="alert alert-info">
+                                <strong>Alert!</strong> Do you want to delete these Payslip(s)?
+                            </div>
+
+                        </div>
+
+                        <div id="DeleteAllResult">
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn default" data-dismiss="modal">Close</button>
+                <button id="DeleteAllBtn" type="button" class="btn red" onclick="DeletePayslip()">Delete</button>
+            </div>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+
+<div class="modal fade bs-modal-lg in" id="AddConfiguration" tabindex="-1" role="dialog" aria-hidden="false">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                <h4 class="modal-title">Override Release Date Configuration</h4>
+            </div>
+            <div class="modal-body">
+                <div class="form-body">
+                    <div class="form-body">
+                        <div class="row" id="AddControl">
+                            <input type="hidden" id="hdnAddReleaseDateId" />
+                            <div class="form-group ">
+                                <div class="row">
+                                    <div class="col-md-2">
+                                        Override Release Date :
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="input-group date form_datetime">
+                                            <input id="AddReleaseDate" type="text" size="16" class="form-control">
+                                            <span class="input-group-btn">
+                                                <button class="btn default date-set" type="button"><i class="fa fa-calendar"></i></button>
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                        <div id="AddResult">
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn default" data-dismiss="modal">Close</button>
+                <button id="AddConfigurationBtn" type="button" class="btn blue" onclick="AddConfiguration()">Update</button>
+            </div>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+
+<div class="modal fade bs-modal-lg in" id="ReleaseAll" tabindex="-1" role="dialog" aria-hidden="false">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                <h4 class="modal-title">Override Release All Payslip(s)</h4>
+            </div>
+            <div class="modal-body">
+                <div class="form-body">
+                    <div class="form-body">
+                        <div class="row" id="ReleaseAllControl">
+
+                            <div class="form-group ">
+                                <div class="row">
+                                    <div class="col-md-2">
+                                        Override Release Date :
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="input-group date form_datetime">
+                                            <input id="AddReleaseAllDate" type="text" size="16" class="form-control">
+                                            <span class="input-group-btn">
+                                                <button class="btn default date-set" type="button"><i class="fa fa-calendar"></i></button>
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                        <div id="ReleaseAllResult">
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn default" data-dismiss="modal">Close</button>
+                <button id="ReleaseAllBtn" type="button" class="btn blue" onclick="ReleaseAllPayslip()">Release</button>
+            </div>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+
+<div class="modal fade bs-modal-lg in" id="UpdateYear" tabindex="-1" role="dialog" aria-hidden="false">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                <h4 class="modal-title">Number of Year Accessible</h4>
+            </div>
+            <div class="modal-body">
+                <div class="form-body">
+                    <div class="form-body">
+                        <div class="row" id="YearControl">
+
+                            <div class="form-group ">
+                                <div class="row">
+                                    <div class="col-md-2">
+                                        Normal Payslip :
+                                    </div>
+                                    <div class="col-md-4">
+                                        <input id="updateNormal" type="number" class="form-control" />
+                                    </div>
+                                </div>
+
+                            </div>
+                            <div class="form-group ">
+                                <div class="row">
+                                    <div class="col-md-2">
+                                        Special Payslip :
+                                    </div>
+                                    <div class="col-md-4">
+                                        <input id="updateSpecial" type="number" class="form-control" />
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+
+                        <div id="YearResult">
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn default" data-dismiss="modal">Close</button>
+                <button id="UpdateYearBtn" type="button" class="btn blue" onclick="YearConfiguration()">Update</button>
+            </div>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+<script>
+
+    //SearchPayslip();
+    $(".date-picker").datepicker({
+        format: 'dd/mm/yyyy',
+        autoclose: true
+    });
+
+    $(".form_datetime").datetimepicker({
+        autoclose: true,
+        isRTL: App.isRTL(),
+        //format: "dd mm yyyy - hh:ii",
+        pickerPosition: (App.isRTL() ? "bottom-right" : "bottom-left")
+    });
+
+    function SearchPayslip() {
+
+        var DateFrom = $("#DateFrom").val();
+        var DateTo = $("#DateTo").val();
+        var Division = $("#ddlDivision").val();
+        var Department = $("#ddlDepartment").val();
+        var Unit = $("#ddlUnit").val();
+        var EmployeeCodeFrom = $("#EmployeeCodeFrom").val();
+        var EmployeeCodeTo = $("#EmployeeCodeTo").val();
+        var Type = $("#Type").val();
+        //var Sequence = $("#Sequence").val();
+        var Year = $("#Year").val();
+        var Month = $("#Month").val();
+
+        $("#PayslipResult").html("LOADING...");
+        $.ajax({
+            type: "GET",
+            cache: false,
+            url: '@Url.Content("SearchPayslipResult")',
+            dataType: "html",
+            data: { DateFrom: DateFrom, DateTo: DateTo, Division: Division, Department: Department, Unit: Unit, EmployeeCodeFrom: EmployeeCodeFrom, EmployeeCodeTo: EmployeeCodeTo, Type: Type, Month:Month, Year:Year },
+            success: function (content)
+            {
+                $("#PayslipResult").html(content);
+            },
+            error: function (err) {
+                console.log(err);
+            }
+        });
+    }
+
+    function ReleaseAll() {
+
+        $('#ReleaseAll').modal();
+        $("#ReleaseAllControl").show();
+        $("#ReleaseAllResult").hide();
+        $("#ReleaseAllBtn").show();
+    }
+
+    function ReleaseAllPayslip() {
+
+
+
+        var DateFrom = $("#DateFrom").val();
+        var DateTo = $("#DateTo").val();
+        var Division = $("#ddlDivision").val();
+        var Department = $("#ddlDepartment").val();
+        var Unit = $("#ddlUnit").val();
+        var EmployeeCodeFrom = $("#EmployeeCodeFrom").val();
+        var EmployeeCodeTo = $("#EmployeeCodeTo").val();
+        var Type = $("#Type").val();
+        //var Sequence = $("#Sequence").val();
+        var Year = $("#Year").val();
+        var Month = $("#Month").val();
+        var ReleaseAllDate = $("#AddReleaseAllDate").val();
+
+        if (ReleaseAllDate == "") {
+            alert("Please Choose Release Date");
+            return;
+        }
+
+        $("#ReleaseAllControl").hide();
+        $("#ReleaseAllResult").show();
+        $("#ReleaseAllResult").html("LOADING...");
+        $("#ReleaseAllBtn").hide();
+
+        $.ajax({
+            type: "GET",
+            cache: false,
+            url: '@Url.Content("ReleasePayslipResult")',
+            dataType: "html",
+            data: { DateFrom: DateFrom, DateTo: DateTo, Division: Division, Department: Department, Unit: Unit, EmployeeCodeFrom: EmployeeCodeFrom, EmployeeCodeTo: EmployeeCodeTo, Type: Type, Month: Month, Year: Year, ReleaseDate: ReleaseAllDate },
+            success: function (content) {
+                $('#ReleaseAllResult').html(content);
+                SearchPayslip();
+            },
+            error: function (err) {
+                console.log(err);
+            }
+        });
+    }
+
+
+    function DeleteAll() {
+
+        $('#DeleteAll').modal();
+        $("#DeleteAllControl").show();
+        $("#DeleteAllResult").hide();
+        $("#DeleteAllBtn").show();
+    }
+
+    function DeletePayslip() {
+
+        $("#DeleteAllControl").hide();
+        $("#DeleteAllResult").show();
+        $("#DeleteAllResult").html("LOADING...");
+        $("#DeleteAllBtn").hide();
+
+        var DateFrom = $("#DateFrom").val();
+        var DateTo = $("#DateTo").val();
+        var Division = $("#ddlDivision").val();
+        var Department = $("#ddlDepartment").val();
+        var Unit = $("#ddlUnit").val();
+        var EmployeeCodeFrom = $("#EmployeeCodeFrom").val();
+        var EmployeeCodeTo = $("#EmployeeCodeTo").val();
+        var Type = $("#Type").val();
+        //var Sequence = $("#Sequence").val();
+        var Year = $("#Year").val();
+        var Month = $("#Month").val();
+
+        $.ajax({
+            type: "GET",
+            cache: false,
+            url: '@Url.Content("DeletePayslipResult")',
+            dataType: "html",
+            data: { DateFrom: DateFrom, DateTo: DateTo, Division: Division, Department: Department, Unit: Unit, EmployeeCodeFrom: EmployeeCodeFrom, EmployeeCodeTo: EmployeeCodeTo, Type: Type, Month: Month, Year: Year },
+            success: function (content) {
+                $('#DeleteAllResult').html(content);
+                SearchPayslip();
+            },
+            error: function (err) {
+                console.log(err);
+            }
+        });
+    }
+
+    function Delete(deleteID) {
+        //console.log(deleteID);
+        $('#hdnDeleteID').val(deleteID);
+        $('#DeleteConfiguration').modal();
+        $("#DeleteControl").show();
+        $("#DeleteResult").hide();
+        $("#DeleteConfigurationBtn").show();
+    }
+
+    function DeleteConfiguration() {
+
+        var DeleteID = $('#hdnDeleteID').val();
+
+        //console.log(DeleteID);
+
+        $("#DeleteControl").hide();
+        $("#DeleteResult").show();
+        $("#DeleteResult").html("LOADING...");
+        $("#DeleteConfigurationBtn").hide();
+        $.ajax({
+            type: "POST",
+            cache: false,
+            url: '@Url.Content("DeletePayslip")',
+            data: { ID: DeleteID },
+            success: function (content) {
+                //console.log(content);
+
+                $("#DeleteResult").html(content);
+                SearchPayslip();
+
+            },
+            error: function (err) {
+                console.log(err);
+            }
+        });
+
+        //$('#AddConfiguration').modal()
+    }
+
+    function Update() {
+
+
+        $('#UpdateYear').modal()
+        $("#YearControl").show();
+        $("#YearResult").hide();
+        $("#UpdateYearBtn").show();
+
+
+
+        $.ajax({
+            type: "GET",
+            cache: false,
+            url: '@Url.Content("GetYearSetting")',
+            dataType: "html",
+            success: function (content) {
+                var array = content.split(',');
+                $('#updateNormal').val(array[0]);
+                $('#updateSpecial').val(array[1]);
+
+            },
+            error: function (err) {
+                console.log(err);
+            }
+        });
+    }
+
+    function YearConfiguration() {
+        var Normal = $('#updateNormal').val();
+        var Special = $('#updateSpecial').val();
+
+
+        $("#YearControl").hide();
+        $("#YearResult").show();
+        $("#YearResult").html("LOADING...");
+        $("#UpdateYearBtn").hide();
+        $.ajax({
+            type: "POST",
+            cache: false,
+            url: '@Url.Content("UpdateYearSetting")',
+            data: { Normal: Normal, Special: Special },
+            success: function (content) {
+                //console.log(content);
+
+                $("#YearResult").html(content);
+
+            },
+            error: function (err) {
+                console.log(err);
+            }
+        });
+
+
+    }
+
+    function Add(ID) {
+
+        $('#hdnAddReleaseDateId').val(ID);
+
+        $('#AddConfiguration').modal()
+        $("#AddControl").show();
+        $("#AddResult").hide();
+        $("#AddConfigurationBtn").show();
+    }
+
+    function AddConfiguration() {
+        var AddID = $('#hdnAddReleaseDateId').val();
+        var AddReleaseDate = $('#AddReleaseDate').val();
+
+        if (AddReleaseDate == "") {
+            alert("Please Choose Release Date");
+            return;
+        }
+
+        $("#AddControl").hide();
+        $("#AddResult").show();
+        $("#AddResult").html("LOADING...");
+        $("#AddConfigurationBtn").hide();
+        $.ajax({
+            type: "POST",
+            cache: false,
+            url: '@Url.Content("AddOverrideReleaseDate")',
+            data: { ID: AddID, DateTime: AddReleaseDate },
+            success: function (content) {
+                //console.log(content);
+
+                $("#AddResult").html(content);
+                SearchPayslip();
+            },
+            error: function (err) {
+                console.log(err);
+            }
+        });
+
+
+    }
+
+    function ddlDivisionChange() {
+
+        var DivisionCode = $("#ddlDivision").val();
+        $("#ddlDepartment").html('<option value="">- All -</option>');
+        $("#ddlUnit").html('<option value="">- All -</option>');
+        $.ajax({
+            type: "POST",
+            cache: false,
+            url: '@Url.Content("GetDepartment")',
+            data: { DivisionCode: DivisionCode },
+            success: function (content) {
+                //console.log(content);
+                $.each(content, function (index, object) {
+                    //console.log(object.Value + ": " + object.Text);
+                    $("#ddlDepartment").append('<option value="' + object.Value + '">' + object.Text + '</option>');
+                });
+
+
+            },
+            error: function (err) {
+                console.log(err);
+            }
+        });
+    }
+
+    function ddlDepartmentChange() {
+
+        var DepartmentCode = $("#ddlDepartment").val();
+        var DivisionCode = $("#ddlDivision").val();
+        $("#ddlUnit").html('<option value="">- All -</option>');
+        $.ajax({
+            type: "POST",
+            cache: false,
+            url: '@Url.Content("GetUnit")',
+            data: { DepartmentCode: DepartmentCode, DivisionCode: DivisionCode },
+            success: function (content) {
+                //console.log(content);
+                $.each(content, function (index, object) {
+                    //console.log(object.Value + ": " + object.Text);
+                    $("#ddlUnit").append('<option value="' + object.Value + '">' + object.Text + '</option>');
+                });
+
+
+            },
+            error: function (err) {
+                console.log(err);
+            }
+        });
+    }
+</script>

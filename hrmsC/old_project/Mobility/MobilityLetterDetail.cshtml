@@ -1,0 +1,187 @@
+﻿@model ESS.Mobility.Models.MobilityLetterDetails
+@using ESS.Mobility.Constants
+@{
+    ViewBag.Title = "Mobility Letter";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+    string color = "";
+    if (Model.MobilityLetter.Status == GlobalConstants.STATUS_PENDING)
+    {
+        color = "red";
+    }
+    else
+    {
+        color = "Green";
+    }
+}
+<style>
+    .color{
+        color:@color;
+        font-weight:bold;
+    }
+</style>
+<div class="form-section">
+    <div class="row">
+        <div class="col-md-12">
+            <h1 class="page-title">
+                @ViewBag.Title
+                <span style="padding-left:20px;">
+                    <small></small>
+                </span>
+            </h1>
+        </div>
+    </div>
+</div>
+
+@Html.HiddenFor(model => model.MobilityLetter.ID)
+
+<!-- Employee Details -->
+@Html.Partial("_EmployeeInfo", Model.Submiter)
+
+<!-- Application Detail -->
+<div class="row">
+    <div class="col-md-12">
+        <div class="portlet box blue">
+            <div class="mini-triangle"><img src="../Assets/img/menu-red-triangle.png" /></div>
+            <div class="portlet-title">
+                <div class="caption">
+                    <i class="fa fa-reorder"></i>Application Details
+                </div>
+            </div>
+            <div class="portlet-body form">
+                <div class="form-body">
+                    <div id="trRefNo" class="row">
+                        @*<div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="control-label col-md-4">Type</label>
+                    <div class="col-md-8 form-control-static">
+                        @Html.TextBoxFor(model => model.MobilityLetter.TemplateName, new { @class = "form-control", @readonly = "readonly" })
+                    </div>
+                </div>
+            </div>
+        </div>*@
+                        <div class="col-md-6">
+                            <div class="form-horizontal">
+                                <div class="form-group">
+                                    <label class="control-label col-md-4">Status</label>
+                                    <div class="col-md-8 form-control-static">
+                                        @Html.TextBoxFor(model => model.MobilityLetter.Status, new { @class = "form-control color", @readonly = "readonly" })
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-horizontal">
+                                <div class="form-group">
+                                    <label class="control-label col-md-4">
+                                        Date
+                                    </label>
+                                    <div class="col-md-8 form-control-static">
+                                        @Html.TextBoxFor(model => model.MobilityLetter.ReleaseDate, "{0:dd MMM yyyy}", new { @class = "form-control", @readonly = "readonly" })
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    @*<div class="row" style="">
+                        <div class="col-md-6">
+                            <div class="form-horizontal">
+                                <div class="form-group">
+                                    <label class="control-label col-md-4">
+                                        Date
+                                    </label>
+                                    <div class="col-md-8 form-control-static">
+                                        @Html.TextBoxFor(model => model.MobilityLetter.ReleaseDate, "{0:dd MMM yyyy}", new { @class = "form-control", @readonly = "readonly" })
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>*@
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Audit Log -->
+<div class="row">
+    <div class="col-md-12">
+        <div class="portlet box blue">
+            <div class="mini-triangle"><img src="~/Assets/img/menu-red-triangle.png" /></div>
+            <div class="portlet-title">
+                <div class="caption">
+                    <i class="fa fa-reorder"></i>Audit Log
+                </div>
+            </div>
+            <div class="portlet-body form">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="form-horizontal">
+                            <div class="form-body">
+                                <div style="overflow-x:auto">
+                                    <table id="tblAuditLog" class="table table-striped table-bordered table-hover table-full-width">
+                                        <thead>
+                                            <tr>
+                                                <th>Action By</th>
+                                                <th>Date</th>
+                                                <th>Activity</th>
+                                                <th>Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach (var item in Model.AuditLog)
+                                            {
+                                                <tr>
+                                                    @if (item.EmployeeCode == "00000000-0000-0000-0000-000000000000")
+                                                    {
+                                                        <td>System</td>
+                                                    }
+                                                    else
+                                                    {
+                                                        <td>@item.EmployeeName</td>
+                                                    }
+                                                    <td>@item.CreatedDate.Value.ToString("dd/MM/yyyy hh:mm tt")</td>
+                                                    <td>@item.ActivityName</td>
+                                                    <td>@item.ActivityAction</td>
+
+                                                </tr>
+                                            }
+
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Loading Gif -->
+<div id="divLoading" style="margin: 0px; padding: 0px; position: fixed; right: 0px;
+    top: 0px; width: 100%; height: 100%; background-color:gainsboro; z-index: 30001;
+    opacity: .8; filter: alpha(opacity=70);display:none">
+    <p style="position: absolute; top: 30%; left: 30%; color: black;">
+        Loading, please wait...<img src="../Assets/img/ajax-loading.gif" />
+
+    </p>
+</div>
+
+<a class="btn btn-sm default blue" id="btnDownload" onclick="DownloadPDF()" data-toggle="modal">
+    Download Letter
+</a>
+
+
+<script>
+    function DownloadPDF() {
+        var _ID = $("#MobilityLetter_ID").val();
+        window.open("@Url.Action("DownloadPDF")?ID=" + _ID);
+    }
+</script>
+
+
+

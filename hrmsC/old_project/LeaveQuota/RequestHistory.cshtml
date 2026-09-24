@@ -1,0 +1,139 @@
+﻿@model LeaveQuota.Models.FilterModel
+@{
+    ViewBag.Title = "Request Listing";
+}
+
+<div class="row">
+    <div class="col-md-12">
+        <br />
+        <h1 class="page-title">
+            Off In Lieu Application Listing<span style="padding-left:20px;"><small></small></span>
+        </h1>
+    </div>
+</div>
+<br />
+
+<form id="filterForm">
+    <input type="hidden" value="@Model.CreatedBy" name="CreatedBy" />
+    <div class="form-body">
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-horizontal">
+                    <div class="form-group">
+                        <label class="col-md-4 control-label">From Date</label>
+                        <div class="col-md-8 form-control-static">
+                            <div class="input-group date date-picker" data-date-format="dd MM yyyy">
+                                <input type="text" class="form-control" id="FromDate" name="FromDate" />
+                                <span class="input-group-btn">
+                                    <button type="button" class="btn default"><i class="fa fa-calendar"></i></button>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-horizontal">
+                    <div class="form-group">
+                        <label class="col-md-4 control-label">To Date</label>
+                        <div class="col-md-8 form-control-static">
+                            <div class="input-group date date-picker" data-date-format="dd MM yyyy">
+                                <input type="text" class="form-control" id="ToDate" name="ToDate" />
+                                <span class="input-group-btn">
+                                    <button type="button" class="btn default"><i class="fa fa-calendar"></i></button>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-horizontal">
+                    <div class="form-group">
+                        <label class="col-md-4 control-label">Request Type</label>
+                        <div class="col-md-8 form-control-static">
+                            <select id="RequestType" name="RequestType" class="form-control">
+                                <option value="ALL">ALL</option>
+                                <option value="OIL">OIL</option>
+                                <option value="Haji">Haji Leave</option>
+                                <option value="Exam">Exam Leave</option>
+                                <option value="Paternity">Paternity Leave</option>
+
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-horizontal">
+                    <div class="form-group">
+                        <label class="col-md-4 control-label">Request Status</label>
+                        <div class="col-md-8 form-control-static">
+                            <select id="RequestStatus" name="RequestStatus" class="form-control">
+                                <option value="ALL">ALL</option>
+                                <option value="Draft">Draft</option>
+                                <option value="Pending">Pending</option>
+                                <option value="Approved">Approved</option>
+                                <option value="Verified">Verified</option>
+                                <option value="Agreed">Agreed</option>
+                                <option value="Withdrawn">Withdrawn</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+       
+        
+    </div>
+</form>
+<div class="row">&nbsp;</div>
+<div class="row">
+    <div class="col-md-12">
+        <div class="text-right">
+            <a id="btn-Search" class="btn green btn-Search" value="Search" onclick="SearchListing();">Search</a>
+        </div>
+    </div>
+</div>
+<div class="row">&nbsp;</div>
+<div class="row">
+    <div class="col-md-12">
+        <div id="SearchResult">
+
+        </div>
+    </div>
+</div>
+<script>
+
+    $(document).ready(function () {
+        $('.date-picker').datepicker({
+            format: 'dd/mm/yyyy',
+            autoclose: true
+        });
+
+        SearchListing();
+    });
+
+    function SearchListing() {
+
+        $("#SearchResult").html("LOADING...");
+        $.ajax({
+            type: "GET",
+            cache: false,
+            url: '@Url.Content("~/LeaveQuota/_RequestHistoryResult")',
+            data: $("#filterForm").serialize(),
+            success: function (listingContent) {
+               
+                $("#SearchResult").empty().append(listingContent);
+            },
+            error: function (err) {
+               
+                console.log(err);
+            }
+        });
+    }
+</script>

@@ -1,0 +1,274 @@
+﻿@using Asset.Models
+@model IncomeFormViewModel
+@{
+    ViewBag.Title = "Kemaskini Pendapatan Bulanan";
+
+    string EmployeeIncome = ViewBag.EmployeeIncome;
+    string EmployeeIncomeMessage = ViewBag.EmployeeIncomeMessage;
+    string EmployeeAllowance = ViewBag.EmployeeAllowance;
+    string EmployeeAllowanceMessage = ViewBag.EmployeeAllowanceMessage;
+
+    bool Readonly = ViewBag.Readonly;
+}
+
+<style>
+    .IncomeInputWidth {
+        width: 150px;
+        display: inline !important;
+        padding-left: 15px;
+    }
+
+    .IncomeTable-LeftCol {
+        width: 30%
+    }
+</style>
+
+<form id="MonthlyIncomeForm">
+    <div class="modal fade" id="MonthlyIncomeForm_Modal" tabindex="-1" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                    <h4 id="MonthlyIncomeForm_Title" class="modal-title">@ViewBag.Title</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="form-body">
+                        <div class="form-horizontal">
+                            <div class="table-toolbar">
+                                <table id="tblMonthlyEmployeeIncome" class="table table-striped table-bordered table-hover table-full-width">
+                                    <thead>
+                                        <tr>
+                                            <th colspan="2" style="background-color: lawngreen;">Pekerja</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td class="IncomeTable-LeftCol">
+                                                Gaji Pokok (RM):
+                                            </td>
+                                            <td>
+                                                <input type="hidden" name="EmployeeIncome.EmployeeID" value="@ViewBag.EmployeeID" />
+                                                <input type="hidden" name="EmployeeIncome.RelationshipTypeCode" value="EM" />
+                                                <input type="text" class="form-control currency select-all-focus BasicPay IncomeInputWidth" placeholder="0.00"
+                                                       value="@((Model.EmployeeIncome == null) ? "0.00" : Model.EmployeeIncome.BasicPay)" name="EmployeeIncome.BasicPay" />
+
+                                                @*<span>
+                                                    @EmployeeIncomeMessage
+                                                </span>*@
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                Elaun Tetap (RM):
+                                            </td>
+                                            <td>
+                                                <input type="text" class="form-control currency select-all-focus Allowance IncomeInputWidth" placeholder="0.00" 
+                                                       value="@((Model.EmployeeIncome == null) ? "0.00" : Model.EmployeeIncome.Allowance)" name="EmployeeIncome.Allowance" />
+                                                @*<span>
+                                                    @EmployeeIncomeMessage
+                                                </span>*@
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                Sewa Rumah/Kedai (RM):
+                                            </td>
+                                            <td>
+                                                <input type="text" class="form-control currency select-all-focus Rent IncomeInputWidth" placeholder="0.00"
+                                                       value="@((Model.EmployeeIncome == null) ? "0.00" : Model.EmployeeIncome.Rent)" name="EmployeeIncome.Rent" />
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                Dividen (RM):
+                                            </td>
+                                            <td>
+                                                <input type="text" class="form-control currency select-all-focus Dividend IncomeInputWidth" placeholder="0.00"
+                                                       value="@((Model.EmployeeIncome == null) ? "0.00" : Model.EmployeeIncome.Dividend)" name="EmployeeIncome.Dividend" />
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                Lain-Lain (RM):
+                                            </td>
+                                            <td>
+                                                <input type="text" class="form-control currency select-all-focus Others IncomeInputWidth" placeholder="0.00"
+                                                       value="@((Model.EmployeeIncome == null) ? "0.00" : Model.EmployeeIncome.Others)" name="EmployeeIncome.Others" />
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                Jumlah (RM):
+                                            </td>
+                                            <td>
+                                                <input type="text" class="form-control currency select-all-focus Total IncomeInputWidth" placeholder="0.00" readonly="readonly"
+                                                       value="@((Model.EmployeeIncome == null) ? "0.00" : Model.EmployeeIncome.Total)" name="EmployeeIncome.Total" />
+
+                                                <button type="button" class="btn default blue" onclick="MonthlyIncomeForm_Calculate('tblMonthlyEmployeeIncome');">Kira</button>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <div class="form-horizontal">
+                            <div class="table-toolbar">
+                                <table id="tblMonthlyCoupleIncome" class="table table-striped table-bordered table-hover table-full-width">
+                                    <thead>
+                                        <tr>
+                                            <th colspan="3" style="background-color: lawngreen;">Suami / Isteri</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td class="IncomeTable-LeftCol">
+                                                Gaji Pokok (RM):
+                                            </td>
+                                            <td>
+                                                <input type="hidden" name="CoupleIncome.EmployeeID" value="@ViewBag.EmployeeID" />
+                                                <input type="hidden" name="CoupleIncome.RelationshipTypeCode" value="S1" />
+                                                <input type="text" class="form-control currency select-all-focus BasicPay IncomeInputWidth" placeholder="0.00"
+                                                       value="@((Model.CoupleIncome == null) ? "0.00" : Model.CoupleIncome.BasicPay)" name="CoupleIncome.BasicPay" />
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                Elaun Tetap (RM):
+                                            </td>
+                                            <td>
+                                                <input type="text" class="form-control currency select-all-focus Allowance IncomeInputWidth" placeholder="0.00"
+                                                       value="@((Model.CoupleIncome == null) ? "0.00" : Model.CoupleIncome.Allowance)" name="CoupleIncome.Allowance" />
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                Sewa Rumah/Kedai (RM):
+                                            </td>
+                                            <td>
+                                                <input type="text" class="form-control currency select-all-focus Rent IncomeInputWidth" placeholder="0.00"
+                                                       value="@((Model.CoupleIncome == null) ? "0.00" : Model.CoupleIncome.Rent)" name="CoupleIncome.Rent" />
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                Dividen (RM):
+                                            </td>
+                                            <td>
+                                                <input type="text" class="form-control currency select-all-focus Dividend IncomeInputWidth" placeholder="0.00"
+                                                       value="@((Model.CoupleIncome == null) ? "0.00" : Model.CoupleIncome.Dividend)" name="CoupleIncome.Dividend" />
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                Lain-Lain (RM):
+                                            </td>
+                                            <td>
+                                                <input type="text" class="form-control currency select-all-focus Others IncomeInputWidth" placeholder="0.00"
+                                                       value="@((Model.CoupleIncome == null) ? "0.00" : Model.CoupleIncome.Others)" name="CoupleIncome.Others" />
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                Jumlah (RM):
+                                            </td>
+                                            <td>
+                                                <input type="text" class="form-control currency select-all-focus Total IncomeInputWidth" placeholder="0.00" readonly="readonly"
+                                                       value="@((Model.CoupleIncome == null) ? "0.00" : Model.CoupleIncome.Total)" name="CoupleIncome.Total" />
+                                                <button type="button" class="btn default blue" onclick="MonthlyIncomeForm_Calculate('tblMonthlyCoupleIncome');">Kira</button>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    @if (!Readonly)
+                    {
+                        <button type="button" id="MonthlyIncomeForm_btnSave" class="btn default blue">
+                            Simpan
+                        </button>
+                    }
+                    <button type="button" id="MonthlyIncomeForm_btnClose" class="btn default" data-dismiss="modal">
+                        Tutup
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+<script>
+    var isMonthlyIncomeFormUpdated = false;
+
+    $(function () {
+        isMonthlyIncomeFormUpdated = false;
+        $('#MonthlyIncomeForm_Modal').on('hidden.bs.modal', function () {
+            MonthlyIncome_RefreshForm(false);
+        });
+        $('#MonthlyIncomeForm_btnSave').on('click', MonthlyIncomeForm_Save);
+
+        InitializeCommonControls();
+    });
+
+    function MonthlyIncomeForm_Calculate(tableID) {
+        var table = $("#" + tableID);
+
+        var BasicPay = table.find('.BasicPay').val();
+        var Allowance = table.find('.Allowance').val();
+        var Rent = table.find('.Rent').val();
+        var Dividend = table.find('.Dividend').val();
+        var Others = table.find('.Others').val();
+
+        // To write into
+        var TotalInput = table.find('.Total');
+        var Total = parseFloat(BasicPay.replace(/,/g, "")) +
+            parseFloat(Allowance.replace(/,/g, "")) +
+            parseFloat(Rent.replace(/,/g, "")) +
+            parseFloat(Dividend.replace(/,/g, "")) +
+            parseFloat(Others.replace(/,/g, ""));
+
+        TotalInput.val(Total.toLocaleString(undefined, { minimumFractionDigits: 2 }));
+    }
+
+    function MonthlyIncomeForm_Save() {
+
+        MonthlyIncomeForm_Calculate('tblMonthlyEmployeeIncome');
+        MonthlyIncomeForm_Calculate('tblMonthlyCoupleIncome');
+
+        ShowConfirmationDialog({
+            message: 'Kemaskini maklumat Pendapatan Bulanan?',
+            positiveCallback: function () {
+                var data = $('#MonthlyIncomeForm').serializeArray();
+                $.each(data, function (i, val) { val.value = val.value.replace(/,/g, ""); });
+
+                HideConfirmationDialog();
+                ShowLoadingScreen();
+
+                $.post('@Url.Action("_MonthlyIncomeForm_Save", "Asset")', data, function (result) {
+                    HideLoadingScreen();
+                    if (result.IsSuccess) {
+                        isMonthlyIncomeFormUpdated = true;
+
+                        ShowDialog({
+                            message: "Maklumat Pendapatan Bulanan telah berjaya dikemaskini.",
+                            okCallback: function () {
+                                $('#MonthlyIncomeForm_Modal').modal('hide');
+                            }
+                        });
+                    }
+                    else {
+                        ShowDialog({
+                            title: "Gagal",
+                            message: "Kemaskini maklumat Pendapatan Bulanan telah gagal. <br />" + result.ErrorMessage,
+                            okCallback: function () {
+                                HideDialog();
+                            }
+                        });
+                    }
+                });
+            }
+        });
+    }
+</script>

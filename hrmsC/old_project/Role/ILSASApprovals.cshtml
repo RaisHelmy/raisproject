@@ -1,0 +1,105 @@
+﻿@model IEnumerable<TNB_ESS_MVC.Controllers.ILSASApproval>
+
+@{
+    ViewBag.Title = "ILSAS Approval Maintenance";
+}
+<br />
+<h2 class="page-title">ILSAS Approval Maintenance</h2>
+
+<div class="form-body">
+
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="control-label col-md-4">Department</label>
+                    <div class="col-md-8">
+                        @Html.DropDownList("Department", (IEnumerable<SelectListItem>)ViewBag.DepartmentList, "- All -", new { @class = "form-control", @id = "ddlDepartment" })
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="control-label col-md-4">Status</label>
+                    <div class="col-md-8">
+                        <select id="ddlStatusSearch" class="form-control">
+                            <option>Active</option>
+                            <option>Inactive</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">&nbsp;</div>
+    <div class="row">
+        <div class="col-md-12">
+            <div class="text-right">
+                <input id="btnSearchApproval" type="button" value="Search" class="btn green btn-Search" onclick="SearchApproval();">
+            </div>
+        </div>
+    </div>
+    <div class="row">&nbsp;</div>
+    <div class="row">
+        <div class="col-md-12">
+            <div id="approvalResult">
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<!--START MODAL-->
+<div class="modal fade" id="deleteModal" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                <h4 class="modal-title" id="deleteText">Delete Approval Item</h4>
+            </div>
+            <div class="modal-body">
+                <div class="well">
+                    Clicking Delete will remove this record from the database completely. If you want to cancel the deletion, click Close.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="submit" class="btn default red" name="submitType" onclick="" id="btnDelete">
+                    Delete
+                </button>
+
+                <button type="button" class="btn default" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+<!--END MODAL-->
+
+<script>
+
+    $(document).ready(function () {
+
+        SearchApproval();
+    });
+    function SearchApproval() {
+        var department = $('#ddlDepartment :selected').text();
+        var status = $("#ddlStatusSearch").val();
+
+        $("#approvalResult").html("LOADING...");
+        $.ajax({
+            type: "GET",
+            dataType: "html",
+            url: '@Url.Action("_ILSASApprovalsFilterResult")',
+            data: { Department: department, Status: status },
+            success: function (content) {
+                $("#approvalResult").html(content);
+            },
+            error: function (err) {
+                console.log("Error in retrieving approvals!");
+            }
+        });
+    }
+</script>

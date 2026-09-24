@@ -1,0 +1,165 @@
+﻿@model List<LeaveApplication.Models.LeaveReportVM>
+@{
+    Layout = null;
+}
+
+<div class="portlet box blue">
+    <div class="mini-triangle"><img src="../Assets/img/menu-red-triangle.png" /></div>
+    <div class="portlet-title">
+        <div class="caption">
+            <i class="fa fa-reorder"></i>Leave Report
+        </div>
+        <input type="button" id="btn-Export" class="btn btn-xs green pull-right" value="Export To Excel">
+        <div class="tools">
+        </div>
+    </div>
+    <div class="portlet-body form">
+        <div class="form-body">
+            <div class="form-horizontal">
+                <div class="table-toolbar">
+                    <table id="tblResult" class="table table-striped table-bordered table-hover table-full-width">
+                        <thead>
+                            <tr>
+                                <th></th>
+                                <th>Employee No</th>
+                                <th>Employee Name</th>
+                                <th>Company</th>
+                                <th>Business Area</th>
+                                <th>Personal Area</th>
+                                <th>Personal SubArea</th>
+                                <th>Holiday Calendar</th>
+                                <th>Group Name</th>
+                                <th>PayScale Group</th>
+
+                                <th>Reference No.</th>
+                                <th>Leave Subtype</th>
+                                <th>Start Date</th>
+                                <th>End Date</th>
+                                <th>Total Days</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            @foreach (var item in Model)
+                            {
+                            <tr>
+                                <td>
+                                    <a class="btn blue btn-sm" href="@Url.Action("Index", "LeaveApplication", new { LeaveID = item.LeaveID, Source = "History" })">
+                                        <i class="fa fa-edit"></i>
+                                    </a>
+                                </td>
+                                <td>@item.EmployeeCode</td>
+                                <td>@item.EmployeeName</td>
+                                <td>@item.CompanyCode: @item.CompanyName</td>
+                                <td>@item.BusinessAreaCode: @item.BusinessAreaName</td>
+                                <td>@item.AreaCode: @item.AreaName</td>
+                                <td>@item.SubAreaCode: @item.SubAreaName</td>
+                                <td>@item.HolidayCalendar</td>
+                                <td>@item.GroupName</td>
+                                <td>@item.PayScaleGroup</td>
+
+                                <td>@item.LeaveNo</td>
+                                <td>@item.LeaveSubtypeName</td>
+                                <td>@item.StartDate</td>
+                                <td>@item.EndDate</td>
+                                <td>@item.TotalDay</td>
+                                @if (@item.LeaveStatus == "Declined" || @item.LeaveStatus == "Withdrawn" || @item.LeaveStatus == "Cancelled" ||
+                                     @item.LeaveStatus == "DE" || @item.LeaveStatus == "WD" || @item.LeaveStatus == "CA")
+                                {
+                                    <td style="color:red;"><b>@item.LeaveStatusDescription</b></td>
+                                }
+                                else
+                                {
+                                    <td style="color:green;"><b>@item.LeaveStatusDescription</b></td>
+                                }
+                            </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<table id="tblExport" border="1" style="display: none;">
+    <thead>
+        <tr>
+            <th>Employee No</th>
+            <th>Employee Name</th>
+            <th>Company</th>
+            <th>Business Area</th>
+            <th>Personal Area</th>
+            <th>Personal SubArea</th>
+            <th>Holiday Calendar</th>
+            <th>Group Name</th>
+            <th>PayScale Group</th>
+
+            <th>Reference No.</th>
+            <th>Leave Subtype</th>
+            <th>Start Date</th>
+            <th>End Date</th>
+            <th>Total Days</th>
+            <th>Status</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+        <tr>
+            <td>@item.EmployeeCode</td>
+            <td>@item.EmployeeName</td>
+            <td>@item.CompanyCode: @item.CompanyName</td>
+            <td>@item.BusinessAreaCode: @item.BusinessAreaName</td>
+            <td>@item.AreaCode: @item.AreaName</td>
+            <td>@item.SubAreaCode: @item.SubAreaName</td>
+            <td>@item.HolidayCalendar</td>
+            <td>@item.GroupName</td>
+            <td>@item.PayScaleGroup</td>
+
+            <td>@item.LeaveNo</td>
+            <td>@item.LeaveSubtypeName</td>
+            <td>@item.StartDate</td>
+            <td>@item.EndDate</td>
+            <td>@item.TotalDay</td>
+            <td>
+                <b>@item.LeaveStatusDescription</b>
+            </td>
+        </tr>
+        }
+    </tbody>
+</table>
+
+<script type="text/javascript">
+    $(function () {
+        $('#tblResult').dataTable({
+            "bDestroy": true,
+            //"aLengthMenu": [
+            //    [10, 15, 20, -1],
+            //    [10, 15, 20, "All"]
+            //],
+            //// set the initial value
+            //"iDisplayLength": 10,
+
+            "sPaginationType": "bootstrap",
+            "oLanguage": {
+                "sLengthMenu": "_MENU_ records",
+                "oPaginate": {
+                    "sPrevious": "Prev",
+                    "sNext": "Next"
+                }
+            },
+            "aoColumnDefs": [
+                { "sType": "date-dmy", "aTargets": [4, 5] }],
+            //disable init sorting
+            "aaSorting": []
+
+
+        });
+    });
+
+    $(function () {
+        BindExport();
+    });
+</script>

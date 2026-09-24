@@ -1,0 +1,287 @@
+﻿@model List<LeaveApplication.Models.LeaveDetails>
+@{
+    Layout = "";
+}
+<style>
+    .centeralign{
+        text-align:center;
+        vertical-align : middle !important;
+    }
+
+    .highlight-row {
+        background-color: rgba(241, 234, 164, 0.5) !important;
+    }
+</style>
+@ViewBag.ErrorMessage
+<div class="portlet box blue">
+    <div class="mini-triangle"><img src="../Assets/img/menu-red-triangle.png" /></div>
+    <div class="portlet-title">
+        <div class="caption">
+            <i class="fa fa-reorder"></i>Leave Details
+        </div>
+        <div class="tools">
+            <a id="subtypeToggle" title="" data-original-title="" href="javascript:;" class="collapse"> </a>
+        </div>
+    </div>
+    <div class="portlet-body form">
+        <div class="form-body">
+            <div class="form-horizontal">
+                <div class="table-toolbar">
+                    <table id="tblLeaveDetails" class="table table-striped table-bordered table-hover table-full-width">
+                        <thead>
+                            <tr>
+                                <th>Leave Type</th>
+                                <th>Period</th>
+                                <th>No. Of Days</th>
+                                <th>Opsyen</th>
+                                <th>Leave Taken</th>
+                                <th>Leave Balance</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model)
+                            {
+                                if (item.LeaveTypeCode == "99")
+                                {
+                                    <tr>
+                                        <td style="display:none;"></td>
+                                        <td colspan="2">@item.LeaveType</td>
+                                        <td id="Entitlement_99" class="centeralign">@item.Entitlement</td>
+                                        <td id="Opsyen_99" class="centeralign">@item.Opsyen</td>
+                                        <td id="LeaveTaken_99" class="centeralign">@item.LeaveTaken</td>
+                                        <td id="Balance_99" class="centeralign">@item.Balance</td>
+                                    </tr>
+                                }
+                                else if (item.LeaveTypeCode == "52")
+                                {
+                                    <tr class="highlight-row">
+                                        <td class="highlight-row">@item.LeaveType</td>
+                                        <td class="highlight-row">@item.Period</td>
+                                        <td class="highlight-row"><input class="form-control centeralign" id="Entitlement_52" value="@item.Entitlement" onblur="CalculateCutiGantian52(this)" /></td>
+                                        <td id="Opsyen_52" class="centeralign highlight-row">
+                                            @if (item.IsOpsyenValid)
+                                            {
+                                                @item.Opsyen
+                                            }
+                                            else
+                                            {
+                                                @(" - ")
+                                            }
+                                        </td>
+                                        <td class="highlight-row"><input class="form-control centeralign" id="LeaveTaken_52" value="@item.LeaveTaken" onblur="CalculateCutiGantian52(this)" /></td>
+                                        <td id="Balance_52"  class="centeralign highlight-row">@item.Balance</td>
+                                    </tr>
+                                }
+                                else if (item.LeaveTypeCode == "2")
+                                {
+                                    <tr>
+                                        <td class="highlight-row">@item.LeaveType</td>
+                                        <td class="highlight-row">@item.Period</td>
+                                        <td class="highlight-row"><input class="form-control centeralign" id="Entitlement_2" value="@item.Entitlement" onblur="CalculateCutiGantian2(this)" /></td>
+                                        <td id="Opsyen_2" class="centeralign highlight-row">
+                                            @if (item.IsOpsyenValid)
+                                            {
+                                                @item.Opsyen
+                                            }
+                                            else
+                                            {
+                                                @(" - ")
+                                            }
+                                        </td>
+                                        <td class="highlight-row"><input class="form-control centeralign" id="LeaveTaken_2" value="@item.LeaveTaken" onblur="CalculateCutiGantian2(this)" /></td>
+                                        <td id="Balance_2" class="centeralign highlight-row">@item.Balance</td>
+                                    </tr>
+                                }
+                                else
+                                {
+                                    <tr>
+                                        <td>@item.LeaveType</td>
+                                        <td>@item.Period</td>
+                                        <td id="Entitlement_@item.LeaveTypeCode" class="centeralign">@item.Entitlement</td>
+                                        <td id="Entitlement_@item.LeaveTypeCode" class="centeralign">
+                                            @if (item.IsOpsyenValid)
+                                            {
+                                                @item.Opsyen
+                                            }
+                                            else
+                                            {
+                                                @(" - ")
+                                            }
+                                        </td>
+                                        <td id="LeaveTaken_@item.LeaveTypeCode" class="centeralign">@item.LeaveTaken</td>
+                                        <td id="Balance_@item.LeaveTypeCode" class="centeralign">@item.Balance</td>
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+ 
+<style>
+    .dataTables_filter, .dataTables_info, .paging_bootstrap, #tblResult_length, #tblLeaveDetails_length {
+        display: none;
+    }
+</style>
+<script type="text/javascript">
+    transformTable("#tblLeaveDetails");
+
+    function CalculateCutiGantian2(e) {
+        if (e != undefined) {
+            var myNumeric = parseFloat($(e).val().replace(/,/g, ''));
+            if (!myNumeric) {
+                $(e).val('0.00');
+            }
+            else {
+                if (myNumeric < 0) {
+                    $(e).val('0.00');
+                } else {
+                    $(e).val(myNumeric.toFixed(2));
+                }
+
+                if (myNumeric > 999.99) {
+                    $(e).val('0.00');
+                }
+            }
+        }
+
+        var Entitlement = $("#Entitlement_2").val();
+        var LeaveTaken = $("#LeaveTaken_2").val();
+
+        Entitlement = parseFloat(Entitlement.replace(/,/g, ''));
+        LeaveTaken = parseFloat(LeaveTaken.replace(/,/g, ''));
+
+        if (LeaveTaken > Entitlement) {
+            LeaveTaken = Entitlement;
+            $("#LeaveTaken_2").val(LeaveTaken.toFixed(2));
+        }
+
+        var Balance = Entitlement - LeaveTaken;
+
+        $("#Balance_2").html(Balance.toFixed(2));
+
+        CalculateTotal();
+    }
+
+    function CalculateCutiGantian52(x) {
+        if (x != undefined) {
+            var myNumeric52 = parseFloat($(x).val().replace(/,/g, ''));
+            if (!myNumeric52) {
+                $(x).val('0.00');
+            }
+            else {
+                if (myNumeric52 < 0) {
+                    $(x).val('0.00');
+                } else {
+                    $(x).val(myNumeric52.toFixed(2));
+                }
+
+                if (myNumeric52 > 999.99) {
+                    $(x).val('0.00');
+                }
+            }
+        }
+
+        var Entitlement52 = $("#Entitlement_52").val();
+        var LeaveTaken52 = $("#LeaveTaken_52").val();
+
+        Entitlement52 = parseFloat(Entitlement52.replace(/,/g, ''));
+        LeaveTaken52 = parseFloat(LeaveTaken52.replace(/,/g, ''));
+
+        if (LeaveTaken52 > Entitlement52) {
+            LeaveTaken52 = Entitlement52;
+            $("#LeaveTaken_52").val(LeaveTaken52.toFixed(2));
+        }
+
+        var Balance52 = Entitlement52 - LeaveTaken52;
+
+        $("#Balance_52").html(Balance52.toFixed(2));
+
+        CalculateTotal();
+    }
+
+    function CalculateTotal() {
+        var TotalEntitlement11 = parseFloat($("#Entitlement_11").html().replace(/,/g, ''));
+        var TotalEntitlement14 = parseFloat($("#Entitlement_14").html().replace(/,/g, ''));
+        var TotalEntitlement12 = parseFloat($("#Entitlement_12").html().replace(/,/g, ''));
+        var TotalEntitlement52 = parseFloat($("#Entitlement_52").val().replace(/,/g, ''));
+        var TotalEntitlement51 = parseFloat($("#Entitlement_51").html().replace(/,/g, ''));
+
+        var TotalLeaveTaken11 = parseFloat($("#LeaveTaken_11").html().replace(/,/g, ''));
+        var TotalLeaveTaken14 = parseFloat($("#LeaveTaken_14").html().replace(/,/g, ''));
+        var TotalLeaveTaken12 = parseFloat($("#LeaveTaken_12").html().replace(/,/g, ''));
+        var TotalLeaveTaken52 = parseFloat($("#LeaveTaken_52").val().replace(/,/g, ''));
+        var TotalLeaveTaken51 = parseFloat($("#LeaveTaken_51").html().replace(/,/g, ''));
+
+        var TotalBalance11 = parseFloat($("#Balance_11").html().replace(/,/g, ''));
+        var TotalBalance14 = parseFloat($("#Balance_14").html().replace(/,/g, ''));
+        var TotalBalance12 = parseFloat($("#Balance_12").html().replace(/,/g, ''));
+        var TotalBalance52 = parseFloat($("#Balance_52").html().replace(/,/g, ''));
+        var TotalBalance51 = parseFloat($("#Balance_51").html().replace(/,/g, ''));
+
+
+        var TotalEntitlement = 0;
+        var TotalLeaveTaken = 0;
+        var TotalBalance = 0;
+
+        TotalEntitlement = TotalEntitlement11 + TotalEntitlement14 + TotalEntitlement12 + TotalEntitlement52 + TotalEntitlement51;
+        TotalLeaveTaken = TotalLeaveTaken11 + TotalEntitlement14 + TotalLeaveTaken12 + TotalLeaveTaken52 + TotalLeaveTaken51;
+        TotalBalance = TotalBalance11 + TotalBalance14 + TotalBalance12 + TotalBalance52 + TotalBalance51;
+
+        if ('@ViewBag.IsCrossYear' == 'Yes') {
+      
+            var TotalEntitlement1 = parseFloat($("#Entitlement_1").html().replace(/,/g, ''));
+            var TotalEntitlement2 = parseFloat($("#Entitlement_2").val().replace(/,/g, ''));
+            var TotalLeaveTaken1 = parseFloat($("#LeaveTaken_1").html().replace(/,/g, ''));
+            var TotalLeaveTaken2 = parseFloat($("#LeaveTaken_2").val().replace(/,/g, ''));
+            var TotalBalance1 = parseFloat($("#Balance_1").html().replace(/,/g, ''));
+            var TotalBalance2 = parseFloat($("#Balance_2").html().replace(/,/g, ''));
+
+            TotalEntitlement = TotalEntitlement + TotalEntitlement1 + TotalEntitlement2;
+            TotalLeaveTaken = TotalLeaveTaken + TotalLeaveTaken1 + TotalLeaveTaken2;
+            TotalBalance = TotalBalance + TotalBalance1 + TotalBalance2;
+        }
+
+        $("#Entitlement_99").html(TotalEntitlement.toFixed(2));
+        $("#LeaveTaken_99").html(TotalLeaveTaken.toFixed(2));
+        $("#Balance_99").html(TotalBalance.toFixed(2));
+
+        CalculateRetirementDate();
+
+    }
+
+    function CalculateRetirementDate() {
+        var _Balance = parseFloat($("#Balance_99").html().replace(/,/g, ''));
+        var _EmployeeID = $("#hfEmployeeID").val();
+        var _DefaultRetirementDate = $('#hfRetirementDate').val();
+
+        $.ajax({
+            url: '@Url.Content("~/LeaveApplication/CalculateActualRetirementDate")',
+            type: 'POST',
+            cache: false,
+            async: false,
+
+            dataType: "json",
+            data: { 'Balance': _Balance, 'EmployeeID': _EmployeeID, RetirementDate: _DefaultRetirementDate },
+            success: function (result) {
+                console.log(result);
+                if (result.Success) {
+                    //alert(result.ActualRetirementDate);
+                    $("#NoteActualRetirementDate").html(result.ActualRetirementDate);
+
+                } else {
+                    //alert('error');
+                    alert(result.ErrorMsg);
+                }
+
+            },
+            error: function (x, y, z) {
+                console.log(x + '\n' + y + '\n' + z);
+            }
+        });
+    }
+</script>

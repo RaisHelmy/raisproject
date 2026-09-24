@@ -1,0 +1,578 @@
+﻿@model ESS.Allowance.Models.AllowanceVM
+
+@{
+    ViewBag.Title = "Allowance Application";
+
+}
+
+@using (Html.BeginForm("Index", "Allowance", FormMethod.Post))
+{
+    if (!string.IsNullOrEmpty(Model.ErrorMessage))
+    {
+        <div class="row" id="WarningMessageDiv">
+            <div class="col-md-12">
+                <div class="note note-danger">
+                    <h4 class="block">
+                        @Model.ErrorMessage
+                    </h4>
+                </div>
+            </div>
+        </div>
+    }
+
+    <div class="form-section">
+        <div class="row">
+            <div class="col-md-12">
+                <h1 class="page-title">
+                    Allowance Application
+                    <span style="padding-left:20px;">
+                    </span>
+                </h1>
+                <input type="hidden" name="AllowanceID" value="@Model.AllowanceID" />
+                <input type="hidden" name="TaskID" value="@Model.TaskID" />
+            </div>
+        </div>
+    </div>
+
+    <!-- Requestor Details -->
+    @Html.Partial("_AllowanceRequestorInfo", Model.Submiter)
+
+    @Html.Partial("_AllowanceApplication", Model)
+
+    if (Model.Status != "Draft")
+    {
+        @Html.Action("_AuditLog", "Allowance", new { SourceID = Model.AllowanceID })
+    }
+
+    if (Model.Status == "Pending" && Model.IsTaskOwner)
+    {
+        <div class="row" id="DivApproval" >
+            <div class="col-md-12">
+                <div class="portlet box blue">
+                    <div class="mini-triangle"><img src="/_layouts/15/TNBESS/Assets/img/menu-red-triangle.png" /></div>
+                    <div class="portlet-title">
+                        <div class="caption">
+                            <i class="fa fa-reorder"></i>Approval Comments
+                        </div>
+                    </div>
+                    <div class="portlet-body form">
+                        <div class="form-body">
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="form-horizontal">
+                                        <div class="form-group">
+                                            <label class="control-label col-md-2">Comments<span style="color:red;"> *</span></label>
+                                            <div class="col-md-10 form-control-static">
+                                                <textarea class="form-control" id="txtAppComment" rows="5" cols="60"></textarea>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+    if (Model.Status == "Draft" || (Model.Status == "Reworked" && Model.IsTaskOwner))
+    {
+        <div class="row">
+            <div class="col-md-12"  id="DeclarationPemohonanBaru">
+                <input type="checkbox" id="chkDeclarationPemohonanBaru">
+                <b>
+                    I hereby confirm that this claim is eligible for payment to the employee based on the following:
+                </b>
+                <ol type="i">
+                    <li style="font-weight: bold">certificates and qualifications required to perform daily tasks</li>
+                    <li style="font-weight: bold">appointments that have been made - if applicable</li>
+                </ol>
+            </div>
+            <div class="col-md-12" id="DeclarationPenamatan" style="display:none">
+                <input type="checkbox" id="chkDeclarationPenamatan">
+                <b>
+                    I declare that my subordinate is no longer entitled to receive the above allowance starting from the termination date
+                </b>
+            </div>
+        </div>
+    }
+
+    <div class="row">
+        <div class="col-md-12"><br /></div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-12">
+            @if (Model.Status == "Draft" && string.IsNullOrEmpty(Model.ErrorMessage))
+            {
+                <input type="button" class="btn green" value="Save As Draft" id="btnSave" onclick="SubmitApplication('Draft');" />
+            }
+
+            @if ((Model.Status == "Draft" || (Model.Status == "Reworked" && Model.IsTaskOwner)) && string.IsNullOrEmpty(Model.ErrorMessage))
+            {
+                <input type="button" class="btn green" value="Submit" id="btnSubmit" onclick="SubmitApplication('Submit'); " />
+            }
+
+            @if (Model.Status == "Pending" && Model.IsTaskOwner)
+            {
+                <input type="button" class="btn green" value="Verify" id="btnVerify" onclick="ApproverAction('Verify')" />
+                <input type="button" class="btn red" value="Decline" id="btnDecline" onclick="ApproverAction('Decline');" />
+                <input type="button" class="btn red" value="Rework" id="btnRework" onclick="ApproverAction('Rework')" />
+            }
+
+            <input type="button" class="btn green" value="Back" id="btnBack" onclick="BackToHistory()" />
+        </div>
+    </div>
+}
+
+<!-- Confirmation Message -->
+<div class="modal fade" id="ConfirmationDialog" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                <h4 id="ConfirmationDialog_Title" class="modal-title"></h4>
+            </div>
+            <div class="modal-body">
+                <div id="ConfirmationDialog_Message" class="well">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="ConfirmationDialog_PositiveButton" type="button" class="btn default blue">
+                    <i class="fa fa-check"></i>
+                </button>
+                <button id="ConfirmationDialog_NegativeButton" type="button" class="btn default" data-dismiss="modal">
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Success Message -->
+<div class="modal fade" id="SuccessDialog" tabindex="-1" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header Success-header">
+                <h4 id="SuccessDialog_Title" class="Success-title">
+                    Action Successfully Completed.
+                </h4>
+            </div>
+            <div class="modal-body Success-body">
+                <div class="well" id="SuccessDialog_Message">
+                    Application has been successfully submitted.
+                </div>
+            </div>
+            <div class="modal-footer Success-footer">
+                <a class="btn default blue" id="SuccessDialog_OkButton" data-dismiss="modal">
+                    <i class="fa fa-check"></i>
+                    OK
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="divLoading" style="margin: 0px; padding: 0px; position: fixed;
+    right: 0px; top: 0px; width: 100%; height: 100%; background-color: gainsboro; z-index: 30001; opacity: .8; filter: alpha(opacity=70); display: none; ">
+    <p style="position: absolute; top: 30%; left: 30%; color: black;">
+        Performing action, please wait...<img src="/_layouts/15/TNBESS/Assets/img/ajax-loading.gif">
+    </p>
+</div>
+
+<script>
+    function BackToHistory() {
+        window.location.href = '@ViewBag.BackUrl';
+    }
+
+    function SubmitApplication(submitStatus) {
+        if (submitStatus == "Draft") {
+            ShowConfirmationDialog({
+                message: "Are you sure you want to Save this Allowance Application?\n\rPress Confirm to proceed, or Close to stay on the current page.",
+                positiveCallback: PerformSaveAsDraft
+            });
+        }
+        else {
+            var validationMessage = PerformSubmissionValidation(submitStatus);
+
+            if (validationMessage) {
+                alert(validationMessage);
+            }
+            else {
+                ShowConfirmationDialog({
+                    positiveCallback: PerformSubmission
+                });
+            }
+        }
+    }
+
+    function PerformSubmissionValidation(submitStatus) {
+        var penamatan = $("#radio_Penamatan").is(':checked');
+        var at = $("#AllowanceCode").val();
+        var employeeID = $("[name='EmployeeID']").val();
+        var checkbox1 = $("#chkDeclarationPemohonanBaru").prop("checked");
+        var checkbox2 = $("#chkDeclarationPenamatan").prop("checked");
+
+        var errorMessage = '';
+
+        if (submitStatus == 'SaveAsDraft')
+            return errorMessage;
+
+        if (employeeID == null || employeeID.length <= 0)
+            errorMessage = errorMessage + 'Employee is required.' + '\n';
+
+        if (at == null || at.length <= 0)
+            errorMessage = errorMessage + 'Allowance Type is required.' + '\n';
+
+        if (errorMessage)
+            return errorMessage;
+
+        $("#tblAllowanceDetails td input[type=checkbox]").each(function (i, value) {
+            var row = $(this).closest("tr");
+            var StartDate = row.find('.StartDate').val()
+            var EndDate = row.find('.EndDate').val()
+            var Station = row.find('.Station').val()
+            var Kadar = row.find('select.Kadar').val()
+            var RatePerMonth = row.find('.RatePerMonth').val()
+            var AttachmentCount = row.find('.attachment-count').text()
+
+            if (!penamatan) {
+                if (StartDate == null || StartDate.length <= 0)
+                    errorMessage = errorMessage + 'Start Date is required.' + '\n';
+            }
+
+            if (EndDate == null || EndDate.length <= 0)
+                errorMessage = errorMessage + 'End Date is required.' + '\n';
+
+            if (StartDate && EndDate) {
+                var _StartParts = StartDate.split('/');
+                var _Start = new Date(_StartParts[2], _StartParts[1] - 1, _StartParts[0]);
+                var _EndParts = EndDate.split('/');
+                var _End = new Date(_EndParts[2], _EndParts[1] - 1, _EndParts[0]);
+
+                if (_Start > _End) {
+                    errorMessage = errorMessage + 'Start Date cannot be greater than End Date.';
+                }
+            }
+
+            if (!penamatan && at == "5004") {
+                if (Station == null || Station.length <= 0)
+                    errorMessage = errorMessage + 'Station is required.' + '\n';
+            }
+
+            if (!penamatan && at == "5020") {
+                if (Kadar == null || Kadar.length <= 0)
+                    errorMessage = errorMessage + 'Kadar is required.' + '\n';
+            }
+
+            if (!penamatan) {
+                if (RatePerMonth == null || RatePerMonth.length <= 0) {
+                    errorMessage = errorMessage + 'Rate Per Month is required.' + '\n';
+                }
+                else {
+                    var fixedamount = $("#AllowanceCode").find(':selected').data("fixedamount");
+                    var minamount = $("#AllowanceCode").find(':selected').data("minamount");
+                    var maxamount = $("#AllowanceCode").find(':selected').data("maxamount");
+                    var maxamountexec = $("#AllowanceCode").find(':selected').data("maxamountexec");
+                    var ca11Min = $("#AllowanceCode").find(':selected').data("ca11minamount");
+                    var ca11Max = $("#AllowanceCode").find(':selected').data("ca11maxamount");
+
+                    if (!fixedamount) {
+                        var outOfRange = false;
+
+                        if (minamount && parseFloat(RatePerMonth) < parseFloat(minamount)) {
+                            outOfRange = true;
+                        }
+
+                        var isExec = IsExecutive(employeeID);
+
+                        if (maxamountexec && isExec) {
+                            if (parseFloat(RatePerMonth) > parseFloat(maxamountexec)) {
+                                outOfRange = true;
+                            }
+                        }
+                        else {
+                            if (maxamount && parseFloat(RatePerMonth) > parseFloat(maxamount)) {
+                                outOfRange = true;
+                            }
+                        }
+
+                        if (outOfRange) {
+                            if (maxamountexec && isExec) {
+                                errorMessage = errorMessage + 'Rate Per Month (RM) must be within RM' + minamount + ' to RM' + maxamountexec + '.\n';
+                            }
+                            else {
+                                errorMessage = errorMessage + 'Rate Per Month (RM) must be within RM' + minamount + ' to RM' + maxamount + '.\n';
+                            }
+                        }
+                    }
+                    else {
+                        if (ca11Min || ca11Max) {
+                            if (StartDate) {
+                                var year = parseFloat(StartDate.split('/')[2]);
+
+                                if (year >= 2023) {
+                                    var outOfRange = false;
+
+                                    if (ca11Min && parseFloat(RatePerMonth) < parseFloat(ca11Min)) {
+                                        outOfRange = true;
+                                    }
+
+                                    if (ca11Max && parseFloat(RatePerMonth) > parseFloat(ca11Max)) {
+                                        outOfRange = true;
+                                    }
+
+                                    if (outOfRange) {
+                                        errorMessage = errorMessage + 'Rate Per Month (RM) must be within RM' + ca11Min + ' to RM' + ca11Max + '.\n';
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            if (!penamatan) {
+                if (AttachmentCount == null || AttachmentCount.length <= 0)
+                    errorMessage = errorMessage + 'Please upload supporting document.' + '\n';
+            }
+        });
+
+        if ((!penamatan && checkbox1 == false))
+            errorMessage = errorMessage + 'Checkbox Declaration is required.' + '\n'
+
+        if ((penamatan && checkbox2 == false))
+            errorMessage = errorMessage + 'Checkbox Declaration is required.' + '\n'
+
+        return errorMessage;
+    }
+
+    function ShowConfirmationDialog(data) {
+        if (!data) {
+            data = {};
+        }
+
+        var dialog = $('#ConfirmationDialog'),
+            title = data.title || "Confirmation",
+            message = data.message || "Are you sure you want to Submit this Allowance application?\n\rPress Confirm to proceed, or Close to stay on the current page.",
+            positiveButtonText = data.positiveButtonText || "Confirm",
+            positiveCallback = data.positiveCallback,
+            negativeButtonText = data.negativeButtonText || "Close",
+            negativeCallback = data.negativeCallback;
+
+        dialog.find("#ConfirmationDialog_Title").html(title);
+        dialog.find("#ConfirmationDialog_Message").html(message);
+        var ePositiveButton = dialog.find("#ConfirmationDialog_PositiveButton");
+        var eNegativeButton = dialog.find("#ConfirmationDialog_NegativeButton");
+
+        ePositiveButton.html(positiveButtonText);
+        ePositiveButton.off('click');
+        ePositiveButton.one('click', function () {
+            if (positiveCallback)
+                positiveCallback(dialog);
+        });
+
+        eNegativeButton.html(negativeButtonText);
+        eNegativeButton.off('click');
+        eNegativeButton.one('click', function () {
+            if (negativeCallback)
+                negativeCallbAllowanceIDllowanceIDck(dialog);
+        });
+
+        dialog.modal();
+    }
+
+    function PerformSaveAsDraft() {
+        HideConfirmationDialog();
+
+        ShowLoadingScreen();
+
+        var data = $('form').serializeArray();
+
+        $.post('@Url.Action("SaveAsDraft", "Allowance")',
+            data,
+            function (result) {
+                HideLoadingScreen();
+
+                if (result.IsSuccess) {
+                    ShowDialog({
+                        message: "Your Allowance Application has been successfully saved.",
+                        okCallback: function () {
+                            window.location.href = '@Url.Action("AllowanceHistory", "Allowance")';
+                        }
+                    });
+                }
+                else {
+                    alert(result.Message);
+                }
+            }
+        );
+    }
+
+    function PerformSubmission() {
+        HideConfirmationDialog();
+
+        ShowLoadingScreen();
+
+        var data = $('form').serializeArray();
+
+        $.post('@Url.Action("SubmitApplication", "Allowance")',
+            data,
+            function (result) {
+                HideLoadingScreen();
+
+                if (result.IsSuccess) {
+                    ShowDialog({
+                        message: "Your Allowance Application has been successfully submitted.",
+                        okCallback: function () {
+                            window.location.href = '@Url.Action("AllowanceHistory", "Allowance")';
+                        }
+                    });
+                }
+                else {
+                    alert(result.Message);
+                }
+            }
+        );
+    }
+
+    function HideConfirmationDialog() {
+        var dialog = $('#ConfirmationDialog');
+
+        dialog.modal("hide");
+    }
+
+    function ShowLoadingScreen() {
+        $("#divLoading").show();
+    }
+
+    function HideLoadingScreen() {
+        $('#divLoading').hide();
+    }
+
+    function ShowDialog(data) {
+        if (!data) {
+            data = {};
+        }
+
+        var dialog = $('#SuccessDialog'),
+            title = data.title,
+            message = data.message || "The operation was success.",
+            okCallback = data.okCallback;
+
+        var okButton = dialog.find("#SuccessDialog_OkButton");
+
+        dialog.find("#SuccessDialog_Title").html(title);
+        dialog.find("#SuccessDialog_Message").html(message);
+
+        okButton.off('click');
+        okButton.one('click', function () {
+            if (okCallback)
+                okCallback();
+        });
+
+        dialog.modal();
+    }
+
+    function IsExecutive(EmployeeID) {
+        var exec = false;
+
+        $.ajax({
+            url: '../TimeAttendance/CheckIsExecutive',
+            type: 'POST',
+            data: {
+                EmployeeID: EmployeeID
+            },
+            async: false,
+            success: function (result) {
+                if (result != undefined && result != '') {
+                    if (result == 'True') {
+                        exec = true;
+                    }
+                }
+            }
+        });
+
+        return exec;
+    }
+
+    function ApproverAction(action) {
+        var _ApproverInfo = {};
+        var _ApproverAction = "";
+        var _ApproverComment = $("#txtAppComment").val();
+
+        if (!_ApproverComment) {
+             alert("Comment is mandatory");
+             return;
+        }
+
+        var _RedirectUrl = "";
+
+        switch (action) {
+            case "Verify":
+                _ApproverAction = "Verified";
+                break;
+            case "Decline":
+                _ApproverAction = "Declined";
+                break;
+            case "Rework":
+                _ApproverAction = "Reworked";
+                break;
+        }
+
+        var promptMessage = "Are you sure you want to " + action + " this Allowance Application?\n\r Press Confirm to proceed, or Close to stay on the current page.";
+
+        var notifyMessage = "This Allowance Application was " + _ApproverAction + " successfully.";
+
+        _ApproverInfo = {
+            ID: '@Model.AllowanceID',
+            TaskID: '@Model.TaskID',
+            CurrentUserID: '@ViewBag.CurrentUserID',
+            Status: action,
+            ApproverComment: _ApproverComment
+        };
+
+        ShowConfirmationDialog({
+            message: promptMessage,
+            positiveCallback: function () {
+                HideConfirmationDialog();
+
+                ShowLoadingScreen();
+
+                $.post('@Url.Action("PostApproverAction", "Allowance")',
+                    {
+                        info: _ApproverInfo,
+                        ApproverAction: _ApproverAction
+                    },
+                    function (result) {
+                        HideLoadingScreen();
+
+                        if (result.Success) {
+                            ShowDialog({
+                                message: notifyMessage,
+                                okCallback: function () {
+                                    if (_RedirectUrl) {
+                                        window.location.href = _RedirectUrl;
+                                    }
+                                    else {
+                                        window.location.href = '@Url.Action("AllowanceInTray", "MSS")';
+                                    }
+                                }
+                            });
+                        }
+                        else {
+                            ShowDialog({
+                                title: "Action not completed.",
+                                message: "Error Message : " + result.ErrorMsg,
+                                okCallback: function () {
+                                    HideDialog();
+                                }
+                            });
+                        }
+                    }
+                );
+            }
+        });
+     }
+</script>

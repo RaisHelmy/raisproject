@@ -1,0 +1,117 @@
+﻿@model IEnumerable<OJA.Models.WorkExperience>
+@{
+    Layout = null;
+}
+
+<table id="tblWorkExeperience" class="table table-striped table-bordered table-hover table-full-width">
+    <thead>
+        <tr>
+            <th>Position (Job)</th>
+            <th>Position (Grade)</th>
+            <th>Pay Scale Group</th>
+            <th>Division / Department</th>
+            <th>Action</th>
+            <th>Start Date</th>
+            <th>End Date</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+
+            <tr>
+                <td>
+                    <a onclick="EditWorkExperience('@item.StartDate')" style="cursor:pointer">@item.PositionName - @item.JobText</a>
+                </td>
+                <td>@item.PositionGrade</td>
+                <td>@item.PayscaleGroup</td>
+                <td>@item.AreaName</td>
+                <td>@item.Action</td>
+                <td>@item.StartDate</td>
+                <td>@item.EndDate</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+
+@using (Html.BeginForm("UpdateWorkExperience", "MyResume", FormMethod.Post, new { id = "workExperienceForm" }))
+{
+    <div class="modal fade" id="EditWorkExperienceModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                    <h4 class="modal-title">Work Experience</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="form-horizontal">
+                        <div class="form-body" id="WorkExpBody">
+                           
+                        </div>
+                    </div>
+                </div>
+               
+            </div>
+        </div>
+    </div>
+}
+
+<script>
+    $(document).ready(function () {
+        $('#tblWorkExeperience').dataTable({
+            "aLengthMenu": [[10, 25, 50, 100, 1000], [10, 25, 50, 100, 1000]],
+            "aaSorting": [[5, "desc"]],
+            "bPaginate": false
+        });
+
+        var tableWrapper = "#tblWorkExeperience_wrapper";
+
+        jQuery(tableWrapper + ' .dataTables_filter input').addClass("form-control input-medium input-inline"); // modify table search input
+        jQuery(tableWrapper + ' .dataTables_length select').addClass("form-control input-small"); // modify table per page dropdown
+        jQuery(tableWrapper + ' .dataTables_length select').select2({
+            showSearchInput: false //hide search box with special css class
+        });
+    });
+    
+    function EditWorkExperience(startDate) {
+        ShowLoading();
+        $.ajax({
+            url: '@Url.Action("EditWorkExperience")',
+            data: { StartDate: startDate },
+            success: function (response) {
+                $("#WorkExpBody").html(response);
+                $("#EditWorkExperienceModal").modal();
+            }
+        });
+    }
+
+    $(document).on('click', '#btnEditWorkExperience', function () {
+        $('#workExperienceForm .editable').each(function (i, val) {
+            $(this).removeAttr('readonly');
+        });
+        $('#btnUpdateWorkExperience').removeClass('hidden');
+        $('#btnEditWorkExperience').addClass('hidden');
+    });
+
+    $(document).on('click', '#btnUpdateWorkExperience', function() { 
+        var data = $("#workExperienceForm").serialize();
+        ShowLoading();
+        $.ajax({
+            url: '@Url.Action("UpdateWorkExperience")',
+            data: data,
+            success: function(response) {
+                if (response.Success) {
+                    alert("The Work Experiences information in your curriculum vitae has been updated.");
+                    $("#EditWorkExperienceModal").modal('hide');
+                }
+                else {
+                    alert("Error in updating work experience");
+                }
+            },
+            error: function (err) {
+                console.log(err);
+            }
+        });
+    });
+</script>

@@ -1,0 +1,475 @@
+﻿@using System.Globalization
+
+@model ESS.StandbyPlanning.Models.StandbyPlanningVM
+
+@{
+	Layout = null;
+
+	DateTime Today = DateTime.Now;
+	Decimal Year = Convert.ToDecimal(Today.ToString("yyyy")) - 1;
+
+	DateTime firstDayOfYear = new DateTime(Model.StandByYear, 1, 1);
+	DateTime lastDayOfYear = new DateTime(Model.StandByYear, 12, 31);
+
+	DateTime fromDate = (Today.Date).AddDays(-60);
+
+	DateTime toDate = lastDayOfYear;
+}
+
+<div id="StandByBulkContent">
+	<div class="modal-header">
+		<div class="row">
+			<div class="col-md-12">
+				<h1 class="page-title">
+					Standby Planning (Bulk Entry)<span style="padding-left:20px;"><small></small></span>
+				</h1>
+			</div>
+		</div>
+	</div>
+	<div class="modal-body">
+		<div class="row">
+            <div class="col-md-12">
+                <div class="portlet box blue">
+                    <div class="mini-triangle"><img src="/_layouts/15/TNBESS/Assets/img/menu-red-triangle.png" /></div>
+                    <div class="portlet-title">
+                        <div class="caption">
+                            <i class="fa fa-reorder"></i>Standby Planning Details
+                        </div>
+                    </div>
+                    <div class="portlet-body form">
+                        <div class="form-body">
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="form-horizontal">
+                                        <div class="form-group">
+                                            <label class="col-md-2 control-label">Year *</label>
+                                            <div class="col-md-10 form-control-static">
+                                                <select class="form-control" id="Year" name="StandByYear" value="@Model.StandByYear" disabled>
+                                                    <option value="@Year" @(Year.ToString() == Model.StandByYear.ToString() ? "selected='selected'" : "")>@Year @{Year = Year + 1;}</option>
+                                                    <option value="@Year" @(Year.ToString() == Model.StandByYear.ToString() ? "selected='selected'" : "")>@Year @{Year = Year + 1;}</option>
+                                                    <option value="@Year" @(Year.ToString() == Model.StandByYear.ToString() ? "selected='selected'" : "")>@Year @{Year = Year + 1;}</option>
+                                                    <option value="@Year" @(Year.ToString() == Model.StandByYear.ToString() ? "selected='selected'" : "")>@Year @{Year = Year + 1;}</option>
+                                                    <option value="@Year" @(Year.ToString() == Model.StandByYear.ToString() ? "selected='selected'" : "")>@Year</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="form-horizontal">
+                                        <div class="form-group">
+                                            <label class="col-md-2 control-label">Employee *</label>
+                                            <div class="col-md-10 form-control-static">
+                                                @Html.Partial("SPMultiPeoplePeoplePicker", new Tuple<int?, ESS.StandbyPlanning.Models.StandbyPlanningVM>(null, Model))
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="form-horizontal">
+                                        <div class="form-group">
+                                            <label class="col-md-2 control-label">Description</label>
+                                            <div class="col-md-10 form-control-static">
+                                                @Html.TextAreaFor(m => m.Description, new { @class = "form-control Description", @name = "Description", rows = "5", @maxlength = "1000" })
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="form-horizontal">
+                                        <div class="form-group">
+                                            <label class="col-md-2 control-label">Charge Code *</label>
+                                            <div class="col-md-10 form-control-static">
+                                                @Html.Partial("SPChargeCodePicker", new Tuple<int?, ESS.StandbyPlanning.Models.StandbyPlanningVM, string>(null, Model, ""))
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-horizontal">
+                                        <div class="form-group">
+                                            <label class="col-md-4 control-label">Date *</label>
+                                            <div class="col-md-8 form-control-static">
+                                                <div class="datepicker" id="MultiDatePicker" onclick="setSeletedDates();"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-horizontal">
+                                        <div class="form-group">
+                                            <label class="control-label col-md-4">Date Ranges</label>
+                                            <div class="input-group input-daterange">
+                                                <input type="text" class="form-control" name="dateFrom">
+                                                <div class="input-group-addon">to</div>
+                                                <input type="text" class="form-control" name="dateTo">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">&nbsp;</div>
+
+                            <input type="hidden" name="StandByID" value="@Model.StandByID" />
+                            <input type="hidden" name="StandByDate" />
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-horizontal">
+                                        <div class="form-group">
+                                            <label class="col-md-4 control-label">Selected Date(s):</label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="table-toolbar">
+                                        <table class="table table-striped table-bordered table-hover table-full-width" id="tblStandbySelectedDate">
+                                            <thead>
+                                                <tr>
+                                                    <th scope="col" width="5%">No.</th>
+                                                    <th scope="col">Date</th>
+                                                    <th scope="col"></th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr>
+                                                    <td colspan="3">
+                                                        <div>
+                                                            No Record Available.
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">&nbsp;</div>
+                <div>
+                    @Html.Action("AttachmentControl", "Attachment", new { EmployeeID = @Model.EmployeeID, Mode = "New", SourceType = "Time Attendance", Type = "Multi" })
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div class="modal-footer"  id="StandbyBulkActionDiv">
+		<div class="row">
+			<div class="col-md-12">
+				<div class="text-left">
+					<button type="button" class="btn default green" onclick="InsertStandBy();">Insert</button>
+					<button type="button" class="btn default" data-dismiss="modal">Close</button>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<script>
+	$(function () {
+		var div = $("#StandByBulkContent");
+
+		$(div).find('#MultiDatePicker').datepicker({
+            multidate: true
+        });
+
+		$(div).find('#MultiDatePicker').on('changeDate', setSeletedDates);
+
+		$(div).find('.input-daterange input').each(function () {
+            $(this).datepicker({
+                autoclose: true,
+                format: 'dd/mm/yyyy'
+            });
+        });
+
+		$(div).find('input[name="dateFrom"]').on('changeDate', setDateRange);
+		$(div).find('input[name="dateTo"]').on('changeDate', setDateRange);
+
+		setYearDateRange();
+	})
+
+	function setSeletedDates() {
+		var div = $("#StandByBulkContent");
+
+		$(div).find("#tblStandbySelectedDate").find("tr:gt(0)").remove();
+
+		var selectedDates = $(div).find('#MultiDatePicker').datepicker('getDates');
+
+		if (selectedDates.length != 0) {
+			if (selectedDates.length > 1) {
+				selectedDates.sort(function (a, b) {
+					return a - b;
+				});
+
+                var count = 0;
+
+				selectedDates.forEach(function (current_value) {
+					var date = moment(current_value).format('DD/MM/YYYY');
+					var markup = "<tr> <td>" + (count + 1) + ".</td><td>" + date + "</td><td><a onclick='RemoveDate(event);'>Remove</a></td></tr>";
+					$(div).find("#tblStandbySelectedDate tbody").append(markup);
+					count = count + 1;
+				});
+			} else {
+				var date = moment(selectedDates[0]).format('DD/MM/YYYY');
+				var markup = "<tr> <td>" + 1. + ".</td><td>" + date + "</td><td><a onclick='RemoveDate(event);'>Remove</a></td></tr>";
+				$(div).find("#tblStandbySelectedDate tbody").append(markup);
+			}
+        }
+
+		setHiddenInputSelectedDate();
+    }
+
+	function RemoveDate(event) {
+		var div = $("#StandByBulkContent");
+
+		var Dates = [];
+        var row = $(event.target).closest("tr");
+
+        row.remove();
+
+		$(div).find("#tblStandbySelectedDate tr").each(function (i, value) {
+			var $row = $(this).closest("tr");
+			var strDate = $row.children('td:eq(1)').text().split('/');
+            var date = new Date(parseInt(strDate[2]), parseInt(strDate[1]) - 1, parseInt(strDate[0]));
+
+			Dates.push(date);
+        });
+
+		updateDates(Dates);
+    }
+
+	function updateDates(ArrDates) {
+		var div = $("#StandByBulkContent");
+
+		$(div).find('#MultiDatePicker').datepicker('setDates', ArrDates);
+
+		setSeletedDates();
+	}
+
+	function setDateRange() {
+		var div = $("#StandByBulkContent");
+
+		var DateFrom = $(div).find('input[name="dateFrom"]').datepicker("getDate");
+		var DateTo = $(div).find('input[name="dateTo"]').datepicker("getDate");
+		var between = [];
+
+		if (DateFrom != '' && DateFrom != null && DateTo != '' && DateTo != null) {
+			var currentDate = new Date(DateFrom.getTime());
+
+			while (currentDate <= DateTo) {
+				between.push(new Date(currentDate));
+				currentDate.setDate(currentDate.getDate() + 1);
+			}
+
+			$(div).find("#tblStandbySelectedDate tr").each(function (i, value) {
+				var $row = $(this).closest("tr");
+				var strDate = $row.children('td:eq(1)').text().split('/');
+				var date = new Date(parseInt(strDate[2]), parseInt(strDate[1]) - 1, parseInt(strDate[0]));
+
+				if (date != 'Invalid Date') {
+					if (!isInSelectedDateRange(between, date)) {
+						between.push(date);
+					}
+				}
+			});
+
+			clearDates();
+
+			updateDates(between);
+		}
+
+	}
+
+	function isInSelectedDateRange(array, value) {
+		var returnValue = false;
+
+		$.each(array, function (i, val) {
+			if (value.getTime() == val.getTime()) {
+				returnValue = true;
+			}
+		});
+
+		return returnValue;
+	}
+
+	function clearDates() {
+		var div = $("#StandByBulkContent");
+
+		$(div).find('#MultiDatePicker').datepicker('clearDates');
+	}
+
+	function setYearDateRange() {
+		var div = $("#StandByBulkContent");
+
+		var year = $(div).find('select[name="StandByYear"]').val();
+		var startdate = '@fromDate.Month @fromDate.Day @fromDate.Year';
+        var enddate = '12 31 ' + year;
+
+		$(div).find('#MultiDatePicker').datepicker('setStartDate', startdate);
+		$(div).find('#MultiDatePicker').datepicker('setEndDate', enddate);
+
+		startdate = '@fromDate.Day-@fromDate.Month-@fromDate.Year';
+        enddate = '31-12-' + year;
+
+		$(div).find('input[name="dateFrom"]').datepicker('setStartDate', startdate);
+		$(div).find('input[name="dateFrom"]').datepicker('setEndDate', enddate);
+		$(div).find('input[name="dateTo"]').datepicker('setStartDate', startdate);
+		$(div).find('input[name="dateTo"]').datepicker('setEndDate', enddate);
+
+		$(div).find('input[name="dateFrom"]').val('');
+		$(div).find('input[name="dateTo"]').val('');
+
+		setDates([]);
+    }
+
+	function setDates(ArrDates) {
+		var div = $("#StandByBulkContent");
+
+		$(div).find('#MultiDatePicker').datepicker('setDates', ArrDates);
+
+		setHiddenInputSelectedDate();
+    }
+
+	function setHiddenInputSelectedDate() {
+		var div = $("#StandByBulkContent");
+
+        var selectedDates = "";
+
+		$(div).find("#tblStandbySelectedDate tr").each(function (i, value) {
+			var $row = $(this).closest("tr");
+            var strDate = $row.children('td:eq(1)').text();
+
+			if (strDate != '') {
+                arrDate = strDate.split('/');
+
+				var strMomentDate = arrDate[2] + arrDate[1] + arrDate[0];
+                var date = moment(strMomentDate, "YYYYMMDD").format("YYYY/MM/DD");
+
+				selectedDates += date + ',';
+			}
+		});
+
+		$(div).find('input[name="StandByDate"]').val(selectedDates);
+	}
+
+	function InsertStandBy()
+	{
+		DisableBulkActionButton();
+
+		var validation = formInsertValidation();
+
+        if (validation == "") {
+			var div = $("#StandByBulkContent");
+
+			var standByYear = $(div).find('select[name="StandByYear"]').val();
+			var employeeID = $(div).find('.SPPeoplePickerID').val();
+			var standbyDate = $(div).find('input[name="StandByDate"]').val();
+			var chargeType = $(div).find('.SPChargeCodePickerType').val();
+			var chargeCode = $(div).find('.SPChargeCodePickerCC').val();
+			var chargeCodeDesc = $(div).find('.SPChargeCodePickerDesc').val();
+			var description = $(div).find('textarea[name="Description"]').val();
+
+			var fromDate = '@fromDate.ToString("yyyy/MM/dd")';
+			var toDate = '@toDate.ToString("yyyy/MM/dd")'
+
+			var data = {
+				StandByYear: standByYear,
+				EmployeeID: employeeID,
+				StandbyDate: standbyDate,
+				ChargeType: chargeType,
+				ChargeCode: chargeCode,
+				ChargeCodeDesc: chargeCodeDesc,
+				Description: description,
+				FromDate: fromDate,
+				ToDate: toDate
+			};
+
+			var Action = 'Saved as Draft';
+
+			$.ajax({
+				url: '../StandbyPlanning/SubmitStandbyBulkAction',
+				type: 'POST',
+				data: data,
+				success: function (result) {
+					if (result.result == true) {
+						$('#StandByBulkModal').modal('hide');
+						$("#StandByBulkResult").empty();
+
+						$('#divLoading').hide();
+
+						$('#SuccessSubmit').modal();
+						$('#SuccessMessage').html("Standby Planning has been successfully " + Action);
+						$('#btnOK').attr('href', '../StandbyPlanning/StandbyPlanningGroup');
+					}
+					else if (!result.result) {
+						if (result.ErrorMessage != '') {
+							alert(result.ErrorMessage);
+						}
+						else {
+							alert('Unable to perform the requested action.')
+						}
+
+						EnableActionButton();
+					}
+				}
+			});
+        }
+        else {
+			alert(validation);
+
+			EnableBulkActionButton()
+        }
+	}
+
+	function formInsertValidation() {
+		var div = $("#StandByBulkContent");
+
+		var year = $(div).find('select[name="StandByYear"]').val();
+		var employee = $(div).find('input[name="EmployeeID"]').val();
+		var chargeCode = $(div).find('input[name="ChargeCode"]').val();
+		var standbyDate = $(div).find('input[name="StandByDate"]').val()
+
+		var errorMessage = "";
+
+		if (year == '') {
+			errorMessage = "Please select Year to proceed.";
+		}
+		else if (employee == '') {
+			errorMessage = "Please select Employee to proceed.";
+		}
+		else if (chargeCode == '') {
+			errorMessage = "Please select Charge Code to proceed.";
+		}
+		else if (standbyDate == '') {
+			errorMessage = "Please select Date to proceed.";
+		}
+
+		return errorMessage;
+	}
+
+	function DisableBulkActionButton() {
+		$('#StandbyBulkActionDiv').children().children().children().children('.btn').attr('disabled', true);
+		$('#divLoading').show();
+	}
+
+	function EnableBulkActionButton() {
+		$('#divLoading').hide();
+		$('#StandbyBulkActionDiv').children().children().children().children('.btn').attr('disabled', false);
+	}
+</script>

@@ -1,0 +1,64 @@
+﻿@{
+    Layout = null;
+    string SearchType = ViewBag.SearchType + "";
+}
+
+<div class="row" onkeypress="return event.keyCode!=13;">
+    <div class="col-md-12">
+        <div class="form-horizontal">
+            <div class="form-body">
+                <div class="form-group">
+                    <label class="control-label col-md-2 ">
+                        Employee Number
+                    </label>
+                    <div class="col-md-4 form-control-static">
+                        <input type="text" name="txtEmpCodeSearch" id="txtEmpCodeSearch" />
+                    </div>
+                    <label class="control-label col-md-2 ">
+                        Employee Name
+                    </label>
+                    <div class="col-md-4  form-control-static">
+                        <input type="text" name="txtEmpNameSearch" id="txtEmpNameSearch" />
+                    </div>
+                </div>
+                <div class="form-group ">
+                    <div class="text-right">
+                        <input id="btn-Search" type="button" value="Search" class="btn green btn-Search" onclick="SearchPP();">
+                    </div>
+                </div>
+            </div>
+            <br />
+            <div id="PeoplePickerResult">
+
+            </div>
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+    $(document).ready(function () {
+        // SearchPP();
+    });
+
+    function SearchPP() {
+        var _EmpCode = $('#txtEmpCodeSearch').val();
+        var _EmpName = $('#txtEmpNameSearch').val();
+        var _EmpName = $('#txtEmpNameSearch').val();
+        var _SearchType = '@SearchType';
+        var _DivisionCode = $('#hfDivisionCode').val();
+
+        $("#PeoplePickerResult").html("LOADING...");
+
+        $.ajax({
+            type: "GET",
+            url: '@Url.Content("~/MultiPeoplePicker/_MultiPeopleBySearchTypeResult")',
+            cache: false,
+            dataType: "html",
+            data: { EmpCode: _EmpCode, EmpName: _EmpName, SearchType: _SearchType, DivisionCode: _DivisionCode },
+            success: function (content) {
+                $("#PeoplePickerResult").html(content);
+            },
+            error: function (e) {
+            }
+        });
+    }
+</script>

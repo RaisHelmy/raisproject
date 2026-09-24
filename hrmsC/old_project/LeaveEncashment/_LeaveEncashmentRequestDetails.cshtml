@@ -1,0 +1,175 @@
+﻿@model LeaveApplication.Models.LeaveEncashmentVM
+
+
+<div class="portlet box blue">
+    <div class="mini-triangle"><img src="../Assets/img/menu-red-triangle.png" /></div>
+    <div class="portlet-title">
+        <div class="caption">
+            <i class="fa fa-reorder"></i>Request Details
+        </div>
+        <div class="tools">
+            <a id="subtypeToggle" title="" data-original-title="" href="javascript:;" class="collapse"> </a>
+        </div>
+    </div>
+    <div class="portlet-body form">
+        <div class="form-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-horizontal">
+                        <div class="form-group">
+                            <label class="control-label col-md-4">Reference No</label>
+                            <div class="col-md-8 form-control-static">
+                                <input type="text" class="form-control" name="ReferenceNo" value="@Model.ReferenceNo" readonly />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-horizontal">
+                        <div class="form-group">
+                            <label class="control-label col-md-4">Status</label>
+                            <div class="col-md-8 form-control-static">
+                                <input type="hidden" name="Status" value="@Model.Status" />
+                                <input type="text" class="form-control" name="StatusName" value="@Model.StatusName" readonly />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row EmployeePicker">
+                <div class="col-md-6">
+                    <div class="form-horizontal">
+                        <div class="form-group">
+                            <label class="control-label col-md-4">Employee</label>
+                            <div class="col-md-8 form-control-static">
+
+                                @if (Model.Status == "DR")
+                                {
+                                    @Html.Action("_PeoplePickerExt", "PeoplePicker", new { CurrEmpID = Model.CreatedBy, SearchType = "ThreeLevelSubordinates" })
+                                }
+                                else
+                                {
+                                    <input type="hidden" name="EmployeeID" value="@Model.EmployeeID" />
+                                    <input type="hidden" name="EmployeeCode" value="@Model.EmployeeCode" />
+                                    <input type="hidden" name="EmployeeName" value="@Model.EmployeeName" />
+                                    <input type="text" class="form-control" value="@Model.EmployeeCode - @Model.EmployeeName" readonly="readonly" />
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="form-horizontal">
+                        <div class="form-group">
+                            <label class="control-label col-md-4">Current Approver</label>
+                            <div class="col-md-8 form-control-static">
+                                <input type="text" class="form-control" name="CurrentApprover" value="@Model.GetCurrentApprover()" readonly="readonly" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@{
+    var props = Model.Submitter.GetType().GetProperties();
+    foreach (var prop in props)
+    {
+        <input type="hidden" name="Submitter.@prop.Name" value="@prop.GetValue(Model.Submitter, null)" />
+    }
+}
+
+<script>
+    $(function () {
+         $("#txtEmpName").val('@(Model.EmployeeCode + " - " + Model.EmployeeName)');
+         $("#hfEmpID").val('@Model.EmployeeID');
+    });
+
+    function _PeoplePickerExtCallback() {
+        var employeeID = $('#hfEmpID').val();
+        var data = $('form').serializeArray();
+        var employeeDetailUrl = '@Url.Action("_EmployeeDetails", "LeaveEncashment")?EmployeeID=' + employeeID;
+        var encashmentDetailUrl = '@Url.Action("_LeaveEncashmentDetails", "LeaveEncashment")?EmployeeID=' + employeeID;
+
+        //checking if employeeID is empty
+        if (employeeID === "") {
+            alert("You need to search and select an Employee to proceed.");
+            return false;
+        }
+
+        $('#divEmployeeDetails').html('Loading...');
+        $('#divEncashmentDetails').html('Loading...');
+
+        $.get(employeeDetailUrl, function (result) {
+            $('#divEmployeeDetails').html(result);
+            CheckCanSubmit();
+        });
+
+        $.post(encashmentDetailUrl, data, function (result) {
+            $('#divEncashmentDetails').html(result);
+            CheckCanSubmit();
+        });
+    }
+
+    function CheckCanSubmit() {
+        var messages = [];
+        messages.push(_CheckRetirementDate());
+        messages.push(_CheckContractStaff());
+        messages.push(_CheckCutiPengumpulan());
+
+        messages = messages.filter(function (m) { return m != null; });
+
+        if (messages.length > 0) {
+            DisableSubmit(messages.join('<br /><br />'), true);
+        }
+        else {
+            EnableSubmit();
+        }
+    }
+
+    function _CheckRetirementDate() {
+        var period = parseInt('-' + $('#RetirementPeriod').val());
+        var today = moment();
+        var retirementDate = $('#EmployeeRetirementDate').text();
+        var mmtRetirement = moment(retirementDate, 'DD/MM/YYYY');
+
+        if (mmtRetirement == null) {
+            return '- Please select a staff.';
+        }
+
+        var allowedPeriod = mmtRetirement.add('days', period);
+
+        if (today.isSame(allowedPeriod) || today.isAfter(allowedPeriod)) {
+            return null;
+        }
+        else {
+            return '- Staff selected should retire in less than ' + $('#RetirementPeriod').val() + ' days time in order to proceed with the submission.';
+        }
+    }
+
+    function _CheckContractStaff() {
+        var isContractStaff = $('#IsContractStaff').val();
+
+        if (isContractStaff == 1) {
+            return '- Contract staff not eligible for leave encashment.';
+        }
+        else {
+            return null;
+        }
+    }
+
+    function _CheckCutiPengumpulan() {
+        var cutiPengumpulanBalance = $('Cuti Pengumpulan').val();
+
+        if (cutiPengumpulanBalance < 1) {
+            return '- Cuti Pengumpulan must be more than 1.';
+        }
+        else {
+            return null;
+        }
+    }
+</script>

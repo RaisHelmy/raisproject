@@ -1,0 +1,659 @@
+﻿@using ESS.Core
+
+@model List<ESS.Core.DropDownObject>
+
+@{
+	Layout = "~/Views/Shared/_Layout.cshtml";
+
+	ViewBag.Title = "Absorption Status's Form";
+
+	DateTime d1 = DateTime.Now.AddYears(-20);
+	DateTime d2 = DateTime.Now.AddYears(20);
+	string dtStrStart = d1.ToString("dd MMM yyyy");
+	string dtStrEnd = d2.ToString("dd MMM yyyy");
+
+	if (!(ESS.ContractAbsorption.Service.isApprover(Common.GetEmployeeID(), "SSC") 
+		|| ESS.ContractAbsorption.Service.isApprover(Common.GetEmployeeID(), "HRBP") || ESS.ContractAbsorption.Service.isApprover(Common.GetEmployeeID(), "HeadPS")
+		|| ESS.ContractAbsorption.Service.isApprover(Common.GetEmployeeID(), "PSAdmin1") || ESS.ContractAbsorption.Service.isApprover(Common.GetEmployeeID(), "PSAdmin2")))
+	{
+		Response.Redirect("~/AccessControl/ErrorPermission");
+	}
+}
+<div class="row">
+	<div class="col-md-12">
+		<br />
+		<h1 class="page-title">
+			Absorption Result Tracking<span style="padding-left:20px;"><small></small></span>
+		</h1>
+	</div>
+</div>
+<br />
+<input type="hidden" id="hfEmployeeID" value="@ViewBag.EmployeeID" />
+<div class="form-body">
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-5 control-label">Submission Date (From)</label>
+                    <div class="col-md-7 form-control-static">
+                        <div class="input-group date date-picker" id="divSubmissionDateFrom" data-date-format="dd MM yyyy">
+                            <input type="text" class="form-control" id="SubDateFrom" name="SubDateFrom" />
+                            <span class="input-group-btn">
+                                <button type="button" class="btn default"><i class="fa fa-calendar"></i></button>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-5 control-label">Submission Date (To)</label>
+                    <div class="col-md-7 form-control-static">
+                        <div class="input-group date date-picker" id="divSubmissionDateTo" data-date-format="dd MM yyyy">
+                            <input type="text" class="form-control" id="SubDateTo" name="SubDateTo" />
+                            <span class="input-group-btn">
+                                <button type="button" class="btn default"><i class="fa fa-calendar"></i></button>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-5 control-label">Company</label>
+                    <div class="col-md-7 form-control-static">
+                        @Html.DropDownList("Company", new SelectList(Model, "Value", "Text"), "- All -", new { @class = "bs-select form-control", @onchange = "changeCompany(this)" })
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-5 control-label">Division / Department</label>
+                    <div class="col-md-7 form-control-static">
+                        @Html.Action("_DDLDepartment", "ContractAbsorption", new { })
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-5 control-label">Unit / Section</label>
+                    <div class="col-md-7 form-control-static">
+                        @Html.Action("_DDLUnitSection", "ContractAbsorption", new { })
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-5 control-label">PayScaleGroup</label>
+                    <div class="col-md-7 form-control-static">
+                        <input class="form-control" type="text" id="PayScaleGroup" />
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-5 control-label">Category</label>
+                    <div class="col-md-7 form-control-static">
+                        <select name="ExecutiveCategory" class="bs-select form-control" id="ExecutiveCategory">
+                            <option value="">- All -</option>
+                            <option value="Non-Executive">Non-Executive</option>
+                            <option value="Executive">Executive</option>
+                            @*<option value="Specialist">Specialist</option>*@
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-5 control-label">Status</label>
+                    <div class="col-md-7 form-control-static">
+                        <select class="bs-select form-control" id="Status">
+                            <option value="">- All -</option>
+                            @*<option value="PE">Pending</option>
+                                <option value="IM">IM Submitted</option>
+                                <option value="HOD">HOD Submitted</option>
+                                <option value="HOU">HOU Submitted</option>
+                                <option value="HODIV">HODiv Submitted</option>
+                                <option value="RW">Rework</option>
+                                <option value="HRBPR">HRBP Recommended</option>
+                                <option value="NR">Not Recommended</option>
+                                <option value="PF">Pending Staff</option>
+                                <option value="D">Disciplinary Case Found</option>
+                                <option value="SS">Staff Submitted</option>
+                                <option value="SR">Staff Rejected</option>
+                                <option value="PS2">PS Admin 2 Checked</option>*@
+                            <option value="HPF">Head PS Verified Suitable</option>
+                            <option value="HPNF">Head PS Verified Not Suitable</option>
+                            @*<option value="RE">Resigned</option>*@
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-5 control-label">Table</label>
+                    <div class="col-md-7 form-control-static">
+                        <select name="Table" class="bs-select form-control" id="Table">
+                            <option value="">- All -</option>
+                            <option value="1">Yes</option>
+                            <option value="0">No</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-5 control-label">Absorption Status</label>
+                    <div class="col-md-7 form-control-static">
+                        <select name="AbsorptionStatus" class="bs-select form-control" id="AbsorptionStatus">
+                            <option value="">- All -</option>
+                            <option value="A">Absorb</option>
+                            <option value="NA">Not Absorb</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-5 control-label">Employee</label>
+                    <div class="col-md-7 form-control-static">
+                        @Html.Partial("_PeoplePicker")
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-5 control-label">Reference No</label>
+                    <div class="col-md-7 form-control-static">
+                        <input class="form-control" type="text" id="ReferenceNo" />
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">&nbsp;</div>
+    <div class="row">
+        <div class="col-md-12">
+            <div class="text-right">
+                <input type="button" id="btn-Search" class="btn green btn-Search" value="Search" onclick="SearchListing();">
+                <input type="button" id="btn-Clear" class="btn default " value="Clear" onclick="ClearFilter();">
+            </div>
+        </div>
+    </div>
+    <div class="row">&nbsp;</div>
+    <div class="row">
+        <div class="col-md-12">
+            <div id="SearchResult">
+
+            </div>
+        </div>
+    </div>
+
+    @if (ESS.ContractAbsorption.Service.isApprover(Common.GetEmployeeID(), "HeadPS")
+        || ESS.ContractAbsorption.Service.isApprover(Common.GetEmployeeID(), "PSAdmin2")
+        || ESS.ContractAbsorption.Service.isApprover(Common.GetEmployeeID(), "PSAdmin1"))
+    {
+        <div class="row" style="display:none" id="divMultiButtons">
+            <div class="col-md-12">
+                <div class="text-left">
+                    <input type="button" id="btn-MultiTable" class="btn green DivBAUserOnly" value="Table" onclick="javascript: MultiTableAction(this)">
+                    <input type="button" id="btn-MultiAbsorb" class="btn green DivBAUserOnly" value="Absorb" onclick="javascript: MultiAbsorbAction(this, 'A')">
+                    <input type="button" id="btn-MultiNotAbsorb" class="btn green DivBAUserOnly" value="Not Absorb" onclick="javascript: MultiAbsorbAction(this, 'NA')">
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+<div class="modal fade" id="SuccessMultiTable" tabindex="-1" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header Success-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true" style="display: none;"></button>
+                <h4 class="Success-title">Action Successfully Completed</h4>
+            </div>
+            <div class="modal-body Success-body">
+                <div class="well">
+                    The selected record is updated.
+                </div>
+            </div>
+            <div class="modal-footer Success-footer">
+                <button type="submit" class="btn default blue" id="btnOKMultiTable">
+                    <i class="fa fa-check"></i>
+                    OK
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Loading Gif -->
+<div id="divLoading" style="margin: 0px; padding: 0px; position: fixed; right: 0px;
+			top: 0px; width: 100%; height: 100%; background-color:gainsboro; z-index: 30001;
+			opacity: .8; filter: alpha(opacity=70);display:none">
+	<p style="position: absolute; top: 30%; left: 30%; color: black;">
+		Loading, please wait...<img src="../Assets/img/ajax-loading.gif" />
+
+	</p>
+</div>
+
+<script type="text/javascript">
+	jQuery(document).ready(function () {
+		$('#divSubmissionDateFrom').datepicker('setStartDate', '@dtStrStart');
+        $('#divSubmissionDateFrom').datepicker('setEndDate', '@dtStrEnd');
+
+        $('#divSubmissionDateTo').datepicker('setStartDate', '@dtStrStart');
+        $('#divSubmissionDateTo').datepicker('setEndDate', '@dtStrEnd');
+
+        $("#divSubmissionDateFrom").datepicker({
+            autoclose: true,
+        }).on('changeDate', function (selected) {
+            var minDate = new Date(selected.date.valueOf());
+            minDate.setDate(minDate.getDate() + 1);
+            $('#divSubmissionDateTo').datepicker('setStartDate', minDate);
+        });
+
+        $("#divSubmissionDateTo").datepicker({
+            autoclose: true,
+        })
+        .on('changeDate', function (selected) {
+            var minDate = new Date(selected.date.valueOf());
+            minDate.setDate(minDate.getDate() - 1);
+            $('#divSubmissionDateFrom').datepicker('setEndDate', minDate);
+        });
+
+        $("#SubDateFrom").on("blur", function (e) {
+            if ($('#SubDateFrom').val() == "") {
+                $('#divSubmissionDateTo').datepicker('setStartDate', '@dtStrStart');
+            }
+        });
+
+        $("#SubDateTo").on("blur", function (e) {
+            if ($('#SubDateTo').val() == "") {
+                $('#divSubmissionDateFrom').datepicker('setEndDate', '@dtStrEnd');
+            }
+        });
+	});
+
+	function SearchListing() {
+		var _DateFrom = $('#SubDateFrom').val();
+		var _DateTo = $('#SubDateTo').val();
+		var _CompanyCode = $('#Company option:selected').val();
+		var _DepartmentCode = $('#Department option:selected').val();
+		var _UnitSectionCode = $('#UnitSection option:selected').val();
+		var _PayScaleGroup = $('#PayScaleGroup').val();
+		var _Category = $('#ExecutiveCategory option:selected').val();
+        var _Status = $('#Status option:selected').val();
+        var _Table = $('#Table option:selected').val();
+        var _AbsorptionStatus = $('#AbsorptionStatus option:selected').val();
+		var _EmpID = $('#hfEmpID').val();
+		var _ReferenceNo = $('#ReferenceNo').val();
+
+		$("#SearchResult").html("LOADING...");
+
+		$.ajax({
+			type: "GET",
+			url: '@Url.Content("~/ContractAbsorption/_AbsorptionResult")',
+			cache: false,
+			dataType: "html",
+			data: {
+				EmployeeID: "@ViewBag.EmployeeID",
+				DateFrom: _DateFrom, DateTo: _DateTo,
+				Division: _CompanyCode, Department: _DepartmentCode,
+				UnitSection: _UnitSectionCode, PayScaleGroup: _PayScaleGroup,
+                Category: _Category, Status: _Status, Table: _Table, AbsorptionStatus: _AbsorptionStatus,
+				SearchEmpID: _EmpID, ReferenceNo: _ReferenceNo
+			},
+			success: function (content) {
+                $("#SearchResult").html(content);
+
+                $("#divMultiButtons").show();
+			},
+			error: function (e) {
+				console.log(e);
+			}
+		});
+	}
+
+	function changeCompany(e) {
+		$.ajax({
+			type: "GET",
+			url: '@Url.Content("~/ContractAbsorption/_DDLDepartment")',
+			cache: false,
+			dataType: "html",
+			data: { CompanyCode: e.value, RoleCode: "@ViewBag.RoleCode"},
+			success: function (content) {
+				$("#DepartmentResult").html(content);
+			},
+			error: function (e) {
+				console.log(e);
+			}
+		});
+	}
+
+	function changeDepartment(e) {
+		$.ajax({
+			type: "GET",
+			url: '@Url.Content("~/ContractAbsorption/_DDLUnitSection")',
+			cache: false,
+			dataType: "html",
+			data: { DepartmentCode: e.value , RoleCode: "@ViewBag.RoleCode"},
+			success: function (content) {
+				$("#UnitSectionResult").html(content);
+			},
+			error: function (e) {
+				console.log(e);
+			}
+		});
+	}
+
+	var host = "..";
+
+	function ExportExcel() {
+		var dt = new Date();
+		var day = dt.getDate();
+		var month = dt.getMonth() + 1;
+		var year = dt.getFullYear();
+		var hour = dt.getHours();
+		var mins = dt.getMinutes();
+		var postfix = day + "." + month + "." + year + "_" + hour + "." + mins;
+
+		var _DateFrom = $('#SubDateFrom').val();
+		var _DateTo = $('#SubDateTo').val();
+		var _CompanyCode = $('#Company option:selected').val();
+		var _DepartmentCode = $('#Department option:selected').val();
+		var _UnitSectionCode = $('#UnitSection option:selected').val();
+		var _PayScaleGroup = $('#PayScaleGroup').val();
+		var _Category = $('#ExecutiveCategory option:selected').val();
+		var _Status = $('#Status').val();
+        var _Table = $('#Table option:selected').val();
+        var _AbsorptionStatus = $('#AbsorptionStatus option:selected').val();
+		var _EmpID = $('#hfEmpID').val();
+		var _ReferenceNo = $('#ReferenceNo').val();
+
+		var JsonObjectFilter = {
+			EmployeeID: "@ViewBag.EmployeeID",
+			DateFrom: _DateFrom,
+			DateTo: _DateTo,
+			Division: _CompanyCode,
+			Department: _DepartmentCode,
+			UnitSection: _UnitSectionCode,
+			PayScaleGroup: _PayScaleGroup,
+			Category: _Category,
+			Status: _Status,
+			Table: _Table,
+			AbsorptionStatus: _AbsorptionStatus,
+			SearchEmpID: _EmpID,
+			ReferenceNo: _ReferenceNo
+		}
+
+		var Filter = JSON.stringify(JsonObjectFilter);
+
+		window.open(host +"/ContractAbsorption/_ExportToExcelGeneral?FileName=AbsorptionResult_" + postfix +
+			"&ReportCategory=" + "AbsorptionResult" +
+			"&Filter=" + Filter);
+	}
+
+	function ClearFilter() {
+		$('#SubDateFrom').val('');
+		$('#SubDateTo').val('');
+		$('#Company').val('');
+		$('#Department').val('');
+		$('#UnitSection').val('');
+		$('#PayScaleGroup').val('');
+		$('#ExecutiveCategory').val('');
+		$('#Status').val('');
+        $('#Table').val('');
+        $('#AbsorptionStatus').val('');
+		$('#hfEmpID').val('');
+		$('#txtEmpName').val('');
+		$('#ReferenceNo').val('');
+	}
+
+	function RedirectTo(_Action) {
+		switch (_Action) {
+			default:
+				window.location.href = '@Url.Action("AbsorptionResult", "ContractAbsorption")';
+		}
+	}
+
+	function AbsorbAction(btn, absorb, id) {
+		btn.disabled = true;
+		$("#divLoading").show();
+		var myVar = setTimeout(function () { StartAbsorb(absorb, id) }, 3000);
+	}
+
+	function StartAbsorb(absorb, id) {
+		var form = {
+			RequestID: id,
+			Absorb: absorb
+		};
+		ajaxAbsorb(form);
+	}
+
+	function ajaxAbsorb(form) {
+		$.ajax({
+			type: "POST",
+			url: '@Url.Content("~/ContractAbsorption/SubmitAbsorpForm")',
+			cache: false,
+			async: false,
+			dataType: "json",
+			data: form,
+			success: function (result) {
+				if (result.Success) {
+					$("#divLoading").hide();
+					RedirectTo('Absorb');
+				}
+				else {
+					$("#divLoading").hide();
+
+					alert(result.ErrorMsg);
+				}
+			},
+			error: function (e) {
+			}
+		});
+	}
+
+	function TableAction(btn, id) {
+		btn.disabled = true;
+		$("#divLoading").show();
+		var myVar = setTimeout(function () { StartTable(id) }, 3000);
+	}
+
+	function StartTable(id) {
+		var form = {
+			RequestID: id
+		};
+		ajaxTable(form);
+	}
+
+	function ajaxTable(form) {
+		$.ajax({
+			type: "POST",
+			url: '@Url.Content("~/ContractAbsorption/SubmitTableForm")',
+			cache: false,
+			async: false,
+			dataType: "json",
+			data: form,
+			success: function (result) {
+				if (result.Success) {
+					$("#divLoading").hide();
+					RedirectTo('Table');
+				}
+				else {
+					$("#divLoading").hide();
+
+					alert(result.ErrorMsg);
+				}
+			},
+			error: function (e) {
+			}
+		});
+    }
+
+    function MultiTableAction(btn) {
+		var _ValidationMsg = 'Minimum one selection is required.\n';
+
+		$("#tblResult td input[name='chkSelect']:checked").each(function (i, value) {
+
+			var row = $(this).closest("tr");
+			if (row.find(".checkItem").val() != '' && row.find(".checkItem").val() != undefined) {
+				_ValidationMsg = '';
+			}
+		});
+
+		if (_ValidationMsg != null && _ValidationMsg != '') {
+			alert(_ValidationMsg);
+		}
+		else {
+			btn.disabled = true;
+			$("#divLoading").show();
+            var myVar = setTimeout(function () { StartMultiTable() }, 3000);
+		}
+	}
+
+    function StartMultiTable() {
+        var TableResultRequest = '';
+		var resultRequest = '';
+
+		var _Employeee = document.getElementById('hfEmployeeID');
+
+		if ($('#divLoading').is(':visible')) {
+			$($('input[name="chkSelect"]:checked')).each(function () {
+				var nameRequest = $(this).attr('id');
+
+				resultRequest = $("#" + nameRequest).val();
+				TableResultRequest += resultRequest + " ,";
+			});
+			var form = {
+                TableRID: TableResultRequest
+			};
+            ajaxMultiTable(form);
+		}
+	}
+
+    function ajaxMultiTable(form) {
+		$.ajax({
+			type: "POST",
+			url: '@Url.Content("~/ContractAbsorption/SubmitMultiTableForm")',
+			cache: false,
+			async: false,
+			dataType: "json",
+			data: form,
+			success: function (result) {
+				if (result.Success) {
+					$("#divLoading").hide();
+                    $("#SuccessMultiTable").modal();
+                    $("#btnOKMultiTable").click(function () { RedirectTo('MultiTable'); });
+				}
+				else {
+					$("#divLoading").hide();
+
+					alert(result.ErrorMsg);
+				}
+			},
+			error: function (e) {
+			}
+		});
+    }
+
+    function MultiAbsorbAction(btn, absorb) {
+		var _ValidationMsg = 'Minimum one selection is required.\n';
+
+		$("#tblResult td input[name='chkSelect']:checked").each(function (i, value) {
+
+			var row = $(this).closest("tr");
+			if (row.find(".checkItem").val() != '' && row.find(".checkItem").val() != undefined) {
+				_ValidationMsg = '';
+			}
+		});
+
+		if (_ValidationMsg != null && _ValidationMsg != '') {
+			alert(_ValidationMsg);
+		}
+		else {
+			btn.disabled = true;
+			$("#divLoading").show();
+            var myVar = setTimeout(function () { StartMultiAbsorb(absorb) }, 3000);
+		}
+	}
+
+    function StartMultiAbsorb(absorb) {
+        var AbsorbResultRequest = '';
+		var resultRequest = '';
+
+		var _Employeee = document.getElementById('hfEmployeeID');
+
+		if ($('#divLoading').is(':visible')) {
+			$($('input[name="chkSelect"]:checked')).each(function () {
+				var nameRequest = $(this).attr('id');
+
+				resultRequest = $("#" + nameRequest).val();
+				AbsorbResultRequest += resultRequest + " ,";
+			});
+			var form = {
+                AbsorbRID: AbsorbResultRequest,
+                Absorb: absorb
+			};
+            ajaxMultiAbsorb(form);
+		}
+	}
+
+    function ajaxMultiAbsorb(form) {
+		$.ajax({
+			type: "POST",
+			url: '@Url.Content("~/ContractAbsorption/SubmitMultiAbsorbForm")',
+			cache: false,
+			async: false,
+			dataType: "json",
+			data: form,
+			success: function (result) {
+				if (result.Success) {
+					$("#divLoading").hide();
+                    $("#SuccessMultiTable").modal();
+                    $("#btnOKMultiTable").click(function () { RedirectTo('MultiAbsorb'); });
+				}
+				else {
+					$("#divLoading").hide();
+
+					alert(result.ErrorMsg);
+				}
+			},
+			error: function (e) {
+			}
+		});
+	}
+</script>

@@ -1,0 +1,69 @@
+﻿@model List<ESS.Core.DropDownObject>
+@{
+	Layout = "~/Views/Shared/_Layout.cshtml";
+	ViewBag.Title = "MSS - My Subordinate In-Tray";
+}
+
+<div class="row">
+	<div class="col-md-12">
+		<br />
+		<h1 class="page-title">
+			MSS - My Subordinate In-Tray<span style="padding-left:20px;"><small></small></span>
+		</h1>
+	</div>
+</div>
+<br />
+<div class="form-body">
+	<div class="row">
+		<div class="col-md-12">
+			<div class="text-right">
+				<input type="button" id="btn-Search" class="btn green btn-Search" value="Search" onclick="SearchListing();">
+			</div>
+		</div>
+	</div>
+	<div class="row">&nbsp;</div>
+	<div class="row">
+		<div class="col-md-12">
+			<div id="SearchResult">
+
+			</div>
+		</div>
+	</div>
+</div>
+
+<!-- Loading Gif -->
+<div id="divLoading" style="margin: 0px; padding: 0px; position: fixed; right: 0px;
+    top: 0px; width: 100%; height: 100%; background-color:gainsboro; z-index: 30001;
+    opacity: .8; filter: alpha(opacity=70); display:none;">
+	<p style="position: absolute; top: 30%; left: 30%; color: black;">
+		Loading, please wait...<img src="../Assets/img/ajax-loading.gif" />
+
+	</p>
+</div>
+
+<script type="text/javascript">
+    function SearchListing() {
+        $("#divLoading").show();
+
+        $.ajax({
+            type: "GET",
+            url: '@Url.Content("~/MSS/_MySubordinateInTrayResult")',
+            cache: false,
+            dataType: "html",
+            success: function (content) {
+                $("#divLoading").hide();
+                $("#SearchResult").html(content);
+            },
+            error: function (e) {
+                console.log(e);
+                $("#divLoading").hide();
+            }
+        });
+    }
+</script>
+
+<script type="text/javascript">
+    jQuery(document).ready(function () {
+        SearchListing();
+    });
+</script>

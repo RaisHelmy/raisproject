@@ -1,0 +1,98 @@
+﻿@model List<ESS.Employee.Models.FamilyInfo>
+@using ESS.Employee
+@{
+    Layout = null;
+    string EmployeeID = string.Empty;
+    string EmployeeCode = string.Empty;
+    if(Model != null && Model.Count > 0)
+    {
+        EmployeeID = Model.First().EmployeeID.ToString();
+        EmployeeCode = Model.First().EmployeeCode;
+    }
+}
+
+<div class="portlet box blue">
+    <div class="mini-triangle"><img src="../Assets/img/menu-red-triangle.png" /></div>
+    <div class="portlet-title">
+        <div class="caption">
+            <i class="fa fa-reorder"></i>Family Info
+        </div>
+        <div class="tools">
+            <a style="margin-left:10px" href="javascript:;" class="collapse arrow-down">
+            </a>
+        </div>
+    </div> 
+    <div class="portlet-body form">
+        <div class="form-body">
+            <div class="form-horizontal">
+                <div class="table-toolbar">
+
+                    <table id="tblResultFamilyInfo" class="table table-striped table-bordered table-hover table-full-width">
+                        <thead>
+                            <tr>
+                                <th>Relationship Type</th>
+                                <th>Name</th>
+                                <th>Date of Birth</th>
+                                <th>New IC / Police / Military No.</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in @Model)
+                            {
+                                <tr>
+                                    <td>
+                                        <a href="#ProfileFamily" class="ViewFamily"
+                                           data-Family="@item.FamilyNo"
+                                           data-RelationshipCode="@item.RelationshipTypeCode"
+                                           data-RelationshipText="@item.RelationshipType">
+                                            @((string.IsNullOrEmpty(item.RelationshipType)) ? "-" : item.RelationshipType)
+                                        </a>
+                                    </td>
+                                    <td>@((string.IsNullOrEmpty(item.Name)) ? "-" : item.Name)</td>
+                                    @if (!string.IsNullOrEmpty(item.DateOfBirth + ""))
+                                    {
+                                        <td>@Service.FormatDateInNumber(item.DateOfBirth, "dd/MM/yyyy")</td>
+                                    }
+                                    else
+                                    {
+                                        <td>-</td>
+                                    }
+                                    <td>@((string.IsNullOrEmpty(item.NewICNo)) ? "-" : item.NewICNo)</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+<script type="text/javascript">
+    transformTable("#tblResultFamilyInfo");
+
+    $('.ViewFamily').click(function (e) {
+        e.preventDefault();
+        var EmployeeCode = '@EmployeeCode';
+        var EmployeeID = '@EmployeeID';
+
+        var FamilyNo = $(this).attr('data-Family');
+        var RelationshipTypeCode = $(this).attr('data-RelationshipCode');
+        var RelationshipTypeText = $(this).attr('data-RelationshipText');
+
+        var url = "@Url.Content("~/Employee/_FamilyForm")";
+        var data = {
+            EmployeeCode: EmployeeCode,
+            EmployeeID: EmployeeID,
+            RelationshipTypeText: RelationshipTypeText,
+            RelationshipTypeValue: RelationshipTypeCode,
+            FamilyNo: FamilyNo,
+            Mode: 'VIEW'
+        };
+        //OpenViewModal('View Family Info', url, data)
+        OpenEditPanel('View Family Info', 'VIEW', url, data);
+    }); 
+</script>

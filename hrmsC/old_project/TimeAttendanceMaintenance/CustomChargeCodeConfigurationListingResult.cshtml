@@ -1,0 +1,64 @@
+﻿@*@using ESS.Claim.Models
+@model IEnumerable<CustomChargeCodeMaintenanceModel>*@
+@using TimeAttendance.Models;
+@model IEnumerable<TimeAttendance.Models.TSChargeCodeMaintenanceModel>
+@{
+    Layout = null;
+}
+
+<div class="portlet box blue">
+    <div class="mini-triangle"><img src="../Assets/img/menu-red-triangle.png" /></div>
+    <div class="portlet-title">
+        <div class="caption">
+            <i class="fa fa-reorder"></i>Timesheet Charge Code Maintenance
+        </div>
+    </div>
+    <div class="portlet-body form">
+        <div class="form-body">
+            <div class="form-horizontal">
+                <div class="table-toolbar">
+                    <table id="tblResult" class="table table-striped table-bordered table-hover table-full-width">
+                        <thead>
+                            <tr>
+                                <th style="width: 30px;"></th>
+                                <th>Employee</th>
+                                <th>Current Company Code</th>
+                                <th>Allowed Company Code</th>
+                                @*<th>Allowed Business Area</th>*@
+                                <th>Allowed Charge Type</th>
+                                <th>Allowed Charge Code</th>
+                                <th>Valid From</th>
+                                <th>Valid To</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model)
+                            {
+                                <tr>
+                                    <td>
+                                        <a class="btn blue btn-sm"
+                                           href="@Url.Action("CustomChargeCodeMaintenance", "TimeAttendanceMaintenance", new { MaintenanceID = item.MaintenanceID })">
+                                            <i class="fa fa-edit"></i>
+                                        </a>
+                                    </td>
+                                    <td>@item.EmployeeCode - @item.EmployeeName</td>
+                                    <td>@item.CurrentCompanyCode</td>
+                                    <td>@Html.Raw(item.AllowedCompanyCodes.Replace("\n", "\n<br />"))</td>
+                                    @*<td>@Html.Raw(item.AllowedBusinessAreas.Replace("\n", "\n<br />"))</td>*@
+                                    <td>@Html.Raw(item.AllowedChargeTypes.Replace("\n", "\n<br />"))</td>
+                                    <td>@Html.Raw(item.AllowedChargeCodes.Replace("\n", "\n<br />"))</td>
+                                    <th>@item.FormattedValidFrom</th>
+                                    <th>@item.FormattedValidTo</th>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    transformTable("#tblResult");
+</script>

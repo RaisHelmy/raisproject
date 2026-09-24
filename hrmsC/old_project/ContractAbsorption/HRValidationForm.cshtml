@@ -1,0 +1,566 @@
+﻿@using ESS.Core
+
+@model List<ESS.Core.DropDownObject>
+
+@{
+	Layout = "~/Views/Shared/_Layout.cshtml";
+	ViewBag.Title = "HR Validation's Form";
+
+	if (!(ESS.ContractAbsorption.Service.isApprover(Common.GetEmployeeID(), "SSC") || ESS.ContractAbsorption.Service.isApprover(Common.GetEmployeeID(), "HRBP")))
+	{
+		Response.Redirect("~/AccessControl/ErrorPermission");
+	}
+}
+<div class="row">
+	<div class="col-md-12">
+		<br />
+		<h1 class="page-title">
+			Absorption of Contract Staff - HRBP Validation Form<span style="padding-left:20px;"><small></small></span>
+		</h1>
+	</div>
+</div>
+<br />
+<input type="hidden" id="hfEmployeeID" value="@ViewBag.EmployeeID" />
+<div class="form-body">
+
+	<div class="row">
+		<div class="col-md-6">
+			<div class="form-horizontal">
+				<div class="form-group">
+					<label class="col-md-4 control-label">Company</label>
+					<div class="col-md-8 form-control-static">
+						@Html.DropDownList("Company", new SelectList(Model, "Value", "Text"), "- All -", new { @class = "bs-select form-control", @onchange = "changeCompany(this)" })
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="col-md-6">
+			<div class="form-horizontal">
+				<div class="form-group">
+					<label class="col-md-4 control-label">Division / Department</label>
+					<div class="col-md-8 form-control-static">
+						@Html.Action("_DDLDepartment", "ContractAbsorption", new { })
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="row">
+		<div class="col-md-6">
+			<div class="form-horizontal">
+				<div class="form-group">
+					<label class="col-md-4 control-label">Unit / Section</label>
+					<div class="col-md-8 form-control-static">
+						@Html.Action("_DDLUnitSection", "ContractAbsorption", new { })
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="col-md-6">
+			<div class="form-horizontal">
+				<div class="form-group">
+					<label class="col-md-4 control-label">PayScaleGroup</label>
+					<div class="col-md-8 form-control-static">
+						<input class="form-control" type="text" id="PayScaleGroup" />
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="row">
+		<div class="col-md-6">
+			<div class="form-horizontal">
+				<div class="form-group">
+					<label class="col-md-4 control-label">Category</label>
+					<div class="col-md-8 form-control-static">
+						<select name="ExecutiveCategory" class="bs-select form-control" id="ExecutiveCategory">
+							<option value="">- All -</option>
+							<option value="Non-Executive">Non-Executive</option>
+							<option value="Executive">Executive</option>
+							@*<option value="Specialist">Specialist</option>*@
+						</select>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="col-md-6">
+			<div class="form-horizontal">
+				<div class="form-group">
+					<label class="col-md-4 control-label">Employee</label>
+					<div class="col-md-8 form-control-static">
+						<input class="form-control" type="text" id="EmployeeName" />
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="row">&nbsp;</div>
+	<div class="row">
+		<div class="col-md-12">
+			<div class="text-right">
+				<input type="button" id="btn-Search" class="btn green btn-Search" value="Search" onclick="SearchListing();">
+			</div>
+		</div>
+	</div>
+	<div class="row">&nbsp;</div>
+	<div class="row">
+		<div class="col-md-12">
+			<div id="SearchResult">
+
+			</div>
+		</div>
+	</div>
+	<div class="row">
+		<div class="col-md-12">
+			<div class="text-right">
+				<input type="button" id="btn-Fulfilled" class="btn green DivBAUserOnly" value="Fulfilled" onclick="javascript: FulfillAction(this, true)">
+				<input type="button" id="btn-NotFulfilled" class="btn green DivBAUserOnly" value="Not Fulfilled" onclick="javascript: FulfillAction(this, false)">
+				<input type="button" id="btn-Start" class="btn red btn-Start DivBAUserOnly" value="Verify & Start Assessment" onclick="javascript: ApproverAction(this)">
+			</div>
+		</div>
+	</div>
+</div>
+
+		<div id="ConfirmDelete" class="modal fade PopUpModal" tabindex="-1" data-focus-on="input:first">
+			<div class="modal-dialog">
+				<div class="modal-content">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal" data-number="" aria-hidden="true"></button>
+						<h4 class="modal-title">Confirmation - Delete This Record</h4>
+					</div>
+					<div class="modal-body">
+						<div class="well">
+							Are you sure to Delete this Absorption of Contract Staff? <br />
+							Press Delete to proceed, or Close to stay on the current page.
+						</div>
+					</div>
+					<div class="modal-footer">
+						<button type="button" data-dismiss="modal" data-number="5" class="btn default">Close</button>
+						<button type="submit" class="btn default blue" id="btnSubmitForm" onclick="javascript: DeleteAssessment()">
+							<i class="fa fa-check"></i>
+							Delete
+						</button>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="modal fade" id="SuccessDelete" tabindex="-1" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+			<div class="modal-dialog">
+				<div class="modal-content">
+					<div class="modal-header Success-header">
+						<button type="button" class="close" data-dismiss="modal" aria-hidden="true" style="display: none;"></button>
+						<h4 class="Success-title">Action Successfully Completed</h4>
+					</div>
+					<div class="modal-body Success-body">
+						<div class="well">
+							The Absorption of Contract Staff is deleted.
+						</div>
+					</div>
+					<div class="modal-footer Success-footer">
+						<button type="submit" class="btn default blue" id="btnDeleteOK">
+							<i class="fa fa-check"></i>
+							OK
+						</button>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="modal fade" id="SuccessSubmit" tabindex="-1" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+			<div class="modal-dialog">
+				<div class="modal-content">
+					<div class="modal-header Success-header">
+						<button type="button" class="close" data-dismiss="modal" aria-hidden="true" style="display: none;"></button>
+						<h4 class="Success-title">Action Successfully Completed</h4>
+					</div>
+					<div class="modal-body Success-body">
+						<div class="well">
+							The Contract Absorption Assessment will start with current workflow.
+						</div>
+					</div>
+					<div class="modal-footer Success-footer">
+						<button type="submit" class="btn default blue" id="btnOK">
+							<i class="fa fa-check"></i>
+							OK
+						</button>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="modal fade" id="SuccessFulfill" tabindex="-1" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+			<div class="modal-dialog">
+				<div class="modal-content">
+					<div class="modal-header Success-header">
+						<button type="button" class="close" data-dismiss="modal" aria-hidden="true" style="display: none;"></button>
+						<h4 class="Success-title">Action Successfully Completed</h4>
+					</div>
+					<div class="modal-body Success-body">
+						<div class="well">
+							The selected record is updated.
+						</div>
+					</div>
+					<div class="modal-footer Success-footer">
+						<button type="submit" class="btn default blue" id="btnOKFulfill">
+							<i class="fa fa-check"></i>
+							OK
+						</button>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- Loading Gif -->
+		<div id="divLoading" style="margin: 0px; padding: 0px; position: fixed; right: 0px;
+			top: 0px; width: 100%; height: 100%; background-color:gainsboro; z-index: 30001;
+			opacity: .8; filter: alpha(opacity=70);display:none">
+			<p style="position: absolute; top: 30%; left: 30%; color: black;">
+				Loading, please wait...<img src="../Assets/img/ajax-loading.gif" />
+
+			</p>
+		</div>
+
+		<iframe id="txtArea1" style="display:none"></iframe>
+
+		<script type="text/javascript">
+
+			var EmployeeID = '';
+
+			jQuery(document).ready(function () {
+				$('.date-picker').datepicker({
+					format: 'dd/mm/yyyy',
+					autoclose: true
+				});
+
+				SearchListing();
+
+				$('#checkAll').click(function () {
+					$(':checkbox.checkItem').prop('checked', this.checked);
+
+					var _ChkAll = document.getElementById('checkAll');
+					var _ChkAll2 = $('#checkAll').parent().hasClass('checked');
+
+					if (!_ChkAll.checked && !_ChkAll2) {
+						$(':checkbox.checkItem').parent().addClass('checked');
+					}
+					else {
+						$(':checkbox.checkItem').parent().removeClass('checked');
+					}
+				});
+
+
+			});
+
+			function RedirectTo(_Action) {
+				switch (_Action) {
+					case "Submit":
+						window.location.href = '@Url.Action("HRValidationForm", "ContractAbsorption")';
+						break;
+					default:
+						window.location.href = '@Url.Action("HRValidationForm", "ContractAbsorption")';
+				}
+			}
+
+			function SearchListing() {
+				var _CompanyCode = $('#Company option:selected').val();
+				var _DepartmentCode = $('#Department option:selected').val();
+				var _UnitSectionCode = $('#UnitSection option:selected').val();
+				var _PayScaleGroup = $('#PayScaleGroup').val();
+				var _Category = $('#ExecutiveCategory option:selected').val();
+				var _EmployeeName = $('#EmployeeName').val();
+
+				$("#SearchResult").html("LOADING...");
+
+				$.ajax({
+					type: "GET",
+					url: '@Url.Content("~/ContractAbsorption/_HRValidationFormResult")',
+					cache: false,
+					dataType: "html",
+					data: {
+						EmployeeID: "@ViewBag.EmployeeID",
+						Division: _CompanyCode, Department: _DepartmentCode,
+						UnitSection: _UnitSectionCode, PayScaleGroup: _PayScaleGroup,
+						Category: _Category, EmployeeCode: _EmployeeName,
+					},
+					success: function (content) {
+						$("#SearchResult").html(content);
+					},
+					error: function (e) {
+						console.log(e);
+					}
+				});
+			}
+
+			function changeCompany(e) {
+				$.ajax({
+					type: "GET",
+					url: '@Url.Content("~/ContractAbsorption/_DDLDepartment")',
+					cache: false,
+					dataType: "html",
+					data: { CompanyCode: e.value, RoleCode: "@ViewBag.RoleCode"},
+					success: function (content) {
+						$("#DepartmentResult").html(content);
+					},
+					error: function (e) {
+						console.log(e);
+					}
+				});
+			}
+
+			function changeDepartment(e) {
+				$.ajax({
+					type: "GET",
+					url: '@Url.Content("~/ContractAbsorption/_DDLUnitSection")',
+					cache: false,
+					dataType: "html",
+					data: { DepartmentCode: e.value , RoleCode: "@ViewBag.RoleCode"},
+					success: function (content) {
+						$("#UnitSectionResult").html(content);
+					},
+					error: function (e) {
+						console.log(e);
+					}
+				});
+			}
+
+			function ApproverAction(btn) {
+				var _ValidationMsg = 'Minimum one selection is required.\n';
+
+				var _ValidationMsg1 = '';
+
+				$("#tblResult td input[name='chkSelectAssessment']:checked").each(function (i, value) {
+					var row = $(this).closest("tr");
+
+					if (row.find(".checkItem").val() != '' && row.find(".checkItem").val() != undefined)
+					{
+						_ValidationMsg = '';
+					}
+
+					var fulfilled = $(this).closest('tr').find('td:last-child').text();
+
+					if (!fulfilled) {
+						_ValidationMsg1 = 'Status update is required.\n';
+					}
+				});
+
+				if (_ValidationMsg != null && _ValidationMsg != '') {
+					alert(_ValidationMsg);
+				}
+				else if (_ValidationMsg1 != null && _ValidationMsg1 != '') {
+					alert(_ValidationMsg1);
+				}
+				else {
+					btn.disabled = true;
+					$("#divLoading").show();
+					var myVar = setTimeout(function () { StartAssessment() }, 3000);
+				}
+			}
+
+			function StartAssessment() {
+				var FullResultRequest = '';
+				var resultRequest = '';
+
+				var FullResultAssessment = '';
+				var resultAssessment = '';
+
+				var _Employeee = document.getElementById('hfEmployeeID');
+
+				if ($('#divLoading').is(':visible')) {
+					$($('input[name="chkSelectAssessment"]:checked')).each(function () {
+						var nameRequest = $(this).attr('id');
+						var nameAssessment = $(this).attr('id');
+
+						resultRequest = $("#" + nameRequest).val();
+						FullResultRequest += resultRequest + " ,";
+
+						resultAssessment = $("#Label" + nameAssessment).text();
+						FullResultAssessment += resultAssessment + " ,";
+
+					});
+					var form = {
+						FullRID: FullResultRequest,
+						FullAID: FullResultAssessment
+
+					};
+					ajaxVerify(form);
+				}
+			}
+
+			function ajaxVerify(form) {
+				$.ajax({
+					type: "POST",
+					url: '@Url.Content("~/ContractAbsorption/SubmitBusinessForm")',
+					cache: false,
+					async: false,
+					dataType: "json",
+					data: form,
+					success: function (result) {
+						if (result.Success) {
+							$("#divLoading").hide();
+							$("#SuccessSubmit").modal();
+							$("#btnOK").click(function () { RedirectTo('Submit'); });
+						}
+						else {
+							$("#divLoading").hide();
+
+							alert(result.ErrorMsg);
+						}
+					},
+					error: function (e) {
+					}
+				});
+			}
+
+			function FulfillAction(btn, fulfilled) {
+				var _ValidationMsg = 'Minimum one selection is required.\n';
+
+				$("#tblResult td input[name='chkSelectAssessment']:checked").each(function (i, value) {
+
+					var row = $(this).closest("tr");
+					if (row.find(".checkItem").val() != '' && row.find(".checkItem").val() != undefined) {
+						_ValidationMsg = '';
+					}
+				});
+
+				if (_ValidationMsg != null && _ValidationMsg != '') {
+					alert(_ValidationMsg);
+				}
+				else {
+					btn.disabled = true;
+					$("#divLoading").show();
+					var myVar = setTimeout(function () { StartFulfill(fulfilled) }, 3000);
+				}
+			}
+
+			function StartFulfill(fulfilled) {
+				var FullResultRequest = '';
+				var resultRequest = '';
+
+				var FullResultAssessment = '';
+				var resultAssessment = '';
+
+				var _Employeee = document.getElementById('hfEmployeeID');
+
+				if ($('#divLoading').is(':visible')) {
+					$($('input[name="chkSelectAssessment"]:checked')).each(function () {
+						var nameRequest = $(this).attr('id');
+						var nameAssessment = $(this).attr('id');
+
+						resultRequest = $("#" + nameRequest).val();
+						FullResultRequest += resultRequest + " ,";
+
+						resultAssessment = $("#Label" + nameAssessment).text();
+						FullResultAssessment += resultAssessment + " ,";
+
+					});
+					var form = {
+						FullRID: FullResultRequest,
+						FullAID: FullResultAssessment,
+						Fulfilled: fulfilled
+					};
+					ajaxFulfill(form);
+				}
+			}
+
+			function ajaxFulfill(form) {
+
+				$.ajax({
+					type: "POST",
+					url: '@Url.Content("~/ContractAbsorption/SubmitFulfillForm")',
+					cache: false,
+					async: false,
+					dataType: "json",
+					data: form,
+					success: function (result) {
+						if (result.Success) {
+							$("#divLoading").hide();
+							$("#SuccessFulfill").modal();
+							$("#btnOKFulfill").click(function () { RedirectTo('Fulfill'); });
+						}
+						else {
+							$("#divLoading").hide();
+
+							alert(result.ErrorMsg);
+						}
+					},
+					error: function (e) {
+					}
+				});
+			}
+
+			var RequestToDelete = "";
+
+			function SetRequestToDelete(RequestID) {
+				RequestToDelete = RequestID;
+			}
+
+			function DeleteAssessment() {
+				if (RequestToDelete == '') {
+					alert('Failed to Delete Assessment. RequestID is empty.')
+				}
+				else {
+					var form = {
+						RequestID: RequestToDelete
+					};
+					$.ajax({
+						type: "POST",
+						url: '@Url.Content("~/ContractAbsorption/SubmitDeleteAssessment")',
+						cache: false,
+						async: false,
+						dataType: "json",
+						data: form,
+						success: function (result) {
+							if (result.Success) {
+								$("#divLoading").hide();
+								$("#SuccessDelete").modal();
+								$("#btnDeleteOK").click(function () { window.location.href = '@Url.Action("HRValidationForm", "ContractAbsorption")' });
+							}
+							else {
+								$("#divLoading").hide();
+
+								alert(result.ErrorMsg);
+							}
+						},
+						error: function (e) {
+						}
+					});
+				}
+			}
+
+			var host = "..";
+
+			function ExportExcel() {
+				var dt = new Date();
+				var day = dt.getDate();
+				var month = dt.getMonth() + 1;
+				var year = dt.getFullYear();
+				var hour = dt.getHours();
+				var mins = dt.getMinutes();
+				var postfix = day + "." + month + "." + year + "_" + hour + "." + mins;
+
+				var _EmployeeID = "@ViewBag.EmployeeID";
+				var _CompanyCode = $('#Company option:selected').val();
+				var _DepartmentCode = $('#Department option:selected').val();
+				var _UnitSectionCode = $('#UnitSection option:selected').val();
+				var _PayScaleGroup = $('#PayScaleGroup').val();
+				var _Category = $('#ExecutiveCategory option:selected').val();
+				var _EmployeeName = $('#EmployeeName').val();
+
+				var JsonObjectFilter = {
+					"EmployeeID": _EmployeeID,
+					"EmployeeCode": _EmployeeName,
+					"Category": _Category,
+					"PayScaleGroup": _PayScaleGroup,
+					"Division": _CompanyCode,
+					"Department": _DepartmentCode,
+					"UnitSection": _UnitSectionCode
+				}
+
+				var Filter = JSON.stringify(JsonObjectFilter);
+
+				window.open(host +"/ContractAbsorption/_ExportToExcelGeneral?FileName=BPForm_" + postfix +
+							"&ReportCategory=" + "ReportBAForm" +
+							"&Filter=" + Filter);
+			}
+		</script>

@@ -1,0 +1,104 @@
+﻿@model OJA.Models.JobViewModel
+@using OJA.Models
+@{
+    ViewBag.Title = "Edit";
+
+    bool isOwner = Model.EmployeeID.ToUpper() == ESS.Core.Common.GetEmployeeID().ToUpper();
+}
+
+<style>
+    .job-form .form-group {
+        margin-bottom: 5px;
+    }
+</style>
+
+<div class="form-section">
+    <div class="row">
+        <div class="col-md-12">
+            <h1 class="page-title">
+                My Job Application
+            </h1>
+        </div>
+    </div>
+</div>
+
+<div class="alert alert-info">
+    <strong>Number of Applications Submitted for this Vacancy: @ViewBag.ApplicantCount </strong>
+</div>
+
+@Html.Action("_RequestorDetails", "OJA", new { ID = Model.Status == JobStatusType.Draft || Model.Status == JobStatusType.Withdrawn ? "" : Model.JobID })
+@using (Html.BeginForm("Update", "OJA", FormMethod.Post, new { @id = "jobForm" }))
+{
+    @Html.HiddenFor(m => m.DivisionCode);
+    @Html.HiddenFor(m => m.DepartmentCode);
+    @Html.HiddenFor(m => m.UnitSectionCode);
+    @Html.HiddenFor(m => m.EligiblePayScaleGroup);
+    @Html.HiddenFor(m => m.AreaCode);
+    @Html.HiddenFor(m => m.SubAreaCode);
+    @Html.HiddenFor(m => m.Range);
+    @Html.HiddenFor(m => m.Officer);
+    @Html.HiddenFor(m => m.EmployeeID);
+    @Html.HiddenFor(m => m.JobID);
+    @Html.HiddenFor(m => m.ReferenceNo);
+
+    @Html.HiddenFor(m => m.CanEditAssessment);
+
+    @Html.Partial("~/Views/OJA/_JobForm.cshtml", Model)
+
+}
+
+@if (ViewBag.CanSeePMSRating)
+{
+    <div class="pms-rating">
+        @Html.Action("_PMSRating", "OJA", new { EmpID = Model.EmployeeID })
+    </div>
+}
+
+<!--Allow applicant to see assessment if they are allowed to (cannot edit assessment)-->
+@if (Model.CanReadAssessment)
+{
+    <div class="assessment">
+        @Html.Action("_ApplicantAssessment", "OJA", new { JobId = Model.JobID, canEdit = false })
+    </div>
+}
+
+@if (Model.Status != OJA.Models.JobStatusType.Draft)
+{
+    <div class="approval-section">
+        @Html.Action("_ApproverSection", new { ID = Model.JobID })
+    </div>
+}
+
+
+<div class="row">
+    <div class="col-md-12">
+
+        @if (isOwner && Model.Status != JobStatusType.Draft && ViewBag.CanPrint)
+        {
+            <a class="btn blue" href="@Url.Action("JobPrint", "OJA", new { JobID = Model.JobID})">Print</a>
+        }
+
+        @if (ViewBag.CanWithdraw)
+        {
+            <a class="btn red" onclick="javascript: Withdraw()">Withdraw</a>
+        }
+    </div>
+</div>
+
+
+@*@if (isOwner && Model.Status != JobStatusType.Draft && ViewBag.CanPrint)
+    {
+        <div class="row" style="">
+            <div class="col-md-12">
+                <a class="btn blue" href="@Url.Action("JobPrint", "OJA", new { JobID = Model.JobID})">Print</a>
+            </div>
+        </div>
+    }
+    else if (Model.Status == JobStatusType.Draft)
+    {
+        <div class="row" style="">
+            <div class="col-md-12">
+                <a class="btn red" href="@Url.Action("Delete", "OJA", new { JobID = Model.JobID})">Delete</a>
+            </div>
+        </div>
+    }*@

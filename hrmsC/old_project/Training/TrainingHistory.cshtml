@@ -1,0 +1,204 @@
+﻿@model List<ESS.Core.DropDownObject>
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewBag.Title = "Training Request History";
+    DateTime d1 = DateTime.Now.AddYears(-20);
+    DateTime d2 = DateTime.Now.AddYears(20);
+    string dtStrStart = d1.ToString("dd MMM yyyy");
+    string dtStrEnd = d2.ToString("dd MMM yyyy");
+}
+
+<div class="row">
+    <div class="col-md-12">
+        <br />
+        <h1 class="page-title">
+            Training Request History<span style="padding-left:20px;"><small></small></span>
+        </h1>
+    </div>
+</div>
+<br />
+<div class="form-body">
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-4 control-label">Start Date</label>
+                    <div class="col-md-8 form-control-static">
+                        <div class="input-group date date-picker" data-date-format="dd MM yyyy">
+                            <input type="text" class="form-control" id="SubDateFrom" name="SubDateFrom" />
+                            <span class="input-group-btn">
+                                <button type="button" class="btn default"><i class="fa fa-calendar"></i></button>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-4 control-label">End Date</label>
+                    <div class="col-md-8 form-control-static">
+                        <div class="input-group date date-picker" data-date-format="dd MM yyyy">
+                            <input type="text" class="form-control" id="SubDateTo" name="SubDateTo" />
+                            <span class="input-group-btn">
+                                <button type="button" class="btn default"><i class="fa fa-calendar"></i></button>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-4 control-label">Training Category</label>
+                    <div class="col-md-8 form-control-static">
+                        @Html.DropDownList("TrainingCategory", new SelectList(Model, "Value", "Text"), "- All -", new { @class = "bs-select form-control" , @onchange = "changeType(this)"})
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-4 control-label">Training Type</label>
+                    <div class="col-md-8 form-control-static">
+                        @Html.Action("_DDLTrainingType", "Training", new { ID = ViewBag.TrainingID })
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-4 control-label">Status</label>
+                    <div class="col-md-8 form-control-static">
+                        <select class="form-control" id="Status">
+                            <option value="">- All -</option>
+                            <option value="Agreed">Agreed</option>
+                            <option value="Approved">Approved</option>
+                            <option value="Declined">Declined</option>
+                            <option value="Draft">Draft</option>
+                            <option value="Error">Error</option>
+                            <option value="Pending">Pending</option>
+                            <option value="Recommended">Recommended</option>
+                            <option value="Withdrawn">Withdrawn</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-4 control-label">Course Title</label>
+                    <div class="col-md-8 form-control-static">
+                        <input class="form-control" id="CourseTitle" />
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-4 control-label">Provider</label>
+                    <div class="col-md-8 form-control-static">
+                        <input class="form-control" id="Provider" />
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">&nbsp;</div>
+    <div class="row">
+        <div class="col-md-12">
+            <div class="text-right">
+                <input type="button" id="btn-Search" class="btn green btn-Search" value="Search" onclick="SearchListing();">
+            </div>
+        </div>
+    </div>
+    <div class="row">&nbsp;</div>
+    <div class="row">
+        <div class="col-md-12">
+            <div id="SearchResult">
+
+            </div>
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+    function SearchListing() {
+        var _DateFrom = $('#SubDateFrom').val();
+        var _DateTo = $('#SubDateTo').val();
+        var _TrainingCategory = $('#TrainingCategory option:selected').val();
+        var _TrainingType = $('#TrainingType option:selected').val();
+        var _Status = $('#Status').val();
+        var _Provider = $('#Provider').val();
+        var _CourseTitle = $('#CourseTitle').val();
+        var _EmpID = $('#hfEmpID').val();
+
+        $("#SearchResult").html("LOADING...");
+
+        $.ajax({
+            type: "GET",
+            url: '@Url.Content("~/Training/_TrainingHistoryResult")',
+            cache: false,
+            dataType: "html",
+            data: { DateFrom: _DateFrom, DateTo: _DateTo, TrainingCategory: _TrainingCategory, TrainingType: _TrainingType, Status: _Status, Provider: _Provider, CourseTitle: _CourseTitle},
+            success: function (content) {
+                $("#SearchResult").html(content);
+            },
+            error: function (e) {
+                console.log(e);
+            }
+        });
+    }
+
+    function ConvertDate(_date) {
+        var mnth = ("0" + (_date.getMonth() + 1)).slice(-2),
+            day = ("0" + _date.getDate()).slice(-2);
+
+        return [day, mnth, _date.getFullYear()].join("/");
+    }
+
+    jQuery(document).ready(function () {
+        $('.date-picker').datepicker({
+            format: 'dd/mm/yyyy',
+            autoclose: true
+        });
+
+        //var _Today = new Date();
+        //_Today.setDate(_Today.getDate() - 60);
+        //var _Start = ConvertDate(_Today);
+
+        //$('#SubDateFrom').val(_Start);
+        //$('#SubDateTo').val(ConvertDate(new Date()));
+
+        SearchListing();
+    });
+
+    function changeType(e) {
+        //alert(e.value);
+
+        $.ajax({
+            type: "GET",
+            url: '@Url.Content("~/Training/_DDLTrainingType")',
+            cache: false,
+            dataType: "html",
+            data: { CategoryCode: e.value}, //$("#TrainingCategory").val() },
+            success: function (content) {
+                $("#TrainingTypeResult").html(content);
+            },
+            error: function (e) {
+                console.log(e);
+            }
+        });
+    }
+</script>

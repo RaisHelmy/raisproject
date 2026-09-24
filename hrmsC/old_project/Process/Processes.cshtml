@@ -1,0 +1,119 @@
+﻿@model IEnumerable<ESS.ReRouting.Models.ProcessGroup>
+
+@{
+    ViewBag.Title = "Processes";
+}
+
+<div class="row">
+    <div class="col-md-12">
+        <br />
+        <h1 class="page-title">
+            List of All Process Groups<span style="padding-left:20px;"><small></small></span>
+        </h1>
+
+    </div>
+</div>
+
+
+<div class="portlet box blue">
+    <div class="mini-triangle"><img src="../Assets/img/menu-red-triangle.png"></div>
+    <div class="portlet-title">
+        <div class="caption">
+            <i class="fa fa-reorder"></i>Process Groups
+        </div>
+        <a href="@Url.Action("CreateProcessView", "Process")" class="btn btn-xs green pull-right"><i class="fa fa-plus"></i> Add New Process</a>
+    </div>
+
+    <div class="portlet-body form">
+        <div class="form-horizontal">
+            <div class="form-body">
+                <div class="table-toolbar">
+                    <table id="tblProcesses" class="table table-striped table-bordered table-hover table-full-width">
+                        <thead>
+                            <tr>
+                                <th width="20px fixed"></th>
+                                <th>
+                                   Process Name
+                                </th>
+                                <th>
+                                   Description
+                                </th>
+                                <th>
+                                    Last Modified Date
+                                </th>
+                                <th width="40px fixed">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model)
+                            {
+                                <tr>
+                                    <td>
+                                        <a class="btn blue btn-sm" data-toggle="modal" href="@Url.Action("EditProcess", new { processId = item.ID})">
+                                            <i class="fa fa-edit"></i>
+                                        </a>
+                                    </td>
+                                    <td>
+                                        @Html.DisplayFor(modelItem => item.ProcessName)
+                                    </td>
+                                    <td>
+                                        @Html.DisplayFor(modelItem => item.ProcessDescription)
+                                    </td>
+                                    <td>
+                                        @Html.DisplayFor(modelItem => item.LastModifiedDate)
+                                    </td>
+                                    <td>
+                                        <a class="btn red btn-sm" data-toggle="modal" onclick="javascript: DeleteProcess(this,'@item.ID')">
+                                            Delete
+                                        </a>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="DeleteProcessModal" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                <h4 class="modal-title" id="deleteText">Remove Process</h4>
+            </div>
+            <div class="modal-body">
+                <div class="well">
+                    <p>Clicking on "Delete" button will remove this process from your process list. To cancel, click on "Close" button to return to the process listing.</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <a class="btn default red" id="btnDelete" href="">Delete</a>
+                <button type="button" class="btn default" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function () {
+        $('#tblProcesses').dataTable()
+        var tableWrapper = "#tblProcesses_wrapper";
+        jQuery(tableWrapper + ' .dataTables_filter input').addClass("form-control input-medium input-inline"); // modify table search input
+        jQuery(tableWrapper + ' .dataTables_length select').addClass("form-control input-small"); // modify table per page dropdown
+        jQuery(tableWrapper + ' .dataTables_length select').select2({
+            showSearchInput: false //hide search box with special css class
+        });
+    });
+
+    function DeleteProcess(element, id)
+    {
+        $(element).attr('href', function () {
+            return this.href = '#DeleteProcessModal';
+        });
+        var url = '@Url.Action("DeleteProcess", "Process")?processId=' + id;
+        $("#btnDelete").attr('href', url);
+    }
+</script>

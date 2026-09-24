@@ -1,0 +1,278 @@
+﻿@model Tuple<ESS.ContractAbsorption.Models.EContractAbsorptionVM, SEP.RoutingManagement.Models.RoutingRule>
+
+@using ESS.Core
+
+@{
+    Layout = null;
+
+    string TaskID = (string)ViewData["TaskID"];
+    string RequestID = (string)ViewData["RequestID"];
+    string ApprovalLevel = (string)ViewData["ApprovalLevel"];
+    string Source = (string)ViewData["Source"];
+    string EmployeeID = (string)ViewData["EmployeeID"];
+
+    int applvl = String.IsNullOrEmpty(ApprovalLevel) ? 0 : Convert.ToInt32(ApprovalLevel);
+
+    string ErrorMsg = "";
+
+    List<int> applvls = ESS.ContractAbsorption.Service.ApprovalLevels(RequestID, Common.GetEmployeeID(), out ErrorMsg);
+
+    string Checked2_1 = "";
+    string Checked2_2 = "";
+
+    switch (Model.Item1.Acceptance)
+    {
+        case "A":
+            Checked2_1 = "checked";
+            break;
+        case "NA":
+            Checked2_2 = "checked";
+            break;
+    }
+
+    if (Model.Item1.btnSubmit == true && applvl == 6)
+    {
+		<style>
+			.EdittableAcceptanceContent {
+				display: block;
+			}
+
+			.NonEdittableAcceptanceContent {
+				display: none;
+			}
+		</style>
+	}
+	else
+	{
+		<style>
+			.EdittableAcceptanceContent {
+				display: none;
+			}
+
+			.NonEdittableAcceptanceContent {
+				display: block;
+			}
+		</style>
+	}
+}
+
+@if (applvl >= 6)
+{
+	<div class="row">
+		<div class="col-md-12">
+			<div class="portlet box blue">
+				<div class="mini-triangle"><img src="../Assets/img/menu-red-triangle.png" /></div>
+				<div class="portlet-title">
+					<div class="caption">
+						<i class="fa fa-reorder"></i>Employee Acceptance
+					</div>
+				</div>
+				<div class="portlet-body form">
+					<div class="form-body" id="ct01_CustomFieldFormView">
+						<div class="EdittableAcceptanceContent">
+							<div class="row">
+								<div class="col-md-12">
+									<div class="form-horizontal">
+										<div class="form-group">
+											<label class="control-label col-md-12 ">
+												<b>Employee Acceptance <span class="required">*</span></b>
+											</label>
+										</div>
+									</div>
+								</div>
+							</div>
+							<div class="row" id="radio_RecommendedDiv">
+								<div class="col-md-12">
+									<div class="form-horizontal">
+										<div class="form-group">
+											<div class="radio-list padding-left-20">
+												<label class="radio-inline">
+													<span class="Divradio_Recommended"><input type="radio" @Checked2_1 class="reqAcceptance" name="rblAcceptance" id="radio_Acceptance" value="A"></span> Accept
+												</label>
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+							<div class="row" id="radio_NotRecommendedDiv">
+								<div class="col-md-12">
+									<div class="form-horizontal">
+										<div class="form-group">
+											<div class="radio-list padding-left-20">
+												<label class="radio-inline">
+													<span class="radio_NotRecommended"><input type="radio" @Checked2_2 class="reqAcceptance" name="rblAcceptance" id="radio_Acceptance" value="NA"></span> Reject
+												</label>
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="NonEdittableAcceptanceContent">
+							<div class="row">
+								<div class="col-md-12">
+									<div class="form-horizontal">
+										<div class="form-group">
+											<label class="control-label col-md-12 ">
+												Employee Acceptance <span class="required">*</span>
+											</label>
+										</div>
+									</div>
+								</div>
+							</div>
+							<div class="row">
+								<div class="col-md-12">
+									<div class="form-horizontal">
+										<div class="form-group">
+											<label class="col-md-12 ">
+												@(Model.Item1.Acceptance == "A" ? "Accept" : (Model.Item1.Acceptance == "NA" ? "Reject" : ""))
+											</label>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	if ((Model.Item1.btnSubmit == true && applvl == 6) || applvls.Contains(7))
+	{
+	<div class="row">
+		<div class="col-md-12">
+			<div class="portlet box blue">
+				<div class="mini-triangle"><img src="../Assets/img/menu-red-triangle.png" /></div>
+				<div class="portlet-title">
+					<div class="caption">
+						<i class="fa fa-reorder"></i>Height & Weight
+					</div>
+				</div>
+				<div class="portlet-body form">
+					<div class="form-body" id="ct01_CustomFieldFormView">
+						<div class="EdittableAcceptanceContent">
+							<div class="row">
+								<div class="col-md-6">
+									<div class="form-horizontal">
+										<div class="form-group">
+											<label class="control-label col-md-4">Height (CM) <span class="required">*</span></label>
+											<div class="col-md-8 form-control-static">
+												<input type="text" id="txtHeight" name="Height" class="form-control" value="@(Model.Item1.Height.HasValue ? Model.Item1.Height.Value.ToString() : "")" onblur="parseHeight();" />
+											</div>
+										</div>
+									</div>
+								</div>
+								<div class="col-md-6">
+									<div class="form-horizontal">
+										<div class="form-group">
+											<label class="control-label col-md-4">Weight (KG) <span class="required">*</span></label>
+											<div class="col-md-8 form-control-static">
+												<input type="text" id="txtWeight" name="Weight" class="form-control" value="@(Model.Item1.Weight.HasValue ? Model.Item1.Weight.Value.ToString("0.00") : "")" onblur="parseWeight();" />
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+						@if (applvls.Contains(7))
+						{
+						<div class="NonEdittableAcceptanceContent">
+							<div class="row">
+								<div class="col-md-6">
+									<div class="form-horizontal">
+										<div class="form-group">
+											<label class="control-label col-md-4">Height (CM) <span class="required">*</span></label>
+											<div class="col-md-8 form-control-static">
+												<input type="text" id="txtHeight" name="Height" class="form-control" value="@(Model.Item1.Height.HasValue ? Model.Item1.Height.Value.ToString() : "")" readonly="readonly" />
+											</div>
+										</div>
+									</div>
+								</div>
+								<div class="col-md-6">
+									<div class="form-horizontal">
+										<div class="form-group">
+											<label class="control-label col-md-4">Weight (KG) <span class="required">*</span></label>
+											<div class="col-md-8 form-control-static">
+												<input type="text" id="txtWeight" name="Weight" class="form-control" value="@(Model.Item1.Weight.HasValue ? Model.Item1.Weight.Value.ToString("0.00") : "")" readonly="readonly" />
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+							<div class="row">
+								<div class="col-md-6">
+									<div class="form-horizontal">
+										<div class="form-group">
+											<label class="control-label col-md-4">BMI</label>
+											<div class="col-md-8 form-control-static">
+												<input type="text" id="txtBMI" name="BMI" class="form-control" value="@(Model.Item1.Height.HasValue && Model.Item1.Weight.HasValue ? (Model.Item1.Weight.Value / Model.Item1.Height.Value / Model.Item1.Height.Value * 10000).ToString("0.0") : "")" readonly="readonly" />
+											</div>
+										</div>
+									</div>
+								</div>
+								<div class="col-md-6">
+									<div class="form-horizontal">
+										<div class="form-group">
+
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+						}
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	}
+}
+
+@if (applvl == 6)
+{
+	<div class="row">
+		<div class="col-md-12">
+			<div class="portlet box blue">
+				<div class="mini-triangle"><img src="../Assets/img/menu-red-triangle.png" /></div>
+				<div class="portlet-title">
+					<div class="caption">
+						<i class="fa fa-reorder"></i>Medical Report Form
+					</div>
+				</div>
+				<div class="portlet-body form">
+					<div class="form-body" id="ct01_CustomFieldFormView">
+						<div class="EdittableAcceptanceContent">
+							<div class="row">
+								<div class="col-md-12">
+									<div class="form-horizontal">
+										<div class="form-group">
+											<label class="col-md-12">
+												<a href="https://ess2.tnb.com.my/Contract%20Absorption%20%20Medical%20Report%20Template/Borang%20Pemeriksaan%20Perubatan_May%202021.doc">Download Medical Report Form</a>
+												@*@Html.ActionLink("Download Medical Report Form", "Download", "ContractAbsorption", new { }, new { target = "_blank", style = "text-decoration:underline;" })*@
+											</label>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+}
+
+<script type="text/javascript">
+	function parseHeight() {
+		var _Height = parseInt($("#txtHeight").val()) || 0;
+
+		$("#txtHeight").val(_Height);
+	}
+
+	function parseWeight() {
+		var _Weight = parseFloat($("#txtWeight").val()) || 0;
+
+		$("#txtWeight").val(_Weight.toFixed(2));
+	}
+</script>

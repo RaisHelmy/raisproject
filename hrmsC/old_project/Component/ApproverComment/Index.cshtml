@@ -1,0 +1,90 @@
+﻿@model List<string>
+@{
+    Layout = "";
+}
+
+<style>
+    .selectable-comment {
+        cursor: grab;
+        white-space: pre-line;
+        margin: 5px;
+        padding: 3px;
+        border: 1px solid black;
+        border-radius: 10px !important;
+        display: inline-block;
+        font-size: 9pt;
+        vertical-align: top;
+        background-color: ghostwhite;
+    }
+
+    .selectable-comment-selected {
+        box-shadow: 0px 0px 6px #82FFA5;
+        border: 2px solid #49B367;
+    }
+</style>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="portlet box blue">
+            <div class="mini-triangle"><img src="../Assets/img/menu-red-triangle.png" /></div>
+            <div class="portlet-title">
+                <div class="caption">
+                    <i class="fa fa-reorder"></i> Approval Comments
+                </div>
+            </div>
+            <div class="portlet-body form">
+                <div class="form-body">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="form-horizontal">
+                                <div class="form-group">
+                                    <label class="control-label col-md-2">Comments</label>
+                                    <div class="col-md-10 form-control-static">
+                                        <textarea class="form-control" id="txtAppComment" rows="5" cols="60"maxlength="1000"></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <br />
+
+                    <div class="row">
+                        <div class="col-md-offset-2 col-md-10">
+                            @foreach (var text in Model)
+                            {
+                                <p class="selectable-comment">@text</p>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(function () {
+        $('.selectable-comment').click(function () {
+            var currentComment = $('#txtAppComment').val();
+            var selectedText = $(this).text().trim();
+
+            if ($(this).hasClass('selectable-comment-selected')) {
+                $(this).removeClass('selectable-comment-selected');
+                $('#txtAppComment').val(currentComment.replace(selectedText, '').trim());
+            }
+            else {
+                $(this).addClass('selectable-comment-selected');
+
+                var newComment = currentComment;
+
+                if (newComment.trim().length > 0) {
+                    newComment += '\n';
+                }
+
+                newComment += selectedText;
+                $('#txtAppComment').val(newComment.trim());
+            }
+        });
+    });
+</script>

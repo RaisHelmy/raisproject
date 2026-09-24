@@ -1,0 +1,21 @@
+SESSION_SECRET=replace-with-a-long-random-value
+
+# Local dev / drizzle-kit / test connection to Postgres. wrangler dev connects
+# through the HYPERDRIVE binding in wrangler.jsonc instead (no host/port
+# needed there — the Workers runtime resolves it via Hyperdrive's private
+# VPC service). This var is only for tooling that talks to Postgres directly:
+# drizzle-kit generate/push, tests/support/pgTestDb.ts, and one-off psql use.
+#
+# Requires the SSH tunnel described in CLAUDE.md / the project README:
+#   ssh -L 15432:localhost:5432 helix@sshraisubuntu.raishelmy.uk
+# The server's cert is for its real VPC hostname, not "localhost", so tools
+# connecting through the tunnel need to skip cert verification
+# (sslmode=no-verify for drizzle-kit/psql; ssl:{rejectUnauthorized:false}
+# for node "pg"/"postgres" clients — already set in tests/support/pgTestDb.ts).
+#
+# Shared-database note: there is now one shared Postgres database
+# (`raishelmy`) for the whole account, with this app's tables isolated into
+# their own `pantas` schema (`pantas_staging` for staging) rather than a
+# dedicated `pantas_db` database. Point DATABASE_URL at `raishelmy`; the app
+# code and test harness set `search_path` to the right schema themselves.
+DATABASE_URL=postgresql://postgres:postgres@localhost:15432/raishelmy?sslmode=no-verify

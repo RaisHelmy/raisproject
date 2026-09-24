@@ -1,0 +1,180 @@
+﻿@model Asset.Models.CompanyInfo
+@{
+    string Title = @"Pemilikan Syarikat";
+    string EmployeeID = ViewBag.EmployeeID;
+
+    bool Readonly = ViewBag.Readonly;
+    DateTime? AssetLastCompletedDate = Asset.Service.GetAssetLastCompletedDate(EmployeeID);
+}
+
+<div class="collapse-portlet portlet box blue">
+    <div class="mini-triangle"><img src="/_layouts/15/TNBESS/Assets/img/menu-red-triangle.png" /></div>
+    <div class="portlet-title">
+        <div class="caption">
+            <i class="fa fa-reorder"></i>@Title @(ViewBag.ErrorMessage)
+        </div>
+        <div class="tools">
+            <a title="" data-original-title="" href="javascript:;" class="collapse"></a>
+        </div>
+        @if (!Readonly)
+        {
+            <div class="edit-action-bar actions">
+                <a href="javascript:void(0)" onclick="CompanyList_OpenForm();" class="btn green">
+                    <i class="fa fa-pencil"></i> Tambah
+                </a>
+            </div>
+        }
+    </div>
+    <div class="portlet-body form">
+        <div class="form-body">
+            <div class="form-horizontal">
+                <div class="table-toolbar">
+                    <table id="tblResultCompanyList" class="table table-striped table-bordered table-hover table-full-width">
+                        <thead>
+                            <tr>
+                                <th>Nama Syarikat</th>
+                                <th>Tarikh Kemaskini</th>
+                                <th>No. Pendaftaran</th>
+                                <th>Jenis Syarikat / Perniagaan</th>
+                                <th>Pulangan Tahunan (RM)</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (Model.Companies != null)
+                            {
+                                foreach (var item in @Model.Companies)
+                                {
+                                    <tr>
+                                        <td>
+                                            @if (Readonly)
+                                            {
+                                                <a href="javascript:void(0);" onclick="CompanyList_OpenForm('@item.CompanyID', 'Read')">
+                                                    @item.Name
+                                                </a>
+                                            }
+                                            else
+                                            {
+                                                <a href="javascript:void(0);" onclick="CompanyList_OpenForm('@item.CompanyID', 'ReadAndEdit')">
+                                                    @item.Name
+                                                </a>
+                                            }
+                                        </td>
+                                        <td>
+                                            @item.ModifiedDate
+                                            <br />
+                                            @if (AssetLastCompletedDate == null || item.DtCreatedDate >= AssetLastCompletedDate)
+                                            {
+                                                <span style="background-color: yellow;">[Baru]</span>
+                                            }
+                                            else if (item.DtModifiedDate >= AssetLastCompletedDate)
+                                            {
+                                                <span style="background-color: yellow;">[Dikemaskini]</span>
+                                            }
+                                        </td>
+                                        <td>@item.Registration</td>
+                                        <td>@item.Type</td>
+                                        <td>
+                                            @{
+                                                decimal tempDec = 0;
+                                                @(decimal.TryParse(item.AnnualReturn, out tempDec) ? tempDec.ToString("#,##0.00") : "0.00")
+                                            }
+                                        </td>
+                                        <td>
+                                            @item.AssetStatusDesc
+                                            <br />
+                                            @if (!Readonly && item.AssetStatusCode == "AK")
+                                            {
+                                                <a href="javascript:void(0)" onclick="CompanyList_OpenForm('@item.CompanyID', 'Discard')">
+                                                    [Klik Untuk Lupuskan]
+                                                </a>
+                                            }
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <br />
+
+            <p>Rumusan maklumat bilangan Syarikat mengikut status: </p>
+
+            <br />
+
+            <div class="form-horizontal">
+                <div class="table-toolbar">
+                    <table id="tblResultPropertySummary" class="table table-striped table-bordered table-hover table-full-width">
+                        <thead>
+                            <tr>
+                                <th>Rekod Aktif</th>
+                                <th>Rekod Lupus</th>
+                                <th>Jumlah Rekod</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (Model.Summary != null)
+                            {
+                                <tr>
+                                    <td style="">
+                                        @Model.Summary.Active
+                                    </td>
+                                    <td style="">
+                                        @Model.Summary.Inactive
+                                    </td>
+                                    <td style="background-color: lightgreen"> @Model.Summary.Total</td>
+                                </tr>
+                            }
+                            else
+                            {
+                                <tr>
+                                    <td colspan="5" style="text-align: center;">
+                                        No data available in table
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="CompanyList_ModalContainer"></div>
+
+<script>
+    var tblResultCompanyList =
+        $('#tblResultCompanyList').dataTable({
+            "bLengthChange": false,
+            "bFilter": false,
+            "bPaginate": false,
+            "bInfo": false,
+            "bSortable": false,
+        });
+
+    $(function () {
+        CheckHasAsset();
+    });
+
+    function CompanyList_OpenForm(companyID, mode) {
+        var link = '@Url.Action("_CompanyListForm", "Asset", new { EmployeeID = EmployeeID })';
+
+        if (companyID) {
+            link += "&CompanyID=" + companyID;
+            link += "&Mode=" + mode;
+        }
+
+        ShowLoadingScreen();
+        $('#CompanyList_Modal').modal('hide');
+        ClearBackdrop();
+        $.get(link,
+            function (result) {
+                HideLoadingScreen();
+                $('#CompanyList_ModalContainer').html(result);
+                $('#CompanyList_Modal').modal();
+        });
+    }
+</script>

@@ -1,0 +1,23 @@
+# Copy to .dev.vars for local `wrangler pages dev` (gitignored, never commit real values).
+JWT_SECRET="dev-secret-change-me"
+
+# Database is now Postgres via Cloudflare Hyperdrive (see [[hyperdrive]] in wrangler.toml),
+# not D1/SQLite. This app's data lives in schema `raisrms` inside the ONE shared
+# `raishelmy` Postgres database (one DB, one schema per app on the account) — not a
+# dedicated `raisrms_db` database anymore. `wrangler pages dev` resolves the HYPERDRIVE
+# binding automatically from wrangler.toml — no local override needed here. For
+# drizzle-kit-style direct psql access, or to run migrations_pg/*.sql by hand, open an
+# SSH tunnel to the shared Postgres origin and use:
+#   DATABASE_URL="postgresql://postgres:postgres@localhost:15432/raishelmy?sslmode=require"
+# and set `search_path=raisrms` (e.g. `psql "$DATABASE_URL" -c 'SET search_path TO raisrms'`)
+# before running unqualified queries — all repository SQL and migrations_pg/*.sql assume
+# `raisrms` is on the search_path, not `public`.
+# See migrations_pg/ (Postgres) — the old migrations/ (SQLite/D1) is kept for history only
+# and is no longer applied.
+
+# Optional — leave unset to exercise the graceful-degradation paths locally.
+# CRON_SECRET="dev-cron-secret"
+# RESEND_API_KEY=""
+# NOTIFY_FROM_EMAIL="Rais RMS <notifications@localhost>"
+# STRIPE_SECRET_KEY=""
+# STRIPE_WEBHOOK_SECRET=""

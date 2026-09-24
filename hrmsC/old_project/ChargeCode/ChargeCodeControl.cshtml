@@ -1,0 +1,384 @@
+﻿@model List<ESS.ChargeCode.Models.ChargeCode>
+@{
+    Layout = null;
+}
+
+<div class="portlet box blue">
+    <div class="mini-triangle"><img src="/_layouts/15/TNBESS/Assets/img/menu-red-triangle.png" /></div>
+    <div class="portlet-title">
+        <div class="caption">
+            <i class="fa fa-reorder"></i>Charge Code
+        </div>
+        <div class="tools">
+        </div>
+    </div>
+    <div class="portlet-body form">
+        <div class="form-body">
+            <input type="hidden" name="ChargeCodeList" id="ChargeCodeList" value="@ViewBag.ChargeCodeList" />
+            <table id="sourcechargecode" class="table table-striped table-bordered table-hover table-full-width">
+                <thead>
+                    <tr>
+                        <th scope="col" width="5%"></th>
+                        <th scope="col">Charge Type</th>
+                        <th scope="col">Charge Code</th>
+                        <th scope="col">Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @for (int i = 0; i < Model.Count; i++)
+                    {
+                        <tr class="chargecoderow">
+                            <td>
+                                <input type="checkbox" name="RemoveChargeCode" 
+                                        value="@Model[i].ID" class="checkbox" />
+                                <input type="hidden" name="SelectedChargeCodes" value="@Model[i].ChargeCodes" />
+                            </td>
+                            
+                            <td class="selectedChargeType">@Model[i].ChargeType</td>
+                            <td class="selectedChargeCode">@Model[i].ChargeCodes</td>
+                            <td class="selectedChargeDesc">@Model[i].ChargeCodeDesc</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+            <div class="form-horizontal">
+                <div class="table-toolbar">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="btn-group">
+                                <a class="btn green" href="javascript:OpenSearchChargeCode();">
+                                    Add
+                                    <i class="fa fa-plus"></i>
+                                </a>
+                            </div>
+                            <div class="btn-group">
+                                <a class="btn red" href="javascript:RemoveChargeCodeFromMain();">
+                                    Delete
+                                    <i class="fa fa-minus"></i>
+                                </a>
+
+                            </div>
+                            <div class="btn-group">
+                                <a class="btn green" data-toggle="modal" data-target="#AddToFavouriteModal">
+                                    Add To Favourite <i class="fa fa-check">
+                                    </i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="SearchChargeCode" tabindex="-1" role="basic" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                <h4 class="modal-title">Add Charge Code</h4>
+            </div>
+            <div class="modal-body">
+                @Html.Action("Search", "ChargeCode")
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn default blue" id="btnSubmitChargeCode" onclick="AddChargeCodeToMain(); return false;">
+                    <i class="fa fa-plus"></i>
+                    Add
+                </button>
+                <button type="button" class="btn default" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="AddToFavouriteModal" tabindex="-1" role="basic" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                <h4 class="modal-title">Add Charge Codes To Favourite Group</h4>
+            </div>
+            <div class="modal-body">
+                @Html.Action("AddToFavouriteView", "ChargeCode")
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn default blue" id="btnAddToFavourite" onclick="AddToFavourite(); return false;">
+                    <i class="fa fa-pencil"></i>
+                    Add
+                </button>
+                <button type="button" class="btn default" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    var mytable = $('#sourcechargecode').DataTable({
+        "bLengthChange": false,
+        "bFilter": false
+    });
+
+    function AddChargeCodeToMain() {
+        var chargecodestring = "";
+        var sourceID = $("#SourceID").val();
+        var hasDICChargeCode = false;
+
+        var selectedChargeCodeSearch = tableChargeCodeSearch.fnGetNodes()
+                                        .filter(function (val) { return $(val).find('input[name="AddChargeCode"]:checked').val(); });
+
+        $.each(selectedChargeCodeSearch, function (i, val) {
+            var chargeType = $(val).find('.ChargeType').text();
+            var chargeCode = $(val).find('.ChargeCode').text();
+            var chargeDesc = $(val).find('.ChargeDesc').text();
+            var chargeID = $(val).find('input[name="AddChargeCode"]').val();
+            if (chargeType == "DI") {
+                mytable.fnClearTable();
+
+                mytable.fnAddData([
+                    '<input name="RemoveChargeCode" type="checkbox" class="selectedChargeCodeId" value="' + chargeID + '" /><input type="hidden" name="SelectedChargeCodes" value="' + chargeCode + '" />',
+                    //'<a class="btn red selectedChargeCodeId" value="' + this.value + '"><i class="fa fa-minus"></i></a>',
+                    '<label class="selectedChargeType">' + chargeType + '</label>',
+                    '<label class="selectedChargeCode">' + chargeCode + '</label>',
+                    '<label class="selectedChargeDesc">' + chargeDesc + '</label>'
+                ]);
+                // Stop iterating
+                hasDICChargeCode = true;
+                return false;
+            }
+            else {
+                mytable.fnAddData([
+                    '<input name="RemoveChargeCode" type="checkbox" class="selectedChargeCodeId" value="' + chargeID + '" /><input type="hidden" name="SelectedChargeCodes" value="' + chargeCode + '" />',
+                    //'<a class="btn red selectedChargeCodeId" value="' + this.value + '"><i class="fa fa-minus"></i></a>',
+                    '<label class="selectedChargeType">' + chargeType + '</label>',
+                    '<label class="selectedChargeCode">' + chargeCode + '</label>',
+                    '<label class="selectedChargeDesc">' + chargeDesc + '</label>'
+                ]);
+
+                hasDICChargeCode = false;
+                return true;
+            }
+
+            // pre change
+            //mytable.fnAddData([
+            //    '<input name="RemoveChargeCode" type="checkbox" class="selectedChargeCodeId" value="' + this.value + '" />',
+            //    //'<a class="btn red selectedChargeCodeId" value="' + this.value + '"><i class="fa fa-minus"></i></a>',
+            //    '<label class="selectedChargeType">' + chargeType + '</label>',
+            //    '<label class="selectedChargeCode">' + chargeCode + '</label>',
+            //    '<label class="selectedChargeDesc">' + chargeDesc + '</label>'
+            //]);
+        });
+        //$.each($('input[name="AddChargeCode"]:checked'), function (i, val) {
+        //    var chargeType = $(this).parent().parent().find('.ChargeType').text();
+        //    var chargeCode = $(this).parent().parent().find('.ChargeCode').text();
+        //    var chargeDesc = $(this).parent().parent().find('.ChargeDesc').text();
+
+        //    if (chargeType == "DI") {
+        //        mytable.fnClearTable();
+
+        //        mytable.fnAddData([
+        //            '<input name="RemoveChargeCode" type="checkbox" class="selectedChargeCodeId" value="' + this.value + '" />',
+        //            //'<a class="btn red selectedChargeCodeId" value="' + this.value + '"><i class="fa fa-minus"></i></a>',
+        //            '<label class="selectedChargeType">' + chargeType + '</label>',
+        //            '<label class="selectedChargeCode">' + chargeCode + '</label>',
+        //            '<label class="selectedChargeDesc">' + chargeDesc + '</label>'
+        //        ]);
+        //        // Stop iterating
+        //        hasDICChargeCode = true;
+        //        return false;
+        //    }
+        //    else {
+        //        mytable.fnAddData([
+        //            '<input name="RemoveChargeCode" type="checkbox" class="selectedChargeCodeId" value="' + this.value + '" />',
+        //            //'<a class="btn red selectedChargeCodeId" value="' + this.value + '"><i class="fa fa-minus"></i></a>',
+        //            '<label class="selectedChargeType">' + chargeType + '</label>',
+        //            '<label class="selectedChargeCode">' + chargeCode + '</label>',
+        //            '<label class="selectedChargeDesc">' + chargeDesc + '</label>'
+        //        ]);
+
+        //        hasDICChargeCode = false;
+        //        return true;
+        //    }
+
+        //    // pre change
+        //    //mytable.fnAddData([
+        //    //    '<input name="RemoveChargeCode" type="checkbox" class="selectedChargeCodeId" value="' + this.value + '" />',
+        //    //    //'<a class="btn red selectedChargeCodeId" value="' + this.value + '"><i class="fa fa-minus"></i></a>',
+        //    //    '<label class="selectedChargeType">' + chargeType + '</label>',
+        //    //    '<label class="selectedChargeCode">' + chargeCode + '</label>',
+        //    //    '<label class="selectedChargeDesc">' + chargeDesc + '</label>'
+        //    //]);
+        //});
+
+        if (!hasDICChargeCode) {
+            $.each(mytable.fnGetNodes(), function (i, row) {
+                if ($(row).find('.selectedChargeType').text() == "DI") {
+                    mytable.fnDeleteRow(mytable.fnGetPosition(row));
+                }
+            });
+
+            ////$("#divDICText").hide();
+        }
+        //else {
+        //    ////$("#divDICText").show();
+        //}
+
+        updateChargeCode();
+
+        $('#SearchChargeCode').modal('hide');
+    }
+
+    function RemoveChargeCodeFromMain() {
+        var hasDICChargeCode = false;
+        var selectedChargeCodeSearch = mytable.fnGetNodes()
+                                        .filter(function (val) { return $(val).find('input[name="RemoveChargeCode"]:checked').val(); });
+
+
+        $.each(selectedChargeCodeSearch, function (i, val) {
+            var row = val;
+            var id = $(val).attr("id");
+            mytable.fnDeleteRow(mytable.fnGetPosition(row));
+        });
+
+        //$.each($('input[name="RemoveChargeCode"]:checked'), function (i, val) {
+        //    var row = $(this).closest("tr").get(0);
+        //    var id = $(this).attr("id");
+        //    mytable.fnDeleteRow(mytable.fnGetPosition(row));
+        //});
+
+        updateChargeCode();
+    }
+
+    function updateChargeCode() {
+        var chargecodestring = "";
+        gCurrentChargeCode = {};
+
+        $.each(mytable.fnGetNodes(), function (i, val) {
+            var chargeType = $(val).find('.selectedChargeType').text();
+            var chargeCode = $(val).find('.selectedChargeCode').text();
+            var chargeDesc = $(val).find('.selectedChargeDesc').text();
+
+            if (chargeType == "DI") {
+                // clear all previous selection and add nly DIC type harge code
+                chargecodestring = "";
+                gCurrentChargeCode = {};
+
+                chargecodestring += chargeCode + ',';
+                gCurrentChargeCode[chargeCode] = chargeCode.trim() + " (" + chargeDesc + ")";
+                return false;
+            }
+            else {
+                chargecodestring += chargeCode + ',';
+                gCurrentChargeCode[chargeCode] = chargeCode.trim() + " (" + chargeDesc + ")";
+            }
+
+            // pre change
+            //chargecodestring += $(this).find('.selectedChargeCode').html() + ',';
+        });
+
+        //$.each($('#sourcechargecode tbody tr'), function (i, val) {
+        //    var chargeType = $(this).find('.selectedChargeType').html() + ',';
+
+        //    if (chargeType == "DI") {
+        //        // clear all previous selection and add nly DIC type harge code
+        //        chargecodestring = "";
+        //        chargecodestring += $(this).find('.selectedChargeCode').html() + ',';
+        //        return false;
+        //    }
+        //    else {
+        //        chargecodestring += $(this).find('.selectedChargeCode').html() + ',';
+        //    }
+
+        //    // pre change
+        //    //chargecodestring += $(this).find('.selectedChargeCode').html() + ',';
+        //});
+
+        if ($('#sourcechargecode tbody tr .dataTables_empty').length > 0) {
+            chargecodestring = "";
+        }
+        // console.log(chargecodestring);
+        $('#ChargeCodeList').val(chargecodestring);
+
+        $(function () {
+            if (chargecodestring.indexOf("DI") < 0) {
+                $("#divDICText").css("visibility", "hidden");
+            }
+            else {
+                $("#divDICText").css("visibility", "visible");
+            }
+        });
+
+        BindtoDDL();
+
+        $('input[name="RemoveChargeCode"]').uniform();
+    }
+
+    function OpenSearchChargeCode() {
+        $("#chargecodesearchtype").val('Favorite');
+        $('#SearchChargeCode').modal();
+        $('#favoriterow').show();
+        $('#chargecoderow').hide();
+        //SearchChargeCode('EMPTY');
+        GetFavGroup(SearchFavGroupChargeCode);
+
+    }
+
+    function GetSelectedChargeCode() {
+        var ListChargeCode = [];
+        $.each($('#sourcechargecode tbody tr'), function (i, val) {
+            var IndChargeCode = [];
+            if ($(this).find('.selectedChargeCode').text() != "") {
+                IndChargeCode.push($(this).find('.selectedChargeCode').text());
+                IndChargeCode.push($(this).find('.selectedChargeDesc').text());
+                ListChargeCode.push(IndChargeCode);
+            }
+        });
+
+        return ListChargeCode;
+    }
+
+    function BindtoDDL() {
+
+    }
+
+    function AddToFavourite() {
+        var chargecodelist = $("#ChargeCodeList").val();
+        if (chargecodelist == '') {
+            alert("There are no charge codes in the list.");
+            return false;
+        }
+
+        var errorMessage = '';
+        var groupName = $("#groupName").val();
+        var description = $("#groupDescription").val();
+        if (groupName == '')
+            errorMessage += 'Group Name \n';
+        if (description == '')
+            errorMessage += 'Description \n';
+        if (errorMessage != '') {
+            alert("Please fill up the following fields. \n" + errorMessage);
+            return false;
+        }
+        $("#AddToFavouriteModal").modal('hide');
+        $.ajax({
+            type: "POST",
+            url: '@Url.Action("AddToFavourite", "ChargeCode")',
+            data: { ChargeCodeList: chargecodelist, groupName: groupName, description: description },
+            success: function (content) {
+                if (content.Success == true) {
+                    alert("Charge codes added to new favourite group: " + groupName);
+                }
+                else {
+                    alert("An error occurred when adding charge codes to new favourite group. \n Please try again.");
+                }
+            },
+            error: function (err) {
+
+            }
+        });
+    }
+
+    $(function () {
+        updateChargeCode();
+    });
+</script>

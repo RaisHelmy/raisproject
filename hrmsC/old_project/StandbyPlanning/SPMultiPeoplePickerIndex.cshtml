@@ -1,0 +1,260 @@
+﻿@using TimeAttendance.Services
+
+@{
+	Layout = null;
+
+	string CurrEmpID = string.Empty;
+	string SearchType = string.Empty;
+
+	if (!string.IsNullOrEmpty(ViewBag.CurrEmpID) && ViewBag.CurrEmpID == "CurrEmpID")
+	{
+		CurrEmpID = Timesheet.GetCurrentEmployeeID();
+	}
+
+	if (!string.IsNullOrEmpty(ViewBag.SearchType))
+	{
+		SearchType = ViewBag.SearchType;
+	}
+}
+
+<div class="modal fade" id="MultiPeoplePicker" tabindex="-1" aria-hidden="true" style="z-index:10060 !important;">
+	<div class="modal-dialog modal-lg">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+				<h4 class="modal-title">
+					<p>People Picker - Select By Employee Number or Name </p>
+				</h4>
+			</div>
+			<div class="modal-body">
+				<div>
+					<div class="row" onkeypress="return event.keyCode!=13;">
+						<div class="col-md-12">
+							<div class="form-horizontal">
+								<div class="form-body">
+									@if (SearchType != "")
+									{
+										<div class="form-group">
+											<label class="control-label col-md-2 ">
+												Search Type
+											</label>
+											@if (SearchType == "Subordinates")
+											{
+												<div class="col-md-4 form-control-static">
+													<select class="form-control" id="MultiSearchType" onchange="toggleFavouriteBtn()">
+														<option value="Favourite">Favourite</option>
+														<option selected value="Subordinates">Subordinates</option>
+														<option value="">All</option>
+													</select>
+												</div>
+											}
+										</div>
+									}
+									<div class="form-group">
+										<label class="control-label col-md-2 ">
+											Employee Number
+										</label>
+										<div class="col-md-4 form-control-static">
+											<input type="text" class="form-control" name="txtMultiEmpCodeSearch" id="txtMultiEmpCodeSearch" />
+										</div>
+										<label class="control-label col-md-2 ">
+											Employee Name
+										</label>
+										<div class="col-md-4  form-control-static">
+											<input type="text" class="form-control" name="txtMultiEmpNameSearch" id="txtMultiEmpNameSearch" />
+										</div>
+									</div>
+									<div class="form-group ">
+										<div class="text-right">
+											<input id="btn-Search" type="button" value="Search" class="btn green btn-Search" onclick="SearchMultiPP();">
+										</div>
+									</div>
+								</div>
+								<br />
+								<div id="MultiPeoplePickerResult">
+
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn default green" onclick="SetSelectedMultiEmployee()">Select</button>
+				<button type="button" class="btn default green" onclick="RemoveSelectedMultiEmployee()">Remove</button>
+				<button type="button" class="btn default green" id="btnAddFav" onclick="InsertFavEmp()">Add to Favourite</button>
+				<button type="button" class="btn default green" id="btnDeleteFav" onclick="DeleteFavEmp()">Delete from Favourite</button>
+				<button type="button" class="btn default" data-dismiss="modal">Close</button>
+			</div>
+		</div>
+	</div>
+</div>
+
+<script type="text/javascript">
+    var CurrentSelectedMultiPP = null;
+
+	$(function () { })
+
+	function SetCurrentSelectedMultiID(el) {
+		CurrentSelectedMultiPP = $(el);
+		
+		$('#MultiPeoplePickerResult').empty();
+		$('#txtMultiEmpNameSearch').val('');
+		$('#txtMultiEmpCodeSearch').val('');
+		$('#MultiSearchType').val('Subordinates');
+
+		toggleFavouriteBtn();
+	}
+
+    function SearchMultiPP() {
+        var _EmpCode = $('#txtMultiEmpCodeSearch').val();
+        var _EmpName = $('#txtMultiEmpNameSearch').val();
+        var _SearchType = $('#MultiSearchType').val();
+        var _CurrEmpID = '@CurrEmpID';
+
+        $("#MultiPeoplePickerResult").html("LOADING...");
+
+        $.ajax({
+            type: "GET",
+            url: '@Url.Content("~/StandbyPlanning/_SPMultiPeoplePickerSearchResult")',
+            cache: false,
+            dataType: "html",
+            data: { EmpCode: _EmpCode, EmpName: _EmpName, SearchType: _SearchType, CurrEmpID: _CurrEmpID,},
+            success: function (content) {
+                $("#MultiPeoplePickerResult").html(content);
+            },
+            error: function (e) {
+            }
+        });
+    }
+
+    function SetSelectedMultiEmployee() {
+		var _empDisplayName = $(CurrentSelectedMultiPP).parent().siblings('.SPPeoplePickerDisplay').val();
+		var _empID = $(CurrentSelectedMultiPP).parent().siblings('.SPPeoplePickerID').val();
+		var _empCode = $(CurrentSelectedMultiPP).parent().siblings('.SPPeoplePickerCode').val();
+		var _empName = $(CurrentSelectedMultiPP).parent().siblings('.SPPeoplePickerName').val();
+
+        $.each($('#tblMultiPeoplePicker').dataTable().fnGetNodes(), function (i, e) {
+            var $row = $(e).closest('tr');
+            var _element = $row.find('td input[type=checkbox]');
+            var _selected = _element.prop("checked");
+
+            if (_selected) {
+                _empDisplayName += _element.attr("empcode") + ' - ' + _element.attr("empName") + ',';
+                _empID += _element.val() + ',';
+                _empCode += _element.attr("empcode") + ',';
+                _empName += _element.attr("empName") + ',';
+            }
+        })
+
+        $(CurrentSelectedMultiPP).parent().siblings('.SPPeoplePickerDisplay').val(_empDisplayName);
+		$(CurrentSelectedMultiPP).parent().siblings('.SPPeoplePickerID').val(_empID);
+		$(CurrentSelectedMultiPP).parent().siblings('.SPPeoplePickerCode').val(_empCode);
+		$(CurrentSelectedMultiPP).parent().siblings('.SPPeoplePickerName').val(_empName);
+		$(CurrentSelectedMultiPP).parent().siblings('.SPPeoplePickerDisplay').change();
+
+        $('#MultiPeoplePicker').modal('toggle');
+
+        CurrentSelectedMultiPP = null;
+	}
+
+	function RemoveSelectedMultiEmployee() {
+		var _empDisplayName = $(CurrentSelectedMultiPP).parent().siblings('.SPPeoplePickerDisplay').val();
+		var _empID = $(CurrentSelectedMultiPP).parent().siblings('.SPPeoplePickerID').val();
+		var _empCode = $(CurrentSelectedMultiPP).parent().siblings('.SPPeoplePickerCode').val();
+		var _empName = $(CurrentSelectedMultiPP).parent().siblings('.SPPeoplePickerName').val();
+
+		$.each($('#tblMultiPeoplePicker').dataTable().fnGetNodes(), function (i, e) {
+			var $row = $(e).closest('tr');
+			var _element = $row.find('td input[type=checkbox]');
+			var _selected = _element.prop("checked");
+
+			if (_selected) {
+				_empDisplayName = _empDisplayName.replace(_element.attr("empcode") + ' - ' + _element.attr("empName") + ',', '');
+				_empID = _empID.replace(_element.val() + ',', '');
+				_empCode = _empCode.replace(_element.attr("empcode") + ',', '');
+				_empName = _empName.replace(_element.attr("empName") + ',', '');
+			}
+		})
+
+		$(CurrentSelectedMultiPP).parent().siblings('.SPPeoplePickerDisplay').val(_empDisplayName);
+		$(CurrentSelectedMultiPP).parent().siblings('.SPPeoplePickerID').val(_empID);
+		$(CurrentSelectedMultiPP).parent().siblings('.SPPeoplePickerCode').val(_empCode);
+		$(CurrentSelectedMultiPP).parent().siblings('.SPPeoplePickerName').val(_empName);
+		$(CurrentSelectedMultiPP).parent().siblings('.SPPeoplePickerDisplay').change();
+
+		$('#MultiPeoplePicker').modal('toggle');
+
+		CurrentSelectedMultiPP = null;
+	}
+
+	function toggleFavouriteBtn() {
+        var searchType = $('#MultiSearchType').val();
+
+		if (searchType == 'Favourite') {
+			$('#btnAddFav').attr('disabled', true);
+			$('#btnDeleteFav').attr('disabled', false);
+		}
+		else {
+			$('#btnAddFav').attr('disabled', false);
+			$('#btnDeleteFav').attr('disabled', true);
+		}
+	}
+
+    function InsertFavEmp()
+    {
+        var _empCode = '';
+
+        $("#tblMultiPeoplePicker td input[type=checkbox]").each(function () {
+            var _selected = $(this).prop("checked");
+
+            if (_selected) {
+                _empCode += $(this).attr("empcode") + ',';
+            }
+        });
+
+        if (_empCode != '')
+        {
+            $.ajax({
+                url: '../TimeAttendance/InsertFavEmp',
+                type: 'POST',
+                data: {
+                    FavouriteCode: _empCode
+                },
+                success: function (result) {
+                    if (result.Result == 'True') {
+                        alert('Successfully added to favourite.');
+                    }
+                }
+            });
+        }
+    }
+
+    function DeleteFavEmp() {
+        var _empCode = '';
+
+        $("#tblMultiPeoplePicker td input[type=checkbox]").each(function () {
+            var _selected = $(this).prop("checked");
+
+            if (_selected) {
+                _empCode += $(this).attr("empcode") + ',';
+            }
+        });
+
+        if (_empCode != '') {
+            $.ajax({
+                url: '../TimeAttendance/DeleteFavEmp',
+                type: 'POST',
+                data: {
+                    FavouriteCode: _empCode
+                },
+                success: function (result) {
+                    if (result.Result == 'True') {
+                        alert('Successfully deleted from favourite.');
+                        SearchMultiPP();
+                    }
+                }
+            });
+        }
+    }
+</script>

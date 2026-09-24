@@ -1,0 +1,203 @@
+﻿@using ESS.Core
+
+@model List<ESS.Core.DropDownObject>
+
+@{
+	Layout = "~/Views/Shared/_Layout.cshtml";
+
+	ViewBag.Title = "Standby Planning Report (By Days)";
+
+	DateTime d1 = DateTime.Now.AddYears(-20);
+	DateTime d2 = DateTime.Now.AddYears(20);
+	string dtStrStart = d1.ToString("dd/MM/yyyy");
+	string dtStrEnd = d2.ToString("dd/MM/yyyy");
+}
+<div class="row">
+	<div class="col-md-12">
+		<br />
+		<h1 class="page-title">
+			@ViewBag.Title<span style="padding-left:20px;"><small></small></span>
+		</h1>
+	</div>
+</div>
+<br />
+<input type="hidden" id="hfEmployeeID" value="@ViewBag.EmployeeID" />
+<div class="form-body">
+	<div class="row">
+		<div class="col-md-6">
+			<div class="form-horizontal">
+				<div class="form-group">
+					<label class="col-md-5 control-label">Start Date</label>
+					<div class="col-md-7 form-control-static">
+						<div class="input-group date date-picker" id="divSubmissionDateFrom" data-date-format="dd MM yyyy">
+							<input type="text" class="form-control" id="SubDateFrom" name="SubDateFrom" />
+							<span class="input-group-btn">
+								<button type="button" class="btn default"><i class="fa fa-calendar"></i></button>
+							</span>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="col-md-6">
+			<div class="form-horizontal">
+				<div class="form-group">
+					<label class="col-md-5 control-label">End Date</label>
+					<div class="col-md-7 form-control-static">
+						<div class="input-group date date-picker" id="divSubmissionDateTo" data-date-format="dd MM yyyy">
+							<input type="text" class="form-control" id="SubDateTo" name="SubDateTo" />
+							<span class="input-group-btn">
+								<button type="button" class="btn default"><i class="fa fa-calendar"></i></button>
+							</span>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="row">
+		<div class="col-md-6">
+			<div class="form-horizontal">
+				<div class="form-group">
+					<label class="col-md-5 control-label">Employee Code *</label>
+					<div class="col-md-7 form-control-static">
+						<input class="form-control" type="text" id="EmployeeCode" />
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="col-md-6">
+			<div class="form-horizontal">
+				<div class="form-group">
+					
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="row">&nbsp;</div>
+	<div class="row">
+		<div class="col-md-12">
+			<div class="text-right">
+				<input type="button" id="btn-Search" class="btn green btn-Search" value="Search" onclick="SearchListing();">
+				<input type="button" id="btn-Clear" class="btn default " value="Clear" onclick="ClearFilter();">
+			</div>
+		</div>
+	</div>
+	<div class="row">&nbsp;</div>
+	<div class="row">
+		<div class="col-md-12">
+			<div id="SearchResult">
+
+			</div>
+		</div>
+	</div>
+</div>
+
+<script type="text/javascript">
+	jQuery(document).ready(function () {
+		$('.date-picker').datepicker({
+			format: 'dd/mm/yyyy',
+			autoclose: true
+		});
+
+		$('#divSubmissionDateFrom').datepicker('setStartDate', '@dtStrStart');
+        $('#divSubmissionDateFrom').datepicker('setEndDate', '@dtStrEnd');
+
+        $('#divSubmissionDateTo').datepicker('setStartDate', '@dtStrStart');
+        $('#divSubmissionDateTo').datepicker('setEndDate', '@dtStrEnd');
+
+        $("#divSubmissionDateFrom").datepicker({
+            autoclose: true,
+        }).on('changeDate', function (selected) {
+            var minDate = new Date(selected.date.valueOf());
+            minDate.setDate(minDate.getDate() + 1);
+            $('#divSubmissionDateTo').datepicker('setStartDate', minDate);
+        });
+
+        $("#divSubmissionDateTo").datepicker({
+            autoclose: true,
+        })
+        .on('changeDate', function (selected) {
+            var minDate = new Date(selected.date.valueOf());
+            minDate.setDate(minDate.getDate() - 1);
+            $('#divSubmissionDateFrom').datepicker('setEndDate', minDate);
+        });
+
+        $("#SubDateFrom").on("blur", function (e) {
+            if ($('#SubDateFrom').val() == "") {
+                $('#divSubmissionDateTo').datepicker('setStartDate', '@dtStrStart');
+            }
+        });
+
+        $("#SubDateTo").on("blur", function (e) {
+            if ($('#SubDateTo').val() == "") {
+                $('#divSubmissionDateFrom').datepicker('setEndDate', '@dtStrEnd');
+            }
+        });
+	});
+
+	function SearchListing() {
+		var _DateFrom = $('#SubDateFrom').val();
+		var _DateTo = $('#SubDateTo').val();
+		var _EmployeeCode = $('#EmployeeCode').val();
+
+		if (_EmployeeCode === '') {
+
+			alert("Please enter Employee");
+		}
+		else {
+			$("#SearchResult").html("LOADING...");
+
+			$.ajax({
+				type: "GET",
+				url: '@Url.Content("~/StandbyPlanning/_ByDaysReportResult")',
+				cache: false,
+				dataType: "html",
+				data: {
+					DateFrom: _DateFrom, DateTo: _DateTo,
+					EmployeeCode: _EmployeeCode
+				},
+				success: function (content) {
+					$("#SearchResult").html(content);
+				},
+				error: function (e) {
+					console.log(e);
+				}
+			});
+		}
+	}
+
+	var host = "..";
+
+	function ExportExcel() {
+		var dt = new Date();
+		var day = dt.getDate();
+		var month = dt.getMonth() + 1;
+		var year = dt.getFullYear();
+		var hour = dt.getHours();
+		var mins = dt.getMinutes();
+		var postfix = day + "." + month + "." + year + "_" + hour + "." + mins;
+
+		var _DateFrom = $('#SubDateFrom').val();
+		var _DateTo = $('#SubDateTo').val();
+		var _EmployeeCode = $('#EmployeeCode').val();
+
+		var JsonObjectFilter = {
+			DateFrom: _DateFrom,
+			DateTo: _DateTo,
+			EmployeeCode: _EmployeeCode
+		}
+
+		var Filter = JSON.stringify(JsonObjectFilter);
+
+		window.open(host +"/StandbyPlanning/_ExportToExcelGeneral?FileName=ByDaysReport_" + postfix +
+			"&ReportCategory=" + "ByDaysReport" +
+			"&Filter=" + Filter);
+	}
+
+	function ClearFilter() {
+		$('#SubDateFrom').val('');
+		$('#SubDateTo').val('');
+		$('#EmployeeCode').val('');
+	}
+</script>

@@ -1,0 +1,241 @@
+﻿@model ESS.Claim.ViewModels.ClaimVM
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="portlet box blue">
+
+            <div class="mini-triangle"><img src="../Assets/img/menu-red-triangle.png" /></div>
+            <div class="portlet-title">
+                <div class="caption">
+                    <i class="fa fa-reorder"></i>Charge Code Summary
+                </div>
+                <div class="tools">
+                </div>
+            </div>
+            <div class="portlet-body form">
+                <div class="form-body">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <table id="CCSummmaryTable" class="table table-striped table-bordered table-hover table-full-width">
+                                <thead>
+                                    <tr>
+                                        <th class="col-md-9">Charge Code</th>
+                                        <th class="col-md-3 text-right">Amount (RM)</th>
+                                    </tr>
+                                </thead>
+                            </table>
+                        </div>
+                    </div>
+                    
+                    <div id="divDICText" class="row" style="visibility : hidden">
+                        <div class="col-md-12">
+                            <div class="form-horizontal">
+                                <div class="form-group">
+                                    <label class="control-label col-md-2">DIC Line Item Text : </label>
+                                    <div class="col-md-4">
+                                        @if (Model.Status == "Draft" || Model.Status == "Withdrawn" || Model.Status == "Declined" || 
+                                            Model.Status == "0" || Model.Status == "5" || Model.Status == "4")
+                                        {
+                                            <input type="text" class="form-control"
+                                                   id="DICText" name="DICText"
+                                                   value="@Model.DICText">
+                                        }
+                                        else
+                                        {
+                                            <input type="text" class="form-control"
+                                                   id="DICText" name="DICText"
+                                                   value="@Model.DICText" 
+                                                   readonly="readonly">
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<script>
+    var CCsummaryTable = $('#CCSummmaryTable').DataTable({
+        "bLengthChange": false,
+        "bFilter": false,
+        "bPaginate": false,
+        "bInfo": false,
+        "bSort": false
+    });
+
+    $(document).ready(function () {
+        CalculateChargeCodeSummary();
+
+        var chargecodestring = $('#ChargeCodeList').val();
+        $(function () {
+            if (chargecodestring.indexOf("DI") < 0) {
+                $("#divDICText").css("visibility", "hidden");
+            }
+            else {
+                $("#divDICText").css("visibility", "visible");
+            }
+        });
+    });
+
+    function CalculateChargeCodeSummary()
+    {
+        var ccObj = [];
+        $("[name$='.SubTypeColumn0']").each(function (index) {
+            //console.log(index);
+            var ThisCC = null;
+            if ($(this).prop('tagName') == "SELECT") {
+                ThisCC = $(this).find('option:selected').text();
+
+                if (ThisCC == "Select One") {
+                    ThisCC = "[Blank]";
+                }
+            }
+            else {
+                ThisCC = $(this).val();
+            }
+
+            var Amt = $(this).closest("tr").find("[name$='.TotalAmount']").val();
+            if (Amt == null || Amt == "") {
+                Amt = "0";
+            }
+         
+            if (!ccObj.length == 0) {
+                var matches = jQuery.grep(ccObj, function (item) {
+                    if (item.CC == ThisCC) {
+                        item.Amt += parseFloat(Amt);
+
+                    }
+                    return (item.CC === ThisCC);
+                });
+                if (matches == 0) {
+                    obj = {};
+                    obj['CC']  =  ThisCC;
+                    obj['Amt'] =  parseFloat(Amt);
+                    ccObj.push(obj)
+
+                }
+            }
+            else {
+                obj = {};
+                obj['CC'] = $.trim(ThisCC);
+                obj['Amt'] = parseFloat(Amt);
+                ccObj.push(obj)
+            }
+        });
+
+        if ($("[name='ClaimTypeCode']").val() == "COV01")
+        {
+            var TipsCC = "";
+            if ($("[name='TipsChargeCode']").prop('tagName') == "SELECT") {
+                TipsCC = $("[name='TipsChargeCode']").find('option:selected').text();
+
+                if (TipsCC == "Select One") {
+                    TipsCC = "[Blank]";
+                }
+            }
+            else if ($("[name='TipsChargeCode']").prop('tagName') == "INPUT") {
+                TipsCC = DisplayChargeCodeDesc($("[name='TipsChargeCode']").val());
+            }
+
+            var ForexLossCC = "";
+            if ($("[name='ForexLossChargeCode']").prop('tagName') == "SELECT") {
+                ForexLossCC = $("[name='ForexLossChargeCode']").find('option:selected').text();
+
+                if (ForexLossCC == "Select One") {
+                    ForexLossCC = "[Blank]";
+                }
+            }
+            else if ($("[name='ForexLossChargeCode']").prop('tagName') == "INPUT") {
+                ForexLossCC = DisplayChargeCodeDesc($("[name='ForexLossChargeCode']").val());
+            }
+
+            var TipsAmt = $("#hdnTips").val();
+            var ForexLossAmt = $("#hdnForexLoss").val();
+
+            if (TipsAmt != "0.00")
+            {
+                //console.log(ccObj);
+                if (!ccObj.length == 0)
+                {
+                    var matches = jQuery.grep(ccObj, function (item) {
+                        if (item.CC == TipsCC) {
+                            item.Amt += parseFloat(TipsAmt);
+
+                        }
+                        return (item.CC === TipsCC);
+                    });
+                    if (matches == 0) {
+                        obj = {};
+                        obj['CC'] = TipsCC;
+                        obj['Amt'] = parseFloat(TipsAmt);
+                        ccObj.push(obj)
+
+                    }
+
+
+                }
+                else
+                {
+                    obj = {};
+                    obj['CC'] = $.trim(TipsCC);
+                    obj['Amt'] = parseFloat(TipsAmt);
+                    ccObj.push(obj)
+                }
+            }
+
+            if (ForexLossAmt != "0.00")
+            {
+                //console.log(ForexLossCC);
+                if (!ccObj.length == 0) {
+                    var matches = jQuery.grep(ccObj, function (item) {
+                        if (item.CC == ForexLossCC) {
+                            item.Amt += parseFloat(ForexLossAmt);
+
+                        }
+                        return (item.CC === ForexLossCC);
+                    });
+                    if (matches == 0) {
+                        obj = {};
+                        obj['CC'] =  ForexLossCC;
+                        obj['Amt'] = parseFloat(ForexLossAmt);
+                        ccObj.push(obj)
+
+                    }
+
+
+                }
+                else {
+                    obj = {};
+                    obj['CC'] = $.trim(ForexLossCC);
+                    obj['Amt'] = parseFloat(ForexLossAmt);
+                    ccObj.push(obj)
+                }
+            }
+
+
+        }
+        var TableHtml = "";
+        var totalAmt = 0;
+        CCsummaryTable.fnClearTable();
+        ccObj.forEach(function (arrayItem) {
+            if (arrayItem.CC == "") {
+                arrayItem.CC = "[Blank]";
+            }
+            
+            CCsummaryTable.fnAddData(['' + arrayItem.CC + '', '<div class="text-right">' + arrayItem.Amt.toFixed(2) + '</div>']);
+            totalAmt = totalAmt + arrayItem.Amt;
+        });
+      
+        CCsummaryTable.fnAddData(['<div class="bold">Total Amount</div>', '<div class="text-right">' + totalAmt.toFixed(2) + '</div>']);
+
+        //$('#chargecodesummarydetail').html(TableHtml);
+    }
+
+   
+</script>

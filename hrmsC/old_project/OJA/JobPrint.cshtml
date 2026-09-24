@@ -1,0 +1,221 @@
+﻿@model Tuple<ESS.Core.EmployeeDetailsSummary, OJA.Models.JobViewModel>
+@using OJA.Models;
+@{
+    Layout = null;
+
+    JobStatusType[] redStatusArray = { JobStatusType.Withdrawn, JobStatusType.Declined, JobStatusType.Unsuccessful, JobStatusType.Failed, JobStatusType.IncompleteSubmission };
+    var statusColor = "green";
+    if(redStatusArray.Contains(Model.Item2.Status))
+    {
+        statusColor = "red";
+    }
+
+    var Employee = Model.Item1;
+    if(Employee == null)
+    {
+        Employee = new ESS.Core.EmployeeDetailsSummary();
+    }
+
+    var Job = Model.Item2;
+    if(Job == null)
+    {
+        Job = new JobViewModel();
+    }
+}
+
+<head>
+    <style type="text/css">
+        body {
+            margin: 5 10 5 10;
+        }
+
+        .ms-sitetitle {
+            PADDING-RIGHT: 0px;
+            PADDING-LEFT: 6px;
+            PADDING-BOTTOM: 7px;
+            MARGIN: 0px;
+            FONT: bold 11pt verdana;
+            VERTICAL-ALIGN: middle;
+            COLOR: #666666;
+            PADDING-TOP: 4px
+        }
+
+        .FormSectionHeader {
+            background-color: Transparent;
+            border-style: none;
+            font-size: ||11;
+        }
+
+        .List .Header {
+            background-color: #888888;
+        }
+
+        .FormSection {
+            width: 100%;
+            padding: 4px;
+            border: solid 1px #888888;
+            /*text-align: center;*/
+        }
+
+        .FormSectionHeader A {
+            font-weight: bold;
+        }
+
+
+        .FormSectionInfo, .FormSectionWarning, .FormSectionError, .FormSectionQuestion {
+            font-size: 11px;
+            width: 100%;
+            color: #000000;
+            border: solid 1px #000000;
+            background-color: #f0f0f0;
+        }
+
+            .FormSectionInfo td, .FormSectionWarning td, .FormSectionError td, .FormSectionQuestion td {
+                font-size: 11px;
+                color: #000000;
+                padding: 4px;
+            }
+
+        .FormLabel {
+            font-size: 11px;
+            font-weight: bold;
+            vertical-align: top;
+            /*width:25%;*/
+            padding: 2px;
+        }
+
+        .FormText {
+            font-size: 11px;
+            font-weight: normal;
+            vertical-align: top;
+            /*width:35%;*/
+        }
+         
+    </style>
+</head>
+
+<table cellpadding="0" cellspacing="0" border="0">
+    <tr>
+        <td>
+            <label>
+                <p class="MsoNormal">
+                    <span  style="font-size:16; font-weight:bold; width:100%; text-decoration:underline">Job Application Details for Reference No. @Model.Item2.ReferenceNo</span>
+                </p>
+            </label>
+        </td>
+    </tr>
+    <tr><td>&nbsp;</td></tr>
+</table>
+
+<table width="100%" cellpadding="0" cellspacing="0">
+    <tr><td class="FormSectionHeader"><label style="font-weight:bold">Employee Details</label></td></tr>
+    <tr>
+        <td class="FormSection">
+            <table width="100%">
+                <col class="FormLabel" width="20%" />
+                <col class="FormText" width="30%" />
+                <col class="FormLabel" width="20%" />
+                <col class="FormText" width="30%" />
+                <tr>
+                    <td class="FormLabel">Reference No.</td>
+                    <td class="FormText">
+                        <label class="refno">
+                            <p class="MsoNormal"><span style="color:blue; font-weight:bold">@Job.ReferenceNo</span></p>
+                        </label>
+                    </td>
+                    <td class="FormLabel">Status</td>
+                    <td class="FormText">
+                        <label class="refno">
+                            <p class="MsoNormal"><span style="color:@statusColor; font-weight:bold">@Job.Status</span></p>
+                        </label>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="FormLabel">Employee No</td>
+                    <td class="FormText">@Employee.EmployeeCode</td>
+                    <td class="FormLabel">Company</td>
+                    <td class="FormText">@Employee.Company</td>
+                </tr>
+                <tr>
+                    <td class="FormLabel">Employee Name</td>
+                    <td class="FormText">@Employee.EmployeeName</td>
+                    <td class="FormLabel">Division / Department</td>
+                    <td class="FormText">@Employee.Department</td>
+                </tr>
+                <tr>
+                    <td class="FormLabel">Position</td>
+                    <td class="FormText">@Employee.Position</td>
+                    <td class="FormLabel">Unit / Section</td>
+                    <td class="FormText">@Employee.UnitSection</td>
+                </tr>
+                <tr>
+                    <td class="FormLabel">Pay Scale Group</td>
+                    <td class="FormText">@Employee.PayScaleGroup</td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+</table>
+
+<br />
+<div class="ms-sitetitle">@(ESS.Core.Common.GetEmployeeID().ToUpper() == Job.EmployeeID.ToUpper() ? "My" : "")Job Application</div>
+
+<table width="100%" cellpadding="0" cellspacing="0">
+    <tr><td class="FormSectionHeader">Job Application Details</td></tr>
+    <tr>
+        <td class="FormSection">
+            <table width="100%">
+                <col class="FormLabel" width="30%" />
+                <col class="FormText" width="70%" />
+                <tr>
+                    <td class="FormLabel">Position</td>
+                    <td class="FormText">@Job.Position</td>
+                </tr>
+                <tr>
+                    <td class="FormLabel">Job Grade</td>
+                    <td class="FormText">@Job.PayscaleGroup</td>
+                </tr>
+                <tr>
+                    <td class="FormLabel">Company</td>
+                    <td class="FormText">@Job.DivisionCode</td>
+                </tr>
+                <tr>
+                    <td class="FormLabel">Department</td>
+                    <td class="FormText">@Job.Department</td>
+                </tr>
+                <tr>
+                    <td class="FormLabel">Unit / Section</td>
+                    <td class="FormText">@Job.UnitSection</td>
+                </tr>
+                <tr>
+                    <td class="FormLabel">Vacancy No. </td>
+                    <td class="FormText">@Job.VacancyNumber</td>
+                </tr>
+                <tr>
+                    <td class="FormLabel">Advertisement Ref. No.</td>
+                    <td class="FormText">@Job.AdvertisementNo</td>
+                </tr>
+                <tr>
+                    <td class="FormLabel">Advertisement Date</td>
+                    <td class="FormText">@Job.StartingDate</td>
+                </tr>
+                <tr>
+                    <td class="FormLabel">Closing Date</td>
+                    <td class="FormText">@Job.ClosingDate</td>
+                </tr>
+                <tr>
+                    <td class="FormLabel">Application Type</td>
+                    <td class="FormText">@Job.ApplicationType</td>
+                </tr>
+                <tr>
+                    <td class="FormLabel">Remarks</td>
+                    <td class="FormText">@Job.Remarks</td>
+                </tr>
+                <tr>
+                    <td class="FormLabel">Applicant's CV</td>
+                    <td class="FormText"><a target="_blank" href="@Url.Action("Index", "MyResume", new { EmployeeID = Model.Item2.EmployeeID})">Resume</a></td>
+                </tr> 
+            </table>
+        </td>
+    </tr>
+</table>

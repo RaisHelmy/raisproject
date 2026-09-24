@@ -1,0 +1,843 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Pembangunan Sistem Menggunakan AI — Rais Helmy</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=JetBrains+Mono:wght@400;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          gold: {
+            50:  '#FBF6E4',
+            100: '#F5E9B8',
+            200: '#EDD77A',
+            300: '#E5C547',
+            400: '#D4AF37',
+            500: '#C9A227',
+            600: '#A8841C',
+            700: '#876815',
+            800: '#5C4710',
+            900: '#3A2C09',
+          },
+          ink: {
+            900: '#0A0A0A',
+            800: '#111111',
+            700: '#1A1A1A',
+            600: '#222222',
+            500: '#2D2D2D',
+            400: '#3A3A3A',
+          }
+        },
+        fontFamily: {
+          display: ['Orbitron', 'sans-serif'],
+          mono: ['JetBrains Mono', 'monospace'],
+          body: ['Manrope', 'sans-serif'],
+        }
+      }
+    }
+  }
+</script>
+
+<style>
+  * { -webkit-tap-highlight-color: transparent; }
+  html, body { overscroll-behavior: none; }
+
+  body {
+    font-family: 'Manrope', sans-serif;
+    background:
+      radial-gradient(circle at 20% 10%, rgba(212,175,55,0.08) 0%, transparent 40%),
+      radial-gradient(circle at 80% 90%, rgba(212,175,55,0.06) 0%, transparent 40%),
+      #FFFAF5;
+    min-height: 100vh;
+    color: #1a1a1a;
+    overflow: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(212,175,55,0.05) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(212,175,55,0.05) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .card-shape {
+    clip-path: polygon(
+      0 16px, 16px 0,
+      calc(100% - 16px) 0, 100% 16px,
+      100% calc(100% - 16px), calc(100% - 16px) 100%,
+      16px 100%, 0 calc(100% - 16px)
+    );
+  }
+
+  .card-shape-inner {
+    clip-path: polygon(
+      0 14px, 14px 0,
+      calc(100% - 14px) 0, 100% 14px,
+      100% calc(100% - 14px), calc(100% - 14px) 100%,
+      14px 100%, 0 calc(100% - 14px)
+    );
+  }
+
+  .display {
+    font-family: 'Orbitron', sans-serif;
+    letter-spacing: 0.02em;
+  }
+
+  .mono { font-family: 'JetBrains Mono', monospace; }
+
+  .gold-text {
+    background: linear-gradient(135deg, #FBF6E4 0%, #E5C547 35%, #D4AF37 65%, #876815 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .slide {
+    display: none;
+    animation: slideIn 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .slide.active { display: flex; }
+
+  @keyframes slideIn {
+    0% { opacity: 0; transform: translateY(8px) scale(0.985); }
+    100% { opacity: 1; transform: translateY(0) scale(1); }
+  }
+
+  .scroll-area::-webkit-scrollbar { width: 3px; }
+  .scroll-area::-webkit-scrollbar-track { background: transparent; }
+  .scroll-area::-webkit-scrollbar-thumb { background: rgba(212,175,55,0.4); }
+
+  .corner-tl, .corner-tr, .corner-bl, .corner-br {
+    position: absolute;
+    width: 14px;
+    height: 14px;
+    border-color: #D4AF37;
+    z-index: 5;
+  }
+  .corner-tl { top: 6px; left: 6px; border-top: 2px solid; border-left: 2px solid; }
+  .corner-tr { top: 6px; right: 6px; border-top: 2px solid; border-right: 2px solid; }
+  .corner-bl { bottom: 6px; left: 6px; border-bottom: 2px solid; border-left: 2px solid; }
+  .corner-br { bottom: 6px; right: 6px; border-bottom: 2px solid; border-right: 2px solid; }
+
+  .dot-grid {
+    background-image: radial-gradient(circle, rgba(212,175,55,0.25) 1px, transparent 1px);
+    background-size: 12px 12px;
+  }
+
+  .gold-glow {
+    box-shadow:
+      0 0 0 1px rgba(212,175,55,0.4),
+      0 0 30px rgba(212,175,55,0.2),
+      0 0 60px rgba(212,175,55,0.12);
+  }
+
+  .tag-sharp {
+    clip-path: polygon(8px 0, 100% 0, calc(100% - 8px) 100%, 0 100%);
+  }
+
+  .stripe-pattern bg-gold-100 {
+    background-image: repeating-linear-gradient(
+      45deg,
+      rgba(212,175,55,0.08),
+      rgba(212,175,55,0.08) 1px,
+      transparent 1px,
+      transparent 8px
+    );
+  }
+
+  @keyframes pulse-gold {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(212,175,55,0.6); }
+    50% { box-shadow: 0 0 0 8px rgba(212,175,55,0); }
+  }
+  .pulse { animation: pulse-gold 2s infinite; }
+
+  .num-marker {
+    font-family: 'Orbitron', sans-serif;
+    font-weight: 900;
+    background: linear-gradient(135deg, #D4AF37, #876815);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  @keyframes shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+  }
+  .shimmer {
+    background: linear-gradient(90deg, transparent 0%, rgba(212,175,55,0.4) 50%, transparent 100%);
+    background-size: 200% 100%;
+    animation: shimmer 3s infinite;
+  }
+
+  .compare-bar {
+    height: 4px;
+    background: linear-gradient(90deg, #D4AF37 var(--w, 50%), rgba(212,175,55,0.15) var(--w, 50%));
+  }
+
+  .check-gold::before {
+    content: '◆';
+    color: #D4AF37;
+    margin-right: 8px;
+    font-size: 9px;
+    vertical-align: middle;
+  }
+</style>
+</head>
+
+<body class="select-none">
+
+<div class="fixed top-0 left-0 right-0 z-30 px-4 py-2.5 flex items-center justify-between text-[10px] mono uppercase tracking-widest border-b border-gold-400/50 bg-white/80 backdrop-blur">
+  <div class="flex items-center gap-2">
+    <span class="w-1.5 h-1.5 bg-gold-500 pulse"></span>
+    <span class="text-gold-700">SYS://RAIS_HELMY</span>
+  </div>
+  <div class="text-gold-600">v2026.05</div>
+</div>
+
+<div class="relative z-10 min-h-screen flex items-center justify-center p-4 pt-14 pb-24">
+  <div class="w-full max-w-[400px] relative">
+
+    <!-- SLIDE 1: COVER -->
+    <div class="slide active">
+      <div class="card-shape relative w-full aspect-square bg-gradient-to-br from-gold-400 via-gold-300 to-gold-500 p-[2px]">
+        <div class="corner-tl"></div><div class="corner-tr"></div>
+        <div class="corner-bl"></div><div class="corner-br"></div>
+        <div class="card-shape-inner w-full h-full bg-gradient-to-br from-white to-gold-50 p-7 flex flex-col justify-between relative overflow-hidden">
+          <div class="absolute inset-0 dot-grid opacity-15"></div>
+          <div class="absolute -top-10 -right-20 w-60 h-[1px] bg-gradient-to-r from-transparent via-gold-500 to-transparent rotate-45"></div>
+          <div class="absolute -bottom-10 -left-20 w-60 h-[1px] bg-gradient-to-r from-transparent via-gold-500 to-transparent rotate-45"></div>
+
+          <div class="relative z-10">
+            <div class="flex items-center gap-2 mb-1">
+              <div class="w-8 h-[1px] bg-gold-700"></div>
+              <span class="mono text-[9px] tracking-[0.3em] text-gold-600">MASTERCLASS / 01</span>
+            </div>
+            <div class="mono text-[10px] text-gold-600 mt-3">[ 2026.05.09 ]</div>
+          </div>
+
+          <div class="relative z-10">
+            <div class="text-[10px] mono text-gold-700 mb-3 tracking-widest">› PEMBANGUNAN_SISTEM</div>
+            <h1 class="display text-3xl font-black leading-[1.05] mb-1" style="background: linear-gradient(135deg, #876815 0%, #D4AF37 35%, #E5C547 65%, #FBF6E4 100%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;">
+              AI<br>DEVELOPER<br>SYSTEM
+            </h1>
+            <div class="h-[2px] w-16 bg-gold-700 my-4"></div>
+            <div class="text-xs text-gold-700/80 font-medium">Bersama</div>
+            <div class="display text-base font-bold text-gold-700 tracking-wider">SDR. RAIS HELMY</div>
+          </div>
+
+          <div class="relative z-10 flex items-end justify-between">
+            <div>
+              <div class="mono text-[9px] text-gold-600 tracking-wider">DURATION</div>
+              <div class="display text-sm text-gold-700 font-bold">3.0 HRS</div>
+            </div>
+            <div class="text-right">
+              <div class="mono text-[9px] text-gold-600 tracking-wider">INVEST</div>
+              <div class="display text-sm text-gold-700 font-bold">RM 200</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 2: INTRO -->
+    <div class="slide">
+      <div class="card-shape w-full aspect-square bg-gold-400/30 p-[1px]">
+        <div class="card-shape-inner w-full h-full bg-white flex flex-col">
+          <div class="px-6 pt-6 pb-3 border-b border-gold-400/25">
+            <div class="flex items-center justify-between">
+              <span class="tag-sharp bg-gold-500 text-white px-3 py-1 mono text-[9px] font-bold tracking-widest">01 / INTRO</span>
+              <span class="num-marker text-2xl">01</span>
+            </div>
+            <h2 class="display text-lg font-bold text-gold-800 mt-2">APA KELAS INI?</h2>
+          </div>
+          <div class="scroll-area flex-1 overflow-y-auto px-6 py-4 space-y-3">
+            <p class="text-[12.5px] leading-relaxed text-gold-900/90">
+              Panduan <span class="text-gold-400 font-bold">hands-on</span> membangunkan sistem sebenar menggunakan AI sebagai pembantu utama.
+            </p>
+            <div class="border-l-2 border-gold-500 pl-3 py-1 stripe-pattern bg-gold-100">
+              <p class="text-[11.5px] text-gold-800 italic">"Bukan teori — langkah demi langkah membina sistem berfungsi."</p>
+            </div>
+            <div>
+              <div class="mono text-[10px] text-gold-400 tracking-widest mb-2">› UNTUK ANDA JIKA</div>
+              <ul class="space-y-1.5 text-[12px] text-gold-900/85">
+                <li class="check-gold">Ada idea sistem tetapi tidak tahu cara mula</li>
+                <li class="check-gold">Pernah cuba coding tapi berputus asa</li>
+                <li class="check-gold">Ingin guna AI untuk percepat pembangunan</li>
+                <li class="check-gold">Bina sistem sendiri, syarikat, atau pelanggan</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 3: PENGALAMAN -->
+    <div class="slide">
+      <div class="card-shape w-full aspect-square bg-gold-400/30 p-[1px]">
+        <div class="card-shape-inner w-full h-full bg-white flex flex-col">
+          <div class="px-6 pt-6 pb-3 border-b border-gold-400/25">
+            <div class="flex items-center justify-between">
+              <span class="tag-sharp bg-gold-500 text-white px-3 py-1 mono text-[9px] font-bold tracking-widest">02 / TRACK_RECORD</span>
+              <span class="num-marker text-2xl">02</span>
+            </div>
+            <h2 class="display text-lg font-bold text-gold-800 mt-2">6 TAHUN. SISTEM KRITIKAL.</h2>
+          </div>
+          <div class="scroll-area flex-1 overflow-y-auto px-6 py-4 space-y-2.5">
+            <p class="text-[11.5px] text-gold-900/80">Sistem yang digunakan ribuan pengguna setiap hari — bukan demo.</p>
+
+            <div class="card-shape bg-gold-300/60 p-[1px]">
+              <div class="card-shape-inner bg-gold-100 p-3">
+                <div class="flex items-center gap-2 mb-1">
+                  <span class="text-gold-400 text-base">⬢</span>
+                  <span class="display text-[11px] font-bold text-gold-700 tracking-wider">PDRM C4i</span>
+                </div>
+                <p class="text-[10.5px] text-gold-900/70 leading-snug">Command center polis 24/7. IC, JIM, JPJ, VOIP, MERS999.</p>
+              </div>
+            </div>
+
+            <div class="card-shape bg-gold-300/60 p-[1px]">
+              <div class="card-shape-inner bg-gold-100 p-3">
+                <div class="flex items-center gap-2 mb-1">
+                  <span class="text-gold-400 text-base">⬢</span>
+                  <span class="display text-[11px] font-bold text-gold-700 tracking-wider">TNB — TOMAS & ESS</span>
+                </div>
+                <p class="text-[10.5px] text-gold-900/70 leading-snug">Asset management & ERP HR. Flutterflow, .NET 6, SAP integration.</p>
+              </div>
+            </div>
+
+            <div class="card-shape bg-gold-300/60 p-[1px]">
+              <div class="card-shape-inner bg-gold-100 p-3">
+                <div class="flex items-center gap-2 mb-1">
+                  <span class="text-gold-400 text-base">⬢</span>
+                  <span class="display text-[11px] font-bold text-gold-700 tracking-wider">ETIQA / MAYBANK</span>
+                </div>
+                <p class="text-[10.5px] text-gold-900/70 leading-snug">Sistem AMLA compliance. PEP screening. .NET 10.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 4: MASALAH -->
+    <div class="slide">
+      <div class="card-shape w-full aspect-square bg-gold-400/30 p-[1px]">
+        <div class="card-shape-inner w-full h-full bg-white flex flex-col">
+          <div class="px-6 pt-6 pb-3 border-b border-gold-400/25">
+            <div class="flex items-center justify-between">
+              <span class="tag-sharp bg-gold-500 text-white px-3 py-1 mono text-[9px] font-bold tracking-widest">03 / PROBLEM</span>
+              <span class="num-marker text-2xl">03</span>
+            </div>
+            <h2 class="display text-lg font-bold text-gold-800 mt-2">APA YANG MENGHALANG?</h2>
+          </div>
+          <div class="scroll-area flex-1 overflow-y-auto px-6 py-4 space-y-2.5">
+            <ul class="space-y-2">
+              <li class="flex gap-2 text-[12px]">
+                <span class="mono text-gold-400 font-bold">01</span>
+                <span class="text-gold-900/85"><b class="text-gold-700">Tidak tahu mula</b> — terlalu banyak framework bercanggah</span>
+              </li>
+              <li class="flex gap-2 text-[12px]">
+                <span class="mono text-gold-400 font-bold">02</span>
+                <span class="text-gold-900/85"><b class="text-gold-700">Takut gagal</b> di khalayak ramai</span>
+              </li>
+              <li class="flex gap-2 text-[12px]">
+                <span class="mono text-gold-400 font-bold">03</span>
+                <span class="text-gold-900/85"><b class="text-gold-700">Tiada masa</b> — kursus biasa 3-6 bulan</span>
+              </li>
+              <li class="flex gap-2 text-[12px]">
+                <span class="mono text-gold-400 font-bold">04</span>
+                <span class="text-gold-900/85"><b class="text-gold-700">Tak faham AI</b> — tahu wujud, tak tahu guna</span>
+              </li>
+            </ul>
+
+            <div class="card-shape bg-gradient-to-br from-gold-400 to-gold-700 p-[1.5px] mt-3">
+              <div class="card-shape-inner bg-gold-50 p-3">
+                <div class="mono text-[9px] text-gold-400 tracking-widest mb-1">› REALITI 2026</div>
+                <p class="text-[12px] text-gold-800 font-bold leading-snug">
+                  HTML asas → sistem berfungsi dalam <span class="gold-text">JAM</span>, bukan bulan.
+                </p>
+              </div>
+            </div>
+            <p class="text-[10.5px] text-gold-600 italic">Jurang sebenar: kaedah & keyakinan, bukan teknikal.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 5: STACK -->
+    <div class="slide">
+      <div class="card-shape w-full aspect-square bg-gold-400/30 p-[1px]">
+        <div class="card-shape-inner w-full h-full bg-white flex flex-col">
+          <div class="px-6 pt-6 pb-3 border-b border-gold-400/25">
+            <div class="flex items-center justify-between">
+              <span class="tag-sharp bg-gold-500 text-white px-3 py-1 mono text-[9px] font-bold tracking-widest">04 / STACK</span>
+              <span class="num-marker text-2xl">04</span>
+            </div>
+            <h2 class="display text-base font-bold text-gold-800 mt-2">HTML + JS + CLOUDFLARE</h2>
+          </div>
+          <div class="scroll-area flex-1 overflow-y-auto px-6 py-4 space-y-2.5">
+            <div class="grid grid-cols-2 gap-2">
+              <div class="border border-gold-700/40 p-2">
+                <div class="mono text-[9px] text-gold-700 mb-0.5">REJECTED</div>
+                <div class="text-[11px] text-gold-900/60 line-through">MERN / React</div>
+                <div class="text-[9px] text-gold-600 mt-1">Terlalu berat</div>
+              </div>
+              <div class="border border-gold-700/40 p-2">
+                <div class="mono text-[9px] text-gold-700 mb-0.5">REJECTED</div>
+                <div class="text-[11px] text-gold-900/60 line-through">.NET / Java</div>
+                <div class="text-[9px] text-gold-600 mt-1">Enterprise scale</div>
+              </div>
+            </div>
+
+            <div class="card-shape bg-gold-400 p-[1.5px]">
+              <div class="card-shape-inner bg-gold-50 p-3">
+                <div class="mono text-[9px] text-gold-400 tracking-widest mb-2">✓ SELECTED FOR 2026</div>
+                <ul class="space-y-1 text-[11.5px] text-gold-900/90">
+                  <li class="check-gold"><b class="text-gold-700">Mudah mula</b> — tiada build step</li>
+                  <li class="check-gold"><b class="text-gold-700">Kos sifar</b> — 100K req/hari free</li>
+                  <li class="check-gold"><b class="text-gold-700">Global edge</b> — 300+ lokasi</li>
+                  <li class="check-gold"><b class="text-gold-700">AI-friendly</b> — mudah Claude faham</li>
+                  <li class="check-gold"><b class="text-gold-700">Scalable</b> — 10 atau 10K users</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 6: 3 PILLARS -->
+    <div class="slide">
+      <div class="card-shape w-full aspect-square bg-gold-400/30 p-[1px]">
+        <div class="card-shape-inner w-full h-full bg-white flex flex-col">
+          <div class="px-6 pt-6 pb-3 border-b border-gold-400/25">
+            <div class="flex items-center justify-between">
+              <span class="tag-sharp bg-gold-500 text-white px-3 py-1 mono text-[9px] font-bold tracking-widest">05 / METHOD</span>
+              <span class="num-marker text-2xl">05</span>
+            </div>
+            <h2 class="display text-lg font-bold text-gold-800 mt-2">3 TIANG UTAMA</h2>
+          </div>
+          <div class="scroll-area flex-1 overflow-y-auto px-6 py-4 space-y-2.5">
+
+            <div class="flex gap-3 items-start border-l-2 border-gold-500 pl-3 py-1">
+              <div class="display text-2xl font-black text-gold-400 leading-none">01</div>
+              <div>
+                <div class="display text-[11px] font-bold text-gold-700 tracking-wider mb-1">BASELINE</div>
+                <p class="text-[11px] text-gold-900/75 leading-snug">Asas berfikir seperti pembangun. Pecahkan masalah, komunikasi AI, keputusan teknikal.</p>
+              </div>
+            </div>
+
+            <div class="flex gap-3 items-start border-l-2 border-gold-500 pl-3 py-1">
+              <div class="display text-2xl font-black text-gold-400 leading-none">02</div>
+              <div>
+                <div class="display text-[11px] font-bold text-gold-700 tracking-wider mb-1">KURSUS</div>
+                <p class="text-[11px] text-gold-900/75 leading-snug">Silibus tersusun. Setiap sesi membina atas yang sebelumnya — spec hingga live.</p>
+              </div>
+            </div>
+
+            <div class="flex gap-3 items-start border-l-2 border-gold-500 pl-3 py-1">
+              <div class="display text-2xl font-black text-gold-400 leading-none">03</div>
+              <div>
+                <div class="display text-[11px] font-bold text-gold-700 tracking-wider mb-1">SOKONGAN</div>
+                <p class="text-[11px] text-gold-900/75 leading-snug">Bukan kelas sekali habis. Kumpulan aktif untuk tanya, kongsi, dapat feedback.</p>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 7: BE SPECIFIC -->
+    <div class="slide">
+      <div class="card-shape w-full aspect-square bg-gold-400/30 p-[1px]">
+        <div class="card-shape-inner w-full h-full bg-white flex flex-col">
+          <div class="px-6 pt-6 pb-3 border-b border-gold-400/25">
+            <div class="flex items-center justify-between">
+              <span class="tag-sharp bg-gold-500 text-white px-3 py-1 mono text-[9px] font-bold tracking-widest">06 / MOD_01</span>
+              <span class="num-marker text-2xl">06</span>
+            </div>
+            <h2 class="display text-lg font-bold text-gold-800 mt-2">BE SPECIFIC</h2>
+          </div>
+          <div class="scroll-area flex-1 overflow-y-auto px-6 py-4 space-y-2.5">
+            <div class="card-shape bg-gold-400 p-[1.5px]">
+              <div class="card-shape-inner bg-gold-50 p-3 text-center">
+                <div class="mono text-[9px] text-gold-400 tracking-widest">EQUATION</div>
+                <p class="display text-sm text-gold-800 mt-1">CLEAR PROMPT = ACCURATE OUTPUT</p>
+              </div>
+            </div>
+            <div class="mono text-[10px] text-gold-400 tracking-widest">› YANG DIPELAJARI</div>
+            <ul class="space-y-1.5 text-[12px] text-gold-900/85">
+              <li class="check-gold">Spesifikasi projek terperinci</li>
+              <li class="check-gold">Skop, matlamat, pengguna sasaran</li>
+              <li class="check-gold">Pemetaan user flow</li>
+              <li class="check-gold">Teknik prompting AI berkesan</li>
+            </ul>
+            <div class="border border-gold-700/40 p-2.5 mt-2">
+              <div class="mono text-[9px] text-gold-600 mb-1">// INSIGHT</div>
+              <p class="text-[10.5px] text-gold-900/70 leading-snug">Kebanyakan kegagalan AI berpunca daripada arahan kabur — bukan limit teknologi.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 8: WORKFLOW -->
+    <div class="slide">
+      <div class="card-shape w-full aspect-square bg-gold-400/30 p-[1px]">
+        <div class="card-shape-inner w-full h-full bg-white flex flex-col">
+          <div class="px-6 pt-6 pb-3 border-b border-gold-400/25">
+            <div class="flex items-center justify-between">
+              <span class="tag-sharp bg-gold-500 text-white px-3 py-1 mono text-[9px] font-bold tracking-widest">07 / MOD_02</span>
+              <span class="num-marker text-2xl">07</span>
+            </div>
+            <h2 class="display text-lg font-bold text-gold-800 mt-2">WORKFLOW</h2>
+          </div>
+          <div class="scroll-area flex-1 overflow-y-auto px-6 py-4 space-y-2.5">
+            <div class="mono text-[9.5px] text-gold-800/90 leading-relaxed border border-gold-400/50 p-2.5 stripe-pattern bg-gold-100">
+              <span class="text-gold-400">$</span> idea<br>
+              <span class="text-gold-400">→</span> describe to claude<br>
+              <span class="text-gold-400">→</span> generate prototype<br>
+              <span class="text-gold-400">→</span> refine<br>
+              <span class="text-gold-400">→</span> save to local<br>
+              <span class="text-gold-400">→</span> create todo.md<br>
+              <span class="text-gold-400">→</span> iterate ∞
+            </div>
+
+            <div class="mono text-[10px] text-gold-400 tracking-widest mt-2">› HOSTING COST/MO</div>
+            <div class="space-y-1.5">
+              <div>
+                <div class="flex justify-between text-[10.5px] mb-0.5">
+                  <span class="text-gold-700 font-bold">CF Workers</span>
+                  <span class="mono text-gold-400">RM0-20</span>
+                </div>
+                <div class="compare-bar" style="--w:8%"></div>
+              </div>
+              <div>
+                <div class="flex justify-between text-[10.5px] mb-0.5">
+                  <span class="text-gold-900/70">MERN VPS</span>
+                  <span class="mono text-gold-900/60">RM50-300</span>
+                </div>
+                <div class="compare-bar" style="--w:35%"></div>
+              </div>
+              <div>
+                <div class="flex justify-between text-[10.5px] mb-0.5">
+                  <span class="text-gold-900/70">.NET Azure</span>
+                  <span class="mono text-gold-900/60">RM200-1K</span>
+                </div>
+                <div class="compare-bar" style="--w:90%"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 9: DEPLOY -->
+    <div class="slide">
+      <div class="card-shape w-full aspect-square bg-gold-400/30 p-[1px]">
+        <div class="card-shape-inner w-full h-full bg-white flex flex-col">
+          <div class="px-6 pt-6 pb-3 border-b border-gold-400/25">
+            <div class="flex items-center justify-between">
+              <span class="tag-sharp bg-gold-500 text-white px-3 py-1 mono text-[9px] font-bold tracking-widest">08 / MOD_03</span>
+              <span class="num-marker text-2xl">08</span>
+            </div>
+            <h2 class="display text-lg font-bold text-gold-800 mt-2">DEPLOY & SUSTAIN</h2>
+          </div>
+          <div class="scroll-area flex-1 overflow-y-auto px-6 py-4 space-y-2.5">
+            <div class="card-shape bg-gold-400 p-[1.5px]">
+              <div class="card-shape-inner bg-gold-50 p-3">
+                <div class="mono text-[9px] text-gold-400 tracking-widest mb-1">› DEPLOY COMMAND</div>
+                <div class="mono text-sm text-gold-800">$ wrangler deploy</div>
+                <div class="mono text-[9px] text-gold-600 mt-1">// system live in 60s</div>
+              </div>
+            </div>
+
+            <ul class="space-y-1.5 text-[11.5px] text-gold-900/85">
+              <li class="check-gold">Cloudflare Workers via Wrangler CLI</li>
+              <li class="check-gold">Domain custom melalui CF DNS</li>
+              <li class="check-gold">Debugging dengan AI</li>
+              <li class="check-gold">D1 database untuk production</li>
+              <li class="check-gold">Update & rollback strategy</li>
+              <li class="check-gold">Monitoring — log, error, usage</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 10: REQUIREMENTS -->
+    <div class="slide">
+      <div class="card-shape w-full aspect-square bg-gold-400/30 p-[1px]">
+        <div class="card-shape-inner w-full h-full bg-white flex flex-col">
+          <div class="px-6 pt-6 pb-3 border-b border-gold-400/25">
+            <div class="flex items-center justify-between">
+              <span class="tag-sharp bg-gold-500 text-white px-3 py-1 mono text-[9px] font-bold tracking-widest">09 / SETUP</span>
+              <span class="num-marker text-2xl">09</span>
+            </div>
+            <h2 class="display text-lg font-bold text-gold-800 mt-2">REQUIREMENTS</h2>
+          </div>
+          <div class="scroll-area flex-1 overflow-y-auto px-6 py-4 space-y-2.5">
+            <div>
+              <div class="mono text-[10px] text-gold-400 tracking-widest mb-1">▣ HARDWARE</div>
+              <ul class="text-[11.5px] text-gold-900/80 space-y-0.5">
+                <li class="check-gold">MacBook Air M1+ / Win/Linux 8GB+ RAM</li>
+                <li class="check-gold">Internet stabil 10 Mbps+</li>
+              </ul>
+            </div>
+            <div>
+              <div class="mono text-[10px] text-gold-400 tracking-widest mb-1">▣ SOFTWARE (FREE)</div>
+              <ul class="text-[11.5px] text-gold-900/80 space-y-0.5">
+                <li class="check-gold">VS Code + Copilot extension</li>
+                <li class="check-gold">Node.js v20 LTS</li>
+                <li class="check-gold">Cloudflare account + Wrangler</li>
+              </ul>
+            </div>
+            <div>
+              <div class="mono text-[10px] text-gold-400 tracking-widest mb-1">▣ SUBSCRIPTION</div>
+              <ul class="text-[11.5px] text-gold-900/80 space-y-0.5">
+                <li class="check-gold">GitHub Copilot ~USD 10/mo</li>
+              </ul>
+            </div>
+            <div class="border border-gold-400/40 p-2 stripe-pattern bg-gold-100 mt-2">
+              <p class="text-[10.5px] text-gold-800 italic">Semua tools utama PERCUMA. Hanya AI assistant berbayar.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 11: OUTCOME -->
+    <div class="slide">
+      <div class="card-shape w-full aspect-square bg-gold-400/30 p-[1px]">
+        <div class="card-shape-inner w-full h-full bg-white flex flex-col">
+          <div class="px-6 pt-6 pb-3 border-b border-gold-400/25">
+            <div class="flex items-center justify-between">
+              <span class="tag-sharp bg-gold-500 text-white px-3 py-1 mono text-[9px] font-bold tracking-widest">10 / OUTCOME</span>
+              <span class="num-marker text-2xl">10</span>
+            </div>
+            <h2 class="display text-lg font-bold text-gold-800 mt-2">SELEPAS KELAS</h2>
+          </div>
+          <div class="scroll-area flex-1 overflow-y-auto px-6 py-4 space-y-2">
+            <div class="text-[11px] mono text-gold-400 tracking-widest mb-1">› ANDA AKAN BOLEH</div>
+            <ul class="space-y-1.5 text-[12px] text-gold-900/85">
+              <li class="check-gold"><b class="text-gold-700">Faham</b> teknologi moden 2026</li>
+              <li class="check-gold"><b class="text-gold-700">Guna AI</b> sebagai pembantu efektif</li>
+              <li class="check-gold"><b class="text-gold-700">Ikut workflow</b> dari idea ke siap</li>
+              <li class="check-gold"><b class="text-gold-700">Bangun</b> HTML + Node.js + CF</li>
+              <li class="check-gold"><b class="text-gold-700">Deploy</b> ke CF Workers free</li>
+              <li class="check-gold"><b class="text-gold-700">Urus projek</b> dengan todo.md</li>
+            </ul>
+            <div class="card-shape bg-gradient-to-r from-gold-400 to-gold-700 p-[1.5px] mt-3">
+              <div class="card-shape-inner bg-gold-50 p-3 text-center">
+                <div class="display text-sm font-bold text-gold-800">IDEA → LIVE SYSTEM</div>
+                <div class="mono text-[10px] text-gold-400 mt-1">DALAM 3 JAM</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 12: REGISTRATION -->
+    <div class="slide">
+      <div class="card-shape w-full aspect-square bg-gradient-to-br from-gold-400 via-gold-500 to-gold-700 p-[2px] gold-glow">
+        <div class="card-shape-inner w-full h-full bg-gold-50 flex flex-col relative overflow-hidden">
+          <div class="absolute inset-0 dot-grid opacity-15"></div>
+          <div class="px-6 pt-6 pb-3 border-b border-gold-400/50 relative z-10">
+            <div class="flex items-center justify-between">
+              <span class="tag-sharp bg-gold-500 text-white px-3 py-1 mono text-[9px] font-bold tracking-widest">11 / ENROLL</span>
+              <span class="num-marker text-2xl">11</span>
+            </div>
+            <h2 class="display text-lg font-bold text-gold-800 mt-2">REGISTRATION</h2>
+          </div>
+          <div class="scroll-area flex-1 overflow-y-auto px-6 py-4 space-y-2 relative z-10">
+            <div class="grid grid-cols-2 gap-x-3 gap-y-2 text-[11px] mb-2">
+              <div>
+                <div class="mono text-[8.5px] text-gold-600 tracking-widest">DATE</div>
+                <div class="text-gold-800 font-bold">9 MEI 2026</div>
+              </div>
+              <div>
+                <div class="mono text-[8.5px] text-gold-600 tracking-widest">DAY</div>
+                <div class="text-gold-800 font-bold">SABTU</div>
+              </div>
+              <div>
+                <div class="mono text-[8.5px] text-gold-600 tracking-widest">TIME</div>
+                <div class="text-gold-800 font-bold">9AM — 12PM</div>
+              </div>
+              <div>
+                <div class="mono text-[8.5px] text-gold-600 tracking-widest">PLATFORM</div>
+                <div class="text-gold-800 font-bold">ZOOM/MEET</div>
+              </div>
+            </div>
+
+            <div class="card-shape bg-gold-400 p-[1.5px] my-2">
+              <div class="card-shape-inner bg-gold-50 p-3 text-center relative">
+                <div class="absolute inset-0 shimmer opacity-20"></div>
+                <div class="mono text-[9px] text-gold-400 tracking-widest relative">INVESTMENT</div>
+                <div class="display text-3xl font-black gold-text relative">RM 200</div>
+                <div class="mono text-[9px] text-gold-600 tracking-wider relative">SEKALI BAYAR</div>
+              </div>
+            </div>
+
+            <div class="text-[10px] mono text-gold-400 tracking-widest">› INCLUSIVE</div>
+            <ul class="text-[11px] text-gold-900/80 space-y-0.5">
+              <li class="check-gold">Live class 3 jam</li>
+              <li class="check-gold">Rakaman tontonan semula</li>
+              <li class="check-gold">Group support seumur hidup</li>
+              <li class="check-gold">Silibus & nota lengkap</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 13: CTA -->
+    <div class="slide">
+      <div class="card-shape w-full aspect-square bg-gradient-to-br from-gold-300 via-gold-400 to-gold-700 p-[2px] gold-glow">
+        <div class="corner-tl"></div><div class="corner-tr"></div>
+        <div class="corner-bl"></div><div class="corner-br"></div>
+        <div class="card-shape-inner w-full h-full bg-gold-50 flex flex-col items-center justify-center p-7 relative overflow-hidden">
+
+          <div class="absolute inset-0 dot-grid opacity-20"></div>
+          <div class="absolute -top-20 -right-20 w-40 h-40 bg-gold-200/20 rounded-full blur-3xl"></div>
+          <div class="absolute -bottom-20 -left-20 w-40 h-40 bg-gold-200/20 rounded-full blur-3xl"></div>
+
+          <div class="relative z-10 text-center w-full">
+            <div class="mono text-[10px] text-gold-400 tracking-[0.4em] mb-3">› ENROLL_NOW</div>
+            <div class="display text-2xl font-black text-gold-800 leading-tight mb-4">
+              SECURE<br>YOUR SEAT
+            </div>
+
+            <div class="card-shape bg-gold-400 p-[1.5px] mb-4">
+              <div class="card-shape-inner bg-white py-3 px-4 text-center">
+                <div class="mono text-[9px] text-gold-600 tracking-widest mb-0.5">VISIT</div>
+                <div class="display text-base font-bold text-gold-700 tracking-wider">raishelmy.uk/daftar</div>
+              </div>
+            </div>
+
+            <div class="text-left space-y-1 max-w-[240px] mx-auto">
+              <div class="flex items-start gap-2 text-[10.5px] text-gold-900/80">
+                <span class="mono text-gold-400 font-bold">01</span>
+                <span>Isi borang pendaftaran</span>
+              </div>
+              <div class="flex items-start gap-2 text-[10.5px] text-gold-900/80">
+                <span class="mono text-gold-400 font-bold">02</span>
+                <span>Buat bayaran</span>
+              </div>
+              <div class="flex items-start gap-2 text-[10.5px] text-gold-900/80">
+                <span class="mono text-gold-400 font-bold">03</span>
+                <span>Hantar bukti bayaran</span>
+              </div>
+              <div class="flex items-start gap-2 text-[10.5px] text-gold-900/80">
+                <span class="mono text-gold-400 font-bold">04</span>
+                <span>Pengesahan via WhatsApp/email</span>
+              </div>
+            </div>
+
+            <div class="mt-5 pt-3 border-t border-gold-400/40 mono text-[9px] text-gold-600 tracking-widest">
+              [ END_OF_DECK ]
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Bottom Nav -->
+<div class="fixed bottom-4 left-1/2 -translate-x-1/2 z-30">
+  <div class="card-shape bg-gold-300/60 p-[1px]">
+    <div class="card-shape-inner bg-gold-50/95 backdrop-blur px-3 py-2 flex items-center gap-2">
+      <button id="prev" class="w-9 h-9 flex items-center justify-center bg-gold-200/20 border border-gold-400/40 text-gold-700 hover:bg-gold-500 hover:text-white transition-all disabled:opacity-25 disabled:cursor-not-allowed">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M15 18l-6-6 6-6"/></svg>
+      </button>
+      <div class="px-3 min-w-[64px] text-center">
+        <div class="mono text-[9px] text-gold-600 tracking-widest leading-none">SLIDE</div>
+        <div class="display text-xs font-bold text-gold-700 mt-0.5"><span id="cur">01</span> / <span id="total">13</span></div>
+      </div>
+      <button id="next" class="w-9 h-9 flex items-center justify-center bg-gold-200/20 border border-gold-400/40 text-gold-700 hover:bg-gold-500 hover:text-white transition-all disabled:opacity-25 disabled:cursor-not-allowed">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M9 18l6-6-6-6"/></svg>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Progress dots -->
+<div class="fixed top-12 left-1/2 -translate-x-1/2 z-30 flex gap-1" id="dots"></div>
+
+<script>
+  const slides = document.querySelectorAll('.slide');
+  const prev = document.getElementById('prev');
+  const next = document.getElementById('next');
+  const cur = document.getElementById('cur');
+  const total = document.getElementById('total');
+  const dotsEl = document.getElementById('dots');
+  let i = 0;
+
+  total.textContent = String(slides.length).padStart(2, '0');
+
+  slides.forEach((_, idx) => {
+    const d = document.createElement('div');
+    d.className = 'h-[3px] w-3 bg-gold-300/50 transition-all cursor-pointer';
+    d.dataset.idx = idx;
+    d.onclick = () => { i = idx; show(i); };
+    dotsEl.appendChild(d);
+  });
+
+  function show(n) {
+    slides.forEach(s => s.classList.remove('active'));
+    slides[n].classList.add('active');
+    cur.textContent = String(n + 1).padStart(2, '0');
+    prev.disabled = n === 0;
+    next.disabled = n === slides.length - 1;
+    [...dotsEl.children].forEach((d, idx) => {
+      d.className = idx === n
+        ? 'h-[3px] w-6 bg-gold-400 transition-all cursor-pointer'
+        : idx < n
+          ? 'h-[3px] w-3 bg-gold-700 transition-all cursor-pointer'
+          : 'h-[3px] w-3 bg-gold-300/50 transition-all cursor-pointer';
+    });
+  }
+
+  prev.onclick = () => { if (i > 0) { i--; show(i); } };
+  next.onclick = () => { if (i < slides.length - 1) { i++; show(i); } };
+
+  let startX = 0, startY = 0;
+  document.addEventListener('touchstart', e => {
+    startX = e.touches[0].clientX;
+    startY = e.touches[0].clientY;
+  }, { passive: true });
+  document.addEventListener('touchend', e => {
+    const dx = e.changedTouches[0].clientX - startX;
+    const dy = e.changedTouches[0].clientY - startY;
+    if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 40) {
+      if (dx < 0 && i < slides.length - 1) { i++; show(i); }
+      else if (dx > 0 && i > 0) { i--; show(i); }
+    }
+  }, { passive: true });
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowLeft' && i > 0) { i--; show(i); }
+    if (e.key === 'ArrowRight' && i < slides.length - 1) { i++; show(i); }
+  });
+
+  show(0);
+</script>
+
+</body>
+</html>

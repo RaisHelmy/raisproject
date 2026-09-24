@@ -1,0 +1,386 @@
+﻿@using ESS.Core
+
+@{
+	ViewBag.Title = "Contract Absorption - Single Entry";
+
+	string EmployeeID = ViewBag.EmployeeID;
+
+	if (!ESS.ContractAbsorption.Service.isApprover(Common.GetEmployeeID(), "RoleMaintenanceAdmin"))
+	{
+		Response.Redirect("~/AccessControl/ErrorPermission");
+	}
+}
+
+<div class="form-section">
+	<div class="row">
+		<div class="col-md-12">
+			<h1 class="page-title">
+				@ViewBag.Title
+				<span style="padding-left:20px;">
+					<small></small>
+				</span>
+			</h1>
+		</div>
+	</div>
+</div>
+
+<div class="WorkOder_Edit">
+	<div class="">
+		<div class="portlet-body form">
+			<div class="form-body">
+				<div class="row">
+					<div class="col-md-6">
+						<div class="form-horizontal">
+							<div class="form-group">
+								<label class="control-label col-md-4">Employee <span style="color:red;"> *</span></label>
+								<div class="col-md-8 form-control-static">
+									<div>
+										<div class="input-group">
+											<input type="text" class="form-control" id="txtCode" readonly
+												   value="" />
+											<span class="input-group-btn" style="">
+												<a data-toggle="modal" href="#PeoplePicker" onclick="GetActiveLink('')" class="btn default"><i class="fa fa-user"></i></a>
+											</span>
+											<input type="hidden" id="EmpCode" name="EmpCode" value="" />
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<div class="row">
+					<div class="col-md-6">
+						<div class="form-horizontal">
+							<div class="form-group">
+								<label class="control-label col-md-4">Approver 1 <span style="color:red;"> *</span></label>
+								<div class="col-md-8 form-control-static">
+									<div>
+										<div class="input-group">
+											<input type="text" class="form-control" id="txtIMCode" readonly
+												   value="" />
+											<span class="input-group-btn" style="">
+												<a data-toggle="modal" href="#PeoplePicker" onclick="GetActiveLink('IM')" class="btn default"><i class="fa fa-user"></i></a>
+											</span>
+											<input type="hidden" id="IMEmpCode" name="IMEmpCode" value="" />
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<div class="row">
+					<div class="col-md-6">
+						<div class="form-horizontal">
+							<div class="form-group">
+								<label class="control-label col-md-4">Approver 2 <span style="color:red;"> *</span></label>
+								<div class="col-md-8 form-control-static">
+									<div>
+										<div class="input-group">
+											<input type="text" class="form-control" id="txtHODCode" readonly
+												   value="" />
+											<span class="input-group-btn" style="">
+												<a data-toggle="modal" href="#PeoplePicker" onclick="GetActiveLink('HOD')" class="btn default"><i class="fa fa-user"></i></a>
+											</span>
+											<input type="hidden" id="HODEmpCode" name="HODEmpCode" value="" />
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<div class="row">
+					<div class="col-md-6">
+						<div class="form-horizontal">
+							<div class="form-group">
+								<label class="control-label col-md-4">Approver 3 <span style="color:red;"> *</span></label>
+								<div class="col-md-8 form-control-static">
+									<div>
+										<div class="input-group">
+											<input type="text" class="form-control" id="txtVPCode" readonly
+												   value="" />
+											<span class="input-group-btn" style="">
+												<a data-toggle="modal" href="#PeoplePicker" onclick="GetActiveLink('VP')" class="btn default"><i class="fa fa-user"></i></a>
+											</span>
+											<input type="hidden" id="VPEmpCode" name="VPEmpCode" value="" />
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="form-actions right">
+			<button type="button" class="btn default" onclick="location.href= '@Url.Action("HRValidationForm", "ContractAbsorption")' ">
+				Back
+			</button>
+			<a class="btn blue" data-toggle="modal" onclick="javascript: FormValidation()">
+				@*href="#ConfirmUpdate"*@
+				<i class="fa fa-check"></i>
+				Submit
+			</a>
+		</div>
+		<div id="ConfirmUpdate" class="modal fade PopUpModal" tabindex="-1" data-focus-on="input:first">
+			<div class="modal-dialog">
+				<div class="modal-content">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal" data-number="" aria-hidden="true"></button>
+						<h4 class="modal-title">Confirmation - Submit This Record</h4>
+					</div>
+					<div class="modal-body">
+						<div class="well">
+							Clicking Submit will submit this record into the database with the information. If you want to discard the changes, click Close.
+						</div>
+					</div>
+					<div class="modal-footer">
+						<button type="button" data-dismiss="modal" data-number="5" class="btn default">Close</button>
+						<button type="submit" class="btn default blue" id="btnSubmitForm" onclick="javascript: ApproverAction(this)">
+							<i class="fa fa-check"></i>
+							Submit
+						</button>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<!-- Success Message -->
+<div class="modal fade" id="SuccessSubmit" tabindex="-1" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header Success-header">
+				<button type="button" class="close" data-dismiss="modal" aria-hidden="true" style="display: none;"></button>
+				<h4 class="Success-title">Action Successfully Completed</h4>
+			</div>
+			<div class="modal-body Success-body">
+				<div class="well">
+					The Absorption of Contract Staff entry has been successfully submitted.
+				</div>
+			</div>
+			<div class="modal-footer Success-footer">
+				<button type="submit" class="btn default blue" id="btnOK">
+					<i class="fa fa-check"></i>
+					OK
+				</button>
+			</div>
+		</div>
+	</div>
+</div>
+
+<input type="hidden" id="hiddenTextID" />
+<div class="modal fade" id="PeoplePicker" tabindex="-1" aria-hidden="true">
+	<div class="modal-dialog modal-lg">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+				<h4 class="modal-title">People Picker - Select By Employee Code or Name</h4>
+			</div>
+			<div class="modal-body">
+				<div class="well">
+					@Html.Action("Index", "PeoplePicker")
+				</div>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn default green" onclick="SetSelectedEmployee()">Select</button>
+				<button type="button" class="btn default" data-dismiss="modal">Close</button>
+			</div>
+		</div>
+	</div>
+</div>
+
+<!-- Loading Gif -->
+<div id="divLoading" style="margin: 0px; padding: 0px; position: fixed; right: 0px;
+    top: 0px; width: 100%; height: 100%; background-color:gainsboro; z-index: 30001;
+    opacity: .8; filter: alpha(opacity=70);display:none">
+	<p style="position: absolute; top: 30%; left: 30%; color: black;">
+		Loading, please wait...<img src="../Assets/img/ajax-loading.gif" />
+
+	</p>
+</div>
+<script>
+    $(document).ready(function(){
+        $(".date").datepicker({
+            autoclose: true,
+        })
+        $('#txtCode').on('change', PopulateApprover);
+    })
+
+    function PopulateApprover()
+    {
+        var EmployeeID = $('#EmpCode').val();
+        if (EmployeeID != undefined && EmployeeID != '')
+        {
+            var form = {
+                EmployeeID: EmployeeID
+            };
+            $.ajax({
+                type: "POST",
+                url: '@Url.Content("~/ContractAbsorption/PopulateApprover")',
+                cache: false,
+                async: false,
+                dataType: "json",
+                data: form,
+                success: function (result) {
+                    if (result.Success) {
+                        $('#IMEmpCode').val(result.IMID);
+                        $('#txtIMCode').val(result.IMCode + ' - ' + result.IMName);
+                        $('#HODEmpCode').val(result.HODID);
+                        $('#txtHODCode').val(result.HODCode + ' - ' + result.HODName);
+                        $('#VPEmpCode').val(result.VPID);
+                        $('#txtVPCode').val(result.VPCode + ' - ' + result.VPName);
+                    }
+                    else {
+                        alert(result.ErrorMsg);
+                    }
+                },
+                error: function (e) {
+
+                }
+            });
+        }
+    }
+
+    function GetActiveLink(textID) {
+        $("#hiddenTextID").val(textID);
+		
+        if (SearchPP !== undefined) {
+            $('#txtEmpCodeSearch').val("");
+            $('#txtEmpNameSearch').val("");
+            SearchPP();
+        }
+
+        $("#tblPeoplePicker td input[type=radio]").each(function () {
+            $(this).removeAttr('checked');
+        });
+        if ($("#" + textID + "EmpID").val() != "") {
+            var a = $("#" + textID + "EmpID").val();
+            $("#tblPeoplePicker td input[type=radio][value='" + a + "']").prop("checked", true);
+        }
+    }
+    function SetSelectedEmployee() {
+        var a = $("#hiddenTextID").val();
+        $("#tblPeoplePicker td input[type=radio]").each(function () {
+            var _selected = $(this).prop("checked");
+            var getEmpCode = $(this).attr("empCode");
+            var getEmpName = $(this).attr("empName")
+            var getEmpID = $(this).val();
+
+            if (_selected) {
+                var empNameElement = $("#txt" + a + "Code"),
+                    empIDElement = $("#" + a + "EmpCode");
+
+                if (empNameElement.val() !== undefined) {
+                    empNameElement.val(getEmpCode + ' - ' + getEmpName);
+                    empIDElement.val(getEmpID);
+                    empNameElement.change();
+
+                    $('.' + a + 'Code').each(function (index, element) {
+                        $(this).val(getEmpName);
+                    });
+
+                    $('.' + a + 'EmpCode').each(function (index, element) {
+                        $(this).val(getEmpID);
+                    });
+                }
+                else {
+                    //var matches = a.match(/\d+/g);
+                    //if (matches > 0) {
+                    //    // the id attribute contains a digit
+                    //    $('#ChecklistUpdated' + matches).parent().addClass("checked");
+                    //    $('#ChecklistUpdated' + matches).prop('checked', true);
+                    //    $('#ChecklistUpdated' + matches).html(matches);
+                    //}
+                    //else {
+                    $("#txt" + a).val(getEmpCode + ' ' + getEmpName);
+                    $("#" + a).val(getEmpCode);
+                    //}
+                }
+
+                $('#PeoplePicker').modal('toggle');
+            }
+        });
+    }
+
+    function FormValidation()
+    {
+        var _EmployeeID = $('#EmpCode').val();
+        var _IMID = $('#IMEmpCode').val();
+        var _HODID = $('#HODEmpCode').val();
+        var _VPID = $('#VPEmpCode').val();
+        var _Category = $('#Category').val();
+
+        if (!(_EmployeeID != '' && _EmployeeID != undefined)) {
+            alert('Please select Employee to proceed.')
+        }
+        else if (!(_IMID != '' && _IMID != undefined)) {
+			alert('Please select Approver 1 to proceed.')
+        }
+        else if (!(_HODID != '' && _HODID != undefined)) {
+			alert('Please select Approver 2 to proceed.')
+        }
+        else if (!(_VPID != '' && _VPID != undefined)) {
+			alert('Please select Approver 3 to proceed.')
+        }
+        else {
+            $('#ConfirmUpdate').modal('show');
+            //ApproverAction(btn);
+        }
+    }
+    function ApproverAction(btn) {
+        btn.disabled = true;
+        $("#divLoading").show();
+        var myVar = setTimeout(function () { ConfirmAction(btn); }, 3000);
+    }
+
+    function ConfirmAction(btn) {
+        var _EmployeeID = $('#EmpCode').val();
+        var _IMID = $('#IMEmpCode').val();
+        var _HODID = $('#HODEmpCode').val();
+        var _HODivID = $('#VPEmpCode').val();
+
+        var form = {
+            EmployeeID: _EmployeeID,
+            IMID: _IMID,
+            HODID: _HODID,
+            HODivID: _HODivID
+		};
+
+        if ($('#divLoading').is(':visible')) {
+            $.ajax({
+                type: "POST",
+                url: '@Url.Content("~/ContractAbsorption/SubmitSingleEntry")',
+                cache: false,
+                async: false,
+                dataType: "json",
+                data: form,
+                success: function (result) {
+                    if (result.Success) {
+                        $("#ConfirmUpdate").modal('toggle');
+                        $("#divLoading").hide();
+                        $("#SuccessSubmit").modal();
+						
+                        $("#btnOK").click(function () { window.location.href = '@Url.Action("HRValidationForm", "ContractAbsorption")' });
+                    }
+                    else {
+                        $("#ConfirmUpdate").modal('toggle');
+                        $("#divLoading").hide();
+                        btn.disabled = false;
+
+                        alert(result.ErrorMsg);
+                    }
+                },
+                error: function (e) {
+
+                }
+            });
+        }
+    }
+</script>

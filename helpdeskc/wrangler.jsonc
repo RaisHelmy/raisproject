@@ -1,0 +1,88 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "helpdeskc",
+  "main": "src/routes/index.ts",
+  "compatibility_date": "2026-08-01",
+  "compatibility_flags": ["nodejs_compat"],
+  // A single Worker with a static-assets binding, not Cloudflare Pages.
+  // CLAUDE.md §2 names Pages + Pages Functions, but Cloudflare's own
+  // current guidance is to build new projects as a Worker + assets instead
+  // (Pages Functions "simple mode" can't run scheduled()/queue() handlers
+  // at all — only its rarely-used "advanced mode" _worker.js can, and that
+  // mode disables the functions/ file-based routing entirely). This gets
+  // the same fetch/scheduled/queue Worker CLAUDE.md's other sections
+  // require (§2 Async work, §10 SLA cron) without a second deploy target.
+  // Flagging this since it changes a stack line — say if you'd rather stay
+  // on literal Pages and split cron/queues into a companion Worker.
+  "assets": {
+    "directory": "./dist",
+    "binding": "ASSETS",
+    "not_found_handling": "single-page-application"
+  },
+
+  "routes": [
+    { "pattern": "helpdesk.raishelmy.uk", "custom_domain": true }
+  ],
+
+  // Fill in real IDs after running:
+  //   wrangler kv namespace create helpdeskc-kv
+  //   wrangler r2 bucket create helpdeskc-attachments
+  //   wrangler queues create helpdeskc-jobs
+  //
+  // Migrated off D1 to Postgres via Hyperdrive. As of the shared-Postgres
+  // migration, this is the ONE account-wide Hyperdrive config
+  // (`raishelmy-hyperdrive`), pointing at the shared `raishelmy` database.
+  // This app's data lives isolated in Postgres schema `helpdeskc` inside
+  // that database (see src/db/client.ts / platform-client.ts — the
+  // postgres.js connection sets `search_path=helpdeskc`). Compat flag
+  // nodejs_compat above is required for postgres.js. The private-VPC origin
+  // (Docker Postgres on the Ubuntu VM) is resolved by the Hyperdrive service
+  // itself — no host/port is configured here. Local dev / drizzle-kit reach
+  // the same database through an SSH tunnel (see .dev.vars / README) rather
+  // than through Hyperdrive.
+  "hyperdrive": [
+    { "binding": "HYPERDRIVE", "id": "7a7777560d434c2b91ff37c52ab1b2c9" }
+  ],
+  "kv_namespaces": [
+    { "binding": "KV", "id": "a0e59dbbb24741f1ab9949877d9c7ffe" }
+  ],
+  "r2_buckets": [
+    { "binding": "ATTACHMENTS", "bucket_name": "helpdeskc-attachments" }
+  ],
+  "queues": {
+    "producers": [
+      { "binding": "JOBS", "queue": "helpdeskc-jobs" }
+    ],
+    "consumers": [
+      { "queue": "helpdeskc-jobs", "max_batch_size": 10, "max_batch_timeout": 30 }
+    ]
+  },
+  // Cron moved off Cloudflare Workers Cron Triggers to Ubuntu cron, hitting
+  // POST /internal/cron every 15 minutes with the X-Cron-Secret header
+  // (CRON_SECRET, set via `wrangler secret put`).
+  // Run `wrangler email sending enable <your-real-domain>` once a domain is
+  // registered (CLAUDE.md §6 — domain is still a placeholder). The `from`
+  // address in src/jobs/queue-consumers/email.ts must live on that domain.
+  "send_email": [{ "name": "EMAIL" }],
+  "durable_objects": {
+    "bindings": [
+      { "name": "TICKET_SEQUENCE", "class_name": "TicketSequence" }
+    ]
+  },
+  "migrations": [
+    { "tag": "v1", "new_sqlite_classes": ["TicketSequence"] }
+  ],
+  "observability": {
+    "enabled": true,
+    "head_sampling_rate": 1
+  },
+
+  "env": {
+    "staging": {
+      "vars": { "ENVIRONMENT": "staging" }
+    },
+    "production": {
+      "vars": { "ENVIRONMENT": "production" }
+    }
+  }
+}

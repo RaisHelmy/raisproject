@@ -1,0 +1,137 @@
+﻿@using Integrity.ConflictOfInterest.Models
+@model IEnumerable<COIReportResultViewModel>
+@{
+
+}
+
+<div class="portlet box blue">
+    <div class="mini-triangle"><img src="../Assets/img/menu-red-triangle.png" /></div>
+    <div class="portlet-title">
+        <div class="caption">
+            <i class="fa fa-reorder"></i>Conflict of Interest Declaration Report
+        </div>
+        <input type="button" id="btn-Export" class="btn btn-xs green pull-right" value="Export To Excel">
+        <div class="tools">
+        </div>
+    </div>
+    <div class="portlet-body form">
+        <div class="form-body">
+            <div class="form-horizontal">
+                <div class="table-toolbar">
+                    <table id="tblResult" class="table table-striped table-bordered table-hover table-full-width">
+                        <thead>
+                            <tr>
+                                <th></th>
+                                <th>Reference No</th>
+                                <th>Category</th>
+                                <th>Type of COI</th>
+                                <th>Employee</th>
+                                <th>Company</th>
+                                <th>Personnel Area</th>
+                                <th>Personnel SubArea</th>
+                                <th>Status</th>
+                                <th>Current In-Tray</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (COIReportResultViewModel item in Model)
+                            {
+                                <tr>
+                                    <td>
+                                        <a class="btn blue btn-sm"
+                                           href="@Url.Action("Index", "COI", new { DeclarationID = item.DeclarationID , Source = "Report" })">
+                                            <i class="fa fa-edit"></i>
+                                        </a>
+                                    </td>
+                                    <td>@item.ReferenceNo</td>
+                                    <td>@item.Category</td>
+                                    <td>@item.ConflictType</td>
+                                    <td>@item.Employee</td>
+                                    <td>@item.Company</td>
+                                    <td>@item.Area</td>
+                                    <td>@item.SubArea</td>
+                                    <td>
+                                        @if (item.Status == "Withdrawn" || item.Status == "Declined")
+                                        {
+                                            <span style="color : red; font-weight: bold;">
+                                                @item.Status
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span style="color : green; font-weight: bold;">
+                                                @item.Status
+                                            </span>
+                                        }
+                                    </td>
+                                    <td>
+                                        @(String.IsNullOrEmpty(item.CurrentApprover) ? " - " : item.CurrentApprover)
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<table id="tblExport" border="1" style="display: none;">
+    <thead>
+        <tr>
+            <th></th>
+            <th>Reference No</th>
+            <th>Category</th>
+            <th>Employee</th>
+            <th>Company</th>
+            <th>Personnel Area</th>
+            <th>Personnel SubArea</th>
+            <th>Status</th>
+            <th>Current In-Tray</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (COIReportResultViewModel item in Model)
+        {
+            <tr>
+                <td>
+                    <a class="btn blue btn-sm"
+                       href="@Url.Action("Index", "COI", new { DeclarationID = item.DeclarationID , Source = "Report" })">
+                        <i class="fa fa-edit"></i>
+                    </a>
+                </td>
+                <td>@item.ReferenceNo</td>
+                <td>@item.Category</td>
+                <td>@item.Employee</td>
+                <td>@item.Company</td>
+                <td>@item.Area</td>
+                <td>@item.SubArea</td>
+                <td>
+                    @if (item.Status == "Withdrawn" || item.Status == "Returned")
+                    {
+                        <span style="color : red; font-weight: bold;">
+                            @item.Status
+                        </span>
+                    }
+                    else
+                    {
+                        <span style="color : green; font-weight: bold;">
+                            @item.Status
+                        </span>
+                    }
+                </td>
+                <td>
+                    @(String.IsNullOrEmpty(item.CurrentApprover) ? " - " : item.CurrentApprover)
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<script>
+    transformTable("#tblResult");
+    $(function () {     
+        BindExport();
+    });
+</script>

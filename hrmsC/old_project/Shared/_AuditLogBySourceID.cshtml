@@ -1,0 +1,75 @@
+﻿@model string
+@{
+    Layout = null;
+
+    List<SEP.RoutingManagement.Models.GetApprovalAuditLog> auditLog = new List<SEP.RoutingManagement.Models.GetApprovalAuditLog>();
+
+    if (!(String.IsNullOrEmpty(Model) || Model == Guid.Empty.ToString()))
+    {
+        using (SEP.RoutingManagement.Service srv = new SEP.RoutingManagement.Service())
+        {
+            auditLog = srv.GetAuditLogHistoryBySourceID(new Guid(Model))
+                                                    .OrderBy(x => x.CreatedDate)
+                                                    .ToList();
+        }
+    }
+}
+<style>
+</style>
+<div class="row" id="trAuditLog">
+    <div class="col-md-12">
+        <div class="portlet box blue">
+            <div class="mini-triangle"><img src="../Assets/img/menu-red-triangle.png" /></div>
+            <div class="portlet-title">
+                <div class="caption">
+                    <i class="fa fa-reorder"></i>
+                    Audit Log
+                </div>
+            </div>
+            <div class="portlet-body form">
+                <div class="form-body">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div style="overflow-x: scroll;">
+                                <table id="tblAuditLog" class="table table-striped table-bordered table-hover table-full-width">
+                                    <thead>
+                                        <tr>
+                                            <th style="width:15%;">Action By</th>
+                                            <th style="width:15%;">Date</th>
+                                            <th style="width:15%;">Activity</th>
+                                            <th style="width:15%;">Action</th>
+                                            <th style="width:40%;">Comment</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="tblAuditLog_tbody">
+                                        @foreach (var log in auditLog)
+                                        {
+                                            <tr>
+                                                <td>@log.EmployeeName</td>
+                                                <td>@log.FormattedDate</td>
+                                                <td>@log.ActivityName</td>
+                                                <td>@log.ActivityAction</td>
+                                                <td>@log.Comment</td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(function () {
+        $('#tblAuditLog').DataTable({
+            "bFilter": false,
+            "bPaginate": false,
+            "bInfo": false,
+            "bSort": false
+        });
+    });
+</script>

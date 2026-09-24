@@ -1,0 +1,42 @@
+﻿@using ESS.Claim.ClaimSubtype
+@using ESS.Claim.ViewModels
+@model Tuple<ColumnTemplate, ClaimsSubtype>
+
+@{
+    ColumnTemplate col = Model.Item1;
+    ClaimsSubtype subtype = Model.Item2;
+}
+
+@if (subtype.Template.IsReadonly)
+{
+    <input type="text"
+            class="form-control @col.ColumnName"
+            name="ClaimsSubtypeCategory[@subtype.categoryIndex].ClaimSubtype[@subtype.subtypeIndex].SubTypeDetails[0].@col.ColumnName"
+            value="@col.ColumnValue"
+            readonly="readonly" />
+}
+else
+{
+    <div class="input-group date date-picker"
+         data-date-format="dd/MM/yyyy"
+         style="min-width:150px;@col.ColumnStyle">
+
+        <input type="hidden" class="date-picker-companion-value" value="@col.ColumnValue" />
+        <input type="text"
+               class="form-control @col.ColumnName @col.ColumnClass"
+               name="ClaimsSubtypeCategory[@subtype.categoryIndex].ClaimSubtype[@subtype.subtypeIndex].SubTypeDetails[0].@col.ColumnName"
+               onchange="@col.OnChange"
+               onfocus="@col.OnFocus"
+               onblur="@col.OnBlur"
+               onload="@col.OnLoad"
+               onclick="@col.OnClick"
+               @(col.IsReadOnly ? "readonly=\"readonly\"" : "") />
+
+        <span class="input-group-btn">
+            <button type="button" class="btn default"
+                    @(col.IsReadOnly ? "readonly=\"readonly\"" : "")>
+                <i class="fa fa-calendar"></i>
+            </button>
+        </span>
+    </div>
+}

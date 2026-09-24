@@ -1,0 +1,468 @@
+﻿@using ETKEMS.Models
+@model ETKEMSViewModel
+@{
+    ViewBag.Title = "Elaun Tanggungan Kerja (ETK) Application";
+}
+
+@using (Html.BeginForm("ETKForm", "ETKEMS", FormMethod.Post))
+{
+    <div class="form-section">
+        <div class="row">
+            <div class="col-md-12">
+                <h1 class="page-title">
+                    @ViewBag.Title
+                    <span style="padding-left:20px;">
+                        <small></small>
+                    </span>
+                </h1>
+            </div>
+        </div>
+    </div>
+    <input type="hidden" name="RequestorID" value="@Model.RequestorID" />
+
+    if (Model.EStatus != ETKEMS.Status.Draft)
+    {
+        @Html.Partial("__RequestDetails", Model);
+    }
+
+    @Html.Partial("_ETKAuthCODEmpDetails", Model)
+    @Html.Partial("_ETKCODPositionDetails", Model)
+    @Html.Partial("_ETKCODVacancyDetails", Model)
+
+     <!-- Attachment -->
+    if (Model.IsNewRecord)
+    {
+         <!-- Attachment -->
+        @Html.Action("ETKEMSAttachmentControl", "ETKEMS", new { EmployeeID = ViewBag.CurrentUserID, Mode = "New", SourceType = "ETKEMS", Mandatory = "TRUE" })
+    }
+    else if (Model.EStatus == ETKEMS.Status.Draft && !Model.IsNewRecord)
+    {
+        @Html.Action("ETKEMSAttachmentControl", "ETKEMS", new { EmployeeID = ViewBag.CurrentUserID, Mode = "Add", SourceType = "ETKEMS", RequestID = @Model.RequestID, Mandatory = "TRUE" })
+    }
+    else
+    {
+        @Html.Action("ETKEMSAttachmentControl", "ETKEMS", new { EmployeeID = ViewBag.CurrentUserID, Mode = "View", SourceType = "ETKEMS", RequestID = @Model.RequestID, Mandatory = "TRUE" })
+    }
+
+    @Html.Partial("__AdditionalRemarks", Model)
+
+    //Payment Request
+    if ((!Model.PaymentMade && Model.EStatus != ETKEMS.Status.Draft
+                            && Model.EStatus != ETKEMS.Status.Pending
+                            && Model.EStatus != ETKEMS.Status.Agreed
+                            && Model.EStatus != ETKEMS.Status.Declined
+                            && Model.EStatus != ETKEMS.Status.ExtensionRequest_Submitted
+                            && Model.EStatus != ETKEMS.Status.ExtensionRequest_Agreed)
+
+                               || //OR
+
+        (Model.PaymentMade && Model.EStatus != ETKEMS.Status.Draft
+                            && Model.EStatus != ETKEMS.Status.Pending
+                            && Model.EStatus != ETKEMS.Status.Agreed
+                            && Model.EStatus != ETKEMS.Status.Approved
+                            && Model.EStatus != ETKEMS.Status.Declined))
+    {
+        var all = Model.PaymentProcessings ?? Enumerable.Empty<PaymentProcessing>();
+        var unpaid = all.Where(x => x.PaymentApproved == false);
+        var paid = all.Where(x => x.PaymentApproved == true);
+
+        if (!Model.PaymentMade &&
+            (Model.EStatus == ETKEMS.Status.Approved
+            || Model.EStatus == ETKEMS.Status.PaymentProcessing_Declined
+            || Model.EStatus == ETKEMS.Status.ExtensionRequest_Approved
+            || Model.EStatus == ETKEMS.Status.ExtensionRequest_Declined))
+        {
+            @Html.Partial("__PaymentProcessingDetails", new Tuple<ETKEMSViewModel, IEnumerable<PaymentProcessing>, bool, int>(Model, all, false, 1))
+        }
+        else if (!Model.PaymentMade &&
+            (Model.EStatus == ETKEMS.Status.PaymentProcessing_Submitted
+            || Model.EStatus == ETKEMS.Status.PaymentProcessing_Agreed
+            || Model.EStatus == ETKEMS.Status.PaymentProcessing_Approved))
+        {
+            @Html.Partial("__PaymentProcessingDetails", new Tuple<ETKEMSViewModel, IEnumerable<PaymentProcessing>, bool, int>(Model, all, true, 1))
+        }
+        else if (Model.PaymentMade &&
+            (Model.EStatus == ETKEMS.Status.PaymentProcessing_Submitted
+            || Model.EStatus == ETKEMS.Status.PaymentProcessing_Agreed
+            || Model.EStatus == ETKEMS.Status.PaymentProcessing_Approved
+            || Model.EStatus == ETKEMS.Status.ExtensionRequest_Submitted
+            || Model.EStatus == ETKEMS.Status.ExtensionRequest_Agreed
+            || Model.EStatus == ETKEMS.Status.ExtensionRequest_Declined))
+        {
+            @Html.Partial("__PaymentProcessingDetails", new Tuple<ETKEMSViewModel, IEnumerable<PaymentProcessing>, bool, int>(Model, all, true, 1))
+        }
+        // Show both
+        else if (Model.PaymentMade && Model.EStatus == ETKEMS.Status.ExtensionRequest_Approved)
+        {
+            @Html.Partial("__PaymentProcessingDetails", new Tuple<ETKEMSViewModel, IEnumerable<PaymentProcessing>, bool, int>(Model, unpaid, false, 1))
+            @Html.Partial("__PaymentProcessingDetails", new Tuple<ETKEMSViewModel, IEnumerable<PaymentProcessing>, bool, int>(Model, paid, true, 2))
+        }
+        // Show both
+        else if (Model.PaymentMade && Model.EStatus == ETKEMS.Status.PaymentProcessing_Declined)
+        {
+            @Html.Partial("__PaymentProcessingDetails", new Tuple<ETKEMSViewModel, IEnumerable<PaymentProcessing>, bool, int>(Model, paid, true, 1))
+            @Html.Partial("__PaymentProcessingDetails", new Tuple<ETKEMSViewModel, IEnumerable<PaymentProcessing>, bool, int>(Model, unpaid, true, 2))
+        }
+    }
+
+    //Extensions Request
+    if ((Model.AllowExtension && Model.EStatus != ETKEMS.Status.Draft
+                                && Model.EStatus != ETKEMS.Status.Pending
+                                && Model.EStatus != ETKEMS.Status.Agreed
+                                && Model.EStatus != ETKEMS.Status.Declined
+                                && Model.EStatus != ETKEMS.Status.PaymentProcessing_Submitted
+                                && Model.EStatus != ETKEMS.Status.PaymentProcessing_Agreed)
+
+                                || //OR
+
+        (!Model.AllowExtension && Model.Extended
+                                && Model.EStatus != ETKEMS.Status.Draft
+                                && Model.EStatus != ETKEMS.Status.Pending
+                                && Model.EStatus != ETKEMS.Status.Agreed
+                                && Model.EStatus != ETKEMS.Status.Approved
+                                && Model.EStatus != ETKEMS.Status.Declined
+                                && Model.EStatus != ETKEMS.Status.ExtensionRequest_Submitted
+                                && Model.EStatus != ETKEMS.Status.ExtensionRequest_Agreed
+                                && Model.EStatus != ETKEMS.Status.ExtensionRequest_Declined))
+    {
+        @Html.Partial("__ExtensionRequestDetails", Model)
+    }
+
+    if (Model.EStatus != ETKEMS.Status.Draft)
+    {
+        @Html.Action("_AuditLog", "ETKEMS", new { SourceID = Model.RequestID })
+    }
+
+    @Html.Action("__ActionButtons", new
+                {
+                    vm = Model,
+                    BackUrl = ViewBag.BackUrl,
+                    TaskID = ViewBag.TaskID
+                })
+}
+
+@Html.Partial("__Prompt")
+
+<script>
+    $(function () {
+        InitializeCommonControls();
+    });
+
+    function InitializeCommonControls() {
+        $('.date-picker').datepicker({
+            format: 'dd/mm/yyyy',
+            autoclose: true
+        });
+
+        $('.timeinput').inputmask("mask", {
+            "mask": "99:99"
+        });
+
+        $('.timeinput').inputmask("h:s", {
+            "placeholder": "__/__",
+            onincomplete: function () {
+                // replace placeholder with zero
+                $(this).val($(this).val().replace(/_/g, '0'));
+            }
+        });
+
+        $('.number-only').keyup(function () {
+            if (this.value != this.value.replace(/[^0-9\.]/g, '')) {
+                this.value = this.value.replace(/[^0-9\.]/g, '');
+            }
+        });
+    }
+
+    function SubmitForm() {
+        var msg = ETKFormValidation();
+
+        if (msg) {
+            alert(msg);
+        }
+        else {
+            ShowConfirmationDialog({
+                message: 'Are you sure you want to submit ETK Form?',
+                positiveCallback: PerformETKFormSubmission
+            });
+        }
+    }
+
+    function ETKFormValidation() {
+        var validationMsg = '';
+        var AuthEmps = GetAuthEmps();
+        var CodEmployee = $('input[name="PositionID"]').val();
+        var VacFromDate = $('input[name="FromDate"]').val();
+        var VacToDate = $('input[name="ToDate"]').val();
+        var ReasonForVac = $('input[name="Reason"]:checked').val();
+
+        if (AuthEmps.length < 1) {
+            validationMsg += 'At least 1 Authorized Employee is required.\n';
+        }
+
+        if (!CodEmployee) {
+            validationMsg += 'Cover of Duty Employee is required.\n';
+        }
+
+        if (!VacFromDate) {
+            validationMsg += 'Vacancy From Date is required.\n';
+        }
+
+        if (!VacToDate) {
+            validationMsg += 'Vacancy To Date is required.\n';
+        }
+
+        if (!ReasonForVac) {
+            validationMsg += 'Reason for Vacancy is required.\n';
+        }
+
+        var dtFromDate = moment(VacFromDate, "DD/MM/YYYY");
+        var dtToDate = moment(VacToDate, "DD/MM/YYYY");
+
+        if (dtFromDate != null && dtToDate != null && dtFromDate.isAfter(dtToDate)) {
+            validationMsg += 'Vacancy From Date must be before Vacancy To Date.';
+        }
+
+        if (dtFromDate != null && dtToDate != null && (dtToDate.diff(dtFromDate, 'days') + 1) > 180) {
+            validationMsg += 'Request cannot be longer than 180 days.';
+        }
+
+        return validationMsg;
+    }
+
+    function PerformETKFormSubmission() {
+        var data = $('form').serializeArray();
+        HideConfirmationDialog();
+        ShowLoadingScreen();
+
+        $.post('@Url.Action("SubmitETKForm", "ETKEMS")', data, function (result) {
+            HideLoadingScreen();
+
+            if (result.IsSuccess) {
+                ShowDialog({
+                    message: "Your ETK request has been successfully submitted.",
+                    okCallback: function () {
+                        window.location.href = '@Url.Action("RequestHistory", "ETKEMS")';
+                    }
+                });
+            }
+            else {
+                ShowDialog({
+                    title: "Action not completed.",
+                    message: "Error Message : " + result.ErrMessage,
+                    okCallback: function () {
+                        HideDialog();
+                    }
+                });
+            }
+        });
+    }
+
+    function ApproverAction(action) {
+        var comment = $('#txtApproverComment').val();
+        var promptMessage = "Are you sure you want to " + action +
+            " this ETK Form?\n\r Press Confirm to proceed, or Close to stay on the current page.";
+
+        if (action == "Decline" && comment == "") {
+            alert("Remarks is required.\n");
+            return;
+        }
+
+        ShowConfirmationDialog({
+            message: promptMessage,
+            positiveCallback: function () {
+                PerformApproverAction(action);
+            }
+        });
+    }
+
+    function PerformApproverAction(action) {
+        HideConfirmationDialog();
+        ShowLoadingScreen();
+
+        var _RedirectUrl = "";
+        var ApproverComment = $('#txtApproverComment').val();
+
+        var _ApproverInfo = {
+            ID              : '@Model.RequestID',
+            TaskID          : '@ViewBag.TaskID',
+            ApproverAction  : action,
+            Target          : '',
+            CurrentUserID: '@ViewBag.CurrentUserID',
+            CurrentStatus : '@Model.StatusCode',
+            FinalStatus: action,
+            ApproverComment: ApproverComment,
+            ActivityName : action,
+            OptionalApprover: false
+        };
+
+        $.post('@Url.Action("PostApproverAction", "ETKEMS")', _ApproverInfo, function (result) {
+            HideLoadingScreen();
+
+            if (result.IsSuccess) {
+                ShowDialog({
+                    message: result.Message,
+                    okCallback: function () {
+                        window.location.href = '@Url.Action("InTray", "ETKEMS")';
+                    }
+                });
+            }
+            else {
+                ShowDialog({
+                    title: "Action not completed.",
+                    message: "Error Message : " + result.ErrMessage,
+                    okCallback: function () {
+                        HideDialog();
+                    }
+                });
+            }
+        });
+    }
+
+    /**
+     * Payment Request
+     */
+
+    function SubmitPaymentRequest() {
+        var msg = PaymentRequestValidation();
+
+        if (msg) {
+            alert(msg);
+        }
+        else {
+            ShowConfirmationDialog({
+                message: 'Are you sure you want to submit payment request?',
+                positiveCallback: PerformPaymentRequestSubmission
+            });
+        }
+    }
+
+    function PaymentRequestValidation() {
+        var validationMsg = '';
+
+        if (typeof tblPaymentProcessings1 !== 'undefined') {
+            $.each(tblPaymentProcessings1.fnGetNodes(), function (i, value) {
+                var row = $(value);
+                var employee = row.find('.Employee').val();
+                var startDate = row.find('.PaymentProcessingStartDate').val();
+                var endDate = row.find('.PaymentProcessingEndDate').val();
+
+                if (startDate == null || startDate == "") {
+                    validationMsg += 'Payment processing row ' + (i + 1) + ' - Start Date cannot be empty \n';
+                }
+
+                if (endDate == null || endDate == "") {
+                    validationMsg += 'Payment processing row ' + (i + 1) + ' - End Date cannot be empty \n';
+                }
+
+                var dtStartDate = moment(startDate, "DD/MM/YYYY");
+                var dtEndDate = moment(endDate, "DD/MM/YYYY");
+                if (dtStartDate != null && dtEndDate != null && dtStartDate.isAfter(dtEndDate)) {
+                    validationMsg += 'Payment processing row ' + (i + 1) + ' - Start Date cannot be after End Date. \n';
+                }
+            });
+        }
+
+        if (typeof tblPaymentProcessings2 !== 'undefined') {
+            $.each(tblPaymentProcessings2.fnGetNodes(), function (i, value) {
+                var row = $(value);
+                var employee = row.find('.Employee').val();
+                var startDate = row.find('.PaymentProcessingStartDate').val();
+                var endDate = row.find('.PaymentProcessingEndDate').val();
+
+                if (startDate == null || startDate == "") {
+                    validationMsg += 'Payment processing row ' + (i + 1) + ' - Start Date cannot be empty \n';
+                }
+
+                if (endDate == null || endDate == "") {
+                    validationMsg += 'Payment processing row ' + (i + 1) + ' - End Date cannot be empty \n';
+                }
+
+                var dtStartDate = moment(startDate, "DD/MM/YYYY");
+                var dtEndDate = moment(endDate, "DD/MM/YYYY");
+                if (dtStartDate != null && dtEndDate != null && dtStartDate.isAfter(dtEndDate)) {
+                    validationMsg += 'Payment processing row ' + (i + 1) + ' - Start Date cannot be after End Date. \n';
+                }
+            });
+        }
+
+        return validationMsg;
+    }
+
+    function PerformPaymentRequestSubmission() {
+        var data = $('form').serializeArray();
+        HideConfirmationDialog();
+        ShowLoadingScreen();
+
+        $.post('@Url.Action("SubmitPaymentProcessing", "ETKEMS")', data, function (result) {
+            HideLoadingScreen();
+
+            if (result.IsSuccess) {
+                ShowDialog({
+                    message: "Your payment request has been successfully submitted.",
+                    okCallback: function () {
+                        window.location.href = '@Url.Action("RequestHistory", "ETKEMS")';
+                    }
+                });
+            }
+            else {
+                ShowDialog({
+                    title: "Action not completed.",
+                    message: "Error Message : " + result.ErrMessage,
+                    okCallback: function () {
+                        HideDialog();
+                    }
+                });
+            }
+        });
+    }
+
+/**
+ * Extension request
+ */
+    function SubmitExtensionRequest() {
+        var msg = ExtensionRequestValidation();
+
+        if (msg) {
+            alert(msg);
+        }
+        else {
+            ShowConfirmationDialog({
+                message: 'Are you sure you want to submit payment request?',
+                positiveCallback: PerformExtensionRequestSubmission
+            });
+        }
+    }
+
+    function ExtensionRequestValidation() {
+        return "";
+    }
+
+    function PerformExtensionRequestSubmission() {
+        var data = $('form').serializeArray();
+        HideConfirmationDialog();
+        ShowLoadingScreen();
+
+        $.post('@Url.Action("SubmitExtensionRequest", "ETKEMS")', data, function (result) {
+            HideLoadingScreen();
+
+            if (result.IsSuccess) {
+                ShowDialog({
+                    message: "Your extension request has been successfully submitted.",
+                    okCallback: function () {
+                        window.location.href = '@Url.Action("RequestHistory", "ETKEMS")';
+                    }
+                });
+            }
+            else {
+                ShowDialog({
+                    title: "Action not completed.",
+                    message: "Error Message : " + result.ErrMessage,
+                    okCallback: function () {
+                        HideDialog();
+                    }
+                });
+            }
+        });
+    }
+</script>
+

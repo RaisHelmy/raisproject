@@ -1,0 +1,168 @@
+﻿@model OJA.Models.PhysicalAttribute
+@{
+    Layout = null;
+}
+
+<div class="portlet box blue">
+    <div class="mini-triangle"><img src="../Assets/img/menu-red-triangle.png" /></div>
+    <div class="portlet-title">
+        <div class="caption">
+            <i class="fa fa-reorder"></i>Physical Attributes
+        </div>
+        <div class="tools">
+            <a style="margin-left:10px" href="javascript:;" class="expand arrow-down">
+            </a>
+        </div>
+    </div>
+
+    <div class="portlet-body form" style="display:none">
+        <div class="form-body">
+            <div class="form-horizontal">
+                <div class="form-body">
+                    <div class="form-group">
+                        <label class="control-label col-md-3">
+                            Height (cm)
+                        </label>
+                        <div class="col-md-4 form-control-static">
+                            <label class="Height">@(Model.Height == 0 ? "-" : Model.Height.ToString("0.00"))</label>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label col-md-3">
+                            Weight (kg)
+                        </label>
+                        <div class="col-md-4 form-control-static">
+                            <label class="Weight">@(Model.Weight == 0 ? "-" : Model.Weight.ToString("0.00"))</label>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label col-md-3">
+                            BMI
+                        </label>
+                        <div class="col-md-4 form-control-static">
+                            <label>@(Model.BMI == 0 ? "-" : Model.BMI.ToString("0.00"))</label>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label col-md-3">
+                            Chest Measurement (inches)
+                        </label>
+                        <div class="col-md-4 form-control-static">
+                            <label class="ChestMeasurement">@(Model.ChestMeasurement == 0 ? "-" : Model.ChestMeasurement.ToString("0.00"))</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            @if (ViewBag.CanEdit)
+            {
+                <a class="btn blue editBtn" data-target="#EditModal" data-toggle="modal">
+                    Edit
+                    <i class="fa fa-pencil"></i>
+                </a>
+            }
+           
+        </div>
+    </div>
+</div>
+
+@using (Html.BeginForm("UpdateAttributes", "MyResume", FormMethod.Post, new { id = "attributesForm"}))
+{
+    <div class="modal fade" id="EditModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                    <h4 class="modal-title">Edit Physical Attributes</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="form-horizontal">
+                        <div class="form-body">
+                            <div class="form-group">
+                                <label class="control-label col-md-3">
+                                    Height (cm)
+                                </label>
+                                <div class="col-md-4 form-control-static">
+                                    <input class="form-control" id="Height" name="Height" value="@(Model.Height == 0 ? "-" : Model.Height.ToString("0.00"))" />
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label col-md-3">
+                                    Weight (kg)
+                                </label>
+                                <div class="col-md-4 form-control-static">
+                                    <input class="form-control" id="Weight" name="Weight" value="@(Model.Weight == 0 ? "-" : Model.Weight.ToString("0.00"))" />
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label col-md-3">
+                                    BMI
+                                </label>
+                                <div class="col-md-4 form-control-static">
+                                    <label id="BMI">@(Model.BMI == 0 ? "-" : Model.BMI.ToString("0.00"))</label>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label col-md-3">
+                                    Chest Measurement (inches)
+                                </label>
+                                <div class="col-md-4 form-control-static">
+                                    <input class="form-control" id="ChestMeasurement" name="ChestMeasurement" value="@(Model.ChestMeasurement == 0 ? "-" : Model.ChestMeasurement.ToString("0.00"))" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn blue" id="btnUpdateAttributes">Update</button>
+                    <button type="button" class="btn default" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<script>
+
+    $("#Height, #Weight").keyup(getbmi);
+
+    function getbmi() {
+        var txtHeight = $("#Height");
+        var heightInMeter = parseFloat(parseFloat(txtHeight.val()) / 100);
+        var totalHeight = (heightInMeter * heightInMeter);
+
+        var txtWeight = $("#Weight");
+        var totalWeight = parseFloat(txtWeight.val());
+        //alert(totalWeight == '' ? 0 : totalWeight);
+        var bmi = totalWeight / totalHeight;
+
+        var BMI = $("#BMI");
+        BMI.text(bmi.toFixed(2));
+
+        if (BMI.text() == "NaN") {
+            BMI.text("-");
+        }
+    }
+
+    $("#btnUpdateAttributes").click(function () {
+        var data = $("#attributesForm").serialize();
+        $.ajax({
+            url: '@Url.Action("UpdateAttributes", "MyResume")',
+            data: data,
+            success: function (response) {
+                var model = response.Result;
+                $('.Height').text(model.Height);
+                $('.Weight').text(model.Weight);
+                $('.ChestMeasurement').text(model.ChestMeasurement);
+                getbmi();
+                alert('The Physical Attribute Info information in your curriculum vitae has been updated.');
+                $("#EditModal").modal('hide');
+                ShowLoading();
+                location.reload();
+            },
+            error: function (err) {
+                alert(err);
+            }
+        });
+    });
+</script>

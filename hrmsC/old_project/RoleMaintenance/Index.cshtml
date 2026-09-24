@@ -1,0 +1,484 @@
+﻿@model List<ESS.Core.DropDownObject>
+
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    List<RoleMaintenance.Division> divisions = ViewBag.Divisions;
+}
+<style>
+    .new-row-info {
+        font-size: 25px;
+        vertical-align: middle;
+        float: right !important;
+    }
+</style>
+<script>
+    var __divisions = @Html.Raw(Json.Encode(divisions));
+</script>
+
+<div class="row">
+    <div class="col-md-12">
+        <!-- BEGIN PAGE TITLE & BREADCRUMB-->
+        <br />
+        <h1 class="page-title">
+            Add Multiple Role Members<span style="padding-left:20px;"><small></small></span>
+        </h1>
+        <!-- END PAGE TITLE & BREADCRUMB-->
+    </div>
+</div>
+<!-- END PAGE HEADER-->
+<br />
+
+
+@using (Html.BeginForm("PerformAddMultipleRoles", "Role", FormMethod.Post, new { @class = "form-horizontal" }))
+{
+    <div class="portlet box blue">
+        <div class="mini-triangle"><img src="../Assets/img/menu-red-triangle.png" /></div>
+        <div class="portlet-title">
+            <div class="caption">
+                <i class="fa fa-reorder"></i> Role Details
+            </div>
+        </div>
+        <div class="portlet-body form">
+            <div class="form-body">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="form-horizontal">
+                            <div class="form-group">
+                                <label class="control-label col-md-2">Module:</label>
+                                <div class="col-md-4">
+                                    <p class="form-control-static">
+                                        @Html.DropDownList("Module", new SelectList(Model, "Value", "Text"), "Select One", new { @class = "bs-select form-control", onchange = "ModuleChange()" })
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label col-md-2">Role:</label>
+                                <div class="col-md-4">
+                                    <p class="form-control-static">
+                                        @Html.DropDownList("Role", Enumerable.Empty<SelectListItem>(), "Select One", new { @class = "bs-select form-control" })
+                                    </p>
+                                </div>
+
+                                <div class="col-md-2">
+                                    <input type="button" class="btn btn-block btn-default" value="Search" onclick="SearchRoles()" />
+                                </div>
+                            </div>
+
+                            <br />
+                            <div id="emp-container" class="col-md-12">
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal-->
+    <div class="modal fade" id="ConfirmAddRole" tabindex="-1" role="basic" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                    <h4 class="modal-title">Confirmation - Submit This Record</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="well">
+                        Clicking Submit will insert this record into the database. If you want to discard the changes, click Close.
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn default green" id="btnAddRole">
+                        <i class="fa fa-check"></i>
+                        Submit
+                    </button>
+                    <button type="button" class="btn default" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+<script type="text/javascript">
+    var currentRole = "";
+
+    function ModuleChange() {
+        var Url = '@Url.Content("~/RoleMaintenance/GetRole")';
+
+        var ddlSource = '#Module';
+        var ddlTarget = '#Role';
+
+        if ($(ddlSource).val() != "") {
+            $.ajaxSetup({ cache: false });
+            $.getJSON(Url, { moduleID: $(ddlSource).val() }, function (data) {
+                $(ddlTarget).empty();
+                $("#Role").append("<option  value=''>Select One</option>");
+                $.each(data, function (index, optionData) {
+                    $("#Role").append("<option value='" + optionData.Value + "'>" + optionData.Text + "</option>");
+                });
+            });
+        }
+        else {
+            $("#Role").empty();
+            $("#Role").append("<option value=''>Select One</option>");
+        }
+    }
+
+    function SearchRoles() {
+        var module = $("#Module").val();
+        var role = $("#Role").val();
+
+        if (module && role) {
+            $('#emp-container').html($('<div style="text-align : center;"><img src="/_layouts/15/TNBESS/Assets/img/ajax-loading.gif" style="" /></div>'));
+            currentRole = $('#Role').val();
+
+            $.get('@Url.Action("_RoleMemberTable", "RoleMaintenance")', {
+                Module: $("#Module").val(),
+                Role: $("#Role").val(),
+                _: new Date().getTime()
+            }, function (result) {
+                $('#emp-container').html(result);
+            });
+        }
+        else {
+            alert("Please select both modules and roles.");
+        }
+    }
+
+    // Validation Function
+    function ValidateRole(element) {
+        var ValidationMsg = '';
+
+        if ($("#Module option:selected").val() == '')
+            ValidationMsg += '- Module  is required.\n';
+
+
+        if ($("#Role option:selected").val() == '')
+            ValidationMsg += '- Role  is required.\n';
+
+        // Consolidate Message
+        if (ValidationMsg != null && ValidationMsg != '') {
+            $(element).attr('href', function () {
+                return this.href = '';
+            });
+            alert(ValidationMsg);
+
+        }
+        else {
+            $(element).attr('href', function () {
+                return this.href = '#ConfirmAddRole';
+            });
+        }
+    }
+
+    function InitRoleTable() {
+        $.each(tblRoleMembers.fnGetNodes(), function (index, row) {
+            UpdateDivisionDropdown(row);
+        });
+    }
+
+    function UpdateDivisionDropdown(element) {
+        var row = $(element).closest('tr');
+        var ddlDivision = row.find('.ddl-division');
+
+        ddlDivision.empty();
+        ddlDivision.append($('<option value=""> - Select One - </option>'));
+        for (var i = 0; i < __divisions.length; i++) {
+            ddlDivision.append($('<option value="' + __divisions[i].DivisionCode + '">' + __divisions[i].DivisionName + '</option>'));
+        }
+
+        ddlDivision.val(ddlDivision.siblings('.division-value').val());
+        UpdateDepartmentDropdown(element);
+    }
+
+    function UpdateDepartmentDropdown(element) {
+        var row = $(element).closest('tr');
+        var ddlDepartment = $(row).find('.ddl-department');
+        var selectedDivisionCode = row.find('.ddl-division').val();
+
+        ddlDepartment.empty();
+        ddlDepartment.append($('<option value=""> - Select One - </option>'));
+
+        if (selectedDivisionCode) {
+            var selectedDivision = __divisions.filter(function (item) { return item.DivisionCode == selectedDivisionCode; })[0];
+            if (selectedDivision) {
+                var __departments = selectedDivision.Departments;
+
+                for (var i = 0; i < __departments.length; i++) {
+                    ddlDepartment.append($('<option value="' + __departments[i].DepartmentCode + '">' + __departments[i].DepartmentName + '</option>'));
+                }
+            }
+        }
+
+        ddlDepartment.val(ddlDepartment.siblings('.department-value').val());
+        UpdateUnitSectionDropdown(element);
+    }
+
+    function UpdateUnitSectionDropdown(element) {
+        var row = $(element).closest('tr');
+        var ddlUnitSection = $(row).find('.ddl-unitsection');
+        var selectedDivisionCode = row.find('.ddl-division').val();
+        var selectedDepartmentCode = row.find('.ddl-department').val();
+
+        ddlUnitSection.empty();
+        ddlUnitSection.append($('<option value=""> - Select One - </option>'));
+
+        if (selectedDivisionCode && selectedDepartmentCode) {
+            var selectedDivision = __divisions.filter(function (item) { return item.DivisionCode == selectedDivisionCode; })[0];
+            if (selectedDivision) {
+                var __departments = selectedDivision.Departments;
+
+                var selectedDepartment = __departments.filter(function (item) { return item.DepartmentCode == selectedDepartmentCode; })[0];
+                if (selectedDepartment) {
+
+                    var __unitSection = selectedDepartment.UnitSections;
+                    for (var i = 0; i < __unitSection.length; i++) {
+                        ddlUnitSection.append($('<option value="' + __unitSection[i].UnitSectionCode + '">' + __unitSection[i].UnitSectionName + '</option>'));
+                    }
+                }
+            }
+        };
+
+        ddlUnitSection.val(ddlUnitSection.siblings('.unitsection-value').val());
+    }
+
+    var tblRoleMembers = null;
+
+    function getSelectedEmployees() {
+        return tblRoleMembers.fnGetNodes().map(function (item) { return $(item).find('input[name=EmployeeID]').val(); });
+    }
+
+    function OpenMemberPicker() {
+        $('#RoleMemberPicker').modal();
+        if (typeof UpdatePickerCheckboxes != 'undefined') {
+            UpdatePickerCheckboxes();
+        }
+    }
+
+    function SearchPeople() {
+        $('#PeoplePickerResult').html($('<div style="text-align : center;"><img src="/_layouts/15/TNBESS/Assets/img/ajax-loading.gif" style="" /></div>'));
+
+        $.get('@Url.Action("GetEmployeePicker", "RoleMaintenance")', {
+            empCode: $('#txtEmpCode').val(),
+            empName: $('#txtEmpName').val()
+        }, function (result) {
+            $('#PeoplePickerResult').html(result);
+            $.uniform.update();
+        });
+    }
+
+    function SaveAll() {
+        if (confirm("Save all role members?")) {
+            var data = [];
+            $('.selected-emp').each(function () {
+                var $row = $(this).closest('tr');
+                data.push({
+                    ID: $row.find('[name=ID]').val(),
+                    RoleID: currentRole,
+                    EmployeeID: $row.find('[name=EmployeeID]').val(),
+                    DivisionCode: $row.find('[name=Division]').val(),
+                    DepartmentCode: $row.find('[name=Department]').val(),
+                    UnitSectionCode: $row.find('[name=UnitSection]').val()
+                });
+
+                $row.find('.btn-update').prop('disabled', true);
+                $row.find('.btn-delete').prop('disabled', true);
+            });
+
+            if (data.length < 1) {
+                alert("No role member selected.");
+                return;
+            }
+
+            var postData = { rms: data };
+
+            $.post('@Url.Action("AddRoleMembers", "RoleMaintenance")', postData, function (result) {
+                if (result.Success) {
+                    SearchRoles();
+                    alert("Role members saved.");
+                }
+                else {
+                    alert(result.ErrorMsg);
+                }
+            });
+        }
+    }
+
+    function SaveSelectedRows() {
+        if (confirm("Save selected role members?")) {
+            var data = [];
+            $('.selected-emp:checked').each(function () {
+                var $row = $(this).closest('tr');
+                data.push({
+                    ID: $row.find('[name=ID]').val(),
+                    RoleID: currentRole,
+                    EmployeeID: $row.find('[name=EmployeeID]').val(),
+                    DivisionCode: $row.find('[name=Division]').val(),
+                    DepartmentCode: $row.find('[name=Department]').val(),
+                    UnitSectionCode: $row.find('[name=UnitSection]').val()
+                });
+
+                $row.find('.btn-update').prop('disabled', true);
+                $row.find('.btn-delete').prop('disabled', true);
+            });
+
+            if (data.length < 1) {
+                alert("No role member selected.");
+                return;
+            }
+
+            var postData = { rms: data };
+
+            $.post('@Url.Action("AddRoleMembers", "RoleMaintenance")', postData, function (result) {
+                if (result.Success) {
+                    SearchRoles();
+                    alert("Role members saved.");
+                }
+                else {
+                    alert(result.ErrorMsg);
+                }
+            });
+        }
+    }
+
+    function DeleteSelectedRows() {
+        if (confirm("Confirm delete selected role members?")) {
+            var data = [];
+            var rowToBeDeleted = [];
+
+            $('.selected-emp:checked').each(function () {
+                var $row = $(this).closest('tr');
+
+                rowToBeDeleted.push($row);
+
+                if ($row.find('[name=ID]').val()) {
+                    data.push({ ID: $row.find('[name=ID]').val() });
+                }
+
+                tblRoleMembers.fnDeleteRow(tblRoleMembers.fnGetPosition($row.get(0)));
+            });
+
+            if (rowToBeDeleted.length < 1) {
+                alert("No role member selected.");
+                return;
+            }
+
+            var postData = { rms: data };
+
+            if (data.length > 0) {
+                $.post('@Url.Action("DeleteRoleMembers", "RoleMaintenance")', postData, function (result) {
+                    if (result.Success) {
+                        alert("Role members deleted.");
+                    }
+                    else {
+                        alert(result.ErrorMsg);
+                    }
+                });
+            }
+        }
+    }
+
+    function SaveRow(row) {
+        if (confirm("Save role member?")) {
+            var $row = $(row).closest('tr');
+
+            $row.find('.btn-update').prop('disabled', true);
+            $row.find('.btn-delete').prop('disabled', true);
+
+            var data = {
+                ID: $row.find('[name=ID]').val(),
+                RoleID: currentRole,
+                EmployeeID: $row.find('[name=EmployeeID]').val(),
+                DivisionCode: $row.find('[name=Division]').val(),
+                DepartmentCode: $row.find('[name=Department]').val(),
+                UnitSectionCode: $row.find('[name=UnitSection]').val()
+            };
+
+            $.post('@Url.Action("AddRoleMember", "RoleMaintenance")', data, function (result) {
+                if (result.Success) {
+                    $row.find('[name=ID]').val(result.ID);
+                    $row.find('.new-row-info').remove();
+                    alert("Role member saved.");
+                }
+                else {
+                    alert(result.ErrorMsg);
+                }
+
+                $row.find('.btn-update').prop('disabled', false);
+                $row.find('.btn-delete').prop('disabled', false);
+            });
+        }
+    }
+
+    function DeleteRow(row) {
+        if (confirm("Confirm delete role member?")) {
+            var $row = $(row).closest('tr');
+
+            if ($row.find('[name=ID]').val()) {
+                $row.find('.btn-update').prop('disabled', true);
+                $row.find('.btn-delete').prop('disabled', true);
+
+                var data = {
+                    ID: $row.find('[name=ID]').val()
+                };
+
+                $.post('@Url.Action("DeleteRoleMember", "RoleMaintenance")', data, function (result) {
+                    if (result.Success) {
+                        tblRoleMembers.fnDeleteRow($row.get(0));
+                        alert("Role member deleted.");
+                    }
+                    else {
+                        alert(result.ErrorMsg);
+                        $row.find('.btn-update').prop('disabled', false);
+                        $row.find('.btn-delete').prop('disabled', false);
+                    }
+                });
+            }
+            else {
+                tblRoleMembers.fnDeleteRow($row.get(0));
+            }
+        }
+    }
+
+    function AddSelected() {
+        var selectedEmployees = getSelectedEmployees();
+
+        $('.MultiPeoplePickerCheckbox:checked').each(function () {
+            var empID = $(this).attr("empID");
+
+            //if (selectedEmployees.indexOf(empID) >= 0)
+            //    return;
+
+            var empData = {
+                empID: $(this).attr("empID"),
+                empCode: $(this).attr("empCode"),
+                empName: $(this).attr("empName")
+            };
+
+            tblRoleMembers.fnAddData(GetRowTemplate(empData));
+        });
+
+        $('#RoleMemberPicker').modal('toggle');
+        tblRoleMembers.find('input[type=checkbox]').uniform();
+        tblRoleMembers.find('.new-row-info').popover();
+
+        InitRoleTable();
+    }
+
+    function GetRowTemplate(emp) {
+        var newTemplate = rowTemplate.map(function (e) { return e; });
+
+        for (var i = 0; i < newTemplate.length; i++) {
+            newTemplate[i] = newTemplate[i].replace("{EMPLOYEE_DISPLAY_NAME}", emp.empCode + " - " + emp.empName)
+                .replace("{INDEX}", tblRoleMembers.fnSettings().fnRecordsTotal())
+                .replace("{EMPLOYEE_ID}", emp.empID);
+        }
+
+        return newTemplate;
+    }
+
+    function SelectAll(element) {
+        $('#tblRoleMembers .selected-emp').prop('checked', element.checked);
+        $.uniform.update();
+    }
+</script>

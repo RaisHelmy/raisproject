@@ -1,0 +1,122 @@
+﻿@model ESS.AdvanceClaim.Models.AdvanceClaim
+@{
+
+    //var EmpID = "986C2B44-7858-47FE-AB44-001A2E37DF48";
+    var EmpID = ESS.Core.Common.GetEmployeeID().ToUpper();
+    List<SEP.RoutingManagement.Service.AllowAction> AllowAction = new List<SEP.RoutingManagement.Service.AllowAction>();
+    if (EmpID == Model.ApproverID.ToUpper())
+    {
+        SEP.RoutingManagement.Service srv = new SEP.RoutingManagement.Service();
+        AllowAction = srv.GetUserAllowAction(@Model.RequestID, Guid.Parse(@EmpID));
+    }
+}
+
+
+@if (Model.Status == 0)
+{
+    <!-- Disclaimer -->
+    <div class="row">
+        <div class="col-md-12">
+            <input type="checkbox" id="chkDisclaimer"> <b>Jika saya gagal mengemukakan tuntutan dan atau menjelaskan wang pendahuluan perjalanan yang berlebihan dalam tempoh satu (1) bulan seperti di atas, saya bersetuju dan menganggap tuntutan yang melebihi tempoh satu (1) bulan akan lupus serta membenarkan TNB untuk memotong keseluruhan atau mana-mana bahagian jumlah yang diambil sebagai wang pendahuluan perjalanan saya. TNB turut berhak membuat potongan gaji dengan jumlah yang maksimum untuk memastikan penjelasan pendahuluan dapat diselesaikan dengan segera.</b>
+        </div>
+    </div>
+
+    <br />
+
+    <!-- Buttons -->
+    <div class="row">
+        <div class="col-md-12">
+            <input type="button" class="btn green" value="Draft" id="btnDraft" onclick="submitclaim('Draft'); " />
+
+            <input type="button" class="btn green" value="Submit" id="btnSubmit" onclick="submitclaim('Submit'); " />
+
+            <input type="button" class="btn green" value="Back" onclick="window.history.back()" />
+        </div>
+    </div>
+}
+else if (Model.Status == 4)
+{
+    <!-- Disclaimer -->
+    <div class="row">
+        <div class="col-md-12">
+            <input type="checkbox" id="chkDisclaimer"> <b>Jika saya gagal mengemukakan tuntutan dan atau menjelaskan wang pendahuluan perjalanan yang berlebihan dalam tempoh satu (1) bulan seperti di atas, saya bersetuju dan menganggap tuntutan yang melebihi tempoh satu (1) bulan akan lupus serta membenarkan TNB untuk memotong keseluruhan atau mana-mana bahagian jumlah yang diambil sebagai wang pendahuluan perjalanan saya. TNB turut berhak membuat potongan gaji dengan jumlah yang maksimum untuk memastikan penjelasan pendahuluan dapat diselesaikan dengan segera.</b>
+        </div>
+    </div>
+
+    <br />
+
+    <!-- Buttons -->
+    <div class="row">
+        <div class="col-md-12">
+            <input type="button" class="btn green" value="Submit" id="btnSubmit" onclick="submitclaim('Submit'); " />
+
+            <input type="button" class="btn green" value="Back" onclick="window.history.back()" />
+        </div>
+    </div>
+}
+else if (EmpID == Model.ApproverID.ToUpper())
+{
+    <div class="row">
+        <div class="col-md-12">
+            <div class="portlet box blue">
+                <div class="mini-triangle"><img src="../Assets/img/menu-red-triangle.png" /></div>
+                <div class="portlet-title">
+                    <div class="caption">
+                        <i class="fa fa-reorder"></i>Approval Comments
+                    </div>
+                </div>
+                <div class="portlet-body form">
+                    <div class="form-body">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <label class="control-label col-md-2">Comments</label>
+                                        <div class="col-md-10 form-control-static">
+                                            <textarea class="form-control" id="txtAppComment" rows="5" cols="60"></textarea>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-12">
+            @if (AllowAction[0].CanAgree == "1")
+            {
+                <input type="button" class="btn green" value="Agree" onclick="ApproveReject('Agree'); " />
+            }
+            @if (AllowAction[0].CanApprove == "1")
+            {
+                <input type="button" class="btn green" value="Approve" onclick="ApproveReject('Approve'); " />
+            }
+            @*<input type="button" class="btn green" value="Reject" onclick="ApproveReject('Reject'); " />*@
+            <input type="button" class="btn green" value="Return" onclick="ApproveReject('Return'); " />
+            <input type="button" class="btn green" value="Back" onclick="window.history.back()" />
+        </div>
+    </div>
+}
+else if (Model.Status == 11 && EmpID == Model.Submiter.ID.ToString().ToUpper())
+{
+    <div class="row">
+        <div class="col-md-12">
+            @*<input type="button" class="btn green" value="Withdraw" onclick="javascript: $('#ConfirmWithdraw').modal()" />*@
+
+            <input type="button" class="btn green" value="Back" onclick="history.back()" />
+
+        </div>
+    </div>
+
+}
+else
+{
+    <div class="row">
+        <div class="col-md-12">
+            <input type="button" class="btn green" value="Back" onclick="history.back()" />
+        </div>
+    </div>
+}

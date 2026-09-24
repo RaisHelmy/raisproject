@@ -1,0 +1,223 @@
+﻿@model List<ESS.Core.DropDownObject>
+
+@{
+    ViewBag.Title = "Leave Report (TGBS)";
+}
+
+<div class="row">
+    <div class="col-md-12">
+        <br />
+        <h1 class="page-title">
+            Leave Report (TGBS)<span style="padding-left:20px;"><small></small></span>
+        </h1>
+    </div>
+</div>
+<br />
+<div class="form-body">
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-4 control-label">Start Date</label>
+                    <div class="col-md-8 form-control-static">
+                        <div class="input-group date date-picker" id="divStartDate" data-date-format="dd MM yyyy">
+                            <input type="text" class="form-control" id="StartDate" name="StartDate" />
+                            <span class="input-group-btn">
+                                <button type="button" class="btn default"><i class="fa fa-calendar"></i></button>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-4 control-label">End Date</label>
+                    <div class="col-md-8 form-control-static">
+                        <div class="input-group date date-picker" id="divEndDate" data-date-format="dd MM yyyy">
+                            <input type="text" class="form-control" id="EndDate" name="EndDate" />
+                            <span class="input-group-btn">
+                                <button type="button" class="btn default"><i class="fa fa-calendar"></i></button>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-4 control-label">Chosen Date</label>
+                    <div class="col-md-8 form-control-static">
+                        <div class="input-group date date-picker" id="divChosenDate" data-date-format="dd MM yyyy">
+                            <input type="text" class="form-control" id="ChosenDate" name="ChosenDate" />
+                            <span class="input-group-btn">
+                                <button type="button" class="btn default"><i class="fa fa-calendar"></i></button>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-4 control-label">Company</label>
+                    <div class="col-md-8 form-control-static">
+                        @Html.DropDownList("Company", new SelectList(Model, "Value", "Text"), "- All -", new { @class = "bs-select form-control", @onchange = "changeCompany(this)" })
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-4 control-label">Personal Area</label>
+                    <div class="col-md-8 form-control-static">
+                        @Html.Action("_DDLDepartment", "ContractAbsorption", new { })
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">&nbsp;</div>
+    <div class="row">
+        <div class="col-md-12">
+            <div class="text-right">
+                <input type="button" id="btn-Search" class="btn green btn-Search" value="Search" onclick="SearchListing();">
+                <input id="btn-Clear" type="button" class="btn default " value="Clear" onclick="ClearFilter();">
+            </div>
+        </div>
+    </div>
+    <div class="row">&nbsp;</div>
+    <div class="row">
+        <div class="col-md-12">
+            <div id="SearchResult">
+
+            </div>
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+    function SearchListing() {
+        var _DateFrom = $('#StartDate').val();
+        var _DateTo = $('#EndDate').val();
+        var _DateChosen = $('#ChosenDate').val();
+        var _Company = $('#Company').val();
+        var _Department = $('#Department').val() + '';
+
+        if (!_DateFrom) {
+            alert("Start Date is mandatory");
+            return;
+        }
+
+        if (!_DateTo) {
+            alert("End Date is mandatory");
+            return;
+        }
+
+        if (!_DateChosen) {
+            alert("Chosen Date is mandatory");
+            return;
+        }
+
+        $("#SearchResult").html("LOADING...");
+        
+        $.ajax({
+            type: "GET",
+            url: '@Url.Action("_LeaveReportTGBSResult", "LeaveApplication")',
+            cache: false,
+            data: {
+                dateFrom: _DateFrom,
+                dateTo: _DateTo,
+                dateChosen: _DateChosen,
+                company: _Company,
+                department: _Department,
+            },
+            success: function (content) {
+                $("#SearchResult").html(content);
+            },
+            error: function (e) {
+                console.log(e);
+            }
+        });
+    }
+
+    jQuery.extend(jQuery.fn.dataTableExt.oSort, {
+        "date-dmy-pre": function (a) {
+            if (a == null || a == "") {
+                return 0;
+            }
+            var date = a.split('-');
+            return (date[2] + date[1] + date[0]) * 1;
+        },
+
+        "date-dmy-asc": function (a, b) {
+            return ((a < b) ? -1 : ((a > b) ? 1 : 0));
+        },
+
+        "date-dmy-desc": function (a, b) {
+            return ((a < b) ? 1 : ((a > b) ? -1 : 0));
+        }
+    });
+
+    $(function () {
+        $('.date-picker').datepicker({
+            format: 'dd/mm/yyyy',
+            autoclose: true,
+        });
+
+        $("#StartDate").val('01/12/2012');
+        $('#EndDate').val('01/06/2099');
+        $('#ChosenDate').val(moment().format('DD/MM/YYYY'));
+
+        if ($("#Company option[value='4001']").length > 0) {
+            $("#Company").val("4001").change();
+        }
+    });
+
+    function changeCompany(e) {
+		$.ajax({
+			type: "GET",
+			url: '@Url.Content("~/ContractAbsorption/_DDLDepartment")',
+			cache: false,
+			dataType: "html",
+			data: { CompanyCode: e.value, RoleCode: "@ViewBag.RoleCode"},
+            success: function (content) {
+                $("#DepartmentResult").html(content);
+                $('#Department').prop("multiple", true);
+                $('#Department').selectpicker();
+                if ($("#Company").val() == '4001') {
+                    $('#Department').selectpicker('val', ['W000', 'W001', 'W002', 'W003', 'W004', 'W005', 'W006']);
+                }
+			},
+			error: function (e) {
+				console.log(e);
+			}
+		});
+    }
+
+    function changeDepartment(e) {
+        
+	}
+
+    function ClearFilter() {
+        $("#StartDate").val('01/12/2012');
+        $('#EndDate').val('01/06/2099');
+        $('#ChosenDate').val(moment().format('DD/MM/YYYY'));
+
+        if ($("#Company option[value='4001']").length > 0) {
+            $("#Company").val("4001").change();
+        }
+        else {
+            $("#Company").val('').change();
+        }
+    }
+</script>
+
+@Html.Partial("_ExcelExport")

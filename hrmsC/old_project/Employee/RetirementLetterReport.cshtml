@@ -1,0 +1,661 @@
+﻿@using ESS.Employee;
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewBag.Title = "Retirement Letter Report";
+
+    DateTime d1a = DateTime.Now.AddYears(-20);
+    DateTime d1b = DateTime.Now.AddYears(20);
+    string dtRetFrom = d1a.ToString("dd MMM yyyy");
+    string dtRetTo = d1b.ToString("dd MMM yyyy");
+
+    DateTime d2a = DateTime.Now.AddYears(-20);
+    DateTime d2b = DateTime.Now.AddYears(20);
+    string dtRelFrom = d2a.ToString("dd MMM yyyy");
+    string dtRelTo = d2b.ToString("dd MMM yyyy");
+
+    List<ESS.Core.DropDownObject> StatusDDL = ViewBag.StatusDDL;
+
+    DateTime checkRetirementDateFrom = DateTime.Now.AddDays(-365);
+    DateTime checkRetirementDateTo = DateTime.Now.AddDays(365).AddMonths(1);
+
+    DateTime presetRetirementDateFrom = new DateTime(checkRetirementDateFrom.Year, checkRetirementDateFrom.Month, 1);
+    DateTime presetRetirementDateTo = new DateTime(checkRetirementDateTo.Year, checkRetirementDateTo.Month, 1).AddDays(-1);
+
+    DateTime checkReleaseDateFrom = DateTime.Now.AddDays(-365);
+    DateTime checkReleaseDateTo = DateTime.Now.AddDays(365).AddMonths(1);
+
+    DateTime presetReleaseDateFrom = new DateTime(checkReleaseDateFrom.Year, checkReleaseDateFrom.Month, 1);
+    DateTime presetReleaseDateTo = new DateTime(checkReleaseDateTo.Year, checkReleaseDateTo.Month, 1).AddDays(-1);
+}
+
+<div class="row">
+    <div class="col-md-12">
+        <br />
+        <h1 class="page-title">
+            Retirement Letter Report<span style="padding-left:20px;"><small></small></span>
+        </h1>
+    </div>
+</div>
+<br />
+<div class="form-body">
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-4 control-label">Employee</label>
+                    <div class="col-md-8 form-control-static">
+                        <input class="form-control" id="Employee" name="Employee" placeholder="Name or ID" />
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-4 control-label">Company</label>
+                    <div class="col-md-8 form-control-static">
+                        <input type="hidden" name="DivisionCode" id="DivisionCode" value="" />
+                        <input type="hidden" name="DivisionName" id="DivisionName" value="" />
+                        <select tabindex="0" id="ddlDivision" class="form-control"></select>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-4 control-label">Division / Department</label>
+                    <div class="col-md-8 form-control-static">
+                        <input type="hidden" name="DepartmentCode" id="DepartmentCode" value="" />
+                        <input type="hidden" name="DepartmentName" id="DepartmentName" value="" />
+                        <select tabindex="0" id="ddlDepartment" class="form-control"></select>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-4 control-label">Unit / Section</label>
+                    <div class="col-md-8 form-control-static">
+                        <input type="hidden" name="UnitSectionCode" id="UnitSectionCode" value="" />
+                        <input type="hidden" name="UnitSectionName" id="UnitSectionName" value="" />
+                        <select tabindex="0" id="ddlUnitSection" class="form-control"></select>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-4 control-label">Retirement Date (From)</label>
+                    <div class="col-md-8 form-control-static">
+                        <div class="input-group date date-picker" id="divRetirementDateFrom" data-date-format="dd/mm/yyyy">
+                            <input type="text" class="form-control" id="RetirementDateFrom" name="RetirementDateFrom" value="@Service.FormatDateInNumber(presetRetirementDateFrom, "dd/MM/yyyy")" />
+                            <span class="input-group-btn">
+                                <button type="button" class="btn default"><i class="fa fa-calendar"></i></button>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-4 control-label">Retirement Date (To)</label>
+                    <div class="col-md-8 form-control-static">
+                        <div class="input-group date date-picker" id="divRetirementDateTo" data-date-format="dd/mm/yyyy">
+                            <input type="text" class="form-control" id="RetirementDateTo" name="RetirementDateTo" value="@Service.FormatDateInNumber(presetRetirementDateTo, "dd/MM/yyyy")" />
+                            <span class="input-group-btn">
+                                <button type="button" class="btn default"><i class="fa fa-calendar"></i></button>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-4 control-label">Release Date (From)</label>
+                    <div class="col-md-8 form-control-static">
+                        <div class="input-group date date-picker" id="divReleaseDateFrom" data-date-format="dd/mm/yyyy">
+                            <input type="text" class="form-control" id="ReleaseDateFrom" name="ReleaseDateFrom" value="@Service.FormatDateInNumber(presetReleaseDateFrom, "dd/MM/yyyy")" />
+                            <span class="input-group-btn">
+                                <button type="button" class="btn default"><i class="fa fa-calendar"></i></button>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-4 control-label">Release Date (To)</label>
+                    <div class="col-md-8 form-control-static">
+                        <div class="input-group date date-picker" id="divReleaseDateTo" data-date-format="dd/mm/yyyy">
+                            <input type="text" class="form-control" id="ReleaseDateTo" name="ReleaseDateTo" value="@Service.FormatDateInNumber(presetReleaseDateTo, "dd/MM/yyyy")" />
+                            <span class="input-group-btn">
+                                <button type="button" class="btn default"><i class="fa fa-calendar"></i></button>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-4 control-label">Status</label>
+                    <div class="col-md-8 form-control-static">
+                        <input type="hidden" name="StatusCode" id="StatusCode" value="" />
+                        <input type="hidden" name="StatusName" id="StatusName" value="" />
+                        @Html.DropDownList("ddlStatus", new SelectList(StatusDDL, "Value", "Text"), new { @id = "ddlStatus", @class = "bs-select form-control" })
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">&nbsp;</div>
+    <div class="row">
+        <div class="col-md-12">
+            <div class="text-right">
+                <input type="button" id="btn-Search" class="btn green btn-Search" value="Search" onclick="SearchListing();">
+                <input id="btn-Clear" type="button" class="btn default " value="Clear" onclick="ClearFilter();">
+            </div>
+        </div>
+    </div>
+    <div class="row">&nbsp;</div>
+    <div class="row">
+        <div class="col-md-12">
+            <div id="SearchResult">
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Loading Gif -->
+<div id="divLoading" style="margin: 0px; padding: 0px; position: fixed; right: 0px;
+    top: 0px; width: 100%; height: 100%; background-color:gainsboro; z-index: 30001;
+    opacity: .8; filter: alpha(opacity=70); display:none;">
+    <p style="position: absolute; top: 30%; left: 30%; color: black;">
+        Loading, please wait...<img src="../Assets/img/ajax-loading.gif" />
+
+    </p>
+</div>
+
+@*script Main Function *@
+<script type="text/javascript">
+    function LoadFormConfiguration() {
+
+        $('#divRetirementDateFrom').datepicker('setStartDate', '@dtRetFrom');
+        $('#divRetirementDateFrom').datepicker('setEndDate', '@dtRetTo');
+
+        $('#divRetirementDateTo').datepicker('setStartDate', '@dtRetFrom');
+        $('#divRetirementDateTo').datepicker('setEndDate', '@dtRetTo');
+
+        $("#divRetirementDateFrom").datepicker({
+            format: 'dd/mm/yyyy',
+            autoclose: true,
+        }).on("input", function (e) {
+            try {
+                var dateParse = $.datepicker.parseDate("dd/mm/yy", $("#RetirementDateFrom").val());
+            }
+            catch (e) { }
+            if (dateParse) {
+                Checking('');
+            }
+        }).on('changeDate', function (selected) {
+            var minDate = new Date(selected.date.valueOf());
+
+            minDate.setDate(minDate.getDate() + 1);
+            $('#divRetirementDateTo').datepicker('setStartDate', minDate);
+        });
+
+        $("#divRetirementDateTo").datepicker({
+            autoclose: true,
+        })
+            .on('changeDate', function (selected) {
+                var minDate = new Date(selected.date.valueOf());
+                minDate.setDate(minDate.getDate() - 1);
+                $('#divRetirementDateFrom').datepicker('setEndDate', minDate);
+            });
+
+        $("#RetirementDateFrom").on("blur", function (e) {
+            if ($('#RetirementDateFrom').val() == "") {
+                $('#divRetirementDateTo').datepicker('setStartDate', '@dtRetFrom');
+            }
+
+        });
+
+        $("#RetirementDateTo").on("blur", function (e) {
+            if ($('#RetirementDateTo').val() == "") {
+                $('#divRetirementDateFrom').datepicker('setEndDate', '@dtRetTo');
+            }
+
+        });
+
+        $('#divReleaseDateFrom').datepicker('setStartDate', '@dtRetFrom');
+        $('#divReleaseDateFrom').datepicker('setEndDate', '@dtRetTo');
+
+        $('#divReleaseDateTo').datepicker('setStartDate', '@dtRetFrom');
+        $('#divReleaseDateTo').datepicker('setEndDate', '@dtRetTo');
+
+        $("#divReleaseDateFrom").datepicker({
+            format: 'dd/mm/yyyy',
+            autoclose: true,
+        }).on("input", function (e) {
+            try {
+                var dateParse = $.datepicker.parseDate("dd/mm/yy", $("#ReleaseDateFrom").val());
+            }
+            catch (e) { }
+            if (dateParse) {
+                Checking('');
+            }
+        }).on('changeDate', function (selected) {
+            var minDate = new Date(selected.date.valueOf());
+
+            minDate.setDate(minDate.getDate() + 1);
+            $('#divReleaseDateTo').datepicker('setStartDate', minDate);
+        });
+
+        $("#divReleaseDateTo").datepicker({
+            autoclose: true,
+        })
+            .on('changeDate', function (selected) {
+                var minDate = new Date(selected.date.valueOf());
+                minDate.setDate(minDate.getDate() - 1);
+                $('#divReleaseDateFrom').datepicker('setEndDate', minDate);
+            });
+
+        $("#ReleaseDateFrom").on("blur", function (e) {
+            if ($('#ReleaseDateFrom').val() == "") {
+                $('#divReleaseDateTo').datepicker('setStartDate', '@dtRetFrom');
+            }
+
+        });
+
+        $("#ReleaseDateTo").on("blur", function (e) {
+            if ($('#ReleaseDateTo').val() == "") {
+                $('#divReleaseDateFrom').datepicker('setEndDate', '@dtRetTo');
+            }
+
+        });
+
+        @Html.Raw("RetrieveDivisionOptions();");
+        @Html.Raw("RetrieveDepartmentOptions();");
+        @Html.Raw("RetrieveUnitSectionOptions();");
+
+    }
+    function LoadFormOnChange() {
+
+        $('#ddlStatus').change(function () {
+            // if changed to, for example, the last option, then
+            // $(this).find('option:selected').text() == D
+            // $(this).val() == 4
+            // get whatever value you want into a variable
+            var HiddenStatusValue = $("#ddlStatus option:selected").val() + "";
+            var HiddenStatusText = $("#ddlStatus option:selected").text() + "";
+
+            // and update the hidden input's value
+            $('#StatusName').val(HiddenStatusText);
+            $('#StatusCode').val(HiddenStatusValue);
+        });
+
+        //division change Department change
+        $('#ddlDivision').change(function () {
+            // if changed to, for example, the last option, then
+            // $(this).find('option:selected').text() == D
+            // $(this).val() == 4
+            // get whatever value you want into a variable
+            var HiddenDivisionValue = $("#ddlDivision option:selected").val() + "";
+            var HiddenDivisionText = $("#ddlDivision option:selected").text() + "";
+
+            // and update the hidden input's value
+            $('#DivisionName').val(HiddenDivisionText);
+            $('#DivisionCode').val(HiddenDivisionValue);
+
+            RetrieveDepartmentOptions();
+            $('#DepartmentCode').val("");
+            $('#DepartmentName').val("");
+        });
+
+        $('#ddlDepartment').change(function () {
+            // if changed to, for example, the last option, then
+            // $(this).find('option:selected').text() == D
+            // $(this).val() == 4
+            // get whatever value you want into a variable
+            var HiddenDepartmentValue = $("#ddlDepartment option:selected").val() + "";
+            var HiddenDepartmentText = $("#ddlDepartment option:selected").text() + "";
+
+            // and update the hidden input's value
+            $('#DepartmentName').val(HiddenDepartmentText);
+            $('#DepartmentCode').val(HiddenDepartmentValue);
+
+            RetrieveUnitSectionOptions();
+            $('#UnitSectionCode').val("");
+            $('#UnitSectionName').val("");
+        });
+
+        $('#ddlUnitSection').change(function () {
+            // if changed to, for example, the last option, then
+            // $(this).find('option:selected').text() == D
+            // $(this).val() == 4
+            // get whatever value you want into a variable
+            var HiddenUnitSectionValue = $("#ddlUnitSection option:selected").val() + "";
+            var HiddenUnitSectionText = $("#ddlUnitSection option:selected").text() + "";
+
+            // and update the hidden input's value
+            $('#UnitSectionName').val(HiddenUnitSectionText);
+            $('#UnitSectionCode').val(HiddenUnitSectionValue);
+        });
+    }
+</script>
+
+@*script Retrieve DDL AJAX *@
+<script type="text/javascript">
+    function RetrieveDivisionOptions() {
+        $.get('@Url.Action("GetCompanyOptions", "Employee")', function (result) {
+            Division = result;
+            PopulateDivision();
+        });
+    }
+
+    function RetrieveDepartmentOptions() {
+        var CompanyCode = $("#DivisionCode").val() + "";
+        var url = '@Url.Action("GetDepartmentOptions", "Employee")?CompanyCode=' + CompanyCode;
+        $.get(url, function (result) {
+            Department = result;
+            PopulateDepartment();
+        });
+    }
+
+    function RetrieveUnitSectionOptions() {
+        var DepartmentCode = $("#DepartmentCode").val() + "";
+        var url = '@Url.Action("GetUnitSectionOptions", "Employee")?DepartmentCode=' + DepartmentCode;
+        $.get(url, function (result) {
+            UnitSection = result;
+            PopulateUnitSection();
+        });
+    }
+
+
+    @* script Populate DDL *@
+
+    // Populate Division dropdown
+    function PopulateDivision() {
+        var ddlDivision = $('#ddlDivision');
+
+        var i = 0;
+        ddlDivision.empty();
+
+        ddlDivision.append('<option value="" selected="selected"> - All - </option>');
+
+
+        for (i = 0; i < Division.length; i++) {
+            ddlDivision.append('<option value="' + Division[i].Value + '">' + Division[i].Text + '</option>');
+        }
+
+        var selectedDivisionCode = $('input[name="DivisionCode"]');
+        var selectedDivisionName = $('input[name="DivisionName"]');
+
+        // Set dropdown value if has previous value available
+        if (selectedDivisionCode.val()) {
+            ddlDivision.val(selectedDivisionCode.val());
+        }
+    }
+
+    // Populate Department dropdown
+    function PopulateDepartment() {
+        var ddlDepartment = $('#ddlDepartment');
+
+        var i = 0;
+        ddlDepartment.empty();
+        if (Department.length == 0) {
+            ddlDepartment.append('<option value="" selected="selected"> - All - </option>');
+        }
+
+        for (i = 0; i < Department.length; i++) {
+            //ddlDepartment.append('<option value="' + Department[i].Value + '">' + Department[i].Text + '</option>');
+            if (i != 0) {
+                ddlDepartment.append('<option value="' + Department[i].Value + '">' + Department[i].Value + ' - ' + Department[i].Text + '</option>');
+            }
+            else {
+                ddlDepartment.append('<option value="' + Department[i].Value + '">' + Department[i].Text + '</option>');
+            }
+        }
+
+        var selectedDepartmentCode = $('input[name="DepartmentCode"]');
+        var selectedDepartmentName = $('input[name="DepartmentName"]');
+
+        // Set dropdown value if has previous value available
+        if (selectedDepartmentCode.val()) {
+            ddlDepartment.val(selectedDepartmentCode.val());
+        }
+    }
+
+    // Populate UnitSection dropdown
+    function PopulateUnitSection() {
+        var ddlUnitSection = $('#ddlUnitSection');
+
+        var i = 0;
+        ddlUnitSection.empty();
+        if (UnitSection.length == 0) {
+            ddlUnitSection.append('<option value="" selected="selected"> - All - </option>');
+        }
+        for (i = 0; i < UnitSection.length; i++) {
+            //ddlUnitSection.append('<option value="' + UnitSection[i].Value + '">' + UnitSection[i].Text + '</option>');
+            if (i != 0) {
+                ddlUnitSection.append('<option value="' + UnitSection[i].Value + '">' + UnitSection[i].Value + ' - ' + UnitSection[i].Text + '</option>');
+            }
+            else {
+                ddlUnitSection.append('<option value="' + UnitSection[i].Value + '">' + UnitSection[i].Text + '</option>');
+            }
+        }
+
+        var selecteUnitSectionDCode = $('input[name="UnitSectionCode"]');
+        var selecteUnitSectionDName = $('input[name="UnitSectionName"]');
+
+        // Set dropdown value if has previous value available
+        if (selecteUnitSectionDCode.val()) {
+            ddlUnitSection.val(selecteUnitSectionDCode.val());
+        }
+    }
+</script>
+
+@*script Clear Filter and get listing *@
+<script type="text/javascript">
+    function ReformatDate(edate, Type) {
+        try {
+            if (edate.length > 0) {
+                var myDate = $.datepicker.parseDate("dd/mm/yy", edate);
+                var d = myDate.getDate();
+                var m = myDate.getMonth();
+                m += 1;
+                var y = myDate.getFullYear();
+
+                var newdate = (y + "-" + m + "-" + d);
+                return newdate;
+            }
+            return "";
+        }
+
+        catch (e) {
+            var Error = "ERROR";
+            //alert('Invalid Date Format ('+Type+')' + e);
+            //alert(e);
+            return Error;
+        }
+
+    }
+
+    function SearchListing() {
+
+        var _Employee = $('#Employee').val();
+        var _Status = $('#StatusCode').val();
+        var _RetirementDateFrom = $('#RetirementDateFrom').val();
+        var _RetirementDateTo = $('#RetirementDateTo').val();
+        var _ReleaseDateFrom = $('#ReleaseDateFrom').val();
+        var _ReleaseDateTo = $('#ReleaseDateTo').val();
+
+        var _Company = $('#ddlDivision').val();
+        var _Department = $('#ddlDepartment').val();
+        var _UnitSection = $('#ddlUnitSection').val();
+
+        //var _RequestCategory = $('#CategoryCode').val();
+        //var _RequestType = $('#TypeCode').val();
+        //var _RequestStatus = $('#StatusCode').val();
+
+        var form = {
+            Employee: _Employee,
+            Status: _Status,
+            RetirementDateFrom: _RetirementDateFrom,
+            RetirementDateTo: _RetirementDateTo,
+            ReleaseDateFrom: _ReleaseDateFrom,
+            ReleaseDateTo: _ReleaseDateTo,
+            Company: _Company,
+            Department: _Department,
+            UnitSection: _UnitSection
+        };
+
+        $("#divLoading").show();
+
+        $.ajax({
+            type: "GET",
+            url: '@Url.Content("~/Employee/_RetirementLetterReportResult")',
+            cache: false,
+            dataType: "html",
+            data: form ,
+            success: function (content) {
+                $("#divLoading").hide();
+                $("#SearchResult").html(content);
+                ExportToExcel();
+            },
+            error: function (e) {
+                console.log(e);
+                $("#divLoading").hide();
+            }
+        });
+    }
+
+    @* script Export to excel *@
+    function ExportToExcel() {
+        // EXPORT TO EXCEL
+        var ua = window.navigator.userAgent;
+        var msie = ua.indexOf("MSIE ");
+
+        // Internet Explorer
+        if (msie > 0 || !!navigator.userAgent.match(/Trident.*rv\:11\./)) {
+            var _btn = document.getElementById('btn-Export');
+            _btn.onclick = fnExcelReport;
+        }
+        else {
+            $("#btn-Export").click(function (e) {
+                //getting values of current time for generating the file name
+                var dt = new Date();
+                var day = dt.getDate();
+                var month = dt.getMonth() + 1;
+                var year = dt.getFullYear();
+                var hour = dt.getHours();
+                var mins = dt.getMinutes();
+                var postfix = day + "." + month + "." + year + "_" + hour + "." + mins;
+                //creating a temporary HTML link element (they support setting file names)
+                var a = document.createElement('a');
+                //getting data from our div that contains the HTML table
+                var data_type = 'data:application/vnd.ms-excel';
+                var table_div = document.getElementById('tblExport');
+                var table_html = table_div.outerHTML.replace(/ /g, '%20');
+
+                table_html = table_html.replace('table%20id', 'table%20border=\"1\"%20id');
+
+                console.log(table_div);
+                console.log(table_html);
+
+                a.href = data_type + ', ' + table_html;
+                //setting the file name
+                a.download = 'Retirement_Letter_Report_' + postfix + '.xls';
+                //triggering the function
+                a.click();
+                //just in case, prevent default behaviour
+                e.preventDefault();
+            });
+        }
+    }
+
+    function fnExcelReport() {
+        var dt = new Date();
+        var day = dt.getDate();
+        var month = dt.getMonth() + 1;
+        var year = dt.getFullYear();
+        var hour = dt.getHours();
+        var mins = dt.getMinutes();
+        var postfix = day + "." + month + "." + year + "_" + hour + "." + mins;
+        var _fileName = 'Retirement_Letter_Report_' + postfix + '.xls';
+
+        var tab_text = "<table border='2px'><tr bgcolor='#87AFC6'>";
+        var j = 0;
+        tab = document.getElementById('tblExport'); // id of table
+
+        for (j = 0; j < tab.rows.length; j++) {
+            tab_text = tab_text + tab.rows[j].innerHTML + "</tr>";
+        }
+
+        tab_text = tab_text + "</table>";
+
+        txtArea1.document.open("txt/html", "replace");
+        txtArea1.document.write(tab_text);
+        txtArea1.document.close();
+        txtArea1.focus();
+        sa = txtArea1.document.execCommand("SaveAs", true, _fileName);
+
+        return (sa);
+    }
+
+    function ClearFilter() {
+        $('#Employee').val("");
+        $('#ddlStatus').val("").change();
+        $('#RetirementDateFrom').val("");
+        $('#RetirementDateTo').val("");
+        $('#ReleaseDateFrom').val("");
+        $('#ReleaseDateTo').val("");
+
+        $('#ddlDivision').val("").change();
+        $('#ddlDepartment').val("").change();
+        $('#ddlUnitSection').val("").change();
+        //SearchListing();
+    }
+</script>
+
+@*script Load Form *@
+<script type="text/javascript">
+    jQuery(document).ready(function () {
+
+        LoadFormConfiguration();
+    LoadFormOnChange();
+
+    //SearchListing();
+});
+
+</script>

@@ -1,0 +1,169 @@
+﻿@model LeaveApplication.Models.LeaveApplicationVM
+
+@*Brand new form*@
+@if ((Model.LeaveStatus == "Draft" || Model.LeaveStatus == "DR")
+    && Model.LeaveID == Guid.Empty)
+{
+    <div class="row Iring-Pasangan-Adat-Istiadat">
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="control-label col-md-4">Spouse <span style="color:red;"> *</span></label>
+                    <div class="col-md-8 form-control-static">
+                        <div>
+                            <div class="input-group ">
+                                <input type="text" class="form-control" id="txtSpouseCode" readonly />
+                                <span class="input-group-btn" style="">
+                                    <a data-toggle="modal" href="#SpousePicker" class="btn default"><i class="fa fa-user"></i></a>
+                                </span>
+                                <input type="hidden" id="SpouseCode" name="SpouseCode" />
+                                <input type="hidden" id="SpouseName" name="SpouseName" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+@*Opening a draft*@
+else if ((Model.LeaveStatus == "Draft" || Model.LeaveStatus == "DR" ||
+          Model.LeaveStatus == "Cancelled" || Model.LeaveStatus == "CA" ||
+          Model.LeaveStatus == "Withdrawn" || Model.LeaveStatus == "WD")
+          && Model.LeaveID != Guid.Empty)
+{
+    <div class="row Iring-Pasangan-Adat-Istiadat">
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="control-label col-md-4">Spouse <span style="color:red;"> *</span></label>
+                    <div class="col-md-8 form-control-static">
+                        <div>
+                            <div class="input-group ">
+                                <input type="text" class="form-control" id="txtSpouseCode" value="@(Model.SpouseCode + " - " + Model.SpouseName)" readonly />
+                                <span class="input-group-btn" style="">
+                                    <a data-toggle="modal" href="#SpousePicker" class="btn default"><i class="fa fa-user"></i></a>
+                                </span>
+                                <input type="hidden" id="SpouseCode" name="SpouseCode" value="@Model.SpouseCode" />
+                                <input type="hidden" id="SpouseName" name="SpouseName" value="@Model.SpouseName" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+else
+{
+    <div class="row Iring-Pasangan-Adat-Istiadat">
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="control-label col-md-4">Spouse</label>
+                    <div class="col-md-8 form-control-static">
+                        <div>
+                            <div class="input-group ">
+                                <input type="text" class="form-control" id="txtSpouseCode" readonly
+                                       value="@(Model.SpouseCode + " - " + Model.SpouseName)" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<div class="modal fade" id="SpousePicker" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                <h4 class="modal-title">
+                    People Picker - Select By Employee Number or Name
+                </h4>
+            </div>
+            <div class="modal-body">
+                <div>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="form-horizontal">
+                                <div class="form-body">
+                                    <div class="form-group">
+                                        <label class="control-label col-md-2 ">
+                                            Employee Number
+                                        </label>
+                                        <div class="col-md-4 form-control-static">
+                                            <input type="text" name="txtSpouseCodeSearch" id="txtSpouseCodeSearch" />
+                                        </div>
+                                        <label class="control-label col-md-2 ">
+                                            Employee Name
+                                        </label>
+                                        <div class="col-md-4  form-control-static">
+                                            <input type="text" name="txtSpouseNameSearch" id="txtSpouseNameSearch" />
+                                        </div>
+                                    </div>
+                                    <div class="form-group ">
+                                        <div class="text-right">
+                                            <input id="btn-Search" type="button" value="Search" class="btn green btn-Search" onclick="SearchSpouse();">
+                                        </div>
+                                    </div>
+                                </div>
+                                <br />
+                                <div id="SpousePickerResult">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn default green" onclick="SetSelectedSpouse()">Select</button>
+                <button type="button" class="btn default" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+    $(function () {
+        InitializeCommonControls();
+    });
+
+    function SetSelectedSpouse() {
+        $("#tblSpousePicker td input[type=radio]").each(function () {
+            var _selected = $(this).prop("checked");
+
+            if (_selected) {
+                $("#txtSpouseCode").val($(this).attr("empcode") + ' - ' + $(this).attr("empName"));
+                $("#SpouseCode").val($(this).attr("empcode"));
+                $("#SpouseName").val($(this).attr("empName"))
+
+                $('#SpousePicker').modal('toggle');
+            }
+        });
+    }
+
+    function SearchSpouse() {
+        var _EmpCode = $('#txtSpouseCodeSearch').val();
+        var _EmpName = $('#txtSpouseNameSearch').val();
+        var _SearchType = '';
+        var _CurrEmpID = $('#hfEmployeeID').val();
+
+        $("#SpousePickerResult").html("LOADING...");
+
+        $.ajax({
+            type: "GET",
+            url: '@Url.Content("~/LeaveApplication/_SpousePickerResult")',
+            cache: false,
+            dataType: "html",
+            data: { EmpCode: _EmpCode, EmpName: _EmpName, SearchType: _SearchType, CurrEmpID: _CurrEmpID },
+            success: function (content) {
+                $("#SpousePickerResult").html(content);
+            },
+            error: function (e) {
+            }
+        });
+    }
+</script>

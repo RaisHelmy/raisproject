@@ -1,0 +1,242 @@
+﻿
+@{
+    Layout = null;
+
+    //var AttendeeList = ViewData["AttendeeList"] + "";
+    //string EmployeeNameList = string.Empty;
+    //string PickMode = ViewData["PickMode"] + "";
+
+    //if (!string.IsNullOrEmpty(AttendeeList))
+    //{
+    //    //PickMode = "";
+    //    string[] EmployeeID = AttendeeList.Split(',');
+
+    //    foreach(string ID in EmployeeID)
+    //    {
+    //        EmployeeNameList += ESS.Core.Common.GetEmployeeName(ID) + ",";
+    //    }
+    //}
+
+    //EmployeeNameList = EmployeeNameList.TrimEnd(',');
+}
+
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="portlet box blue">
+            <div class="mini-triangle"><img src="../Assets/img/menu-red-triangle.png" /></div>
+            <div class="portlet-title">
+                <div class="caption">
+                    <i class="fa fa-reorder"></i>Add Attendee
+                </div>
+            </div>
+            <div class="portlet-body form">
+                <div class="form-body" id="ct01_CustomFieldFormView">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="form-horizontal">
+                                <div class="form-group">
+                                    <label class="control-label col-md-2">
+                                        Select Attendee
+                                    </label>
+                                    <div class="col-md-7 form-control-static">
+                                        <div class="input-group" >
+                                            <input class="form-control" id="DisplayEmployee" value="" />
+                                            <span class="input-group-btn">
+                                                <btn data-toggle="modal" onclick="clearDataTable()" class="btn default"><i class="fa fa-group"></i></btn>
+                                            </span>
+                                        </div>
+                                       
+                                    </div>
+                                    <div class="col-md-3 form-control-static">
+
+                                        <span>
+                                            @if (ViewBag.Mode == "adHoc")
+                                            {
+                                                <input type="button" class="btn default green form-control" id="AddAttendee" onclick="javascript: $('#ConfirmAddAttendee').modal('toggle');" value="Add Attendee" style="width: 125px;"/>
+                                            }
+                                            else
+                                            {
+                                                <input type="button" class="btn default green form-control" id="AddAttendee" onclick="loading()" value="Add Attendee" style="width: 125px;"/>
+                                            }
+
+                                        </span>
+                                    </div>
+                                    
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row" style="margin-top:15px;">
+                        <div class="col-md-12" id="MultiPplPickerResult">
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<input type="hidden" id="hfEmpID" name="hfEmpID" />
+
+
+
+<div class="modal fade" id="PeoplePicker" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                <h4 class="modal-title">People Picker - Select By Employee Number or Name</h4>
+            </div>
+            <div class="modal-body">
+                <div>
+                    @Html.Action("Index", "MultiPeoplePicker", new { SearchType = "all" })
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn default green" onclick="SetSelectedEmployee()">Select</button>
+                <button type="button" class="btn default" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Confirmation Message -->
+<div class="modal fade" id="ConfirmAddAttendee" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                <h4 class="modal-title">Confirmation</h4>
+            </div>
+            <div class="modal-body">
+                <div class="well">
+                    Are you sure you want to proceed? Press Confirm to proceed, or Close to stay on the current page.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn default blue" id="btnSubmitDraft" value="Draft" onclick="javascript: loadingAdHoc();">
+                    <i class="fa fa-check"></i>
+                    Confirm
+                </button>
+                <button type="button" class="btn default" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+    $(document).ready(function () {
+        if ('@ViewBag.Mode' == "default") {
+            $.ajax({
+                type: "GET",
+                url: '@Url.Content("~/TrainingEvaluation/_MultiPeoplePickerChkBoxResult")',
+                cache: false,
+                dataType: "html",
+                data: { EmployeeID: $("#hfEmpID").val(), EvaluationID: $("#hfEvaluationID").val() },
+                success: function (content) {
+                    $("#MultiPplPickerResult").html(content);
+                },
+                error: function (e) {
+                    console.log(e);
+                }
+            });
+        }
+    });
+
+    function SetSelectedEmployee() {
+
+        var EmployeeID = "";
+        var txtEmpNm2 = "";
+
+        var oTable = $('#tblPeoplePicker').dataTable();
+        var rowcollection = oTable.$("td input[type=checkbox]", { "page": "all" });
+
+        rowcollection.each(function () {
+            var _selected = $(this).prop("checked");
+
+            if (_selected) {
+
+                if ($("#" + $(this).attr("empcode")).length == 0) {
+                    EmployeeID = EmployeeID + $(this).val() + ",";
+
+                    txtEmpNm2 = txtEmpNm2 + $(this).attr("empcode") + ' - ' + $(this).attr("empName") + ",";
+                }
+            }
+
+        });
+        EmployeeID = EmployeeID.slice(0, -1);
+        txtEmpNm2 = txtEmpNm2.slice(0, -1);
+
+        $('#PeoplePicker').modal('toggle');
+        $("#hfEmpID").val(EmployeeID);
+        $("#DisplayEmployee").val(txtEmpNm2);
+
+    }
+
+    function clearDataTable() {
+        $("#PeoplePickerResult").empty();
+        $("#txtEmpCodeSearch").val("");
+        $("#txtEmpCodeSearch").val("");
+        $('#PeoplePicker').modal();
+    }
+
+    function loading() {
+        $("#divLoading").css("display", "block");
+        var myVar = setTimeout(addAttendees, 1000);
+    }
+
+    function loadingAdHoc() {
+        $("#divLoading").css("display", "block");
+        var myVar = setTimeout(addAttendeesAdHoc, 1000);
+    }
+
+    function addAttendeesAdHoc() {
+        if ($("#hfEmpID").val() == "") {
+            alert('Please select at least one attendee');
+
+            return false;
+        }
+
+        $.ajax({
+            type: "POST",
+            url: '@Url.Content("~/TrainingEvaluation/PerformAddAdHocSurveyRecipient")',
+            cache: false,
+            dataType: "html",
+            data: { Attendees: $("#hfEmpID").val(), EvaluationID: $("#hfEvaluationID").val() },
+            success: function (content) {
+                window.location.replace("/_layouts/15/essv2/TrainingEvaluation/FormTracking?EvaluationID=" + $("#hfEvaluationID").val());
+            },
+            error: function (e) {
+                $("#divLoading").css("display", "none");
+                console.log(e);
+            }
+        });
+    }
+
+    function addAttendees() {
+        if ($("#hfEmpID").val() == "") {
+            $("#divLoading").css("display", "none");
+            alert('Please select at least one attendee');
+
+            return false;
+        }
+
+        $.ajax({
+            type: "GET",
+            url: '@Url.Content("~/TrainingEvaluation/_MultiPeoplePickerChkBoxResult")',
+            cache: false,
+            dataType: "html",
+            data: { EmployeeID: $("#hfEmpID").val(), EvaluationID: $("#hfEvaluationID").val() },
+            success: function (content) {
+                $("#MultiPplPickerResult").html(content);
+                $("#DisplayEmployee").val("");
+                $("#divLoading").css("display", "none");
+            },
+            error: function (e) {
+                $("#divLoading").css("display", "none");
+                console.log(e);
+            }
+        });
+    }
+</script>

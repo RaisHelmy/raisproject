@@ -1,0 +1,1099 @@
+﻿@model ESS.Allowance.Models.AllowanceVM
+
+@{
+    Layout = null;
+
+    string Checked2_1 = "";
+    string Checked2_2 = "";
+
+    switch (Model.Category)
+    {
+        case "Penamatan":
+            Checked2_2 = "checked";
+            break;
+        default:
+            Checked2_1 = "checked";
+            break;
+    }
+}
+
+<style>
+    .padding-left-20 {
+        padding-left: 20px;
+    }
+
+    .padding-left-5px {
+        padding-left: 5px;
+    }
+</style>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="portlet box blue">
+            <div class="mini-triangle"><img src="/_layouts/15/TNBESS/Assets/img/menu-red-triangle.png" /></div>
+            <div class="portlet-title">
+                <div class="caption">
+                    <i class="fa fa-reorder"></i>Allowance Application
+                </div>
+            </div>
+            <div class="portlet-body form">
+                @*Brand new form*@
+                @if (Model.Status == "Draft" || (Model.Status == "Reworked" && Model.IsTaskOwner))
+                {
+                <div class="form-body">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="form-horizontal">
+                                <div class="form-group">
+                                    <label class="control-label col-md-12 ">
+                                        Application Type<span style="color:red;"> *</span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="form-horizontal">
+                                <div class="form-group">
+                                    <div class="radio-list padding-left-20">
+                                        <label class="radio-inline">
+                                            <input type="radio" name="Category" @Checked2_1 class="reqCategory" id="radio_PemohonanBaru" value="Permohonan Baru"> Permohonan Baru
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="form-horizontal">
+                                <div class="form-group">
+                                    <div class="radio-list padding-left-20">
+                                        <label class="radio-inline">
+                                            <input type="radio" name="Category" @Checked2_2 class="reqCategory"  id="radio_Penamatan" value="Penamatan"> Penamatan
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-horizontal">
+                                <div class="form-group">
+                                    <label class="control-label col-md-4">Reference No.</label>
+                                    <div class="col-md-8 form-control-static">
+                                        <input type="text" class="form-control" readonly style="font-weight:bold; color:blue;"
+                                               name="ReferenceNo" value="@Model.ReferenceNo">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-horizontal">
+                                <div class="form-group">
+                                    <label class="control-label col-md-4">Status</label>
+                                    <div class="col-md-8 form-control-static">
+                                        <input type="hidden" name="Status" value="@Model.Status" />
+
+                                        @if (Model.Status == "Declined" || Model.Status == "Withdrawn" || Model.Status == "Cancelled")
+                                        {
+                                            <input type="text" class="form-control" readonly style="color: red;"
+                                                   name="StatusDescription" value="@Model.Status">
+                                        }
+                                        else
+                                        {
+                                            <input type="text" class="form-control" readonly style="color:green;"
+                                                   name="StatusDescription" value="@Model.Status">
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-horizontal">
+                                <div class="form-group">
+                                    <label class="control-label col-md-4">
+                                        Employee<span style="color:red;"> *</span>
+                                    </label>
+                                    <div class="col-md-8 form-control-static">
+                                        @*@Html.Action("_PeoplePickerExt", "PeoplePicker", new { CurrEmpID = Model.Submiter.ID, SearchType = "Subordinates" })*@
+                                        @Html.Partial("ALPeoplePicker", new Tuple<int?, ESS.Allowance.Models.AllowanceVM>(null, @Model))
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-horizontal">
+                                <div class="form-group">
+                                    <label class="control-label col-md-4">
+                                        Allowance Type<span style="color:red;"> *</span>
+                                    </label>
+                                    <div class="col-md-8 form-control-static">
+                                        <select class="form-control" id="AllowanceCode" name="AllowanceCode">
+                                            <option value="">Select One</option>
+                                            @foreach (var allowanceType in Model.AllowanceTypes)
+                                            {
+                                                <option value="@allowanceType.AllowanceCode" data-Kadar="@allowanceType.Kadar" data-FixedAmount="@allowanceType.FixedAmount" data-MinAmount="@allowanceType.MinAmount" data-MaxAmount="@allowanceType.MaxAmount" data-MaxAmountExec="@allowanceType.MaxAmountExec" data-CA11MinAmount="@allowanceType.CA11MinAmount" data-CA11MaxAmount="@allowanceType.CA11MaxAmount" @(Model.AllowanceCode == allowanceType.AllowanceCode ? "selected" : "")>@allowanceType.AllowanceCode - @allowanceType.AllowanceType</option>
+                                            }
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                }
+                else 
+                { 
+                <div class="form-body">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="form-horizontal">
+                                <div class="form-group">
+                                    <label class="control-label col-md-12 ">
+                                        Application Type
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="form-horizontal">
+                                <div class="form-group">
+                                    <div class="radio-list padding-left-20">
+                                        <label class="radio-inline">
+                                            <input type="radio" name="Category" @Checked2_1 class="reqCategory" id="radio_PemohonanBaru" value="Permohonan Baru" disabled> Permohonan Baru
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="form-horizontal">
+                                <div class="form-group">
+                                    <div class="radio-list padding-left-20">
+                                        <label class="radio-inline">
+                                            <input type="radio" name="Category" @Checked2_2 class="reqCategory"  id="radio_Penamatan" value="Penamatan" disabled> Penamatan
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-horizontal">
+                                <div class="form-group">
+                                    <label class="control-label col-md-4">Reference No.</label>
+                                    <div class="col-md-8 form-control-static">
+                                        <input type="text" class="form-control" readonly style="font-weight:bold; color:blue;"
+                                                name="ReferenceNo" value="@Model.ReferenceNo">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-horizontal">
+                                <div class="form-group">
+                                    <label class="control-label col-md-4">Status</label>
+                                    <div class="col-md-8 form-control-static">
+                                        <input type="hidden" name="Status" value="@Model.Status" />
+
+                                        @if (Model.Status == "Declined")
+                                        {
+                                            <input type="text" class="form-control" readonly style="color: red;"
+                                                    name="StatusDescription" value="@Model.Status">
+                                        }
+                                        else
+                                        {
+                                            <input type="text" class="form-control" readonly style="color:green;"
+                                                    name="StatusDescription" value="@Model.Status">
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-horizontal">
+                                <div class="form-group">
+                                    <label class="control-label col-md-4">
+                                        Employee
+                                    </label>
+                                    <div class="col-md-8 form-control-static">
+                                        <input type="hidden" name="EmployeeID" value="@Model.EmployeeID" />
+                                        <input type="hidden" name="EmployeeCode" value="@Model.EmployeeCode" />
+                                        <input type="hidden" name="EmployeeName" value="@Model.EmployeeName" />
+                                        <input type="text" class="form-control" readonly
+                                               value="@(Model.EmployeeCode + " - " + Model.EmployeeName)">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-horizontal">
+                                <div class="form-group">
+                                    <label class="control-label col-md-4">
+                                        Allowance Type
+                                    </label>
+                                    <div class="col-md-8 form-control-static">
+                                        <input type="hidden" id="AllowanceCode" name="AllowanceCode" value="@Model.AllowanceCode" />
+                                        <input type="hidden" id="AllowanceType" name="AllowanceType" value="@Model.AllowanceType" />
+                                        <input type="text" class="form-control" readonly
+                                               value="@(Model.AllowanceCode + " - " + Model.AllowanceType)">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="portlet box blue">
+            <div class="mini-triangle"><img src="/_layouts/15/TNBESS/Assets/img/menu-red-triangle.png" /></div>
+            <div class="portlet-title">
+                <div class="caption">
+                    <i class="fa fa-reorder"></i>Application Details
+                </div>
+            </div>
+            <div class="portlet-body form">
+                <div class="form-body">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="portlet-body form">
+                                @if (Model.Status == "Draft" || (Model.Status == "Reworked" && Model.IsTaskOwner))
+                                {
+                                    <div class="form-body">
+                                        <div class="form-horizontal">
+                                            <div class="table-toolbar">
+                                                <table class="table table-striped table-bordered table-hover table-full-width" id="tblAllowanceDetails">
+                                                    <thead>
+                                                        <tr>
+                                                            <th scope="col" width="5%">
+                                                                <input type="checkbox" name="SelectAll" id="SelectAll" onchange="SelectUnselectAll(this);" />
+                                                            </th>
+                                                            <th scope="col">Start Date *</th>
+                                                            <th scope="col">End Date *</th>
+                                                            <th scope="col">Station *</th>
+                                                            <th scope="col">Kadar *</th>
+                                                            <th scope="col">Basic Pay (RM) *</th>
+                                                            <th scope="col">Rate Per Month (RM) *</th>
+                                                            <th scope="col">Attachment *</th>
+                                                            <th scope="col">Remarks</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        @for (int x = 0; x < Model.AllowanceDetails.Count(); x++)
+                                                        {
+                                                            <tr>
+                                                                <td style="min-width:30px">
+                                                                    <input type="hidden" name="AllowanceDetails.Index" value="@x">
+                                                                    <input type="hidden" name="@x" value="@x">
+                                                                    <input type="hidden" class="DetailID" name="AllowanceDetails[@x].DetailID" value="@Model.AllowanceDetails[x].DetailID" />
+                                                                    <input type="checkbox" class="AllowanceDetailCheckBox" name="AllowanceDetails[@x].AllowanceDetailCheckBox" value="@Model.AllowanceDetails[x].DetailID" />
+                                                                </td>
+                                                                <td>
+                                                                    <div class="input-group date date-picker" data-date-format="dd MM yyyy" style="width:150px">
+                                                                        <input type="text" class="form-control StartDate" value="@(Model.AllowanceDetails[x].StartDate.HasValue ? Model.AllowanceDetails[x].StartDate.Value.ToString("dd/MM/yyyy") : "")"
+                                                                               id="AllowanceDetails[@x].StartDate" name="AllowanceDetails[@x].StartDate" />
+                                                                        <span class="input-group-btn">
+                                                                            <button type="button" class="btn default"><i class="fa fa-calendar"></i></button>
+                                                                        </span>
+                                                                    </div>
+                                                                </td>
+                                                                <td>
+                                                                    <div class="input-group date date-picker" data-date-format="dd MM yyyy" style="width:150px">
+                                                                        <input type="text" class="form-control EndDate" value="@(Model.AllowanceDetails[x].EndDate.HasValue ? Model.AllowanceDetails[x].EndDate.Value.ToString("dd/MM/yyyy") : "")"
+                                                                               id="AllowanceDetails[@x].EndDate" name="AllowanceDetails[@x].EndDate" />
+                                                                        <span class="input-group-btn">
+                                                                            <button type="button" class="btn default"><i class="fa fa-calendar"></i></button>
+                                                                        </span>
+                                                                    </div>
+                                                                </td>
+                                                                <td>
+                                                                    <div class="form-control-static">
+                                                                        <select class="form-control Station" id="AllowanceDetails[@x].Station" name="AllowanceDetails[@x].Station">
+                                                                            <option value="">Select One</option>
+                                                                            @foreach (var station in Model.Stations)
+                                                                            {
+                                                                                <option value="@station.Station" data-Kadar="@station.Kadar" @(Model.AllowanceDetails[x].Station == station.Station ? "selected" : "")>@station.Station</option>
+                                                                            }
+                                                                        </select>
+                                                                    </div>
+                                                                </td>
+                                                                <td>
+                                                                    <div class="form-control-static" style="width:120px">
+                                                                        <input type="text" class="form-control Kadar" name="AllowanceDetails[@x].Kadar" value="@(Model.AllowanceDetails[x].Kadar.HasValue ? Model.AllowanceDetails[x].Kadar.Value.ToString("0.00") : "0.00")%" />
+                                                                        <select class="form-control Kadar" id="AllowanceDetails[@x].Kadar" name="AllowanceDetails[@x].Kadar" style="display:none" disabled>
+                                                                            <option value="">Select One</option>
+                                                                            <option value="5" @(Model.AllowanceDetails[x].Kadar == 5 ? "selected" : "")>5.00%</option>
+                                                                            <option value="10" @(Model.AllowanceDetails[x].Kadar == 10 ? "selected" : "")>10.00%</option>
+                                                                            <option value="15" @(Model.AllowanceDetails[x].Kadar == 15 ? "selected" : "")>15.00%</option>
+                                                                            <option value="20" @(Model.AllowanceDetails[x].Kadar == 20 ? "selected" : "")>20.00%</option>
+                                                                        </select>
+                                                                    </div>
+                                                                </td>
+                                                                <td>
+                                                                    <div class="form-control-static" style="width:150px">
+                                                                        <input type="text" class="form-control BasicPay" name="AllowanceDetails[@x].BasicPay" value="@(Model.AllowanceDetails[x].BasicPay.HasValue ? Model.AllowanceDetails[x].BasicPay.Value.ToString("0.00") : "0.00")" disabled />
+                                                                    </div>
+                                                                </td>
+                                                                <td>
+                                                                    <div class="form-control-static" style="width:150px">
+                                                                        <input type="text" class="form-control RatePerMonth" name="AllowanceDetails[@x].RatePerMonth" value="@(Model.AllowanceDetails[x].RatePerMonth.HasValue ? Model.AllowanceDetails[x].RatePerMonth.Value.ToString("0.00") : "0.00")" onblur="_CalculateSum(this);" />
+                                                                    </div>
+                                                                </td>
+                                                                <td>
+                                                                    <div class="form-control-static text-center" style="width:100px">
+                                                                        @Html.Partial("ALAttachmentPicker", new Tuple<string, string, string, string>("Add", Model.AllowanceDetails[x].DetailID.ToString(), "Multi", Model.AllowanceDetails[x].AttachmentCount.ToString() + "_" + x.ToString()))
+                                                                    </div>
+                                                                </td>
+                                                                <td><input type="text" class="form-control Remarks" name="AllowanceDetails[@x].Remarks" value="@Model.AllowanceDetails[x].Remarks" /></td>
+                                                            </tr>
+                                                        }
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <div class="form-body">
+                                        <div class="form-horizontal">
+                                            <div class="table-toolbar">
+                                                <table class="table table-striped table-bordered table-hover table-full-width" id="tblAllowanceDetails">
+                                                    <thead>
+                                                        <tr>
+                                                            <th scope="col" width="5%">
+                                                            </th>
+                                                            <th scope="col">Start Date</th>
+                                                            <th scope="col">End Date</th>
+                                                            <th scope="col">Station</th>
+                                                            <th scope="col">Kadar</th>
+                                                            <th scope="col">Basic Pay (RM)</th>
+                                                            <th scope="col">Rate Per Month (RM)</th>
+                                                            <th scope="col">Attachment</th>
+                                                            <th scope="col">Remarks</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        @for (int x = 0; x < Model.AllowanceDetails.Count(); x++)
+                                                        {
+                                                            <tr>
+                                                                <td style="min-width:30px">
+                                                                    <input type="hidden" name="AllowanceDetails.Index" value="@x">
+                                                                    <input type="hidden" name="@x" value="@x">
+                                                                    <input type="hidden" class="DetailID" name="AllowanceDetails[@x].DetailID" value="@Model.AllowanceDetails[x].DetailID" />
+                                                                </td>
+                                                                <td>
+                                                                    <div class="form-control-static" style="width:120px">
+                                                                        <input type="text" class="form-control StartDate" value="@(Model.AllowanceDetails[x].StartDate.HasValue ? Model.AllowanceDetails[x].StartDate.Value.ToString("dd/MM/yyyy") : "")" readonly
+                                                                               id="AllowanceDetails[@x].StartDate" name="AllowanceDetails[@x].StartDate" />
+                                                                    </div>
+                                                                </td>
+                                                                <td>
+                                                                    <div class="form-control-static" style="width:120px">
+                                                                        <input type="text" class="form-control EndDate" value="@(Model.AllowanceDetails[x].EndDate.HasValue ? Model.AllowanceDetails[x].EndDate.Value.ToString("dd/MM/yyyy") : "")" readonly
+                                                                               id="AllowanceDetails[@x].EndDate" name="AllowanceDetails[@x].EndDate" />
+                                                                    </div>
+                                                                </td>
+                                                                <td>
+                                                                    <div class="form-control-static" style="width:250px">
+                                                                        <input type="text" class="form-control Station" value="@Model.AllowanceDetails[x].Station" title="@Model.AllowanceDetails[x].Station" readonly
+                                                                               id="AllowanceDetails[@x].Station" name="AllowanceDetails[@x].Station" />
+                                                                    </div>
+                                                                </td>
+                                                                <td>
+                                                                    <div class="form-control-static" style="width:120px">
+                                                                        <input type="text" class="form-control Kadar" value="@(Model.AllowanceDetails[x].Kadar.HasValue ? Model.AllowanceDetails[x].Kadar.Value.ToString("0.00") : "0.00")%" readonly
+                                                                               id="AllowanceDetails[@x].Kadar" name="AllowanceDetails[@x].Kadar" />
+                                                                    </div>
+                                                                </td>
+                                                                <td>
+                                                                    <div class="form-control-static" style="width:120px">
+                                                                        <input type="text" class="form-control BasicPay" value="@(Model.AllowanceDetails[x].BasicPay.HasValue ? Model.AllowanceDetails[x].BasicPay.Value.ToString("0.00") : "0.00")" readonly
+                                                                               id="AllowanceDetails[@x].BasicPay" name="AllowanceDetails[@x].BasicPay" />
+                                                                    </div>
+                                                                </td>
+                                                                <td>
+                                                                    <div class="form-control-static" style="width:150px">
+                                                                        <input type="text" class="form-control RatePerMonth" value="@(Model.AllowanceDetails[x].RatePerMonth.HasValue ? Model.AllowanceDetails[x].RatePerMonth.Value.ToString("0.00") : "0.00")" readonly
+                                                                               id="AllowanceDetails[@x].RatePerMonth" name="AllowanceDetails[@x].RatePerMonth" />
+                                                                    </div>
+                                                                </td>
+                                                                <td>
+                                                                    <div class="form-control-static text-center" style="width:100px">
+                                                                        @Html.Partial("ALAttachmentPicker", new Tuple<string, string, string, string>("View", Model.AllowanceDetails[x].DetailID.ToString(), "Multi", Model.AllowanceDetails[x].AttachmentCount.ToString() + "_" + x.ToString()))
+                                                                    </div>
+                                                                </td>
+                                                                <td>
+                                                                    <input type="text" class="form-control Remarks" value="@Model.AllowanceDetails[x].Remarks" title="@Model.AllowanceDetails[x].Remarks" readonly
+                                                                           id="AllowanceDetails[@x].Remarks" name="AllowanceDetails[@x].Remarks" />
+                                                                </td>
+                                                            </tr>
+                                                        }
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row text-left">
+                        <div class="col-md-12">
+                            <div class="btn-group">
+                                <a class="BtnPlus btn green" href="javascript:AddRow();" id="btnAddRow">
+                                    <i class="fa fa-plus"></i>
+                                    Add Row
+                                </a>
+                            </div>
+                            <div class="btn-group">
+                                <a class="deleteall btn red" href="javascript:RemoveRow();" id="btnRemoveRow">
+                                    <i class="fa fa-minus"></i>
+                                    Delete Row
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @Html.Action("ALPeoplePickerIndex", "Allowance", new { CurrEmpID = "CurrEmpID", SearchType = "Subordinates" })
+    @Html.Partial("ALAttachmentIndex")
+</div>
+
+<script>
+    var _Path = '/_layouts/15/TNBESS';
+
+    var _DetailsTable = $('#tblAllowanceDetails').DataTable({
+        "bLengthChange": false,
+        "bFilter": false,
+        "bPaginate": false,
+        "bInfo": false,
+        "bSort": false
+    });
+
+    var lastRowNo = _DetailsTable.fnSettings().fnRecordsTotal();
+
+@if (Model.Status == "Draft" || (Model.Status == "Reworked" && Model.IsTaskOwner))
+{
+<Text>
+    $(function () {
+        Initialize();
+
+        AllowanceTypeVisible();
+
+        AllowanceTypeEnable(false);
+
+        Penamatan();
+
+        if (_DetailsTable.fnSettings().fnRecordsTotal() > 2) {
+            $("#btnAddRow").hide();
+        }
+    });
+
+    function Initialize() {
+        $('#tblAllowanceDetails .date-picker').datepicker({
+            format: 'dd/mm/yyyy',
+            autoclose: true,
+        });
+    }
+
+    function AllowanceTypeVisible(last) {
+        var parent = _DetailsTable;
+
+        if (last)
+            parent = _DetailsTable.find("tr").last();
+
+        var at = $("#AllowanceCode").val();
+        var add = false;
+        var station = false;
+        var kadar = false;
+
+        switch (at) {
+            case "5004":
+                station = true;
+            case "5020":
+            case "5015":
+            case "5016":
+            case "5030":
+                kadar = true;
+            case "5019":
+            case "5024":
+            case "6034":
+                add = true;
+                break;
+            default:
+        }
+
+        if (add) {
+            $("#btnAddRow").show();
+            $("#btnRemoveRow").show();
+
+            if (last) {
+                parent.find("td:nth-child(1)").show();
+            }
+            else {
+                parent.find('th:nth-child(1), tr td:nth-child(1)').show();
+            }
+        }
+        else {
+            $("#btnAddRow").hide();
+            $("#btnRemoveRow").hide();
+
+            ResetTable();
+
+            parent.find('#SelectAll').prop('checked', false);
+            SetSelection(false);
+
+            if (last) {
+                parent.find("td:nth-child(1)").hide();
+            }
+            else {
+                parent.find('th:nth-child(1), tr td:nth-child(1)').hide();
+            }
+        }
+
+        if (station) {
+            if (last) {
+                parent.find("td:nth-child(4)").show();
+            }
+            else {
+                parent.find('th:nth-child(4), tr td:nth-child(4)').show();
+            }
+        }
+        else {
+            if (last) {
+                parent.find(".Station").val("");
+                parent.find("td:nth-child(4)").hide();
+            }
+            else {
+                parent.find(".Station").val("");
+                parent.find('th:nth-child(4), tr td:nth-child(4)').hide();
+            }
+        }
+
+        if (kadar) {
+            if (last) {
+                parent.find("td:nth-child(5)").show();
+                parent.find("td:nth-child(6)").show();
+            }
+            else {
+                parent.find('th:nth-child(5), tr td:nth-child(5)').show();
+                parent.find('th:nth-child(6), tr td:nth-child(6)').show();
+            }
+        }
+        else {
+            if (last) {
+                parent.find(".Kadar").val("");
+                parent.find("input.Kadar").val("0.00%");
+                parent.find(".BasicPay").val("0.00");
+                parent.find("td:nth-child(5)").hide();
+                parent.find("td:nth-child(6)").hide();
+            }
+            else {
+                parent.find(".Kadar").val("");
+                parent.find("input.Kadar").val("0.00%");
+                parent.find(".BasicPay").val("0.00");
+                parent.find('th:nth-child(5), tr td:nth-child(5)').hide();
+                parent.find('th:nth-child(6), tr td:nth-child(6)').hide();
+            }
+        }
+    }
+
+    function AllowanceTypeEnable(reset, last) {
+        var parent = _DetailsTable;
+
+        if (last)
+            parent = _DetailsTable.find("tr").last();
+
+        if (reset) {
+            parent.find(".StartDate").closest(".date-picker").datepicker("setDate", "");
+            parent.find(".Station").val("");
+            parent.find(".BasicPay").val("0.00");
+        }
+
+        var at = $("#AllowanceCode").val();
+
+        if (at == '5020') {
+            if (reset) {
+                parent.find(".Kadar").val("");
+                parent.find("input.Kadar").val("0.00%");
+            }
+
+            parent.find(".Kadar").attr("disabled", false);
+            parent.find(".Kadar").show();
+            parent.find("input.Kadar").attr("disabled", "disabled");
+            parent.find("input.Kadar").hide();
+        }
+        else {
+            if (reset) {
+                var kadar = $("#AllowanceCode").find(':selected').data("kadar");
+
+                if (kadar) {
+                    parent.find(".Kadar").val(kadar);
+                    parent.find("input.Kadar").val(parseFloat(kadar).toFixed(2) + "%");
+                }
+                else {
+                    parent.find(".Kadar").val("");
+                    parent.find("input.Kadar").val("0.00%");
+                }
+            }
+
+            parent.find(".Kadar").attr("disabled", "disabled");
+            parent.find(".Kadar").hide();
+            parent.find("input.Kadar").attr("disabled", "disabled");
+            parent.find("input.Kadar").show();
+        }
+
+        var fixed = $("#AllowanceCode").find(':selected').data("fixedamount");
+        var ca11Min = $("#AllowanceCode").find(':selected').data("ca11minamount");
+        var ca11Max = $("#AllowanceCode").find(':selected').data("ca11maxamount");
+
+        if (ca11Min || ca11Max)
+        {
+            $("#tblAllowanceDetails td input[type=checkbox]").each(function (i, value) {
+                var row = $(this).closest("tr");
+                var StartDate = row.find('.StartDate').val()
+
+                if (StartDate) {
+                    var year = parseFloat(StartDate.split('/')[2]);
+
+                    if (year >= 2023) {
+                        if (reset) {
+                            row.find(".RatePerMonth").val("0.00");
+                        }
+
+                        row.find(".RatePerMonth").attr("disabled", false);
+                    }
+                    else {
+                        if (reset) {
+                            row.find(".RatePerMonth").val(parseFloat(fixed).toFixed(2));
+                        }
+
+                        row.find(".RatePerMonth").attr("disabled", "disabled");
+                    }
+                }
+                else {
+                    if (reset) {
+                        row.find(".RatePerMonth").val("0.00");
+                    }
+
+                    row.find(".RatePerMonth").attr("disabled", false);
+                }
+            });
+        }
+        else
+        {
+            if (fixed) {
+                if (reset) {
+                    parent.find(".RatePerMonth").val(parseFloat(fixed).toFixed(2));
+                }
+
+                parent.find(".RatePerMonth").attr("disabled", "disabled");
+            }
+            else {
+                if (reset) {
+                    parent.find(".RatePerMonth").val('0.00');
+                }
+
+                if (at == "5004" || at == "5015" || at == "5016" || at == "5020" || at == "5030") {
+                    parent.find(".RatePerMonth").attr("disabled", "disabled");
+                }
+                else {
+                    parent.find(".RatePerMonth").attr("disabled", false);
+                }
+            }
+        }
+    }
+
+    function PemohonanBaru() {
+        if ($("#radio_PemohonanBaru").is(':checked')) {
+            $(".StartDate").prop('disabled', false);
+            $(".Station").attr("disabled", false);
+            $(".Kadar").attr("disabled", false);
+            $(".RatePerMonth").attr("disabled", false);
+
+            $("#DeclarationPemohonanBaru").show();
+            $("#DeclarationPenamatan").hide();
+        }
+    }
+
+    function Penamatan() {
+        if ($("#radio_Penamatan").is(':checked')) {
+            $(".StartDate").closest(".date-picker").datepicker("setDate", "");
+            $(".StartDate").prop('disabled', true);
+            $(".Station").val("");
+            $(".Station").attr("disabled", "disabled");
+            $(".Kadar").val("");
+            $("input.Kadar").val("0.00%");
+            $(".Kadar").attr("disabled", "disabled");
+            $(".BasicPay").val("0.00");
+            $(".BasicPay").attr("disabled", "disabled");
+            $(".RatePerMonth").val("0.00");
+            $(".RatePerMonth").attr("disabled", "disabled");
+
+            $("#btnAddRow").hide();
+            $("#btnRemoveRow").hide();
+
+            ResetTable();
+
+            $('#SelectAll').prop('checked', false);
+            SetSelection(false);
+
+            $('th:nth-child(1), tr td:nth-child(1)').hide();
+
+            $("#DeclarationPemohonanBaru").hide();
+            $("#DeclarationPenamatan").show();
+        }
+    }
+
+    $('#AllowanceCode').change(function () {
+        AllowanceTypeVisible();
+
+        AllowanceTypeEnable(true);
+
+        Penamatan();
+
+        if (_DetailsTable.fnSettings().fnRecordsTotal() > 2) {
+            $("#btnAddRow").hide();
+        }
+    });
+
+    $('input[type=radio][name=Category]').change(function () {
+        PemohonanBaru();
+
+        AllowanceTypeVisible();
+
+        AllowanceTypeEnable(true);
+
+        Penamatan();
+
+        if ($("#radio_Penamatan").is(':checked')) {
+            $(".EndDate").closest(".date-picker").datepicker("setDate", "");
+        }
+
+        if (_DetailsTable.fnSettings().fnRecordsTotal() > 2) {
+            $("#btnAddRow").hide();
+        }
+    });
+
+    $('body').on('change', '.Station', function () {
+        var kadar = $(this).find(':selected').data("kadar");
+
+        if (kadar) {
+            $(this).closest('td').next('td').find('input').val(parseFloat(kadar).toFixed(2) + '%');
+        }
+        else {
+            $(this).closest('td').next('td').find('input').val('0.00%');
+        }
+
+        $(this).closest('td').next('td').find('input').trigger('change');
+    });
+
+    function CreateGuid() {
+        function _p8(s) {
+            var p = (Math.random().toString(16) + "000000000").substr(2, 8);
+            return s ? "-" + p.substr(0, 4) + "-" + p.substr(4, 4) : p;
+        }
+        return _p8() + _p8(true) + _p8(true) + _p8();
+    }
+
+    function ResetTable() {
+        $.each($('input[class="AllowanceDetailCheckBox"]'), function (i, val) {
+            var currLength = $('#tblAllowanceDetails tr').length - 1;
+            var row = _DetailsTable.find("tr").last().get(0);
+
+            if (currLength > 1) {
+                _DetailsTable.fnDeleteRow(_DetailsTable.fnGetPosition(row));
+            }
+        });
+    }
+
+    function SelectUnselectAll(element) {
+        SetSelection(element.checked);
+    }
+
+    function SetSelection(checked) {
+        $('#tblAllowanceDetails .AllowanceDetailCheckBox').prop('checked', checked);
+        $.uniform.update();
+    }
+
+    $('body').on('change', '.StartDate', function () {
+        $this = $(this);
+
+        var employeeCode = $("[name='EmployeeCode']").val();
+        var startDate = $(this).val();
+    
+        if (employeeCode && startDate) {
+            var data = {
+                EmployeeCode: employeeCode,
+                StartDate: startDate
+            };
+
+            $.get('@Url.Action("GetBasicPay", "Allowance")', data, function (result) {
+                var basicPay = parseFloat(result);
+
+                $this.closest('tr').find('.BasicPay').val(basicPay.toFixed(2));
+                $this.closest('tr').find('.BasicPay').trigger('change');
+            });
+        }
+
+        var fixed = $("#AllowanceCode").find(':selected').data("fixedamount");
+        var ca11Min = $("#AllowanceCode").find(':selected').data("ca11minamount");
+        var ca11Max = $("#AllowanceCode").find(':selected').data("ca11maxamount");
+        var row = $(this).closest("tr");
+        
+        if (ca11Min || ca11Max) {
+            if (startDate) {
+                var year = parseFloat(startDate.split('/')[2]);
+
+                if (year >= 2023) {
+                    row.find(".RatePerMonth").val("0.00");
+
+                    row.find(".RatePerMonth").attr("disabled", false);
+                }
+                else {
+                    row.find(".RatePerMonth").val(parseFloat(fixed).toFixed(2));
+
+                    row.find(".RatePerMonth").attr("disabled", "disabled");
+                }
+            }
+        }
+    });
+
+    $('body').on('change', '.Kadar, .BasicPay', function () {
+        $this = $(this);
+
+        var at = $("#AllowanceCode").val();
+
+        var basicPay = $this.closest('tr').find('.BasicPay').val();
+
+        var kadar = $this.closest('tr').find('input.Kadar').val();
+
+        if (at == "5020") {
+            kadar = $this.closest('tr').find('.Kadar:enabled').val();
+        }
+
+        if (basicPay && kadar) {
+            if (at == "5004" || at == "5015" || at == "5016" || at == "5020" || at == "5030") {
+                $this.closest('tr').find('.RatePerMonth').val((parseFloat(basicPay) * parseFloat(kadar) / 100).toFixed(2));
+            }
+        }
+        else {
+            $this.closest('tr').find(".RatePerMonth").val("0.00");
+        }
+    });
+
+    function _CalculateSum(x) {
+        if (x != undefined) {
+            var myNumeric = parseFloat($(x).val().replace(/,/g, ''));
+            if (!myNumeric) {
+                $(x).val('0.00');
+            }
+            else {
+                $(x).val(myNumeric.toFixed(2));
+            }
+        }
+    }
+
+    function AddRow() {
+        var x = lastRowNo;
+        var guid = CreateGuid();
+
+        lastRowNo++;
+        
+        var col1 = '';
+        col1 += '<input type="hidden" name="AllowanceDetails.Index" value="' + x + '">';
+        col1 += '<input type="hidden" name="' + x + '" value="' + x + '">';
+        col1 += '<input type="hidden" class="DetailID" name="AllowanceDetails[' + x + '].DetailID" value="' + guid + '" />';
+        col1 += '<input type="checkbox" class="AllowanceDetailCheckBox" name="AllowanceDetails[' + x + '].AllowanceDetailCheckBox" value="' + guid + '" />';
+
+        var col2 = '';
+        col2 += '<div class="input-group date date-picker" data-date-format="dd MM yyyy" style="width:150px">';
+        col2 += '   <input type="text" class="form-control StartDate" value=""';
+        col2 += '       id="AllowanceDetails[' + x + '].StartDate" name="AllowanceDetails[' + x + '].StartDate" />';
+        col2 += '   <span class="input-group-btn">';
+        col2 += '       <button type="button" class="btn default"><i class="fa fa-calendar"></i></button>';
+        col2 += '   </span>';
+        col2 += '</div>';
+
+        var col3 = '';
+        col3 += '<div class="input-group date date-picker" data-date-format="dd MM yyyy" style="width:150px">';
+        col3 += '   <input type="text" class="form-control EndDate" value="31/12/9999"';
+        col3 += '       id="AllowanceDetails[' + x + '].EndDate" name="AllowanceDetails[' + x + '].EndDate" />';
+        col3 += '   <span class="input-group-btn">';
+        col3 += '       <button type="button" class="btn default"><i class="fa fa-calendar"></i></button>';
+        col3 += '   </span>';
+        col3 += '</div>';
+
+        var col4 = '';
+        col4 += '<div class="form-control-static">';
+        col4 += '   <select class="form-control Station" id="AllowanceDetails[' + x + '].Station" name="AllowanceDetails[' + x + '].Station">';
+        col4 += '       <option value="">Select One</option>';
+        @foreach (var station in Model.Stations)
+        {
+        <Text>
+        col4 += '<option value="@station.Station" data-Kadar="@station.Kadar">@station.Station</option>';
+        </Text>
+        }
+        col4 += '   </select>';
+        col4 += '</div>';
+
+        var col5 = '';
+        col5 += '<div class="form-control-static"  style="width:120px">';
+        col5 += '   <input type="text" class="form-control Kadar" name="AllowanceDetails[' + x + '].Kadar" value="0.00%"/>';
+        col5 += '   <select class="form-control Kadar" id="AllowanceDetails[' + x + '].Kadar" name="AllowanceDetails[' + x + '].Kadar" style="display:none" disabled>';
+        col5 += '       <option value="">Select One</option>';
+        col5 += '       <option value="5">5.00%</option>';
+        col5 += '       <option value="10">10.00%</option>';
+        col5 += '       <option value="15">15.00%</option>';
+        col5 += '       <option value="20">20.00%</option>';
+        col5 += '   </select>';
+        col5 += '</div>';
+
+        var col6 = '';
+        col6 += '<div class="form-control-static" style="width:150px">';
+        col6 += '   <input type="text" class="form-control BasicPay" name="AllowanceDetails[' + x + '].BasicPay" value="0.00" disabled />';
+        col6 += '</div>';
+
+        var col7 = '';
+        col7 += '<div class="form-control-static" style="width:150px">';
+        col7 += '   <input type="text" class="form-control RatePerMonth" name="AllowanceDetails[' + x + '].RatePerMonth" value="0.00" onblur="_CalculateSum(this);" />';
+        col7 += '</div>';
+
+        var col8 = '';
+        col8 += '<div class="form-control-static text-center" style="width:100px">';
+        col8 += '   <div>';
+        col8 += '       <div class="col-md-7" style="padding-right: 0px; text-align: right;">';
+        col8 += '           <a class="btn blue btn-sm" onclick="OpenAttachment(\'Add\', \'' + guid + '\', \'Multi\', \'AllowanceDetails[' + x + '].AttachmentCount\');">';
+        col8 += '           <i class="fa fa-file-o"></i>';
+        col8 += '           </a>';
+        col8 += '       </div>';
+        col8 += '       <div class="col-md-5" style="padding-left: 0px; text-align: left">';
+        col8 += '           <span class="attachment-count" name="AllowanceDetails[' + x + '].AttachmentCount"></span>';
+        col8 += '       </div>';
+        col8 += '   </div>';
+        col8 += '</div>';
+
+        var col9 = '<input type="text" class="form-control Remarks" name="AllowanceDetails[' + x + '].Remarks" value="" />';
+
+        _DetailsTable.fnAddData([
+            col1, col2, col3, col4, col5, col6, col7, col8, col9
+        ]);
+
+        $(".AllowanceDetailCheckBox").uniform();
+
+        Initialize();
+
+        AllowanceTypeVisible(true);
+
+        AllowanceTypeEnable(true, true);
+
+        Penamatan();
+
+        if (_DetailsTable.fnSettings().fnRecordsTotal() > 2) {
+            $("#btnAddRow").hide();
+        }
+    }
+
+    function RemoveRow() {
+        $.each($('input[class="AllowanceDetailCheckBox"]:checked'), function (i, val) {
+            var currLength = $('#tblAllowanceDetails tr').length - 1;
+            var row = $(this).closest("tr").get(0);
+
+            if (currLength > 1) {
+                _DetailsTable.fnDeleteRow(_DetailsTable.fnGetPosition(row));
+            }
+
+            currLength = $('#tblTransferDetails tr').length - 1;
+
+            if (currLength < 3) {
+                $("#btnAddRow").show();
+            }
+        });
+    }
+</Text>
+}
+else
+{
+<Text>
+    $(function () {
+        AllowanceTypeVisible();
+    });
+
+    function AllowanceTypeVisible()
+    {
+        var parent = _DetailsTable;
+
+        var at = $("#AllowanceCode").val();
+        var add = false;
+        var station = false;
+        var kadar = false;
+
+        switch (at)
+        {
+            case "5004":
+                station = true;
+            case "5020":
+            case "5015":
+            case "5016":
+            case "5030":
+                kadar = true;
+            case "5019":
+            case "5024":
+            case "6034":
+                add = true;
+                break;
+            default:
+        }
+
+        $("#btnAddRow").hide();
+        $("#btnRemoveRow").hide();
+
+        parent.find('th:nth-child(1), tr td:nth-child(1)').hide();
+
+        if (station)
+        {
+            parent.find('th:nth-child(4), tr td:nth-child(4)').show();
+        }
+        else
+        {
+            parent.find('th:nth-child(4), tr td:nth-child(4)').hide();
+        }
+
+        if (kadar)
+        {
+            parent.find('th:nth-child(5), tr td:nth-child(5)').show();
+            parent.find('th:nth-child(6), tr td:nth-child(6)').show();
+        }
+        else
+        {
+            parent.find('th:nth-child(5), tr td:nth-child(5)').hide();
+            parent.find('th:nth-child(6), tr td:nth-child(6)').hide();
+        }
+    }
+</Text>
+}
+</script>

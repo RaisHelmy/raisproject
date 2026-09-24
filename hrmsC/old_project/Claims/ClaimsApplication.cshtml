@@ -1,0 +1,1169 @@
+﻿@using ESS.Claim.ViewModels
+@model ClaimVM
+@{
+    ViewBag.Title = "ClaimsApplication";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    DateTime d1 = DateTime.Now.AddYears(-20);
+    string dtStrStart = d1.ToString("dd MMM yyyy");
+    bool gotItem = false;
+
+    string strSubmissionLeadTime = ViewBag.ClaimSubmitdays;
+    int SubmissionLeadTime = Convert.ToInt32(strSubmissionLeadTime);
+
+    string minSubmissionDate = DateTime.Today.AddDays(-SubmissionLeadTime).ToString("dd/MM/yyyy");
+    string maxSubmissionDate = DateTime.Today.ToString("dd/MM/yyyy");
+
+    string OutstationID = Model.OutstationClaimID;
+    string OutstationRef = ViewBag.OutstationRef;
+    bool? DuplicateAttachment = ViewBag.DuplicateAttachment;
+    bool IsPriorApprovalMandatory = ViewBag.IsPriorApprovalMandatory;
+
+    //code for block submission
+    string CurrentDatTime = DateTime.Now.ToString("dd/MM/yyyy HH:mm");
+    bool IsClaimMileageExceedThreshold = false;
+    decimal ClaimMileageThreshold = 0;
+
+    if (ViewBag.IsClaimMileageExceedThreshold != null)
+    {
+        IsClaimMileageExceedThreshold = ViewBag.IsClaimMileageExceedThreshold;
+    }
+    if (ViewBag.ClaimMileageThreshold != null)
+    {
+        ClaimMileageThreshold = ViewBag.ClaimMileageThreshold;
+    }
+}
+<style>
+    .ClaimStatus {
+        display: none !important;
+    }
+</style>
+@using (Html.BeginForm("ClaimsApplication", "Claims", FormMethod.Post))
+{
+    <div class="form-section">
+        <div class="row">
+            <div class="col-md-12">
+                <h1 class="page-title">
+                    Claims Application
+                    <span style="padding-left:20px;">
+                        <small></small>
+                    </span>
+                </h1>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-12">
+            <div class="note note-danger" style="display:none; white-space:pre-wrap;" id="divValidationError">
+                <h4 class="block">
+                </h4>
+            </div>
+        </div>
+    </div>
+
+    <div class="row ClaimMileageExceedWarning" @(IsClaimMileageExceedThreshold ? "" : "hidden")>
+        <div class="col-md-12">
+            <div class="note note-danger">
+                <h4 class="block">
+                    <strong>
+                        Note :<br>
+                        - Your claim exceeds the average mileage for your job group and will be inspected further.<br>
+                        - Tuntutan perjalanan anda melebihi had purata bagi kumpulan kerja anda dan akan diteliti dengan lebih lanjut.<br>
+                    </strong>
+                </h4>
+            </div>
+        </div>
+    </div>
+
+    @Html.HiddenFor(x => x.canSubmit)
+    if (!Model.canSubmit)
+    {
+        <div class="row">
+            <div class="col-md-12">
+                <div class="note note-danger">
+                    <h4 class="block">
+                        Claims Approver not found, please contact Administrator for assistance.<br />
+                        Claims submission has been disabled.
+                    </h4>
+                    @*<p>
+
+                        </p>*@
+                </div>
+            </div>
+        </div>
+    }
+
+    if (Model != null && Model.IsPriorApprovalTransportationChanged)
+    {
+        <div class="row OFTransportWarningNote">
+            <div class="col-md-12">
+                <div class="note note-danger">
+                    <h4 class="block note-message">
+                        <b>Note : Prior approved transportation had been changed.</b> <br />
+                        Original selected transports : <br />
+                        @foreach (var transport in Model.PriorApprovalSubtypes)
+                        {
+                            <text> @(String.IsNullOrEmpty(transport) ? "Company Vehicle / Car Pool" : transport) </text> <br />
+                        }
+                    </h4>
+                </div>
+            </div>
+        </div>
+    }
+
+    <div class="row OFDateWarningNote" style="display: none">
+        <div class="col-md-12">
+            <div class="note note-danger">
+                <h4 class="block note-message"></h4>
+                @*<p>
+
+                    </p>*@
+
+            </div>
+        </div>
+    </div>
+
+    <div class="row" id="OutstationRequired" style="display:none">
+        <div class="col-md-12">
+            <div class="note note-danger">
+                <h4 class="block">
+                    Outstation Form is Required.
+                </h4>
+                @*<p>
+
+                    </p>*@
+
+            </div>
+        </div>
+    </div>
+    <input id="claimStatus" name="Status" type="hidden" value="@Model.Status" />
+
+    <!-- Employee Details -->
+    @Html.Partial("_EmployeeInfoActualClaim", Model)
+
+    <input id="MileageLimit" name="MileageLimit" type="hidden" value="@ViewBag.MileageLimit" />
+    <input type="hidden" name="ReselectSubtype" id="ReselectSubtype" value="@ViewBag.ReselectSubtype" />
+
+    if (Model != null)
+    {
+        if (Model.PriorApprovalSubtypes != null)
+        {
+            foreach (var outTransport in Model.PriorApprovalSubtypes)
+            {
+                <input type="hidden" name="PriorApprovalSubtypes" value="@outTransport" />
+            }
+        }
+    }
+
+
+    @Html.Action("_OutStationForm", "Claims", new
+{
+    EmployeeID = @Model.Submiter.ID.ToString(),
+    ClaimType = @Model.ClaimTypeCode,
+    Selected = @Model.OutstationClaimID,
+    IsPriorApprovalMandatory = IsPriorApprovalMandatory,
+    ClaimSubmitDay = @ViewBag.ClaimSubmitdays
+
+})
+
+    @*if (Model.ClaimTypeCode == "COV01" || Model.ClaimTypeCode == "COS01")
+        {
+            @Html.Action("_AdvanceClaim", "Claims", new { EmployeeID = @Model.Submiter.ID.ToString(), ClaimTypeCode = @Model.ClaimTypeCode, Selected = @Model.AdvanceClaimID })
+        }*@
+
+    <!-- Claims Particular -->
+    @Html.Partial("_ClaimsParticular", Model)
+
+    <!-- Charge Code-->
+    <script>
+        var gCurrentChargeCode = {};
+    </script>
+    <!-- Charge Code-->
+
+    @Html.Action("ChargeCodeControl", "ChargeCode", new { ID = Model.ID, ListOfChargeCode = @ViewBag.ChargeCode })
+
+    <!-- Claims Subtype Selection -->
+    @Html.Partial("_ClaimsSubtype", Model.ClaimsSubtypeCategory)
+
+    <div class="row">
+        <div class="col-md-12">
+            <!-- Claim Subtype-->
+            @{
+                foreach (ESS.Claim.ViewModels.ClaimsSubtypeCategory category in Model.ClaimsSubtypeCategory)
+                {
+                    foreach (var subtype in category.ClaimSubtype)
+                    {
+                        if (subtype.IsChoosen)
+                        {
+                            gotItem = true;
+                            try
+                            {
+                                @*@subtype.FormInterface*@
+                                @Html.Action(@subtype.FormInterface, new { input = subtype, parameter = @ViewBag.Parameter, vm = Model })
+                            }
+                            catch (Exception ex)
+                            {
+                                <div class="row subtypeinvalid">
+                                    <div class="col-md-12">
+                                        <div class="note note-danger">
+                                            <h4 class="block">
+                                                @subtype.ClaimsSubtypeName is not available
+                                            </h4>
+                                            <p style="display :'none';">
+                                                For Debug purpuse
+                                                Exception Message : @ex.ToString()
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        }
+                    }
+                }
+            }
+        </div>
+    </div>
+
+    <!-- Attachment -->
+    @Html.Action("AttachmentControl", "Attachment", new
+    {
+        EmployeeID = @Model.Submiter.ID,
+        Mode = "New",
+        SourceType = "Claims",
+        CopyFromSourceID = DuplicateAttachment == true ? OutstationID : null
+        @*, ShowOptionField = "true", ControlType = "datepicker", CustomTextLabel1 = "Date", Mandatory = "true"*@
+})
+
+                if (String.IsNullOrEmpty(OutstationID) == false)
+                {
+        @Html.Partial("PriorApprovalFormAttachmentControl", Tuple.Create("OUTSTATION_FORM", OutstationID, Model.Submiter.ID.ToString()))
+                }
+
+    <!-- SUmmary -->
+    @Html.Partial("_ClaimsChargeCodeSummary", Model)
+
+    @Html.Partial("_ClaimsSummary", Model)
+
+    <div class="row OFDateWarningNote" style="display: none">
+        <div class="col-md-12">
+            <div class="note note-danger">
+                <h4 class="block note-message"></h4>
+                @*<p>
+
+                    </p>*@
+
+            </div>
+        </div>
+    </div>
+
+                if (Model != null && Model.IsPriorApprovalTransportationChanged)
+                {
+        <div class="row OFTransportWarningNote">
+            <div class="col-md-12">
+                <div class="note note-danger">
+                    <h4 class="block note-message">
+                        <b>Note : Prior approved transportation had been changed.</b> <br />
+                        Original selected transports : <br />
+                        @foreach (var transport in Model.PriorApprovalSubtypes)
+                        {
+                            <text> @(String.IsNullOrEmpty(transport) ? "Company Vehicle / Car Pool" : transport) </text> <br />
+                        }
+                    </h4>
+                </div>
+            </div>
+        </div>
+                }
+
+                if (Model.canSubmit)
+                {
+        <div id="claimActionDiv">
+
+            <div class="row ClaimMileageExceedWarning" @(IsClaimMileageExceedThreshold ? "" : "hidden")>
+                <div class="col-md-12">
+                    <div class="note note-danger">
+                        <h4 class="block">
+                            <strong>
+                                Note :<br>
+                                - Your claim exceeds the average mileage for your job group and will be inspected further.<br>
+                                - Tuntutan perjalanan anda melebihi had purata bagi kumpulan kerja anda dan akan diteliti dengan lebih lanjut.<br>
+                            </strong>
+                        </h4>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-12">
+                    <label style="position: relative;top: -10px;">
+                        Note: IM's approval is for confirmation that the Employee has been assigned to the job.
+                        Claim rate and eligibility will be verified by HR Admin and Support, Bahagian TNB Global Business Solutions.
+                    </label>
+                </div>
+            </div>
+
+            <!-- Disclaimer -->
+            <div class="row">
+                <div class="col-md-12">
+                    <input type="checkbox" id="chkDisclaimer"> <b>I declare that all the expenses claimed above are expenses that have incurred during my official job assignments related to TNB.</b>
+                </div>
+            </div>
+
+            <br />
+
+            <!-- Buttons -->
+
+            <div class="row">
+                <div class="col-md-12">
+                    <input type="button" class="btn green" value="Save as Draft" id="btnDraft" onclick="submitclaim('Draft'); " />
+                    <input type="button" class="btn green" value="Submit" id="btnSubmit" onclick="submitclaim('Submit'); " />
+
+                </div>
+            </div>
+        </div>
+                }
+
+    <!-- Success Message -->
+    <div class="modal fade" id="SuccessSubmit" tabindex="-1" role="basic" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header Success-header">
+                    @*<button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>*@
+                    <h4 class="Success-title">Action Successfully Completed</h4>
+                </div>
+                <div class="modal-body Success-body">
+                    <div class="well" id="SuccessMessage">
+                        Claims has been successfully submitted.
+                    </div>
+                </div>
+                <div class="modal-footer Success-footer">
+                    <a class="btn default blue" id="btnOK">
+                        <i class="fa fa-check"></i>
+                        OK
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Confirmation Message -->
+    <div class="modal fade" id="ConfirmSubmit" tabindex="-1" role="basic" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                    <h4 class="modal-title">Confirmation</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="well">
+                        <p class="ClaimMileageExceedWarning">
+                            <strong>
+                                Your claim exceeds the average mileage for your job group and will be inspected further.
+                            </strong>
+                        </p>
+                        <p id="ConfirmMessage">
+                            Are you sure you want to Submit this Claim?<br />
+                            Press Confirm to proceed, or Close to stay on the current page.
+                        </p>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn default blue" id="btnSubmitForm" submitvalue="" onclick="SubmitForm(); return false;">
+                        <i class="fa fa-check"></i>
+                        Confirm
+                    </button>
+                    <button type="button" class="btn default" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Loading Gif -->
+    <div id="divLoading" style="margin: 0px; padding: 0px; position: fixed; right: 0px;
+        top: 0px; width: 100%; height: 100%; background-color:gainsboro; z-index: 30001;
+        opacity: .8; filter: alpha(opacity=70);display:none">
+        <p style="position: absolute; top: 30%; left: 30%; color: black;">
+            Loading, please wait...<img src="../Assets/img/ajax-loading.gif" />
+
+        </p>
+    </div>
+}
+<script type="text/javascript">
+
+    $(function () {
+        var ClaimTypeCode = $("[name='ClaimTypeCode']").val();
+        var ClaimStatus = $('#claimStatus').val();
+
+        if ((ClaimTypeCode == "COS01") && (ClaimStatus == "Draft")) {
+
+            if ($('#OutstationClaimID').val() != "" && typeof $('#OutstationClaimID').val() != "undefined") {
+
+                var startDate = $('#StartDate').val();
+                var endDate = $('#EndDate').val();
+                var startTime = $('#StartTime').val();
+                var endTime = $('#EndTime').val();
+
+                //if (!($('#ReselectSubtype').val() == "true"))
+                //{
+                //    $('#hfStartDate').val(startDate);
+                //    $('#hfEndDate').val(endDate);
+                //    $('#hfStartTime').val(startTime);
+                //    $('#hfEndTime').val(endTime);
+                //}
+
+                //$('#divEndDate.date-picker').datepicker('setStartDate', startDate);
+                //$('#divEndDate.date-picker').datepicker('setEndDate', endDate);
+                $('#claimActionDiv').show();
+                $('#OutstationRequired').hide();
+
+                $('#StartDate,#EndDate,#StartTime,#EndTime').on('change', function () {
+                    VerifyOutstationFormDate();
+                });
+            }
+            else {
+                if (getParameterByName('outstationid') != '') {
+                    var qsOutstationid = getParameterByName('OutstationID');
+                    var qsOutstationRefNo = getParameterByName('OutstationRef');
+                    $('#OutstationClaimID').val(qsOutstationid + "|" + qsOutstationRefNo);
+                    OutstationFormInsert();
+                }
+
+            @if (IsPriorApprovalMandatory)
+            {
+                <text>
+                else {
+                    $('#claimActionDiv').hide();
+                    $('#OutstationRequired').show();
+                }
+                </text>
+            }
+            }
+        }
+        else {
+            if ($('#OutstationClaimID').val() != "" && typeof $('#OutstationClaimID').val() != "undefined") {
+                $('#StartDate,#EndDate,#StartTime,#EndTime').on('change', function () {
+                    VerifyOutstationFormDate();
+                });
+                //var startDate = $('#StartDate').val();
+                //var endDate = $('#EndDate').val()
+
+                //$('#divEndDate.date-picker').datepicker('setStartDate', startDate);
+                //$('#divEndDate.date-picker').datepicker('setEndDate', endDate);
+
+            }
+            else if (getParameterByName('OverseasID') != '' && getParameterByName('OverseasID') != null) {
+                var qsOutstationid = getParameterByName('OverseasID');
+                var qsOutstationRefNo = getParameterByName('OverseasRef');
+                $('#OutstationClaimID').val(qsOutstationid + "|" + qsOutstationRefNo);
+                OutstationFormInsert();
+
+            }
+            else if (getParameterByName('OthersID') != '' && getParameterByName('OthersID') != null) {
+                var qsOutstationid = getParameterByName('OthersID');
+                var qsOutstationRefNo = getParameterByName('OthersRef');
+                $('#OutstationClaimID').val(qsOutstationid + "|" + qsOutstationRefNo);
+                OutstationFormInsert();
+
+            }
+        }
+        //else if (($("[name='ClaimTypeCode']").val() == "COH01"))
+        //{
+        //    var fullDate = new Date();
+        //    var twoDigitMonth = ((fullDate.getMonth().length + 1) === 1) ? (fullDate.getMonth() + 1) : '0' + (fullDate.getMonth() + 1);
+
+        //    var currentDate = fullDate.getDate() + "/" + twoDigitMonth + "/" + fullDate.getFullYear();
+        //    $('#divEndDate.date-picker').datepicker('setEndDate', currentDate);
+        //}
+
+        // Other Claims
+        if (ClaimTypeCode == "COH01" || ClaimTypeCode == "COB01") {
+            initDatepicker();
+        }
+
+        if ($("[name='ClaimTypeCode']").val() == "COS01") {
+            VerifyOutstationFormDate();
+        }
+    });
+
+    function initDatepicker() {
+        $('.subtypeportlet .date-picker').each(function () {
+            var minSubmissionDate = moment('@minSubmissionDate', "DD/MM/YYYY");
+            var maxSubmissionDate = moment('@maxSubmissionDate', "DD/MM/YYYY");
+
+            var dpkMinSubmissionDate = null;
+            var dpkMaxSubmissionDate = null;
+            var dStartDate = $(this).datepicker('getStartDate');
+            var dEndDate = $(this).datepicker('getEndDate');
+
+            if (dStartDate.setHours) {
+                dpkMinSubmissionDate = moment(dStartDate.setHours(0, 0, 0, 0));
+            }
+
+            if (dEndDate.setHours) {
+                dpkMaxSubmissionDate = moment(dEndDate.setHours(0, 0, 0, 0));
+            }
+
+            if (dpkMinSubmissionDate != null && minSubmissionDate.isAfter(dpkMinSubmissionDate)) {
+                $(this).datepicker('setStartDate', '@minSubmissionDate');
+            }
+
+            if (dpkMaxSubmissionDate != null && maxSubmissionDate.isBefore(dpkMaxSubmissionDate)) {
+                $(this).datepicker('setEndDate', '@maxSubmissionDate');
+            }
+        });
+    }
+
+    function submitclaim(Type) {
+        initDatepicker();
+        var ErrorMessage = "";
+        var ClaimTypeCode = $("[name='ClaimTypeCode']").val();
+        if (ClaimTypeCode != "COH01" && ClaimTypeCode != "COB01") {
+            if ($('#StartDate').val() == "") {
+                alert("Please Fill In Start Date");
+                return false;
+            }
+            if ($('#EndDate').val() == "") {
+                alert("Please Fill In End Date");
+                return false;
+            }
+
+            if ($('#StartTime').val() == "") {
+                alert("Please Fill In Start Time");
+                return false;
+            }
+            if ($('#EndTime').val() == "") {
+                alert("Please Fill In End Time");
+                return false;
+            }
+
+            var startDateString = $('#StartDate').val() + " " + $('#StartTime').val();
+            var endDateString = $('#EndDate').val() + " " + $('#EndTime').val();
+
+            var StartDate = moment(startDateString, "DD/MM/YYYY HH:mm")._d;
+            var EndDate = moment(endDateString, "DD/MM/YYYY HH:mm")._d;
+
+            if (EndDate <= StartDate) {
+                alert('End Date/Time has to be later than Start Date/Time');
+                return false;
+            }
+
+
+            if (($('#hfStartDate').val() != null && $('#hfStartDate').val() != "") && ($('#hfEndDate').val() != null && $('#hfEndDate').val() != ""))
+            {
+                var hfStartDate = moment($('#hfStartDate').val())._d;
+                var hfEndDate = moment($('#hfEndDate').val())._d;
+
+                //var hfStartDateString = (pad2(hfStartDate.getDate()) + '/' + pad2(hfStartDate.getMonth() + 1) + '/' + hfStartDate.getFullYear()) + " " + (pad2(hfStartDate.getHours()) + pad2(hfStartDate.getMinutes()));
+                //var hfEndDateString = (pad2(hfEndDate.getDate()) + '/' + pad2(hfEndDate.getMonth() + 1) + '/' + hfEndDate.getFullYear()) + " " + (pad2(hfEndDate.getHours()) + pad2(hfEndDate.getMinutes()));
+
+                //hfStartDate = moment(hfStartDateString, "DD/MM/YYYY HH:mm")._d;
+                //hfEndDate = moment(hfEndDateString, "DD/MM/YYYY HH:mm")._d;
+
+                //if (hfStartDate != "" && hfEndDate != "") {
+                //    if (StartDate < hfStartDate || StartDate > hfEndDate) {
+                //        alert('Start Date/Time enter is not in approved Start Date/Time range.');
+                //        return false;
+                //    }
+                //    if (EndDate > hfEndDate || EndDate < hfStartDate) {
+                //        alert('End Date/Time enter is not in approved End Date/Time range.');
+                //        return false;
+                //    }
+
+                //}
+            }
+
+            //Only 1 subtype is allow as per claim for Day Trip Allowance (No GST),Subsistence Allowance (No GST),Subsistence Allowance (Multi) (No GST)
+            var LimitSelection = 'Day Trip Allowance (No GST),Subsistence Allowance (No GST),Subsistence Allowance (Multi) (No GST)';
+            var TravellingAllowanceCount = 0;
+            $('.subtypeportlet .portlet-title').each(function () {
+                var _temp = $(this).text().trim();
+                var _split = _temp.split("-");
+                _temp = _split[1].trim();
+                if (LimitSelection.indexOf(_temp) != -1)
+                {
+                    TravellingAllowanceCount++;
+                }
+            });
+
+            if (TravellingAllowanceCount > 1)
+            {
+                alert('Only one Claims Subtype selection is allow for the following subtype:\n- Day Trip Allowance (No GST)\n- Subsistence Allowance (No GST)\n- Subsistence Allowance (Multi) (No GST)');
+                return false;
+            }
+
+            if (Type == 'Submit' ) {
+                var today = new Date();
+                //today.setHours(23, 59, 59, 999);
+
+                var diff = today - EndDate;
+                var days = diff / 1000 / 60 / 60 / 24;
+                var Status = $('[name=Status]').val();
+
+                //if ((days - 1) > 60) {
+                //    alert('This claim should be submitted within 60 calendar day(s) from the Travel End Date.');
+                //    return false;
+                //}
+
+                if ((days - 1) > '@ViewBag.ClaimSubmitdays') {
+                    alert('This claim should be submitted within ' + '@ViewBag.ClaimSubmitdays' + ' calendar day(s) from the Travel End Date.');
+                    $(this).val('');
+                    // temp bypass, must reenable
+                    return false;
+                }
+
+                if (EndDate >= today) {
+                    alert('End Date has to be earlier than Today Date');
+                    $(this).val('');
+                    // temp bypass, must reenable
+                    return false;
+                }
+            }
+
+            if ($("[name='ClaimTypeCode']").val() == "COV01")
+            {
+                var tips = $("[name='Tips']").val();
+                var forexloss = $("[name='ForexLoss']").val();
+                var tipsCC = $("[name='TipsChargeCode']").val();
+                var FLCC = $("[name='ForexLossChargeCode']").val();
+
+                if (tips != "0.00" && tipsCC == "")
+                {
+                    alert("Please Select Tips Charge Code");
+                    return false;
+                }
+
+                if (forexloss != "0.00" && FLCC == "")
+                {
+                    alert("Please Select Forex Loss Charge Code");
+                    return false;
+                }
+
+            }
+
+        }
+
+        if (Type != 'Draft') {
+            if (ClaimTypeCode != "COH01" && ClaimTypeCode != "COB01") {
+                if (ValidateSubtypeDateRange()) {
+                    return false;
+                }
+            }
+
+            if (!ClaimSubtype_ValidateSelections()) {
+                alert('Selected subtypes in claims subtype selection does not match the form. Please click the refresh button to update the form.');
+                return false;
+            }
+
+            if ($('#Description').val() == "") {
+                alert("Remarks is mandatory.");
+                return false;
+            }
+
+            $('.subtypeportlet').each(function () {
+                var tablename = this.id;
+
+                var Error = eval(tablename + "Validation()");
+                if (Error != '') {
+                    ErrorMessage = ErrorMessage + '\n\r' + Error;
+                }
+            });
+
+            if ($('#dis_NettTotal').html() == '0.00' || $('#dis_NettTotal').html() == '0')
+                ErrorMessage = 'Total claims cannot be 0.\n';
+
+            //validation added to check subtype total amount = 0
+            var IsValidValue = $('.TotalAmount').filter(function (i, v) {
+                //console.log(v.value);
+                //console.log(!parseFloat(v.value) || parseFloat(v.value) <= 0);
+                if (!parseFloat(v.value) || parseFloat(v.value) <= 0)
+                {
+                    if (!parseFloat(v.value) || parseFloat(v.value) <= 0) {
+                        var row = $(v).closest('div.subtypeportlet');
+                        //console.log(row.find('div.caption').text().trim());
+                        if ($("[name='ClaimTypeCode']").val() == "COV01" || $("[name='ClaimTypeCode']").val() == "COS01")
+                        {
+                            var subtypeTitle = row.find('div.caption').text().trim();
+
+                            if (subtypeTitle.indexOf("Flight") < 0) {
+
+                                ErrorMessage += row.find('div.caption').text().trim() + ' Total Amount cannot be 0.\n';
+                            }
+                        }
+                        else
+                        {
+                            ErrorMessage += row.find('div.caption').text().trim() + ' Total Amount cannot be 0.\n';
+                        }
+                    }
+                    ErrorMessage += ''
+                }
+                return (!parseFloat(v.value) || parseFloat(v.value) <= 0);
+            });
+
+            if (ErrorMessage != "") {
+                alert(ErrorMessage);
+                return false;
+            }
+
+            if ($("#divDICText").css("visibility") == "visible" && !$("#DICText").val()) {
+                ErrorMessage = "DIC Line Item Text field is mandatory.";
+            }
+
+            var regex = /^[a-z0-9!"#$%&'()*+,.\/:;<=>?@Html.Raw("@")\[\] ^_`{|}~-]*$/i;
+
+            if ($("#divDICText").css("visibility") == "visible" && $("#DICText").val()) {
+                if (regex.test($("#DICText").val()) == false) {
+                    ErrorMessage = "DIC Line Item Text field contains illegal characters.";
+                }
+            }
+
+            if (ErrorMessage != "") {
+                alert(ErrorMessage);
+                return false;
+            }
+
+            if (ClaimTypeCode == "COH01" || ClaimTypeCode == "COB01") {
+                var fulldate = new Date();
+                $('.subtypeportlet .date-picker input').each(function () {
+                    //if (!this.value) {
+                    //    return;
+                    //}
+
+                    var thisDate = moment(this.value, "DD/MM/YYYY")._d;
+
+                    var twodatediff = fulldate - thisDate;
+                    var diffdays = twodatediff / 1000 / 60 / 60 / 24;
+
+                    if ((diffdays - 1) > '@ViewBag.ClaimSubmitdays') {
+                        ErrorMessage = ErrorMessage + 'This claim should be submitted within ' + '@ViewBag.ClaimSubmitdays' + ' calendar day(s) from the Travel End Date.' + '\n\r';
+                        $(this).val('');
+                        //return false;
+                    }
+                    if (thisDate > fulldate) {
+                        ErrorMessage = ErrorMessage + 'This claim does not allow future date submission.' + '\n\r';
+                        $(this).val('');
+                        //return false;
+                    }
+
+                });
+                if (ErrorMessage != "") {
+                    alert(ErrorMessage);
+                    return false;
+                }
+            }
+        }
+
+        if (Type == 'Draft') {
+
+            $('#ConfirmMessage').html(' Are you sure you want to Save this Claims Application?<br />Press Confirm to proceed, or Close to stay on the current page.')
+            $('#btnSubmitForm').attr("submitValue", 'Draft');
+            $('#ConfirmSubmit').modal();
+        }
+        else {
+            if ($('#chkDisclaimer').parent().hasClass('checked')) {
+
+                $('#ConfirmMessage').html(' Are you sure you want to Submit this Claims Application?<br />Press Confirm to proceed, or Close to stay on the current page.')
+                $('#btnSubmitForm').attr("submitValue", 'Submit');
+                $('#ConfirmSubmit').modal();
+                if ($('#tblAttachment .dataTables_empty').length == 1) {
+                    alert("Submit this claim without attachment?");
+                }
+            }
+            else {
+                alert('- Please read and check the Disclaimer section before proceeding to submit.\n');
+            }
+        }
+    }
+
+    // Helper function
+    function convertDate(inputFormat) {
+        function pad(s) { return (s < 10) ? '0' + s : s; }
+        var d = new Date(inputFormat);
+        return [pad(d.getDate()), pad(d.getMonth() + 1), d.getFullYear()].join('/');
+    }
+
+    function toDate(dateStr) {
+        var parts = dateStr.split("/");
+        return new Date(parts[2], parts[1] - 1, parts[0]);
+    }
+
+    function getParameterByName(name, url)
+    {
+        if (!url) url = window.location.href;
+        name = name.replace(/[\[\]]/g, "\\$&");
+        var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
+            results = regex.exec(url);
+        if (!results) return null;
+        if (!results[2]) return '';
+        return decodeURIComponent(results[2].replace(/\+/g, " "));
+    }
+
+    function SubmitForm() {
+        var Type = $('#btnSubmitForm').attr("submitValue");
+        $('#btnSubmitForm').attr("disabled", true);
+        $('#ConfirmSubmit').modal('hide');
+        $('#divLoading').show();
+        var data = $('form').serializeArray();
+        //Add in additional data to the original form data:
+        data.push(
+            { name: 'SubmitType', value: Type }
+        );
+        PerformClaimSubmission(data, Type);
+    }
+
+    function PerformClaimSubmission(data, Type) {
+        $.ajax({
+            url: '../Claims/SubmitClaimAction',
+            type: 'POST',
+            data: data,
+            success: function (result) {
+
+                $('#divLoading').hide();
+
+                if (result.result == true) {
+                    $('#SuccessSubmit').modal();
+                    $('#SuccessMessage').html("Claims has been successfully " + Type + 'ed');
+                    $('#btnOK').attr('href', '../Claims/ClaimsHistory');
+                } else {
+
+                    //Execution Timeout Expired handling
+                    if (result.ErrorMessage.includes('Execution Timeout Expired')) {
+                        alert('System is experiencing heavy traffic. Please try again later. Contact your system administration if the problem persists.');
+                    } else {
+                        alert(result.ErrorMessage);
+                    }
+
+                    $('#btnSubmitForm').attr("disabled", false);
+
+                }
+                // ... Process the result ...
+            }
+        });
+    }
+
+    function reorderTable(tableName) {
+        var int = 0;
+        var name = '';
+        $.each($(tableName + ' tbody tr'), function (i, val) {
+
+            $.each($(this).find('td [name]'), function (i, val) {
+                var name = $(this).attr('name');
+                $(this).attr('name', reorder(int, name));
+                $(this).attr('id', reorder(int, name));
+                // var column =  $(this).find('[name]').attr('name').split('.');
+            });
+            int++;
+
+        });
+    }
+
+    function reorder(currentIndex, name) {
+        if (typeof name === "undefined") { } else
+        {
+            var ColumnNaw = name.split('.');
+            var replaceIndex = ColumnNaw[2].match(/\d+/g);
+            ColumnNaw[2] = ColumnNaw[2].replace(replaceIndex, currentIndex);
+            return ColumnNaw.join('.');
+        }
+    }
+
+    //Charge Code function
+    var origBindtoDDL = BindtoDDL;
+    BindtoDDL = function () {
+        // overwrite method here
+        var _ChargeCodeList = document.getElementById('ChargeCodeList').value;
+        _ChargeCodeList = _ChargeCodeList.substring(0, _ChargeCodeList.length - 1);
+
+        BindOptionToSelect(_ChargeCodeList);
+
+        return origBindtoDDL();
+    }
+
+    function BindOptionToSelect(ChargeCodeList) {
+        var chargeCodes = ChargeCodeList.split(',');
+
+        $('.ddlChargeCode').each(function () {
+            $(this).find('option').remove().end().append('<option value="">Select One</option>');
+
+            for (var i = 0; i < chargeCodes.length; i++) {
+                var option = document.createElement("option");
+                option.text = DisplayChargeCodeDesc(chargeCodes[i]);
+                option.value = chargeCodes[i];
+
+                this.add(option);
+            }
+
+            var hasDICChargeCode = false;
+            $.each(mytable.fnGetNodes(), function (i, row) {
+                if ($(row).find('.selectedChargeType').text() == "DI") {
+                    hasDICChargeCode = true;
+                }
+            });
+
+            if (hasDICChargeCode) {
+                $(this).val(chargeCodes[0]);
+            }
+            else {
+                $(this).val($(this).siblings('.hfChargeCode').val());
+                if ($(this).val() == null) {
+                    $(this).children("option[value='']").attr('selected', 'selected');
+                } // can be reused during initialize to retain drop down value
+            }
+
+            // pre change
+            //$(this).val($(this).siblings('.hfChargeCode').val());
+            //if ($(this).val() == null) {
+            //    $(this).children("option[value='']").attr('selected', 'selected');
+            //} // can be reused during initialize to retain drop down value
+        });
+    }
+
+    function ChargeCodeChange(x) {
+        $(x).siblings('.hfChargeCode').val($(x).val());
+        $(x).prop('title', $(x).find('option:selected').text());
+    } // put to master form, then don't have to duplicate
+
+    function DisplayChargeCodeDesc(key) {
+        //return key;
+        return gCurrentChargeCode[key] || key;
+    }
+
+    function formatTime(time) {
+        var m;
+        var re = /^\s*([01]?\d|2[0-3]):?([0-5]\d)\s*$/;
+        if ((m = time.match(re))) {
+            result = (m[1].length === 2 ? "" : "0") + m[1] + ":" + m[2];
+        }
+        else {
+            result = "Wrong Format";
+        }
+        return result;
+    }
+
+    function InitDistanceMin(tbl, subCol, minDistVal) {
+        //unbind all listeners
+        $('#' + tbl + ' .' + subCol).each(function () {
+            $(this).unbind();
+            if (!$(this).hasClass('text-right')) {
+                $(this).addClass('text-right');
+            }
+        });
+
+
+        //bind all subtype and check for minimum distance achieved
+        var minDist = parseFloat(minDistVal);
+        $('#' + tbl + ' .' + subCol).each(function () {
+            $(this).on('change', function () {
+                if ($.isNumeric($(this).val())) {
+                    //var currDist = parseFloat($(this).val());
+
+                    //if (currDist < minDist) {
+                    //    $(this).val(minDist);
+                    //}
+                } else {
+                    $(this).val(minDist);
+                }
+                $(this).val(parseFloat($(this).val()).toFixed(1))
+            });
+
+            $(this).change();
+        }).keypress(function (evt) {
+            // Only ASCII character in that range allowed
+            var ASCIICode = (evt.which) ? evt.which : evt.keyCode
+            if ((ASCIICode > 47 && ASCIICode < 58) || ASCIICode == 46)
+                return true;
+            return false;
+        });
+    }
+
+    function RemoveSubtype(categoryIndex, subtypeIndex) {
+        var RemoveError = false;
+        var OverseasDeletedSubTypeName = "";
+        var OverseasSubsistenceAllowanceNoGst = false;
+        var OverseasFlightNoGst = false;
+
+        if ($("[name='ClaimTypeCode']").val() == "COV01") {
+            OverseasDeletedSubTypeName = $('[name^="ClaimsSubtypeCategory[' + categoryIndex + '].ClaimSubtype[' + subtypeIndex + '].IsChoosen"]').attr('subtypename');
+            if (OverseasDeletedSubTypeName == "Flight without GST") {
+
+                $('.SubTypeCheckBox:checked').each(function (index) {
+                    if ($(this).attr('subtypename') == "Subsistence Allowance (No GST)") {
+                        alert('Please remove Subsistence Allowance (No GST) before remove this.');
+                        RemoveError = true;
+                    }
+                });
+
+            }
+        }
+
+        if (!RemoveError) {
+            if (confirm('Are you sure you want to remove the selected entries?\n\rPress OK to continue, or Cancel to stay on the current page.')) {
+                // Save it!
+                $('[name^="ClaimsSubtypeCategory[' + categoryIndex + '].ClaimSubtype[' + subtypeIndex + '].IsChoosen"]').removeAttr("checked");
+                $('[name^="ClaimsSubtypeCategory[' + categoryIndex + '].ClaimSubtype[' + subtypeIndex + '].IsManualCheckedByUser"]').val(true);
+
+                $('form').submit();
+            } else {
+                // Do nothing!
+            }
+        }
+    }
+
+    $(document).ready(function () {
+        // FormConfiguration();
+        if ($('.subtypeportlet').length > 0) {
+            //ToggleOff();
+            $('html,body').animate({
+                scrollTop: $('.subtypeportlet').offset().top - 100
+            },
+            'slow');
+        }
+        // Form plugin function
+        $('.date-picker').datepicker({
+            format: 'dd/mm/yyyy',
+            autoclose: true
+
+        });
+
+        try{
+            TransportMultiSelect_OnChange();
+            TravellingAllowanceMultiSelect_OnChange();
+        } catch (exception) {
+
+        }
+
+        BindtoDDL();
+
+        var ClaimStatus = $('#claimStatus').val();
+
+        if (ClaimStatus == "Draft" || ClaimStatus == "0" || ClaimStatus == "4" || ClaimStatus == "5") {
+            var NextLine = "\r\n"
+            var BlockSubmissionInfo = [
+                 {
+                    CompanyCode: "9998",
+                    StartDateTime: "17/06/2020 10:00",
+                    EndDateTime: "17/06/2020 13:00",
+                    ErrorMessage: "Dear 4001 staff," + NextLine + "Please be informed that..." + NextLine + "Project Needle Team."
+                },
+                {
+                    CompanyCode: "9999",
+                    StartDateTime: "17/06/2020 10:00",
+                    EndDateTime: "17/06/2020 13:00",
+                    ErrorMessage: "Dear RetailCo staff," + NextLine + "Please be informed that..." + NextLine + "Project Needle Team."
+                }
+            ];
+
+            var ExceptionalEmployee = [
+                {
+                    EmployeeCode: ""
+                },
+                {
+                    EmployeeCode: ""
+                }
+            ];
+
+            var ToBlock = "0";
+            var ErrorMessage = "";
+            var CurrentEmployeeCode = $('input[name="Submiter.EmployeeCode"]').val();
+            var CurrentCompanyCode = $('input[name="Submiter.CompanyCode"]').val();
+          //  var ExceptionalEmployeeFound = ExceptionalEmployee.filter(x => x.EmployeeCode === CurrentEmployeeCode);
+
+            var ExceptionalEmployeeFound = ExceptionalEmployee.filter(function(x) {
+              return x.EmployeeCode === CurrentEmployeeCode
+            });
+
+            if (ExceptionalEmployeeFound.length > 0) {
+                ToBlock = "0";
+                ErrorMessage = "";
+            } else {
+                //var CompanyFound = BlockSubmissionInfo.filter(x => x.CompanyCode === CurrentCompanyCode);
+                var CompanyFound = BlockSubmissionInfo.filter(function(x) {
+                      return x.CompanyCode === CurrentCompanyCode
+                    });
+
+                if (CompanyFound.length >= 1) {
+                    var CurrentDateTime = moment('@CurrentDatTime', "DD/MM/YYYY HH:mm");
+                    var BlockStartDateTime = moment(CompanyFound[0].StartDateTime, "DD/MM/YYYY HH:mm");
+                    var BlockEndDateTime = moment(CompanyFound[0].EndDateTime, "DD/MM/YYYY HH:mm");
+
+                    if (BlockStartDateTime <= CurrentDateTime && BlockEndDateTime >= CurrentDateTime) {
+                        ToBlock = "1";
+                        ErrorMessage = CompanyFound[0].ErrorMessage;
+                    } else {
+                        ToBlock = "0";
+                        ErrorMessage = "";
+                    }
+                } else {
+                    ToBlock = "0";
+                    ErrorMessage = "";
+                }
+            }
+
+            if (ToBlock == "1") {
+                $("#btnSubmit").attr("disabled", "disabled");
+                $('#divValidationError').show();
+                $('#divValidationError').text(ErrorMessage);
+                alert(ErrorMessage);
+            } else {
+                $('#btnSubmit').attr("disabled", false);
+                $('#divValidationError').text("");
+                $('#divValidationError').hide();
+            }
+        }
+
+
+    });
+
+    function VerifyOutstationFormDate() {
+        var startDateString = $('#StartDate').val() + " " + $('#StartTime').val();
+        var endDateString = $('#EndDate').val() + " " + $('#EndTime').val();
+
+        var StartDate = moment(startDateString, "DD/MM/YYYY HH:mm");
+        var EndDate = moment(endDateString, "DD/MM/YYYY HH:mm");
+
+        var oriOFStartDate = moment($('#hfStartDate').val());
+        var oriOFEndDate = moment($('#hfEndDate').val());
+
+        if (!oriOFStartDate || !oriOFEndDate) {
+            return;
+        }
+
+        var warningNote = $('.OFDateWarningNote');
+        warningNote.find(".note-message").html(
+            '<b>Note : Start Date and/or End Date had been changed. </b><br />' +
+            'Original Start Date Time : ' + oriOFStartDate.format('DD/MM/YYYY HH:mm') + '<br />' +
+            'Original End Date Time : ' + oriOFEndDate.format('DD/MM/YYYY HH:mm') + '<br />'
+        );
+
+        if (!oriOFStartDate.isSame(StartDate) || !oriOFEndDate.isSame(EndDate)) {
+            warningNote.show();
+        }
+        else {
+            warningNote.hide();
+        }
+
+        $('.subtypeportlet .date-picker').each(function () {
+            var minSubmissionDate = StartDate;
+            var maxSubmissionDate = EndDate;
+
+            var dpkMinSubmissionDate = null;
+            var dpkMaxSubmissionDate = null;
+            var dStartDate = $(this).datepicker('getStartDate');
+            var dEndDate = $(this).datepicker('getEndDate');
+
+            if (dStartDate.setHours) {
+                dpkMinSubmissionDate = moment(dStartDate.setHours(0, 0, 0, 0));
+            }
+
+            if (dEndDate.setHours) {
+                dpkMaxSubmissionDate = moment(dEndDate.setHours(0, 0, 0, 0));
+            }
+
+            if (dpkMinSubmissionDate != null && minSubmissionDate.isAfter(dpkMinSubmissionDate)) {
+                $(this).datepicker('setStartDate', StartDate._d);
+            }
+
+            if (dpkMaxSubmissionDate != null && maxSubmissionDate.isBefore(dpkMaxSubmissionDate)) {
+                $(this).datepicker('setEndDate', EndDate._d);
+            }
+        });
+    }
+</script>
+
+@Html.Partial("__ClaimCommonScript")

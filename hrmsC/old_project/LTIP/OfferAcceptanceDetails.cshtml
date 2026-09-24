@@ -1,0 +1,60 @@
+﻿@using ESS.Core
+@model LTIP.Models.OfferAcceptance
+@{
+    ViewBag.Title = "LTIP Offer/Acceptance Details";
+    List<SEP.RoutingManagement.Models.GetApprovalAuditLog> AuditLogs = ViewBag.AuditLogs;
+
+    EmployeeDetailsSummary EmployeeDetails = ViewBag.EmployeeDetails;
+    EmployeeDetailsSummary LoginEmployeeDetails = ViewBag.LoginEmployeeDetails;
+
+    bool isAdmin = ViewBag.AdminMode;
+    bool isReadOnly = Model.GrantStatusCode != "03";
+}
+
+@using (Html.BeginForm("OfferAcceptanceDetails", "LTIP", FormMethod.Post))
+{
+    <div class="form-section">
+        <div class="row">
+            <div class="col-md-12">
+                <h1 class="page-title">
+                    @ViewBag.Title
+                    <span style="padding-left:20px;">
+                        <small></small>
+                    </span>
+                </h1>
+            </div>
+        </div>
+    </div>
+
+    @Html.Partial("_EmployeeDetails", EmployeeDetails)
+    @Html.Partial("_OfferDetails", Model)
+
+    if (isReadOnly || isAdmin)
+    {
+        @Html.Partial("_OfferAcceptanceDetails", Model)
+    }
+
+    if (isAdmin)
+    {
+        @Html.Partial("__AuditLog", AuditLogs)
+    }
+
+    @Html.Partial("__ActionButtons", Model)
+}
+
+<script>
+    function ProceedNext() {
+        window.location = '@Url.Action("OfferAcceptanceDeclaration", "LTIP", new { GrantID = Model.GrantID})';
+    }
+
+    $(function () {
+        ShowGrantEmployeePopup();
+    });
+
+    function ShowGrantEmployeePopup() {
+        if ('@isAdmin' == 'False') {
+            alert('You are currently signed in to ESS as @LoginEmployeeDetails.EmployeeName.\r\nPlease check the Employee Details section before you proceed.\r\n \r\nAnda sedang menggunakan ESS sebagai @LoginEmployeeDetails.EmployeeName.\r\nSila semak ruangan Employee Details sebelum anda meneruskan proses selanjutnya.');
+        }
+    }
+</script>
+

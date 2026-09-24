@@ -1,0 +1,84 @@
+﻿@model Integrity.ConflictOfInterest.Models.ConflictVM
+
+@{
+    ViewBag.Title = "Conflict of Interest";
+}
+
+<style>
+    .page-secondary-title {
+        font-style: italic;
+        font-size: 18px;
+    }
+</style>
+
+<form>
+    <div class="form-section">
+        <div class="row">
+            <div class="col-md-10">
+                <h1 class="page-title">
+                    Conflict of Interest Declaration
+                    <span style="padding-left:20px;">
+                        <small></small>
+                    </span>
+                </h1>
+                <h2 class="page-secondary-title">
+                    Perisytiharan Percanggahan Kepentingan
+                    <span style="padding-left:20px;">
+                        <small></small>
+                    </span>
+                </h2>
+            </div>
+            <div class="col-md-2">
+                <select class="form-control Language text-right" name="Language"
+                        onchange="OnLanguageChange()"
+                        @(Model.CanEdit ? "" : "disabled")>
+                    <option value="BI" @(Model.Language == "BI" ? "selected='selected'" : "")>English</option>
+                    <option value="BM" @(Model.Language == "BM" ? "selected='selected'" : "")>Bahasa Malaysia</option>
+                </select>
+            </div>
+        </div>
+    </div>
+    @Html.Partial("IntegrityModule/_EmployeeDetails", Model.EmployeeDetails)
+    @Html.Partial("_1_RequestDetails")
+    @Html.Partial("_25_ChairmanOfCommitee", Model)
+    @Html.Partial("_2_DetailsOfConflict")
+
+    @if (Model.Status == "Draft")
+    {
+        @Html.Action("NotifyPeer", "Component", new { sourceId = Model.DeclarationID, mode = "Edit" })
+    }
+    else
+    {
+        @Html.Action("NotifyPeer", "Component", new { sourceId = Model.DeclarationID, mode = "Readonly" })
+    }
+
+    @Html.Partial("_3_Attachment")
+
+    @if (Model.Status != "Draft")
+    {
+        @Html.Partial("_AuditLogBySourceID", Model.DeclarationID)
+    }
+
+    @Html.Partial("_5_Actions")
+    @Html.Partial("__Prompt")
+</form>
+
+<script>
+    var questions = @Html.Raw(Json.Encode(Model.DetailsOfConflict));
+    function OnLanguageChange() {
+        var language = $('[name=Language]').val();
+
+        if (language == "BI") {
+            $('.BI').show();
+            $('.BM').hide();
+        }
+        else {
+            $('.BM').show();
+            $('.BI').hide();
+        }
+    }
+
+    $(function () {
+        OnLanguageChange();
+    });
+</script>

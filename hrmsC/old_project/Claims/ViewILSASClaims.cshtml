@@ -1,0 +1,998 @@
+﻿@model ESS.Claim.ViewModels.ClaimVM
+@{
+    ViewBag.Title = "ClaimsApplication";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    DateTime d1 = DateTime.Now.AddYears(-20);
+    string dtStrStart = d1.ToString("dd MMM yyyy");
+    bool gotItem = false;
+
+    if (Model != null)
+    {
+        string ssrsReportUrl = System.Configuration.ConfigurationManager.AppSettings["SSRSReportServerUrl"];
+        string ssrsReportFolder = System.Configuration.ConfigurationManager.AppSettings["SSRSReportFolder"];
+
+        ViewBag.PrintClaimsDetails = String.Format(@"{0}?/{1}/{2}&rs:Command=Render&rs:Format=PDF&RequestID={3}&EmployeeID={4}",
+                                                ssrsReportUrl, ssrsReportFolder, "PrintClaimsForm", Model.ID, Model.Submiter.ID);
+
+        ViewBag.PrintClaimsSummary = String.Format(@"{0}?/{1}/{2}&rs:Command=Render&rs:Format=PDF&RequestID={3}&EmployeeID={4}",
+                                                ssrsReportUrl, ssrsReportFolder, "PrintClaimsFormSummary", Model.ID, Model.Submiter.ID);
+    }
+
+    var EmpID = ESS.Core.Common.GetEmployeeID().ToUpper();
+    bool isILSASTeachingAllowanceSelected = false;
+
+    bool IsClaimMileageExceedThreshold = false;
+    if (ViewBag.IsClaimMileageExceedThreshold != null)
+    {
+        IsClaimMileageExceedThreshold = ViewBag.IsClaimMileageExceedThreshold;
+    };
+
+    decimal ClaimMileageThreshold = 0;
+    if (ViewBag.ClaimMileageThreshold != null)
+    {
+        ClaimMileageThreshold = ViewBag.ClaimMileageThreshold;
+    };
+}
+
+@using (Html.BeginForm("ViewILSASClaims", "Claims", FormMethod.Post))
+{
+    <div class="form-section">
+        <div class="row">
+            <div class="col-md-12">
+                <h1 class="page-title">
+                    ILSAS SME Claims Application
+                    <span style="padding-left:20px;">
+                        <small></small>
+                    </span>
+                </h1>
+            </div>
+            <div class="col-md-12 ">
+                <div class="pull-right">
+                    <a href="@ViewBag.PrintClaimsDetails">Print Claims Details</a>
+                    |
+                    <a href="@ViewBag.PrintClaimsSummary">Print Claims Summary</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    if (EmpID == Model.Submiter.ID.ToString().ToUpper())
+    {
+        <div class="row ClaimMileageExceedWarning" @(IsClaimMileageExceedThreshold ? "" : "hidden")>
+            <div class="col-md-12">
+                <div class="note note-danger">
+                    <h4 class="block">
+                        <strong>
+                            Note :<br>
+                            - Your claim exceeds the average mileage for your job group and will be inspected further.<br>
+                            - Tuntutan perjalanan anda melebihi had purata bagi kumpulan kerja anda dan akan diteliti dengan lebih lanjut.<br>
+                        </strong>
+                    </h4>
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="row ClaimMileageExceedWarning" @(IsClaimMileageExceedThreshold ? "" : "hidden")>
+            <div class="col-md-12">
+                <div class="note note-danger">
+                    <h4 class="block">
+                        <strong>
+                            Note :<br>
+                            - Your staff claim exceeds the average mileage for his/her job group and will be inspected further.<br>
+                            - Tuntutan perjalanan staf anda melebihi had purata bagi kumpulan kerja beliau dan akan diteliti dengan lebih lanjut.<br>
+                        </strong>
+                    </h4>
+                </div>
+            </div>
+        </div>
+    }
+
+    <div id="ILSASCAP" class="row" style="display:none">
+        <div class="col-md-12">
+            <div class="note note-danger">
+                <h4 class="block">
+                    Note: Teaching Allowance claim exceeded capping<br />
+                    Possible causes:<br />
+                    - Total claim amount exceeded RM1000.<br />
+                    - Specialist Rate claim exceeded 30 hours.
+                </h4>
+                <h4>
+                    <div class="exceedDetail"></div>
+                </h4>
+                @*<p>
+
+                    </p>*@
+
+            </div>
+        </div>
+    </div>
+    <input id="ILSASExceed" name="ILSASExceed" type="hidden" value="false" />
+    <input id="claimStatus" name="Status" type="hidden" value="@Model.Status" />
+
+    <!-- Employee Details -->
+    @Html.Partial("_EmployeeInfoClaim", Model.Submiter)
+
+    <!-- Claims Particular -->
+    <input type="hidden" name="ID" value="@Model.ID" />
+    @Html.Partial("_ClaimsParticular", Model)
+
+    <!-- Hardcoded ChargeCode-->
+    <input type="hidden" name="ChargeCodeList" id="ChargeCodeList" value="@ViewBag.ChargeCode,">
+    if (Model.Status == "0" || Model.Status == "5" || Model.Status == "4")
+    {
+        @Html.Action("_ILSASCoordinator", "Claims", new { Selected = @Model.ILSASCoordinator })
+
+        <!-- Claims Subtype Selection -->
+        @Html.Partial("_ClaimsSubtype", Model.ClaimsSubtypeCategory)
+    }
+    <div class="row">
+        <div class="col-md-12">
+            <!-- Claim Subtype-->
+            @foreach (ESS.Claim.ViewModels.ClaimsSubtypeCategory category in Model.ClaimsSubtypeCategory)
+            {
+                foreach (var subtype in category.ClaimSubtype)
+                {
+                    if (subtype.IsChoosen)
+                    {
+                        gotItem = true;
+                        try
+                        {
+                            @Html.Action(@subtype.FormInterface, new { input = subtype, parameter = @ViewBag.Parameter })
+
+                            if (subtype.ClaimsSubtypeName == "ILSAS SME Teaching Allowance")
+                            {
+                                isILSASTeachingAllowanceSelected = true;
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            <div class="row subtypeinvalid">
+                                <div class="col-md-12">
+                                    <div class="note note-danger">
+                                        <h4 class="block">
+                                            @subtype.ClaimsSubtypeName is not available
+                                        </h4>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    }
+                }
+            }
+        </div>
+    </div>
+
+    <!-- Attachment -->
+    List<string> statusToAddAttachies = new List<string> { "1", "2", "3" };
+    if (Model.Status == "0" || Model.Status == "5" || Model.Status == "4" ||
+        (statusToAddAttachies.Contains(Model.Status) && EmpID == Model.Submiter.ID.ToString().ToUpper()))
+    {
+        @Html.Action("AttachmentControl", "Attachment", new
+        {
+            EmployeeID = @Model.Submiter.ID,
+            Mode = "Add",
+            SourceType = "Claims",
+            RequestID = @Model.ID@*, ShowOptionField = "true", Mandatory = "true"*@})
+
+
+    }
+    else
+    {
+        @Html.Action("AttachmentControl", "Attachment", new
+        {
+            EmployeeID = @Model.Submiter.ID,
+            Mode = "View",
+            SourceType = "Claims",
+            RequestID = @Model.ID@*, ShowOptionField = "true", Mandatory = "true"*@})
+    }
+
+
+
+    @Html.Partial("_ClaimsChargeCodeSummary")
+
+    @Html.Partial("_ClaimsSummary", Model)
+
+
+    <!-- Disclaimer -->
+    @*<div class="row">
+            <div class="col-md-12">
+                <input type="checkbox" id="chkDisclaimer"> <b>I declare that all the expenses claimed above are expenses that have incurred during my official job assignments related to TNB.</b>
+            </div>
+        </div>
+
+        <br />
+
+
+        <div class="row">
+            <div class="col-md-12">
+                <input type="button" class="btn green" value="Save as Draft" id="btnDraft" onclick="submitclaim('Draft'); " />
+                <input type="button" class="btn green" value="Submit" id="btnSubmit" onclick="submitclaim('Submit'); " />
+
+            </div>
+        </div>*@
+    if (Model.Status != "0")
+    {
+        @Html.Partial("_AuditLog")
+    }
+    @Html.HiddenFor(m => m.canSubmit)
+    @Html.Partial("_ClaimActionButton", Model)
+
+    <!-- MODAL  -->
+    if (RoleMaintenance.RoleService.IsInRole("Claim", "HR Admin")
+        && ViewContext.RouteData.Values["action"].ToString().ToLower() == "viewilsasclaims")
+    {
+        <div class="modal fade" id="modalTimeSheet" tabindex="-1" role="dialog" aria-hidden="true">
+            <div class="modal-dialog" style="width:85%;">
+                <div class="modal-content">
+                    @*<div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                            <h4 class="modal-title">Timesheet Report</h4>
+                        </div>*@
+                    <div class="modal-body">
+                        @{ViewBag.TimePartial = true;}
+                        @Html.Partial("../TimeAttendance/TimesheetReport", new List<ESS.Core.DropDownObject>())
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn default" data-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+    <!-- Success Message -->
+    <div class="modal fade" id="SuccessSubmit" tabindex="-1" role="basic" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header Success-header">
+                    @*<button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>*@
+                    <h4 class="Success-title">Action Successfully Completed</h4>
+                </div>
+                <div class="modal-body Success-body">
+                    <div id="actionText" class="well">
+                        Application has been successfully submitted.
+                    </div>
+                </div>
+                <div class="modal-footer Success-footer">
+                    <a class="btn default blue" id="btnOK">
+                        <i class="fa fa-check"></i>
+                        OK
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Confirmation Message -->
+
+    <div class="modal fade" id="ConfirmDelete" tabindex="-1" role="basic" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                    <h4 class="modal-title">Confirmation</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="well">
+                        Are you sure you want to Delete this Claims Application?<br />
+                        Press Confirm to proceed, or Close to stay on the current page.
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn default blue" id="btnDelete" onclick="Delete(); return false;">
+                        <i class="fa fa-check"></i>
+                        Confirm
+                    </button>
+                    <button type="button" class="btn default" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="ConfirmSubmit" tabindex="-1" role="basic" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                    <h4 class="modal-title">Confirmation</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="well">
+                        <p class="ClaimMileageExceedWarning">
+                            <strong>
+                                Your claim exceeds the average mileage for your job group and will be inspected further.
+                            </strong>
+                        </p>
+                        <p id="ConfirmMessage">
+                            Are you sure you want to Submit this Claim?<br />
+                            Press Confirm to proceed, or Close to stay on the current page.
+                        </p>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn default blue" id="btnSubmitForm" submitvalue="" onclick="SubmitForm(); return false;">
+                        <i class="fa fa-check"></i>
+                        Confirm
+                    </button>
+                    <button type="button" class="btn default" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Loading Gif -->
+
+    <div class="modal fade" id="ConfirmApprove" tabindex="-1" role="basic" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                    <h4 class="modal-title">Confirmation</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="well">
+                        <p class="ClaimMileageExceedWarning">
+                            <strong>
+                                Your staff claim exceeds the average mileage for his/her job group and will be inspected further.
+                            </strong>
+                        </p>
+                        <p>
+                            Are you sure you want to Approve this Claims Application?<br />
+                            Press Confirm to proceed, or Close to stay on the current page.
+                        </p>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn default blue" id="btnApproveForm" onclick="ApproveRejectAdvClaim('Approve'); return false;">
+                        <i class="fa fa-check"></i>
+                        Confirm
+                    </button>
+                    <button type="button" class="btn default" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="ConfirmAgree" tabindex="-1" role="basic" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                    <h4 class="modal-title">Confirmation</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="well">
+                        <p class="ClaimMileageExceedWarning">
+                            <strong>
+                                Your claim exceeds the average mileage for your job group and will be inspected further.
+                            </strong>
+                        </p>
+                        <p id="ConfirmAgreeMessage">
+                            Are you sure you want to Agree this application?<br />
+                            Press Confirm to proceed, or Close to stay on the current page.
+                        </p>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn default blue" id="btnAgreeForm" onclick="ApproveRejectAdvClaim('Agree'); return false;">
+                        <i class="fa fa-check"></i>
+                        Confirm
+                    </button>
+                    <button type="button" class="btn default" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="ConfirmReject" tabindex="-1" role="basic" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                    <h4 class="modal-title">Confirmation</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="well">
+                        Are you sure you want to Return this application?<br />
+                        Press Confirm to proceed, or Close to stay on the current page.
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn default blue" id="btnRejectForm" onclick="ApproveRejectAdvClaim('Reject'); return false;">
+                        <i class="fa fa-check"></i>
+                        Confirm
+                    </button>
+                    <button type="button" class="btn default" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="ConfirmWithdraw" tabindex="-1" role="basic" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                    <h4 class="modal-title">Confirmation</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="well">
+                        Are you sure you want to Withdraw this Application?<br />
+                        Press Confirm to proceed, or Close to stay on the current page.
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn default blue" id="btnWithdrawForm" onclick="Withdraw(); return false;">
+                        <i class="fa fa-check"></i>
+                        Confirm
+                    </button>
+                    <button type="button" class="btn default" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="divLoading" style="margin: 0px; padding: 0px; position: fixed; right: 0px;
+        top: 0px; width: 100%; height: 100%; background-color:gainsboro; z-index: 30001;
+        opacity: .8; filter: alpha(opacity=70);display:none">
+        <p style="position: absolute; top: 30%; left: 30%; color: black;">
+            Loading, please wait...<img src="../Assets/img/ajax-loading.gif" />
+
+        </p>
+    </div>
+}
+<script type="text/javascript">
+    var Path = '/_layouts/15/tnbess';
+    var mytable = $('#ILSASTable').DataTable();
+
+
+    function Delete() {
+
+        $('#ConfirmDelete').modal('hide');
+        $('#btnDelete').attr("disabled", true);
+        $('#divLoading').show();
+
+        $.ajax({
+            url: '../Claims/DeleteClaimAction',
+            type: 'POST',
+            data:
+            {
+                ClaimID: '@Model.ID'
+                //ApproverComment: $('#txtAppComment').val()
+            },
+            success: function (result) {
+
+                $('#divLoading').hide();
+
+                if (result.result == true) {
+                    $('#actionText').html('Claims has been successfully Deleted');
+                    $('#SuccessSubmit').modal();
+                    $('#btnOK').attr('href', '../Claims/ClaimsHistory');
+                }
+                else {
+                    alert(result.ErrorMessage);
+
+                }
+                // ... Process the result ...
+            }
+        });
+
+    }
+
+
+    function submitclaim(Type) {
+        if ($('#StartDate').val() == "") {
+            alert("Please Fill In Start Date");
+            return false;
+        }
+
+        if ($('#EndDate').val() == "") {
+            alert("Please Fill In End Date");
+            return false;
+        }
+
+        if ($('#StartTime').val() == "") {
+            alert("Please Fill In Start Time");
+            return false;
+        }
+
+        if ($('#EndTime').val() == "") {
+            alert("Please Fill In End Time");
+            return false;
+        }
+
+        if ($('#Description').val() == "") {
+            alert("Remarks is mandatory");
+            return false;
+        }
+
+        var startDateString = $('#StartDate').val() + " " + $('#StartTime').val();
+        var endDateString = $('#EndDate').val() + " " + $('#EndTime').val();
+
+        var StartDate = moment(startDateString, "DD/MM/YYYY HH:mm")._d;
+        var EndDate = moment(endDateString, "DD/MM/YYYY HH:mm")._d;
+
+        if (EndDate <= StartDate) {
+            alert('End Date/Time has to be later than Start Date/Time');
+            return true;
+        }
+
+        if (Type == 'Submit') {
+            var today = new Date();
+            today.setHours(23, 59, 59, 999);
+            var diff = today - EndDate;
+            var days = diff / 1000 / 60 / 60 / 24;
+            var Status = $('[name=Status]').val();
+
+            if ((days - 1) > '@ViewBag.ClaimSubmitdays' && Status != '4') {
+                alert('This claim should be submitted within ' + '@ViewBag.ClaimSubmitdays' + ' calendar day(s) from the Travel End Date.');
+                return false;
+            }
+
+            if (EndDate >= today) {
+                alert('End Date has to be earlier than Today Date');
+                return false;
+            }
+        }
+        var ErrorMessage = "";
+        $('.subtypeportlet').each(function () {
+            var tablename = this.id;
+
+            var Error = eval(tablename + "Validation()");
+            if (Error != '') {
+                ErrorMessage = ErrorMessage + '\n\r' + Error;
+            }
+        });
+
+        if(Type != "Draft")
+        {
+            //validation added to check subtype total amount = 0
+            var IsValidValue = $('.TotalAmount').filter(function (i, v) {
+                //console.log(v.value);
+                //console.log(!parseFloat(v.value) || parseFloat(v.value) <= 0);
+                if (!parseFloat(v.value) || parseFloat(v.value) <= 0)
+                {
+                    if (!parseFloat(v.value) || parseFloat(v.value) <= 0) {
+                        var row = $(v).closest('div.subtypeportlet');
+                        //console.log(row.find('div.caption').text().trim());
+                        ErrorMessage += row.find('div.caption').text().trim() + ' Total Amount cannot be 0.\n';
+                    }
+                    ErrorMessage += ''
+                }
+                return (!parseFloat(v.value) || parseFloat(v.value) <= 0);
+            });
+        }
+        if (ErrorMessage != "") {
+            alert(ErrorMessage);
+            return false;
+        }
+
+        if (Type == 'Draft') {
+            $('#ConfirmMessage').html(' Are you sure you want to Draft this ILSAS Claims Application?<br />Press Confirm to proceed, or Close to stay on the current page.')
+            $('#btnSubmitForm').attr("submitValue", 'Draft');
+            $('#ConfirmSubmit').modal();
+        }
+        else {
+            if (typeof newExceedLimit === "function") {
+                newExceedLimit(finishSubmitClaim);
+            }
+            else {
+                finishSubmitClaim(false, "", Type);
+            }
+        }
+    }
+
+    function finishSubmitClaim(isExceedLimit, message, type) {
+        if ($("#ILSASCoordinator").val() == '') {
+                alert("Please Choose your Coordinator!");
+                return false;
+        }
+
+        var data = $('form').serializeArray();
+        var token = "";
+        var confirmationMessage = ' Are you sure you want to Submit this Application?<br />';
+
+        if (@isILSASTeachingAllowanceSelected.ToString().ToLower() === false) {
+            confirmationMessage = ' Are you sure you want to Submit this Application without selecting ILSAS SME Teaching Allowance subtype?<br />';
+        }
+
+        if (isExceedLimit) {
+            confirmationMessage += ' The claim has exceeded capping amount and approval by MD will be required.<br />';
+        }
+
+        confirmationMessage += 'Press Confirm to proceed, or Close to stay on the current page.';
+
+        if ($('#chkDisclaimer').parent().hasClass('checked')) {
+            $('#ConfirmMessage').html(confirmationMessage)
+            $('#btnSubmitForm').attr("submitValue", 'Submit');
+            if (type === "Resubmit" || $('#btnSubmit').val() === "Save") {
+                $('#btnSubmitForm').attr("submitValue", 'Resubmit');
+            }
+            $('#ConfirmSubmit').modal();
+        }
+        else {
+            alert('- Please read and check the Disclaimer section before proceeding to submit.\n');
+        }
+    }
+
+    function RemoveSubtype(categoryIndex, subtypeIndex) {
+        var RemoveError = false;
+        var OverseasDeletedSubTypeName = "";
+        var OverseasSubsistenceAllowanceNoGst = false;
+        var OverseasFlightNoGst = false;
+
+        if (!RemoveError) {
+            if (confirm('Are you sure you want to remove the selected entries?\n\rPress OK to continue, or Cancel to stay on the current page.')) {
+                // Save it!
+                $('[name^="ClaimsSubtypeCategory[' + categoryIndex + '].ClaimSubtype[' + subtypeIndex + '].IsChoosen"]').removeAttr("checked");
+
+
+                $('form').submit();
+            } else {
+                // Do nothing!
+            }
+        }
+    }
+
+    // Helper function
+    function convertDate(inputFormat) {
+        function pad(s) { return (s < 10) ? '0' + s : s; }
+        var d = new Date(inputFormat);
+        return [pad(d.getDate()), pad(d.getMonth() + 1), d.getFullYear()].join('/');
+    }
+
+    function toDate(dateStr) {
+        var parts = dateStr.split("/");
+        return new Date(parts[2], parts[1] - 1, parts[0]);
+    }
+
+
+    function SubmitForm() {
+        var Type = $('#btnSubmitForm').attr("submitValue");
+        $('#ConfirmSubmit').attr("disabled", true);
+        $('#ConfirmSubmit').modal('hide');
+        $('#divLoading').show();
+        var data = $('form').serializeArray();
+
+        //Add in additional data to the original form data:
+        if (Type === "Resubmit") {
+            $.ajax({
+                url: '../Claims/UpdateClaimAttachment',
+                type: 'POST',
+                data:
+                {
+                     ID: '@Model.ID'
+                },
+                success: function (result) {
+
+                    $('#divLoading').hide();
+
+                    if (result.result == true) {
+                        $('#SuccessSubmit').modal();
+                        $('#btnOK').attr('href', '../Claims/ClaimsHistory');
+                    } else {
+                        alert(result.ErrorMessage);
+                        $('#ConfirmSubmit').attr("disabled", false);
+
+                    }
+                    // ... Process the result ...
+                }
+            });
+        } else {
+            data.push(
+              { name: 'SubmitType', value: Type }
+            );
+
+            //support submitter comment
+            var SubComment = $('#txtSubComment').val();
+            if ($('#txtSubComment').length) {
+                data.push({ name: 'SubmitterComment', value: SubComment });
+            }
+
+            $.ajax({
+                url: '../Claims/UpdateClaimAction',
+                type: 'POST',
+                data: data,
+                success: function (result) {
+
+                    $('#divLoading').hide();
+
+                    if (result.result == true) {
+                        $('#SuccessSubmit').modal();
+                        $('#btnOK').attr('href', '../Claims/ClaimsHistory');
+                    } else {
+                        alert(result.ErrorMessage);
+                        $('#ConfirmSubmit').attr("disabled", false);
+
+                    }
+                    // ... Process the result ...
+                }
+            });
+        }
+    }
+
+
+    function ApproveReject(Type) {
+
+        if (Type == 'Approve') {
+            $('#ConfirmApprove').modal();
+
+        }
+        else if (Type == 'Agree') {
+            if ($('#ILSASExceed').val() == 'false') {
+                $('#ConfirmAgreeMessage').html(' Are you sure you want to Submit this Application? <br />Press Confirm to proceed, or Close to stay on the current page.');
+            }
+            else {
+                $('#ConfirmAgreeMessage').html(' Are you sure you want to Submit this Application? <br /> The claim has exceeded capping amount and approval by MD will be required. <br />Press Confirm to proceed, or Close to stay on the current page.');
+            }
+            $('#ConfirmAgree').modal();
+        }
+        else {
+            $('#ConfirmReject').modal();
+        }
+
+
+    }
+
+    function ApproveRejectAdvClaim(Type) {
+        if (Type == 'Approve') {
+            $('#ConfirmApprove').modal('hide');
+            $('#btnApproveForm').attr("disabled", true);
+
+        }
+        else if (Type == 'Agree') {
+            $('#ConfirmAgree').modal('hide');
+            $('#btnAgreeForm').attr("disabled", true);
+        }
+        else {
+            $('#ConfirmReject').modal('hide');
+            $('#btnRejectForm').attr("disabled", true);
+        }
+        $('#divLoading').show();
+
+        $.ajax({
+            url: '../Claims/ApproveRejectILSASClaim',
+            type: 'POST',
+            data:
+            {
+                ActionType: Type,
+                RequestID: '@Model.ID',
+                TaskID: '@Model.TaskID',
+                isExceed: '@Model.ILSASExceed',
+                ApproverComment: $('#txtAppComment').val(),
+                ILSASValue: $('#ILSASApprovedAmount').val()
+            },
+            success: function (result) {
+
+                $('#divLoading').hide();
+
+                if (result.Success == true) {
+                    $('#actionText').html('Claims has been successfully ' + result.Status);
+                    $('#SuccessSubmit').modal();
+                    $('#btnOK').attr('href', '../MSS/ClaimsInTray');
+                }
+                else {
+                    alert(result.ErrorMessage);
+
+                }
+                // ... Process the result ...
+            }
+        });
+
+    }
+
+    function Withdraw() {
+
+        $('#btnWithdrawForm').attr("disabled", true);
+        $('#ConfirmWithdraw').modal('hide');
+        $('#divLoading').show();
+
+        $.ajax({
+            url: '../Claims/WithdrawClaim',
+            type: 'POST',
+            data:
+            {
+                RequestID: '@Model.ID',
+                ApproverComment: $('#txtAppComment').val()
+            },
+            success: function (result) {
+
+                $('#divLoading').hide();
+
+                if (result.Success == true) {
+                    $('#actionText').html('Claims has been successfully Withdraw');
+                    $('#SuccessSubmit').modal();
+                    $('#btnOK').attr('href', '../Claims/ClaimsHistory');
+                }
+                else {
+                    alert(result.ErrorMessage);
+
+                }
+                // ... Process the result ...
+            }
+        });
+
+    }
+
+    function reorderTable(tableName) {
+        var int = 0;
+        var name = '';
+        $.each($(tableName + ' tbody tr'), function (i, val) {
+
+            $.each($(this).find('td [name]'), function (i, val) {
+                var name = $(this).attr('name');
+                $(this).attr('name', reorder(int, name));
+                // var column =  $(this).find('[name]').attr('name').split('.');
+            });
+            int++;
+
+        });
+    }
+
+    function reorder(currentIndex, name) {
+        if (typeof name === "undefined") { } else
+        {
+            var ColumnNaw = name.split('.');
+            var replaceIndex = ColumnNaw[2].match(/\d+/g);
+            ColumnNaw[2] = ColumnNaw[2].replace(replaceIndex, currentIndex);
+            return ColumnNaw.join('.');
+        }
+    }
+
+    function NumberFormatting(Number) {
+        return Number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    }
+
+    function RemoveComma(Number) {
+        return Number = Number.replace(',', '');
+    }
+
+    var mytable = $('#ILSASTable').DataTable();
+    $(document).ready(function () {
+        // FormConfiguration();
+
+        // Form plugin function
+        $('.date-picker').datepicker({
+            format: 'dd/mm/yyyy',
+            autoclose: true,
+            setStartDate: '@dtStrStart',
+        });
+
+        $('.timeinput').inputmask("mask", {
+            "mask": "99:99"
+        });
+        if ($('#ILSASCAP').is(':visible')) {
+            alert("Teaching Allowance claim exceeded capping!");
+        }
+    });
+
+    GetAuditLog('@Model.ID');
+
+    function GetAuditLog(_RequestID) {
+        jQuery.support.cors = true;
+
+        $.ajax({
+            url: Path + '/api/FlexiBenefitsWebApi/GetAuditLog?id=' + _RequestID,
+            type: 'GET',
+            contentType: "application/json;charset=utf-8",
+            success: function (result) {
+                if (result != null) {
+
+                    SetAuditLog(result);
+                }
+                else
+                    console.log('failed!');
+            },
+            error: function (x, y, z) {
+                alert(x + '\n' + y + '\n' + z);
+            }
+        });
+    }
+
+    function SetAuditLog(result) {
+        var _AuditTrailBody = '';
+
+        for (var i = 0; i < result.length; i++) {
+            var _AuditTrail = "<tr><td>" + result[i].EmployeeName + "</td><td>" +
+                result[i].FormattedDate + "</td><td>" + result[i].ActivityName + "</td><td>" +
+                result[i].ActivityAction + "</td><td>" + result[i].Comment + "</td></tr>";
+            _AuditTrailBody += _AuditTrail;
+        }
+
+        $('#tblAuditLog').find('tbody').html(_AuditTrailBody);
+    }
+
+    //Charge Code function
+    var origBindtoDDL = BindtoDDL;
+    BindtoDDL = function () {
+        // overwrite method here
+        var _ChargeCodeList = document.getElementById('ChargeCodeList').value;
+        _ChargeCodeList = _ChargeCodeList.substring(0, _ChargeCodeList.length - 1);
+
+        BindOptionToSelect(_ChargeCodeList);
+
+        return origBindtoDDL();
+    }
+
+    function BindOptionToSelect(ChargeCodeList) {
+        var chargeCodes = ChargeCodeList.split(',');
+
+        $('.ddlChargeCode').each(function () {
+            $(this).find('option').remove().end().append('<option value="">Select One</option>');
+
+            for (var i = 0; i < chargeCodes.length; i++) {
+                var option = document.createElement("option");
+                option.text = chargeCodes[i];
+                option.value = chargeCodes[i];
+                this.add(option);
+            }
+
+            $(this).val($(this).siblings('.hfChargeCode').val());
+            if ($(this).val() == null) {
+                $(this).children("option[value='']").attr('selected', 'selected');
+            } // can be reused during initialize to retain drop down value
+        });
+    }
+
+    function ChargeCodeChange(x) {
+        $(x).siblings('.hfChargeCode').val($(x).val());
+    } // put to master form, then don't have to duplicate
+
+    function NumberOnly(evt) {
+        var theEvent = evt || window.event;
+        var key = theEvent.keyCode || theEvent.which;
+        key = String.fromCharCode(key);
+        var regex = /[0-9]/;
+        if (!regex.test(key)) {
+            theEvent.returnValue = false;
+            if (theEvent.preventDefault) theEvent.preventDefault();
+        }
+    }
+
+    function NumberFormatting(Number) {
+        return Number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    }
+
+    function InitDistanceMin(tbl, subCol, minDistVal) {
+        //unbind all listeners
+        $('#' + tbl + ' .' + subCol).each(function () {
+            $(this).unbind();
+        });
+
+        //bind all subtype and check for minimum distance achieved
+        var minDist = parseFloat(minDistVal);
+        $('#' + tbl + ' .' + subCol).each(function () {
+            $(this).on('change', function () {
+                if ($.isNumeric($(this).val())) {
+                    //var currDist = parseFloat($(this).val());
+
+                    //if (currDist < minDist) {
+                    //    $(this).val(minDist);
+                    //}
+                } else {
+                    $(this).val(minDist);
+                }
+                $(this).val(parseFloat($(this).val()).toFixed(1))
+            });
+
+            $(this).change();
+        }).keypress(function (evt) {
+            // Only ASCII character in that range allowed
+            var ASCIICode = (evt.which) ? evt.which : evt.keyCode
+            if ((ASCIICode > 47 && ASCIICode < 58) || ASCIICode == 46)
+                return true;
+            return false;
+        });
+    }
+
+    function RemoveComma(Number) {
+        return Number = Number.replace(',', '');
+    }
+
+    function DisplayChargeCodeDesc(key) {
+        //return key;
+        return key;
+    }
+</script>
+
+
+@Html.Partial("__ClaimCommonScript")

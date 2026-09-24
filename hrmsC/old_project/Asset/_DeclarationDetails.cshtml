@@ -1,0 +1,130 @@
+﻿@model Asset.Models.AssetVM
+@{
+    string Title = @"Status Perisytiharan";
+
+    var Path = string.Format("{0}://{1}{2}", Request.Url.Scheme, Request.Url.Authority, Url.Content("~"));
+}
+
+<div class="portlet box blue">
+    <div class="mini-triangle"><img src="/_layouts/15/TNBESS/Assets/img/menu-red-triangle.png" /></div>
+    <div class="portlet-title">
+        <div class="caption">
+            <i class="fa fa-reorder"></i>@Title
+        </div>
+        <div class="tools">
+            <a title="" data-original-title="" href="javascript:;" class="collapse"></a>
+        </div>
+    </div>
+    <div class="portlet-body form">
+        <div class="form-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-horizontal">
+                        <div class="form-group">
+                            <label class="control-label col-md-6">
+                                Status
+                            </label>
+                            <div class="col-md-6 form-control-static">
+                                <label>
+                                    @if (String.IsNullOrEmpty(Model.AssetSubmissionStatusCode))
+                                    {
+                                        @*<span> Draft </span>*@
+                                        <span style="color: red;font-weight: bold;">
+                                            Incomplete
+                                        </span>
+                                    }
+                                    else if (Model.AssetSubmissionStatusCode == "NO" || Model.AssetSubmissionStatusCode == "WI")
+                                    {
+                                        <span style="color: red;font-weight: bold;">
+                                            @Model.AssetSubmissionStatusDesc
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span style="color: green; font-weight: bold;">
+                                            @Model.AssetSubmissionStatusDesc
+                                        </span>
+                                    }
+                                </label>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label col-md-6">
+                                Untuk Tindakan
+                            </label>
+                            <div class="col-md-6 form-control-static">
+                                @if (Model.AssetSubmissionStatusCode == "PE")
+                                {
+                                    <label>
+                                        Ketua Jabatan (@Model.HODName)
+                                    </label>
+
+                                }
+                                else if (Model.AssetSubmissionStatusCode == "A1")
+                                {
+                                    <label>
+                                        JHED (Pengerusi Jawatankuasa)
+                                    </label>
+                                }
+                                else if (Model.AssetSubmissionStatusCode == "A2")
+                                {
+                                    <label>
+                                        JHED (Pengerusi Jawatankuasa)
+                                    </label>
+                                }
+                                else
+                                {
+                                    <label>
+                                        -
+                                    </label>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-horizontal">
+                        <div class="form-group">
+                            <label class="control-label col-md-6">
+                                Kali Terakhir Perisytiharan Diperakukan
+                            </label>
+                            <div class="col-md-6  form-control-static">
+                                <label>
+                                    @if (String.IsNullOrEmpty(Model.AssetLastCompletedDate))
+                                    {
+                                        <span> - </span>
+                                    }
+                                    else
+                                    {
+                                        @Model.AssetLastCompletedDate
+                                    }
+                                </label>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label col-md-6">
+                                Perisytiharan Terdahulu (Borang Manual)
+                            </label>
+                            <div class="col-md-6  form-control-static">
+                                <label>
+                                    @if (Model.AssetManualSubmission)
+                                    {
+                                        <span>
+                                            <a href="@Path/api/FileWebApi2/@Model.ManualFormID">
+                                                Yes
+                                            </a>
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span> - </span>
+                                    }
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,46 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "rais-timesheet-api",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-09-04",
+  "compatibility_flags": ["nodejs_compat"],
+  "observability": { "enabled": true, "head_sampling_rate": 1 },
+  "vars": {
+    "APP_NAME": "Rais Timesheet",
+    "APP_VERSION": "0.1.0",
+    // Canonical public origin of the web app (CORS, CSRF origin check, post-login/OAuth redirects). Override per environment.
+    "WEB_ORIGIN": "https://timesheet.raishelmy.uk",
+    // Extra allowed browser origins (comma-separated) — the *.pages.dev alias of the same deployment.
+    "WEB_ORIGINS_EXTRA": "https://rais-timesheet.pages.dev",
+    // "queue" — enqueue analysis jobs; "inline" — run in ctx.waitUntil (local dev without queue).
+    "JOB_MODE": "queue",
+    // AI provider: "anthropic" (needs ANTHROPIC_API_KEY), "external" (Claude via the MCP server does extraction; not demo), or "heuristic" (demo).
+    "AI_PROVIDER": "external",
+    "AI_MODEL": "claude-opus-5",
+    // Jira: "cloud" uses stored connection; "demo" uses the built-in demo adapter (clearly labelled).
+    "JIRA_MODE": "cloud",
+    "JIRA_OAUTH_REDIRECT_PATH": "/api/jira/oauth/callback",
+    "MAX_UPLOAD_BYTES": "10485760",
+    "SESSION_TTL_HOURS": "168",
+    "RETENTION_RAW_IMPORT_DAYS": "90",
+    "RETENTION_REPORT_DAYS": "180",
+    "RETENTION_AUDIT_DAYS": "0"
+  },
+  // Secrets (set with `wrangler secret put`): SESSION_SECRET, ENCRYPTION_KEY, ANTHROPIC_API_KEY,
+  // JIRA_OAUTH_CLIENT_ID, JIRA_OAUTH_CLIENT_SECRET, MCP_BOOTSTRAP_TOKEN (optional),
+  // SAAS_SSO_SECRET (suite super-admin SSO, GET /api/auth/sso — endpoint returns 503 when unset)
+  "hyperdrive": [
+    { "binding": "HYPERDRIVE", "id": "7a7777560d434c2b91ff37c52ab1b2c9" }
+  ],
+  "r2_buckets": [
+    { "binding": "FILES", "bucket_name": "rais-timesheet-files" }
+  ],
+  "queues": {
+    "producers": [{ "binding": "JOBS", "queue": "rais-timesheet-jobs" }],
+    "consumers": [{ "queue": "rais-timesheet-jobs", "max_batch_size": 5, "max_retries": 5, "dead_letter_queue": "rais-timesheet-jobs-dlq" }]
+  },
+  // Cron moved off Cloudflare Workers Cron Triggers to Ubuntu cron:
+  // POST /internal/cron/sync-sweep every 5 min, /internal/cron/retention
+  // daily, both with the X-Cron-Secret header (CRON_SECRET, `wrangler secret put`).
+  "dev": { "port": 8787 }
+}

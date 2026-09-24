@@ -1,0 +1,323 @@
+﻿@using Asset.Models
+@model AssetVM
+
+@{
+    ViewBag.Title = "Asset Declaration";
+    string CurrentEmployeeID = ViewBag.CurrentEmployeeID;
+    List<SEP.RoutingManagement.Models.GetApprovalAuditLog> auditLogs = ViewBag.AuditLogs;
+}
+
+<style>
+    .popup-form-group {
+        margin-bottom: 15px !important;
+    }
+</style>
+
+<div class="form-section">
+    <div class="row">
+        <div class="col-md-12">
+            <h1 class="page-title">
+                Perisytiharan Harta : @(Model.Submitter.EmployeeName)
+                <span style="padding-left:20px;">
+                    <small></small>
+                </span>
+            </h1>
+        </div>
+    </div>
+</div>
+
+@Html.Partial("_EmployeeDetails", Model.Submitter)
+@Html.Partial("_DeclarationDetails", Model)
+
+<div class="row">
+    <div class="col-md-12">
+        <a class="btn green pull-right" style="margin: 5px;" href="javascript:CollapseAll();">
+            Collapse All
+            <i class="fa fa-angle-down"></i>
+        </a>
+        <a class="btn green pull-right" style="margin: 5px;" href="javascript:ExpandAll();">
+            Expand All
+            <i class="fa fa-angle-up"></i>
+        </a>
+    </div>
+</div>
+
+@Html.Action("_FamilyDetails", "Asset", new { EmployeeID = Model.EmployeeID })
+
+<div id="MonthlyIncome_FormContainer">
+    @Html.Action("_MonthlyIncomeDetails", "Asset", new { EmployeeID = Model.EmployeeID, AllowEdit = Model.AllowEdit })
+</div>
+
+@Html.Partial("_DeclarationType", Model)
+
+<div id="Property_FormContainer">
+    @Html.Action("_PropertyDetails", "Asset", new { EmployeeID = Model.EmployeeID, AllowEdit = Model.AllowEdit })
+</div>
+
+<div id="MonthlyLiability_FormContainer">
+    @Html.Action("_MonthlyLiabilityDetails", "Asset", new { EmployeeID = Model.EmployeeID, AllowEdit = Model.AllowEdit })
+</div>
+
+<div id="CompanyList_FormContainer">
+    @Html.Action("_CompanyListDetails", "Asset", new { EmployeeID = Model.EmployeeID, AllowEdit = Model.AllowEdit })
+</div>
+
+@Html.Partial("_AuditLog", auditLogs)
+@Html.Partial("_DeclarationConfirmation")
+
+<div class="row">
+    <div class="col-md-12">
+        @if (Model.CanSubmit)
+        {
+            <input type="button" id="btnSubmit" class="btn green" value="Hantar" />
+        }
+
+        @if (Model.CanWithdraw)
+        {
+            <input type="button" id="btnWithdraw" class="btn red" value="Withdraw" />
+        }
+
+        @if (Model.CanAcknowledge)
+        {
+            <input type="button" id="btnAcknowledge" class="btn green" value="Acknowledge" />
+        }
+
+        @if (Model.CanVerify)
+        {
+            <input type="button" id="btnVerify" class="btn green" value="Verify" />
+        }
+        @*<input type="button" id="btnBack" class="btn default" value="Tutup" />*@
+    </div>
+</div>
+
+
+@Html.Partial("__Prompt")
+
+<script>
+    $(function () {
+        $('#btnSubmit').on('click', SubmitDeclaration);
+        $('#btnWithdraw').on('click', WithdrawDeclaration);
+        $('#btnAcknowledge').on('click', AcknowledgeDeclaration);
+        $('#btnVerify').on('click', VerifyDeclaration);
+    });
+
+    function SubmitDeclaration() {
+        var isDeclarationChecked = $('#chkConfirmation').prop('checked');
+        var declaration = $('input[name="Declaration"]:checked').val();
+        if (isDeclarationChecked) {
+            if (declaration == null || declaration == "") {
+                alert('Sila pilih Jenis Perisytiharan terlebih dahulu:\\n\\nKali Pertama / Kemaskini / Tiada Harta');
+            }
+            else {
+                PerformDeclarationRequest('@Model.EmployeeID', 'Submit', declaration);
+            }
+        }
+        else {
+            alert('Sila tandakan kotak Pengesahan Perisytiharan sebelum menghantar perisytiharan ini.');
+        }
+    }
+
+    function WithdrawDeclaration() {
+        PerformDeclarationRequest('@Model.EmployeeID', 'Withdraw', "");
+    }
+
+    function AcknowledgeDeclaration() {
+        PerformDeclarationRequest('@Model.EmployeeID', 'Acknowledge', "");
+    }
+
+    function VerifyDeclaration() {
+        PerformDeclarationRequest('@Model.EmployeeID', 'Verify', "");
+    }
+
+    function PerformDeclarationRequest(EmployeeID, ActionType, DeclarationStatus) {
+        var confirmationMessage = "";
+        var successMessage = "";
+        var failMessage = "";
+
+        var ActionTypeBM = "";
+        var ActionTypePassive = "";
+        switch (ActionType) {
+            case "Submit":
+                ActionTypeBM = "Hantar";
+                ActionTypePassive = "dihantar";
+                break;
+            case "Withdraw":
+                ActionTypeBM = "Tarik balik";
+                ActionTypePassive = "ditarik balik";
+                break;
+            case "Verify":
+            case "Acknowledge":
+                ActionTypeBM = "Memperakukan";
+                ActionTypePassive = "diperakukan";
+        }
+
+        confirmationMessage = ActionTypeBM + " Perisytiharan Harta ini?";
+        successMessage = "Perisytiharan Harta ini telah berjaya " + ActionTypePassive + ".";
+        failMessage = "Perisytiharan Harta ini telah gagal " + ActionTypePassive + ".";
+
+        ShowConfirmationDialog({
+            message: confirmationMessage,
+            positiveCallback: function () {
+                var link = '@Url.Action("AssetDeclaration", "Asset")';
+                var data = [
+                    { name: "EmployeeID", value: EmployeeID },
+                    { name: "ActionType", value: ActionType },
+                    { name: "DeclarationStatus", value: DeclarationStatus }
+                ];
+                HideConfirmationDialog();
+                ShowLoadingScreen();
+
+                $.post(link, data, function (result) {
+                    HideLoadingScreen();
+                    if (result.IsSuccess) {
+                        ShowDialog({
+                            message: successMessage,
+                            okCallback: function () {
+                                if (ActionType == "Submit" || ActionType == "Withdraw") {
+                                    location.reload();
+                                }
+                                else {
+                                    window.location.href = "@Url.Action("InTray", "Asset")";
+                                }
+                            }
+                        });
+                    }
+                    else {
+                        ShowDialog({
+                            title: "Gagal",
+                            message: failMessage + result.ErrorMessage,
+                            okCallback: function () {
+                                HideDialog();
+                            }
+                        });
+                    }
+                });
+            }
+        });
+    }
+
+    function ExpandAll() {
+        $('.collapse-portlet  .form').show();
+        $('.collapse-portlet  a.expand').removeClass('expand').addClass('collapse');
+    }
+
+    function CollapseAll() {
+        $('.collapse-portlet  .form').hide();
+        $('.collapse-portlet  a.collapse').removeClass('collapse').addClass('expand');
+    }
+
+    function InitializeCommonControls() {
+        $('.date-picker').datepicker({
+            format: 'dd/mm/yyyy',
+            autoclose: true
+        });
+
+        $('.timeinput').inputmask("mask", {
+            "mask": "99:99"
+        });
+
+        $('.timeinput').inputmask("h:s", {
+            "placeholder": "__/__",
+            onincomplete: function () {
+                // replace placeholder with zero
+                $(this).val($(this).val().replace(/_/g, '0'));
+            }
+        });
+
+        $('.number-only').keyup(function () {
+            if (this.value != this.value.replace(/[^0-9\.]/g, '')) {
+                this.value = this.value.replace(/[^0-9\.]/g, '');
+            }
+        });
+
+        $('.currency').each(function (i, v) {
+            UpdateCurrencyField(v);
+        });
+        $('.currency').off('blur');
+        $('.currency').on('blur', function () {
+            UpdateCurrencyField(this);
+        });
+
+        $('.select-all-focus').on('focus', function () {
+            $(this).select();
+        });
+
+        $('input[type="checkbox"]').uniform();
+    }
+
+    function UpdateCurrencyField(field) {
+        var input = parseFloat($(field).val().replace(/,/g, ""));
+        if (input) {
+            if (input > 9999999.99) {
+                input = 9999999.99;
+            }
+
+            $(field).val(input.toLocaleString(undefined, { minimumFractionDigits: 2 }));
+        }
+        else {
+            $(field).val("0.00");
+        }
+    }
+
+    function MonthlyIncome_RefreshForm(forceUpdate) {
+        if ((typeof isMonthlyIncomeFormUpdated != 'undefined' && isMonthlyIncomeFormUpdated) || forceUpdate) {
+            var link = '@Url.Action("_MonthlyIncomeDetails", "Asset", new { EmployeeID = CurrentEmployeeID })';
+            link += "&AllowEdit=" + '@Model.AllowEdit';
+
+            $('#MonthlyIncome_FormContainer').html("Refreshing Form, please wait.");
+            $.get(link,
+            function (result) {
+                $('#MonthlyIncome_FormContainer').html(result);
+            });
+        }
+
+        $('#MonthlyIncome_ModalContainer').html("");
+    }
+
+    function MonthlyLiability_RefreshForm(forceUpdate) {
+        if ((typeof isMonthlyLiabilityFormUpdated != 'undefined' && isMonthlyLiabilityFormUpdated) || forceUpdate) {
+            var link = '@Url.Action("_MonthlyLiabilityDetails", "Asset", new { EmployeeID = CurrentEmployeeID})';
+            link += "&AllowEdit=" + '@Model.AllowEdit';
+
+            $('#MonthlyLiability_FormContainer').html("Refreshing Form, please wait.");
+            $.get(link,
+            function (result) {
+                $('#MonthlyLiability_FormContainer').html(result);
+            });
+        }
+
+        $('#MonthlyLiability_ModalContainer').html("");
+    }
+
+    function Property_RefreshForm(forceUpdate) {
+        if ((typeof isPropertyFormUpdated != 'undefined' && isPropertyFormUpdated) || forceUpdate) {
+            var link = '@Url.Action("_PropertyDetails", "Asset", new { EmployeeID = CurrentEmployeeID })';
+            link += "&AllowEdit=" + '@Model.AllowEdit';
+            link += "&HasAsset=" + hasAsset;
+
+            $('#Property_FormContainer').html("Refreshing Form, please wait.");
+            $.get(link,
+            function (result) {
+                $('#Property_FormContainer').html(result);
+            });
+        }
+
+        $('#Property_ModalContainer').html("");
+    }
+
+    function CompanyList_RefreshForm(forceUpdate) {
+        if ((typeof isCompanyListFormUpdated != 'undefined' && isCompanyListFormUpdated) || forceUpdate) {
+            var link = '@Url.Action("_CompanyListDetails", "Asset", new { EmployeeID = CurrentEmployeeID })';
+            link += "&AllowEdit=" + '@Model.AllowEdit';
+            link += "&HasAsset=" + hasAsset;
+
+            $('#CompanyList_FormContainer').html("Refreshing Form, please wait.");
+            $.get(link,
+                function (result) {
+                $('#CompanyList_FormContainer').html(result);
+            });
+        }
+
+        $('#CompanyList_ModalContainer').html("");
+    }
+</script>

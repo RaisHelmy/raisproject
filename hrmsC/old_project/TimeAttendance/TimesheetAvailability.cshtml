@@ -1,0 +1,538 @@
+﻿@model Tuple<List<TimeAttendance.Models.TimesheetAttendanceVM>, TimeAttendance.Models.EmployeeDetails>
+
+@{
+    ViewBag.Title = "Availability Entry";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    bool IsExecEmp = ViewBag.IsExecEmp;
+
+    DateTime Today = DateTime.Now;
+    DateTime MinDate = new DateTime((Today.AddMonths(-2)).Year, (Today.AddMonths(-2)).Month, 1); ;
+    DateTime MaxDate = Today;
+    string dtStrStart = MinDate.ToString("dd MM yyyy");
+    string dtStrEnd = MaxDate.ToString("dd MM yyyy");
+
+}
+
+
+<div class="form-section">
+    <div class="row">
+        <div class="col-md-12">
+            <h1 class="page-title">
+                @ViewBag.Title
+                <span style="padding-left:20px;">
+                    <small></small>
+                </span>
+            </h1>
+        </div>
+    </div>
+</div>
+
+@using (Html.BeginForm("TimesheetAvailability", "TimeAttendance", FormMethod.Post))
+{
+    <div id="tab_1" class="tab-pane active">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="portlet box blue">
+                    <div class="mini-triangle"><img src="/_layouts/15/TNBESS/Assets/img/menu-red-triangle.png" /></div>
+                    <div class="portlet-title">
+                        <div class="caption">
+                            <i class="fa fa-reorder"></i>Requestor Details
+                        </div>
+                    </div>
+                    <div class="portlet-body form">
+                        <div class="form-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-horizontal">
+                                        <div class="form-group">
+                                            <label class="control-label col-md-4">Employee</label>
+                                            <div class="col-md-8 form-control-static">
+                                                @Model.Item2.EmployeeCode - @Model.Item2.EmployeeName
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-horizontal">
+                                        <div class="form-group">
+                                            <label class="control-label col-md-4">Company</label>
+                                            <div class="col-md-8 form-control-static">
+                                                @Model.Item2.CompanyCode
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-horizontal">
+                                        <div class="form-group">
+                                            <label class="control-label col-md-4">Department</label>
+                                            <div class="col-md-8 form-control-static">
+                                                @Model.Item2.AreaName
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-horizontal">
+                                        <div class="form-group">
+                                            <label class="control-label col-md-4">Unit / Section</label>
+                                            <div class="col-md-8 form-control-static">
+                                                @Model.Item2.SubAreaName
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-horizontal">
+                                        <div class="form-group">
+                                            <label class="control-label col-md-4">Cost Center</label>
+                                            <div class="col-md-8 form-control-static">
+                                                @Model.Item2.CostCenterCode - @Model.Item2.CostCenterName
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-12">
+                <div class="portlet box blue">
+                    <div class="mini-triangle"><img src="/_layouts/15/TNBESS/Assets/img/menu-red-triangle.png" /></div>
+                    <div class="portlet-title">
+                        <div class="caption">
+                            <i class="fa fa-reorder"></i>Availability Entry
+                        </div>
+                    </div>
+                    <div class="portlet-body form">
+                        <div class="form-body">
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="portlet-body form">
+                                        <div class="form-body">
+                                            <div class="col-md-6">
+                                                <label class="control-label col-md-4">Start Date</label>
+                                                <div class="input-group date date-picker col-md-8 wsDate" data-date-format="dd MM yyyy" style="min-width:150px">
+                                                    <input type="text" class="form-control Date" id="FromDate" name="FromDate" value="@ViewBag.FromDate" onchange="ReloadForm();" />
+                                                    <span class="input-group-btn">
+                                                        <button type="button" class="btn default"><i class="fa fa-calendar"></i></button>
+                                                    </span>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="control-label col-md-4">End Date</label>
+                                                <div class="input-group date date-picker col-md-8 wsDate" data-date-format="dd MM yyyy" style="min-width:150px">
+                                                    <input type="text" class="form-control Date" id="ToDate" name="ToDate" value="@ViewBag.ToDate" onchange="ReloadForm();" />
+                                                    <span class="input-group-btn">
+                                                        <button type="button" class="btn default"><i class="fa fa-calendar"></i></button>
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="form-body">
+                                            <div class="col-md-6">
+                                                <div style="padding-top:16px;"><input type='checkbox' name="DisplaySPDate" @(((bool)ViewBag.DisplaySPDate) ? "checked" : "") value="true" onclick="ReloadForm();" />Display Standby Planning Date</div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <a href="@Url.Action("MyCalendar", "LeaveApplication")" target="_blank" style="float:right; padding-top:16px;">Show Working Hours</a>
+                                                <a style="float:right; padding-top:16px; padding-right:10px;" onclick="ViewStandBy('@Model.Item2.EmployeeID')">Show Standby Date</a>
+                                            </div>
+                                        </div>
+                                        <div class="form-body">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="portlet-body form">
+                                        <div class="form-body">
+                                            <div class="form-horizontal">
+                                                <div class="table-toolbar">
+                                                    <table class="table table-striped table-bordered table-hover table-full-width" id="tblTimesheetAvailabilityEntry">
+                                                        <thead>
+                                                            <tr>
+                                                                <th scope="col" width="5%"></th>
+                                                                <th scope="col" width="5%">
+                                                                    <input type="checkbox" name="SelectAll" id="SelectAll" onchange="SelectUnselectAll(this);" />
+                                                                </th>
+                                                                <th scope="col">Standby</th>
+                                                                <th scope="col">Called Out</th>
+                                                                <th scope="col">Date</th>
+                                                                <th scope="col" width="25%">Description</th>
+                                                                <th scope="col" width="25%">Charge Code</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            @for (int x = 0; x < Model.Item1.Count; x++)
+                                                            {
+                                                                if (Model.Item1[x].EntryStatus != "0" && !string.IsNullOrEmpty(Model.Item1[x].EntryStatus))
+                                                                {
+                                                                    <tr>
+                                                                        <td>
+                                                                            <div>
+                                                                                <i class="fa fa-exclamation-circle ErrorMsg" name="ErrorMsg"
+                                                                                   style="font-size:24px;color:red;display: none"
+                                                                                   data-toggle="tooltip" title=""></i>
+                                                                            </div>
+                                                                        </td>
+                                                                        <td style="min-width:30px">
+                                                                            <input type="hidden" name="@x" value="@x">
+                                                                            <input type="hidden" class="TimesheetID" name="Entries[@x].EntryID" value="@Model.Item1[x].EntryID" />
+                                                                            <input type="hidden" class="EntryStatus" name="Entries[@x].EntryStatus" value="@Model.Item1[x].EntryStatus">
+                                                                            <input type="checkbox" class="TimesheetEntryCheckBox" name="Entries[@x].TimesheetEntryCheckBox" value="@Model.Item1[x].EntryID" checked="checked" disabled />
+                                                                        </td>
+                                                                        <td>
+                                                                            @if (Model.Item1[x].StandBy == true)
+                                                                            {
+                                                                                <input type="checkbox" class="StandBy" name="Entries[@x].StandBy" checked value="true" disabled />
+                                                                            }
+                                                                            else
+                                                                            {
+                                                                                <input type="checkbox" class="StandBy" name="Entries[@x].StandBy" value="true" disabled />
+                                                                            }
+                                                                        </td>
+                                                                        <td>
+                                                                            @if (Model.Item1[x].CallOut == true)
+                                                                            {
+                                                                                <input type="checkbox" class="CallOut" name="Entries[@x].CallOut" checked value="true" disabled />
+                                                                            }
+                                                                            else
+                                                                            {
+                                                                                <input type="checkbox" class="CallOut" name="Entries[@x].CallOut" value="true" disabled />
+                                                                            }
+                                                                        </td>
+
+                                                                        <td>
+                                                                            <input type="hidden" name="Entries[@x].StartDateTime" value="@Model.Item1[x].StartDateTime" />
+                                                                            <input type="text" class="form-control" name="Entries[@x].StartDate" value="@Model.Item1[x].sDateOri" readonly="readonly" disabled />
+                                                                        </td>
+                                                                        <td>
+
+                                                                            <input type="text" class="form-control" name="Entries[@x].Description" value="@Model.Item1[x].Description" disabled />
+                                                                        </td>
+                                                                        <td>
+                                                                            <input type="text" class="form-control" name="Entries[@x].ChargeCode" value="@Model.Item1[x].ChargeCode - @Model.Item1[x].ChargeCodeDesc" disabled />
+                                                                        </td>
+
+                                                                    </tr>
+                                                                }
+                                                                else
+                                                                {
+                                                                    <tr>
+                                                                        <td>
+                                                                            <div>
+                                                                                <i class="fa fa-exclamation-circle ErrorMsg" name="ErrorMsg"
+                                                                                   style="font-size:24px;color:red;display: none"
+                                                                                   data-toggle="tooltip" title=""></i>
+                                                                            </div>
+                                                                        </td>
+                                                                        <td style="min-width:30px">
+                                                                            <input type="hidden" name="@x" value="@x">
+                                                                            <input type="hidden" class="TimesheetID" name="Entries[@x].EntryID" value="@Model.Item1[x].EntryID" />
+                                                                            <input type="checkbox" class="TimesheetEntryCheckBox Checkable" name="Entries[@x].TimesheetEntryCheckBox" value="@Model.Item1[x].EntryID" />
+                                                                        </td>
+                                                                        <td>
+                                                                            @if (Model.Item1[x].StandBy == true)
+                                                                            {
+                                                                                <input type="checkbox" class="StandBy" name="Entries[@x].StandBy" checked value="true" />
+                                                                            }
+                                                                            else
+                                                                            {
+                                                                                <input type="checkbox" class="StandBy" name="Entries[@x].StandBy" value="true" />
+                                                                            }
+                                                                        </td>
+                                                                        <td>
+                                                                            @if (Model.Item1[x].CallOut == true)
+                                                                            {
+                                                                                <input type="checkbox" class="CallOut" name="Entries[@x].CallOut" checked value="true" />
+                                                                            }
+                                                                            else
+                                                                            {
+                                                                                if (IsExecEmp)
+                                                                                {
+                                                                                    <input type="checkbox" class="CallOut" name="Entries[@x].CallOut" value="true" />
+                                                                                }
+                                                                                else
+                                                                                {
+                                                                                    <input type="checkbox" class="CallOut" name="Entries[@x].CallOut" value="true" disabled />
+                                                                                }
+                                                                            }
+                                                                        </td>
+                                                                        <td>
+                                                                            <input type="hidden" name="Entries[@x].StartDateTime" value="@Model.Item1[x].StartDateTime" />
+                                                                            <input type="text" class="form-control" name="Entries[@x].StartDate" value="@Model.Item1[x].sDateOri" readonly="readonly" />
+                                                                        </td>
+                                                                        <td>
+
+                                                                            <input type="text" class="form-control" name="Entries[@x].Description" value="@Model.Item1[x].Description" />
+                                                                        </td>
+                                                                        <td>
+                                                                            @Html.Partial("TSChargeCodePicker", new Tuple<int?, TimeAttendance.Models.TimesheetAttendanceVM, string>(@x, @Model.Item1[x], ""))
+                                                                        </td>
+                                                                    </tr>
+                                                                }
+                                                            }
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    @Html.Action("TSChargeCodeIndex", "TimeAttendance", new { CurrEmpID = ViewBag.EmployeeID, SearchType = "" })
+
+    <div id="TimesheetActionDiv">
+        <div class="row">
+            <div class="col-md-12">
+                <input type="button" class="btn green" value="Save as Draft" id="btnDraft" onclick="SubmitAvailability('Draft'); " />
+                <input type="button" class="btn green" value="Submit" id="btnSubmit" onclick="SubmitAvailability('PerformActionOnSubmit'); " />
+            </div>
+        </div>
+    </div>
+
+    <!-- Success Message -->
+    <div class="modal fade" id="SuccessSubmit" tabindex="-1" role="basic" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header Success-header">
+                    @*<button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>*@
+                    <h4 class="Success-title">Action Successfully Completed</h4>
+                </div>
+                <div class="modal-body Success-body">
+                    <div class="well" id="SuccessMessage">
+                        Claims has been successfully submitted.
+                    </div>
+                </div>
+                <div class="modal-footer Success-footer">
+                    <a class="btn default blue" id="btnOK">
+                        <i class="fa fa-check"></i>
+                        OK
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="modal fade" id="StandByModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div id="StandByResult">
+
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+
+<script>
+    var TimesheetAvailabilityTable = $('#tblTimesheetAvailabilityEntry').dataTable({
+        "bPaginate": false,
+        "bFilter": false,
+        "bInfo": false,
+        "bSort": false
+    });
+
+
+
+    function SubmitAvailability(Type) {
+        var checkCount = 0;
+        $("#tblTimesheetAvailabilityEntry td input[type=checkbox].TimesheetEntryCheckBox:checked").each(function (i, value) {
+            checkCount += 1;
+        });
+        if (checkCount <= 0 && Type != 'Draft') {
+            alert('Please select entry to proceed.');
+        } else {
+
+            var data = $('form').serializeArray();
+            data.push(
+                { name: 'SubmitType', value: Type },
+                { name: 'AttendanceType', value: 'Availability' }
+            );
+			//console.log(data);
+			//console.table(data);
+            PerformAvailabilitySubmission(data, Type);
+        }
+    }
+
+    function PerformAvailabilitySubmission(data, Type) {
+        HideErrorWarningMessage();
+        var Action = Type;
+        switch (Type) {
+            case 'PerformActionOnSubmit':
+                Action = 'Submitted';
+                break;
+            case 'Cancel':
+                Action = 'Cancelled';
+                break;
+            case 'Submit':
+                Action = 'Submitted';
+                break;
+            case 'Draft':
+                Action = 'Saved as Draft';
+                break;
+            default:
+        }
+
+        $.ajax({
+            url: '../TimeAttendance/SubmitTimesheetAction',
+            type: 'POST',
+            data: data,
+            success: function (result) {
+
+                $('#divLoading').hide();
+                if (result.result == true) {
+
+
+                    $('#SuccessSubmit').modal();
+                    $('#SuccessMessage').html("Timesheet has been successfully " + Action);
+                    $('#btnOK').attr('href', '../TimeAttendance/TimesheetAvailability');
+                }
+                else if (!result.result) {
+                    if (CheckEmptyKeyValueMessage(result.EntryErrorMessage)) {
+                        ShowErrorWarningMessage(result.EntryErrorMessage);
+
+                    } else if (CheckEmptyKeyValueMessage(result.EntryWarningMessage)) {
+                        ShowErrorWarningMessage(result.EntryErrorMessage);
+                    }
+                    else if (result.ErrorMessage != '') {
+                        alert(result.ErrorMessage);
+                    }
+                    else {
+                        alert('Unable to perform the requested action.')
+                    }
+                }
+                // ... Process the result ...
+            }
+        });
+    }
+
+
+    function ShowErrorWarningMessage(Message) {
+
+        for (var k in Message) {
+            if (Message.hasOwnProperty(k)) {
+                //console.log("Key is " + k + ", value is" + Message[k]);
+
+                $("#tblTimesheetAvailabilityEntry td input[type=checkbox]:checked").each(function (i, value) {
+                    var row = $(this).closest("tr");
+                    var EntryID = row.find('.TimesheetID').val()
+                    if (k == EntryID) {
+                        row.find('.ErrorMsg').attr('title', Message[k]);
+                        row.find('.ErrorMsg').show();
+
+                        return;
+                    }
+                });
+            }
+        }
+
+        //$("#tblOTPlanningEntry td input[type=checkbox]:checked").each(function (i, value) {
+        //    var $row = $(this).closest("tr");
+        //    var EntryID = $row.find(".TimesheetID").val();
+
+        //    if (ErrorMessage[EntryID] != 'undefined') {
+
+        //    }
+        //});
+
+
+        //$("#tblResult td input[type=checkbox]:checked").each(function (i, value) {
+        //    var row = $(this).closest("tr");
+        //    _TaskIDs += row.find('.OTPlanningCheckBox').val() + ',';
+        //    var YesAction = (row.find('.YesAction').text()).trim();
+        //    if (YesAction != Action) {
+        //        var status = row.find('.Status').text();
+        //        row.find('.ErrorMsg').attr('title', status + ' entry cannot be ' + Action);
+        //        row.find('.ErrorMsg').show();
+        //        MatchApproverAction = false;
+        //    }
+        //});
+
+    }
+
+    function HideErrorWarningMessage() {
+        $('.ErrorMsg').attr('title', '');
+        $('.ErrorMsg').hide();
+    }
+
+    function CheckEmptyKeyValueMessage(Message) {
+        var count = 0;
+        for (var key in Message) {
+            count++;
+            break;
+        }
+        if (count == 0) {
+            return false;
+        } else {
+            return true;
+        }
+    }
+
+    function ReloadForm() {
+        $('form').submit();
+    }
+
+    function InitiateDateTimeSetting() {
+        $('.date-picker').datepicker({
+            format: 'dd/mm/yyyy',
+            autoclose: true
+        });
+        $('.wsDate').datepicker('setStartDate', '@dtStrStart');
+        $('.wsDate').datepicker('setEndDate', '@dtStrEnd');
+
+    }
+
+    function SelectUnselectAll(element) {
+        $('#tblTimesheetAvailabilityEntry .TimesheetEntryCheckBox.Checkable').prop('checked', element.checked);
+        $.uniform.update();
+    }
+
+    function ViewStandBy(EmployeeID) {
+        $.ajax({
+            url: '../TimeAttendance/_Standby',
+            type: 'GET',
+            data: {
+                EmployeeID: EmployeeID,
+                Mode: "ReadOnly"
+            },
+            success: function (result) {
+                $("#StandByResult").html(result);
+                $('#StandByModal').modal({
+                    //backdrop: 'static',
+                    //keyboard: true
+                }, 'show');
+            },
+            error: function (e) {
+                console.log(e);
+            }
+        });
+    }
+
+    $(document).ready(function () {
+        InitiateDateTimeSetting();
+    });
+</script>

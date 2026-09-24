@@ -1,0 +1,153 @@
+﻿@using TemporaryPosition
+@{
+	ViewBag.Title = "Temporary Position Admin Search";
+}
+
+<style>
+	.position-form .form-group {
+		margin-bottom: 6px;
+	}
+</style>
+
+<div class="row">
+	<div class="col-md-12">
+		<br />
+		<h1 class="page-title">
+			Temporary Position Search<span style="padding-left:20px;"><small></small></span>
+		</h1>
+	</div>
+</div>
+<br />
+
+<div class="row">
+	<div class="col-md-12">
+		<form id="filterForm">
+			<input type="hidden" id="Export" name="Export" value="false" />
+			<div class="form-horizontal">
+				<div class="form-body position-form">
+					<div class="form-group">
+						<label class="col-md-2 control-label">Employee Number</label>
+						<div class="col-md-4">
+							<input class="form-control" id="EmployeeNo" name="EmployeeNo" />
+						</div>
+						<label class="col-md-2 control-label">Reference Number</label>
+						<div class="col-md-4">
+							<input class="form-control" id="ReferenceNo" name="ReferenceNo" />
+						</div>
+					</div>
+					<div class="form-group">
+						<label class="col-md-2 control-label">Position Category</label>
+						<div class="col-md-4 form-control-static">
+							<select id="PositionCategory" name="PositionCategory" class="form-control">
+								<option value="">ALL</option>
+								@foreach (var position in Service.GetTemporaryPositionCategory())
+								{
+									string value = position.TitleValue;
+									<option value="@value">@position.DisplayTitle </option>
+								}
+							</select>
+						</div>
+						<label class="col-md-2 control-label">Employee Category</label>
+						<div class="col-md-4">
+							<select class="form-control" id="EmployeeCategory" name="EmployeeCategory">
+								<option value="0">ALL</option>
+								<option value="1">Executive</option>
+								<option value="2">Non-Executive</option>
+							</select>
+						</div>
+					</div>
+					<div class="form-group">
+						<label class="col-md-2 control-label">Submission Date From</label>
+						<div class="col-md-4">
+							<div class="input-group date date-picker" data-date-format="dd MM yyyy">
+								<input type="text" class="form-control" id="DateFrom" name="DateFrom" value="@ViewBag.DateFrom" readonly />
+								<span class="input-group-btn">
+									<button type="button" class="btn default"><i class="fa fa-calendar"></i></button>
+								</span>
+							</div>
+						</div>
+						<label class="col-md-2 control-label">Submission Date To</label>
+						<div class="col-md-4">
+							<div class="input-group date date-picker" data-date-format="dd MM yyyy">
+								<input type="text" class="form-control" id="DateTo" name="DateTo" value="@ViewBag.DateTo" readonly />
+								<span class="input-group-btn">
+									<button type="button" class="btn default"><i class="fa fa-calendar"></i></button>
+								</span>
+							</div>
+						</div>
+					</div>
+					<div class="form-group">
+						<label class="col-md-2 control-label">Status</label>
+						<div class="col-md-4">
+							<select class="form-control" id="Status" name="Status">
+								<option value="">ALL</option>
+								@foreach (var status in Service.GetTemporaryPositionStatus())
+								{
+									string value = status.StatusCode;
+									<option value="@value">@status.StatusName</option>
+								}
+							</select>
+						</div>
+					</div>
+				</div>
+			</div>
+		</form>
+	</div>
+</div>
+
+<div class="row">
+	<div class="col-md-12">
+		<div class="text-right">
+			<a id="btn-Search" class="btn green btn-Search" value="Search" onclick="SearchListing();">Search</a>
+			<input id="btn-Clear" type="button" class="btn default " value="Clear" onclick="ClearFilter();">
+		</div>
+	</div>
+</div>
+<div class="row">&nbsp;</div>
+<div class="row">
+	<div class="col-md-12">
+		<div id="SearchResult">
+
+		</div>
+	</div>
+</div>
+<script>
+
+    $(document).ready(function () {
+        $('.date-picker').datepicker({
+            format: 'dd/mm/yyyy',
+            autoclose: true
+        });
+    });
+
+    function SearchListing() {
+        $("#SearchResult").html("LOADING...");
+        $.ajax({
+            type: "GET",
+            cache: false,
+            url: '@Url.Content("~/TemporaryPosition/_AdminSearchResult")',
+            data: $("#filterForm").serialize(),
+            success: function (listingContent) {
+                $("#SearchResult").empty().append(listingContent);
+            },
+            error: function (err) {
+                console.log(err);
+            }
+        });
+    }
+
+    function ExportToExcel() {
+        var filterData = $("#filterForm").serialize().replace('Export=false', 'Export=true');
+        location.href = '@Url.Content("~/TemporaryPosition/_AdminSearchResult")?' + filterData;
+	}
+
+	function ClearFilter() {
+		$("#EmployeeNo").val('');
+		$("#ReferenceNo").val('');
+		$("#PositionCategory").val('');
+		$("#EmployeeCategory").val(0);
+		$("#DateFrom").val('');
+		$("#DateTo").val('');
+		$("#Status").val('');
+	}
+</script>

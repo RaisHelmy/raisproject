@@ -1,0 +1,169 @@
+﻿@model ESS.Core.EmployeeDetailsSummary
+@{
+    Layout = "";
+
+    DateTime TodayDate = DateTime.Now;
+    bool isEarlyRetirement = ViewBag.EarlyRetirement;
+    string RetirementDate = ViewBag.RetirementDate;
+}
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="portlet box blue">
+            <div class="mini-triangle"><img src="../Assets/img/menu-red-triangle.png" /></div>
+            <div class="portlet-title">
+                <div class="caption">
+                    <i class="fa fa-reorder"></i>Nota Penafian
+                </div>
+                <div class="tools">
+                    <a id="subtypeToggle" title="" data-original-title="" href="javascript:;" class="collapse"> </a>
+                </div>
+            </div>
+            <div class="portlet-body form">
+                <div class="form-body" id="ct00_CustomFieldFormView">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-horizontal">
+                                <div class="form-group">
+                                    <label class="control-label col-md-5">
+                                        Name
+                                    </label>
+                                    <div class="col-md-7 form-control-static">
+                                        <label id="NoteEmployeeName">@ViewBag.EmployeeName</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-horizontal">
+                                <div class="form-group">
+                                    <label class="control-label col-md-5">
+                                        No Pekerja
+                                    </label>
+                                    <div class="col-md-7 form-control-static">
+                                        <label id="NoteEmployeeCode">@ViewBag.EmployeeCode</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-horizontal">
+                                <div class="form-group">
+                                    <label class="control-label col-md-5">
+                                        Tarikh Bersara
+                                    </label>
+                                    @if (isEarlyRetirement)
+                                    {
+                                        <div class="col-md-4 form-control-static">
+                                            <div class="input-group date retirement-date-picker" data-date-format="dd/mm/yyyy">
+                                                <input type="text" class="form-control RetirementDate"
+                                                       id="RetirementDate" name="RetirementDate" />
+                                                <span class="input-group-btn">
+                                                    <button type="button" class="btn default"><i class="fa fa-calendar"></i></button>
+                                                </span>
+                                            </div>
+                                        </div>
+
+                                        <div class="col-md-3 form-control-static">
+                                            <input type="button" class="btn green" value="Calculate" id="btnCalculateLeave" onclick="RefreshLeaveDetails()" />
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <div class="col-md-7 form-control-static">
+                                            <label id="NoteEmployeeRetirementDate">@RetirementDate</label>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    @if (isEarlyRetirement)
+                    {
+                        <p>
+                            <div>
+                                Saya @Model.EmployeeName berhasrat untuk meletakkan jawatan / bersara awal pada @(RetirementDate).
+                            </div>
+                        </p>
+                    }
+
+                    <p>
+                        <div>
+                            Setelah semakan dibuat berdasarkan baki cuti tuan/puan setakat hari ini <span>(@TodayDate.ToString("dd/MM/yyyy"))</span>
+                        </div>
+                        <div>
+                            Tuan/Puan boleh mula cuti pada <lable id="NoteActualRetirementDate" style="font-weight: bold; font-size: 16px;">Update later</lable>
+                        </div>
+                    </p>
+
+                    <p>
+                        <div>
+                            <ul>
+                                <li>Pengiraan di atas merupakan ANGGARAN sahaja berdasarkan tahun calendar semasa.</li>
+                                <li>
+                                    <b>
+                                        Tuan Puan diminta untuk mengisi jumlah cuti gantian (public holiday - federal & state) berdasarkan negeri bertugas
+                                        Tuan/Puan kerana kiraan tarikh sepatutnya memulakan cuti sebelum bersara juga bergantung kepada jumlah sebenar
+                                        cuti gantian (public holiday)
+                                    </b>
+                                </li>
+                                <li>
+                                    Bagi pengiraan <b> cuti sebelum persaraan yang tepat, Tuan/Puan boleh membuat pengesahan dengan Unit Employee Leave melalui MySSC TGBS.</b>
+                                </li>
+                                <li>
+                                    Mohon ambil maklum, pengiraan tarikh persaraan yang melangkaui tahun/tahun berlainan juga perlu dirujuk dengan Unit Employee Leave
+                                    melalui MySSC TGBS.
+                                </li>
+                                <li>
+                                    SILA AMBIL MAKLUM, KESEMUA BAKI CUTI YANG LAYAK PERLU DIHABISKAN SEBELUM BERSARA WAJIB/BERSARA PILIHAN/PELETAKAN JAWATAN
+                                </li>
+                            </ul>
+                        </div>
+                        <div>
+
+                        </div>
+                    </p>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <input type="button" class="btn green" value="Export to PDF" id="btnPrintPDF" onclick="printPDF()" />
+    </div>
+</div>
+
+<script>
+    $(function () {
+        $('.retirement-date-picker').datepicker({
+            format: 'dd/mm/yyyy',
+            autoclose: true
+        });
+
+        $('.retirement-date-picker').datepicker('setStartDate', '@DateTime.Today.ToString("dd/MM/yyyy")');
+        $('.retirement-date-picker').datepicker('setDate', '@RetirementDate');
+    });
+
+    function RefreshLeaveDetails() {
+        var retirementDate = $('#RetirementDate').val();
+        var url = '@Url.Action("RetirementCalculator", "LeaveApplication", new {
+              EmployeeID =  Model.ID,
+          })';
+
+        url += '&EarlyRetirement=true';
+        url =  url + '&RetirementDate=' + retirementDate;
+
+        $('#SearchResult').html('Loading...');
+        $.get(url, function (result) {
+            $('#SearchResult').html(result);
+        });
+    }
+</script>

@@ -1,0 +1,68 @@
+﻿@model TemporaryPosition.Models.TemporaryPositionForm
+@{
+    var EmployeeList = Model.EmployeeList;
+    var CurrentStatus = Model.StatusText;
+    Layout = null;
+}
+
+<table id="tblEmployee" class="table table-striped table-bordered table-hover table-full-width">
+    <thead>
+        <tr>
+            <th>
+                <input id="RemoveEmployeeCheckboxHeader" type="checkbox" onchange="SelectAll(this)" />
+            </th>
+            <th>Employee</th>
+            <th>Grade</th>
+            @if (Model.StatusCode == "AP" || Model.StatusCode == "PU")
+            {
+                <th>Position No</th>
+            }
+            @*<th>IM</th>*@
+        </tr>
+    </thead>
+    <tbody>
+        @for (int i = 0; i < EmployeeList.Count; i++)
+        {
+            var item = EmployeeList[i];
+
+            <tr>
+                <td>
+                    <input type="hidden" name="EmployeeList[@i].ID" value="@item.ID" />
+                    <input type="hidden" name="Employee" value="@item.EmployeeID" />
+                    <input type="checkbox" class="RemoveEmployeeCheckbox" value="@item.EmployeeID" />
+                </td>
+                <td class="Employee">
+                    @item.EmployeeDisplayName
+                </td>
+                <td class="EmployeeGrade">
+                    @item.EmployeeGrade
+                </td>
+                @if (Model.StatusCode == "AP")
+                {
+                    <td>
+                        <input type="text" class="form-control PositionNo" name="EmployeeList[@i].PositionNo" value="@item.PositionNo" />
+                    </td>
+                }
+                else if (Model.StatusCode == "PU")
+                {
+                    <td>
+                        <input type="text" class="form-control PositionNo" name="EmployeeList[@i].PositionNo" value="@item.PositionNo" readonly />
+                    </td>
+                }
+                @*<td class="IM">@item.ManagerDisplayName</td>*@
+            </tr>
+        }
+    </tbody>
+</table>
+
+<script>
+    $(function SetCheckboxWidth() {
+        $('#tblEmployee th:first-child').css("width", 50);
+        $('#tblEmployee td:first-child').css("width", 50);
+    });
+
+    function SelectAll(element) {
+        $('#tblEmployee .RemoveEmployeeCheckbox').attr('checked', element.checked);
+        $.uniform.update();
+    }
+</script>

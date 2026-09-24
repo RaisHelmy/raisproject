@@ -1,0 +1,227 @@
+﻿@model List<ESS.Core.DropDownObject>
+@{
+    ViewBag.Title = "Unit Calendar";
+}
+
+<script src="~/assets/plugins/fullcalendar/fullcalendar/fullcalendar.js"></script>
+<script src="~/Assets/plugins/fullcalendar/fullcalendar/fullcalendar.min.js"></script>
+<link rel="stylesheet" type="text/css" href="~/assets/plugins/fullcalendar/fullcalendar/fullcalendar.css" />
+
+<style>
+    .fullcalendar-eventitem {
+        padding: 5px;
+        text-align: center;
+    }
+
+    #tbl_calendar_legend tbody tr td {
+        width: 40px;
+        height: 20px;
+    }
+
+    .Pending {
+        background-color: #e3efff;
+        color: #6f9dd9;
+        border: #6f9dd9 1px solid;
+    }
+
+        .Pending A {
+            color: #6f9dd9;
+        }
+
+    .Draft {
+        background-color: #FFB2B2;
+        color: #E02100;
+        border: solid 1px #E02100;
+    }
+
+        .Draft A {
+            color: #E02100;
+        }
+
+    .Acknowledged {
+        background-color: #CCFB5D;
+        color: #8C5CFA;
+        border: solid 1px #8C5CFA;
+    }
+
+        .Acknowledged A {
+            color: #8C5CFA;
+        }
+
+    .Approved {
+        background-color: #CCFFCC;
+        color: #47AD47;
+        border: solid 1px #47AD47;
+    }
+
+        .Approved A {
+            color: #47AD47;
+        }
+
+    .PublicHoliday {
+        background-color: #FFE8E8;
+        color: #6f9dd9;
+        border: solid 1px #6f9dd9;
+    }
+
+        .PublicHoliday a {
+            color: #6f9dd9;
+        }
+</style>
+
+<div class="form-section">
+    <div class="row">
+        <div class="col-md-12">
+            <h1 class="page-title">
+                Unit Calendar
+                <span style="padding-left:20px;">
+                    <small></small>
+                </span>
+            </h1>
+        </div>
+    </div>
+</div>
+
+
+@using (Html.BeginForm("", "LeaveApplication", FormMethod.Post, new { @class = "form-horizontal", @id = "MainForm" }))
+{
+    <input id="hfEmployeeID" type="hidden" value="@ViewBag.EmployeeID" />
+    @*<input id="hfTaskID" type="hidden" value="@ViewBag.TaskID" />
+        <input id="hfCourseApplicationID" type="hidden" value="@ViewBag.SourceID" />*@
+
+    <div class="form-body">
+        <div class="row">
+            <div class="col-md-8">
+                <div class="form-horizontal">
+                    <div class="form-group">
+                        <label class="col-md-4 control-label">Display Manager's Leave</label>
+                        <div class="col-md-4 form-control-static">
+                            <input id="chkManager" type="checkbox" class="form-control"/>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-8">
+                <div class="form-horizontal">
+                    <div class="form-group">
+                        <label class="col-md-4 control-label">Display Subordinates' Leave</label>
+                        <div class="col-md-4 form-control-static">
+                            <select id="ddlSubordinate" class="form-control">
+                                <option value="">- Please Select -</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">&nbsp;</div>
+        <div class="row">
+            <div class="col-md-6 col-md-offset-6">
+                <table id="tbl_calendar_legend" style="display:table;border-collapse:separate;border-spacing:2px">
+                    <tbody>
+                        <tr>
+                            <td class="Draft">
+                                <img src="/_layouts/15/images/blank.gif">
+                            </td>
+                            <td>Draft</td>
+
+                            <td class="Pending">
+                                <img src="/_layouts/15/images/blank.gif">
+                            </td>
+                            <td>Pending</td>
+
+                            <td class="Acknowledged">
+                                <img src="/_layouts/15/images/blank.gif">
+                            </td>
+                            <td>Acknowledged</td>
+
+                            <td class="Approved">
+                                <img src="/_layouts/15/images/blank.gif">
+                            </td>
+                            <td>Approved</td>
+
+                            <td class="PublicHoliday">
+                                <img src="/_layouts/15/images/blank.gif">
+                            </td>
+                            <td>Public Holiday</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">&nbsp;</div>
+    <div id="calendarList">
+    </div>
+
+    <!-- Loading Gif -->
+    <div id="divLoading" style="margin: 0px; padding: 0px; position: fixed; right: 0px; top: 0px; width: 100%; height: 100%; background-color: gainsboro; z-index: 30001; opacity: .8; filter: alpha(opacity=70); display: none; ">
+        <p style="position: absolute; top: 30%; left: 30%; color: black;">
+            Performing action, please wait...<img src="/_layouts/15/TNBESS/Assets/img/ajax-loading.gif">
+        </p>
+    </div>
+}
+<script type="text/javascript">
+    $(document).ready(function () {
+        var empID = $("#hfEmployeeID").val();
+        populateSubordinates();
+        generateCalendar(empID, '', false);
+
+        $("#ddlSubordinate").on("change", function () {
+            $('#divLoading').css("display", "block");
+            var subordinateID = $(this).val();
+            var displayManagerLeave = $("#chkManager").prop("checked");
+            generateCalendar(empID, subordinateID, displayManagerLeave);
+            $('#divLoading').css("display", "none");
+        });
+
+        $("#chkManager").on("change", function () {
+            var subordinateID = $("#ddlSubordinate").val();
+            var displayManagerLeave = $(this).prop("checked");
+            generateCalendar(empID, subordinateID, displayManagerLeave);
+        });
+    });
+
+    function generateCalendar(employeeID, subordinateID, displayManagerLeave)
+    {
+        $('#calendarList').fullCalendar('destroy');
+        $('#divLoading').css("display", "block");
+
+        $.post('@Url.Content("~/LeaveApplication/_UnitCalendarData")', {
+            EmployeeID: employeeID,
+            SubordinateID: subordinateID,
+            DisplayManagerLeave: displayManagerLeave
+        }, function (result) {
+            $('#calendarList').fullCalendar({
+                header: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'month,basicWeek,basicDay'
+                },
+                eventLimit: true,
+                events: result
+            });
+            $('#divLoading').css("display", "none");
+        });
+    }
+
+    function populateSubordinates() {
+        var data = {
+            EmployeeID: $("#hfEmployeeID").val()
+        };
+
+        $.get('@Url.Content("~/LeaveApplication/_GetSubordinates")', data, function (result) {
+            if (!result) return;
+
+            var ddlSubordinate = $('#ddlSubordinate');
+            for (var i = 0; i < result.length; i++) {
+                ddlSubordinate.append('<option value="' + result[i].EmployeeID + '">' + result[i].EmployeeName + '</option>');
+            }
+        });
+    }
+</script>
+
+

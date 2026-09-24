@@ -1,0 +1,65 @@
+﻿@model Vendor.Models.VendorVM
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewBag.Title = "iDispensary Application";
+}
+
+<form>
+    <div class="form-section">
+        <div class="row">
+            <div class="col-md-12">
+                <h1 class="page-title">
+                    iDispensary Application
+                    <span style="padding-left:20px;">
+                        <small></small>
+                    </span>
+                </h1>
+            </div>
+        </div>
+    </div>
+    <br />
+
+    <input id="hfEmployeeID" type="hidden" value="@ViewBag.EmployeeID" />
+    <input id="hfFileSize" type="hidden" value="@ViewBag.FileSize" />
+    <input id="hfFileExtension" type="hidden" value="@ViewBag.FileExtension" />
+
+    @Html.Partial("__EmployeeDetails")
+    @Html.Partial("__OrderForm", Model)
+
+    @if (string.IsNullOrEmpty(Model.VendorID))
+    {
+        @Html.Action("AttachmentControl", "Attachment", new
+       {
+           EmployeeID = @ViewBag.EmployeeID,
+           Mode = "New",
+           SourceType = "Vendor"
+       })
+    }
+    else if (Model.Editable)
+    {
+        @Html.Action("AttachmentControl", "Attachment", new
+       {
+           EmployeeID = @Model.CreatedBy,
+           Mode = "Add",
+           SourceType = "Vendor",
+           RequestID = @Model.VendorID
+       })
+    }
+    else
+    {
+        @Html.Action("AttachmentControl", "Attachment", new
+       {
+           EmployeeID = @Model.CreatedBy,
+           Mode = "View",
+           SourceType = "Vendor",
+           RequestID = @Model.VendorID
+       })
+    }
+
+    @if (Model.Status != "Draft")
+    {
+        @Html.Partial("__AuditLog")
+    }
+</form>
+
+@Html.Partial("__Actions", Model)

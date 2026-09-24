@@ -1,0 +1,219 @@
+﻿@using TemporaryPosition.Models
+@model TemporaryPosition.Models.TemporaryPositionForm
+
+<div id="positionForm">
+	<div class="row">
+		<div class="col-md-12">
+			<div class="portlet box blue">
+				<div class="mini-triangle"><img src="~/Assets/img/menu-red-triangle.png" /></div>
+				<div class="portlet-title">
+					<div class="caption">
+						<i class="fa fa-reorder"></i>Position Details
+					</div>
+					<div class="tools">
+						<a title="" data-original-title="" href="javascript:;" class="collapse"> </a>
+					</div>
+				</div>
+                <input type="hidden" name="ReferenceNo" value="@Model.ReferenceNo">
+                <input type="hidden" name="StatusCode" value="@Model.StatusCode">
+				<div class="portlet-body form">
+					<div class="form-horizontal">
+						<div class="position-form">
+							<div class="form-body">
+								@Html.Partial("_OrgUnitNumberInit", Model)
+
+								<!--Position Category-->
+								<div class="form-group">
+									<label class="control-label col-md-2">
+										Position Category
+										<span style="color:red">*</span>
+									</label>
+									<div class="col-md-10 form-control-static" style="padding-left:0">
+										<div class="col-md-6">
+											<div class="row">
+												<label class="control-label col-md-5">
+													Category A
+												</label>
+											</div>
+											<div class="row">
+												<div class="col-md-12" style="margin-left: -35px;">
+													@{
+                                                        List<PositionCategory> pc = (ViewBag.PositionCategoryA as IEnumerable<PositionCategory>).ToList();
+
+														<div class="col-md-12">
+															@foreach (var position in pc.OrderBy(x => x.Title))
+                                                            {
+																@Html.Partial("_PositionCategoryRadioButton", Tuple.Create(Model, position))
+                                                            }
+														</div>
+													}
+												</div>
+											</div>
+										</div>
+										<div class="col-md-6">
+											<div class="row">
+												<label class="control-label col-md-5">
+													Category B
+												</label>
+											</div>
+											<div class="row">
+												<div class="col-md-12" style="margin-left: -35px;">
+													@{
+                                                        pc = (ViewBag.PositionCategoryB as IEnumerable<PositionCategory>).ToList();
+
+														<div class="col-md-12">
+															@foreach (var position in pc.OrderBy(x => x.Title))
+                                                            {
+																@Html.Partial("_PositionCategoryRadioButton", Tuple.Create(Model, position))
+                                                            }
+														</div>
+													}
+												</div>
+											</div>
+										</div>
+									</div>
+								</div>
+
+								<!--Position Text-->
+								<div class="form-group">
+									<label class="control-label col-md-2">
+										Position Text
+										<span style="color:red">*</span>
+									</label>
+									<div class="col-md-4">
+										@Html.DropDownList("PositionText", new SelectList(ViewBag.PositionTextDDL, "Value", "Text"), "- SELECT -", new { @class = "bs-select form-control", Value = Model.PositionText })
+									</div>
+									<label class="control-label col-md-2">
+										Effective Date
+										<span style="color:red">*</span>
+									</label>
+									<div class="col-md-4">
+										<div class="input-group date date-picker" data-date-format="dd MM yyyy">
+											<input type="text" class="form-control" id="EffectiveDate" name="EffectiveDate" value="@Model.EffectiveDate" />
+											<span class="input-group-btn">
+												<button type="button" class="btn default"><i class="fa fa-calendar"></i></button>
+											</span>
+										</div>
+									</div>
+								</div>
+
+								<!--Job Text-->
+								<div class="form-group">
+									<label class="control-label col-md-2">
+										Job Text
+										<span style="color:red">*</span>
+									</label>
+									<div class="col-md-4">
+										<input type="text" class="form-control" id="JobText" name="JobText" value="@Model.JobText" maxlength="40" />
+									</div>
+									<label class="control-label col-md-2">
+										Delimit Date
+										<span style="color:red">*</span>
+									</label>
+									<div class="col-md-4">
+										<div class="input-group date date-picker" data-date-format="dd MM yyyy">
+											<input type="text" class="form-control" id="DelimitDate" name="DelimitDate" value="@Model.DelimitDate" />
+											<span class="input-group-btn">
+												<button type="button" class="btn default"><i class="fa fa-calendar"></i></button>
+											</span>
+										</div>
+									</div>
+								</div>
+
+								<!--Reason for Creation-->
+								<div class="form-group">
+									<label class="control-label col-md-2" for="form-group-input">
+										Reason for Creation of Position
+										<span style="color:red">*</span>
+									</label>
+									<div class="col-md-10">
+										<textarea class="form-control" maxlength="500" rows="5" name="Reason" id="Reason">@Model.Reason</textarea>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!--Employee-->
+	@Html.Partial("_Employee", Model)
+
+	<!--Supervisor Details-->
+	<div class="row">
+		<div class="col-md-12">
+			<div class="portlet box blue">
+				<div class="mini-triangle"><img src="~/Assets/img/menu-red-triangle.png" /></div>
+				<div class="portlet-title">
+					<div class="caption">
+						<i class="fa fa-reorder"></i>IM Details
+					</div>
+					<div class="tools">
+						<a title="" data-original-title="" href="javascript:;" class="collapse"> </a>
+					</div>
+				</div>
+				<div class="portlet-body form">
+					<div class="form-horizontal">
+						<div class="position-form">
+							<div class="form-body">
+								<div class="form-group">
+									<label class="control-label col-md-2">
+										IM
+										<span style="color:red">*</span>
+									</label>
+                                    <div class="col-md-4">
+                                        @if (Model.SupervisorDetails != null)
+                                        {
+                                            @Html.Partial("_PeoplePickerControl", new ViewDataDictionary { { "PPID", "SupervisorID" }, { "PositionID", "Position" }, { "TextBox", Model.SupervisorDetails.EmployeeCode + " - " + Model.SupervisorDetails.EmployeeName } })
+                                        }
+                                        else
+                                        {
+                                            @Html.Partial("_PeoplePickerControl", new ViewDataDictionary { { "PPID", "SupervisorID" }, { "PositionID", "Position" } })
+                                        }                                                                               
+                                    </div>
+
+									<label class="control-label col-md-2">
+										Position
+										<span style="color:red">*</span>
+									</label>
+									<div class="col-md-4">
+                                        @if (Model.SupervisorDetails != null)
+                                        {
+										    <input class="form-control" id="Position" value="@Model.SupervisorDetails.PositionCode - @Model.SupervisorDetails.Position" name="Position" readonly />
+                                        }
+                                        else
+                                        {
+                                            <input class="form-control" id="Position" name="Position" readonly />
+                                        }
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	@Html.Partial("_PeoplePickerInit")
+
+	@Html.Action("AttachmentControl", "Attachment", new { EmployeeID = Model.EmployeeID, Mode = "Add", SourceType = "TemporaryPosition", RequestID = Model.PositionID })
+
+	@if (Model.StatusText != "Draft")
+	{
+		@Html.Action("_ApproverSection", "TemporaryPosition")
+	}
+</div>
+
+<script>
+	$('#OrgUnitNumber').keyup(function (e) {
+		if (e.keyCode == 46 || e.keyCode == 8) {
+			$("#Division").val("");
+			$("#PersonnelArea").val("");
+			$("#PersonnelSubArea").val("");
+		}
+	});
+</script>
+

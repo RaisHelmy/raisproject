@@ -1,0 +1,182 @@
+﻿@model ESS.ETransfer.Models.ETransferVM
+@{
+    Layout = null;
+    string TaskID = (string)ViewData["TaskID"];
+    string RequestID = (string)ViewData["RequestID"];
+    string ApprovalLevel = (string)ViewData["ApprovalLevel"];
+    string Source = (string)ViewData["Source"];
+
+    var data = new ViewDataDictionary 
+    { 
+        new KeyValuePair<string, object>("TaskID", TaskID), 
+        new KeyValuePair<string, object>("RequestID", RequestID),
+        new KeyValuePair<string, object>("ApprovalLevel",ApprovalLevel), 
+        new KeyValuePair<string, object>("Source",Source) 
+    };
+
+    int applvl = String.IsNullOrEmpty(ApprovalLevel) ? 0 : Convert.ToInt32(ApprovalLevel);
+}
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="portlet box blue">
+            <div class="mini-triangle"><img src="../Assets/img/menu-red-triangle.png" /></div>
+            <div class="portlet-title">
+                <div class="caption">
+                    <i class="fa fa-reorder"></i>Transfer Request Details
+                </div> 
+            </div>
+            <div class="portlet-body form">
+                <div class="form-body">
+                    <div id="trRefNo" class="row">
+                        <div class="col-md-6">
+                            <div class="form-horizontal">
+                                <div class="form-group">
+                                    <label class="control-label col-md-4">Reference No.</label>
+                                    <div class="col-md-8 form-control-static">
+                                        <input type="text" id="txtRequestNo" name="RequestNo" class="form-control" value="@Model.RequestNo" readonly="readonly" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-horizontal">
+                                <div class="form-group">
+                                    <label class="control-label col-md-4">Status</label>
+                                    <div class="col-md-8 form-control-static">
+                                        <input type="text" id="txtStatusName" name="StatusName" class="form-control" value="@Model.StatusName" readonly="readonly" />                                  
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row" style="">
+                        <div class="col-md-6">
+                            <div class="form-horizontal">
+                                <div class="form-group">
+                                    <label class="control-label col-md-4">
+                                        Transfer Type
+                                    </label>
+                                    <div class="col-md-8 form-control-static">
+                                        <input type="text" id="txtTransferType" name="TransferType" class="form-control" value="@Model.TransferType" readonly="readonly" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="divCurrentApprover" class="col-md-6">
+                            <div class="form-horizontal">
+                                <div class="form-group">
+                                    <label class="control-label col-md-4">Current Approver</label>
+                                    <div class="col-md-8 form-control-static">
+                                        <input type="text" id="txtCurrentApprover" name="CurrentApprover" class="form-control" value="@Model.CurrentApprover" readonly="readonly" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <br />
+                    <!-- ETransfer Details -->
+                    @Html.Partial("_ETransferViewDetailsList", Model, data)
+
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="form-horizontal">
+                                <div class="form-group">
+                                    <label class="control-label col-md-2">
+                                        Reason for Transfer
+                                    </label>
+                                    <div class="col-md-10 form-control-static">
+                                        <textarea id="txtReason" name="Reason" class="form-control" rows=3 readonly="readonly">@Model.Reason</textarea>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    @if(Source !="History")
+                    {
+                        if (Source == "InTray")
+                        {
+                            if (applvl >= 3)
+                            { 
+                                <div id="trReplacement" class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-horizontal">
+                                            <div class="form-group">
+                                                <label class="control-label col-md-4">Dengan Pengganti</label>
+                                                <div class="col-md-8 form-control-static">
+
+                                                    <input type="text" id="txtReplacement" class="form-control" value="@Model.Replacement" readonly="readonly" />
+                                      
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                </div>
+                            }                            
+                        }
+                        
+                        if (Source == "AppHist")
+                        {
+                            if (!string.IsNullOrEmpty(Model.Replacement))
+                            { 
+                                <div id="trReplacement" class="row">
+                                <div class="col-md-6">
+                                    <div class="form-horizontal">
+                                        <div class="form-group">
+                                            <label class="control-label col-md-4">Dengan Pengganti</label>
+                                            <div class="col-md-8 form-control-static">
+
+                                                <input type="text" id="txtReplacement" class="form-control" value="@Model.Replacement" readonly="readonly" />
+                                      
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div>
+                            }
+
+                            if (!string.IsNullOrEmpty(Model.SuggestPositionNo))
+                            { 
+                                <div id ="trSuggestedPosition" class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-horizontal">
+                                            <div class="form-group">
+                                                <label class="control-label col-md-4">Suggested Position</label>
+                                                <div class="col-md-8 form-control-static">
+                                                    <input type="text" id="txtSuggestedPosition" name="SuggestedPosition" class="form-control" value="@Model.SuggestPositionNo" readonly="readonly" />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+
+                            if (Model.PositionStartDate.HasValue)
+                            {
+                                <div id="trEffectiveDate" class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-horizontal">
+                                            <div class="form-group">
+                                                <label class="control-label col-md-4">Effective Date</label>
+                                                <div class="col-md-8 form-control-static">
+                                                    <input type="text" id="txtEffectiveDate" name="PositionStartDate" class="form-control" value="@Model.PositionStartDate.Value.ToString("dd/MM/yyy")" readonly="readonly" />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                </div>
+                            }
+                        }
+                        
+                    }
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

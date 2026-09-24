@@ -1,0 +1,26 @@
+{
+  "name": "raisai-create",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "bun run --filter @raisai/worker dev",
+    "dev:web": "bun run --filter @raisai/web dev",
+    "build": "bun run --filter @raisai/web build",
+    "typecheck": "bun run --filter '*' typecheck",
+    "test": "bun run --filter '*' test",
+    "lint": "bun run typecheck",
+    "db:migrate:local": "cd apps/worker && for f in migrations-pg/*.sql; do psql \"$DATABASE_URL\" -v ON_ERROR_STOP=1 -f \"$f\"; done",
+    "db:migrate:remote": "cd apps/worker && for f in migrations-pg/*.sql; do psql \"$DATABASE_URL\" -v ON_ERROR_STOP=1 -f \"$f\"; done",
+    "e2e": "playwright test",
+    "e2e:server": "cd apps/worker && bunx wrangler dev --local --port 8799 --var APP_ENV:e2e",
+    "e2e:install": "playwright install chromium",
+    "deploy": "bun run build && bun run --filter @raisai/worker deploy"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.0",
+    "@playwright/test": "^1.48.0"
+  }
+}

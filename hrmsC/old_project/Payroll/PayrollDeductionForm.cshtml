@@ -1,0 +1,839 @@
+﻿@model ESS.Payroll.Models.PayrollDeductionVM
+@{
+    ViewBag.Title = "PayrollDeductionForm";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    string dtStrStartMin = (Model.startDateMin.HasValue) ? Model.startDateMin.Value.ToString("dd MMMM yyyy") : "";
+    string dtStrStartMax = (Model.startDateMax.HasValue) ? Model.startDateMax.Value.ToString("dd MMMM yyyy") : "";
+    string dtStrEndMin = (Model.endDateMin.HasValue) ? Model.endDateMin.Value.ToString("dd MMMM yyyy") : "";
+    string PaySlipUrl = ViewBag.PaySlipUrl + "";
+    var data = new ViewDataDictionary
+{
+       new KeyValuePair<string, object>("PaySlipUrl",PaySlipUrl)
+    };
+
+    //overwrite the enddate to below
+    if (Model.EntryID == null)
+    {
+        Model.endDateValue = "31 Dec 9999";
+    }
+}
+
+<style type="text/css">
+    .hidden_1 {
+        display: none;
+    }
+</style>
+
+<div class="form-section">
+    <div class="row">
+        <div class="col-md-12">
+            <h1 class="page-title">
+                ESS Payroll - Payroll Deduction Form
+                <span style="padding-left:20px;">
+                    <small></small>
+                </span>
+            </h1>
+        </div>
+    </div>
+</div>
+
+<input id="hfEmployeeID" type="hidden" value="@ViewBag.EmployeeID" />
+<input id="AttachMandatory" type="hidden" value="false" />
+<!-- Employee Details -->
+@Html.Partial("_PayrollEmployeeDetails", Model.Submiter)
+
+<!-- Medical Board Details -->
+@Html.Partial("_PayrollDetails")
+
+<!-- Attachment -->
+@if (Model.EntryID == null)
+{
+    @Html.Action("AttachmentControl", "Attachment", new { EmployeeID = ViewBag.EmployeeID, Mode = "New", SourceType = "Payroll" })
+
+}
+else
+{
+    @Html.Action("AttachmentControl", "Attachment", new { EmployeeID = ViewBag.EmployeeID, Mode = "Add", SourceType = "Payroll", RequestID = Model.EntryID })
+}
+<div class="row">
+    <div class="col-md-12">
+        <label style="position: relative;top: -10px;">
+            Note:
+        </label>
+        <ul style="position: relative;top: -32px; left: 20px">
+            <li>Please attach request form only.</li>
+            <li>This Payroll Deduction Application will be processed depending on monthly payroll run date.</li>
+        </ul>
+
+    </div>
+</div>
+
+
+<!-- Disclaimer -->
+<div class="row">
+    <div class="col-md-12">
+        <input type="checkbox" id="ct_Disclaimer"> <b>I declare that all the information stated above are accurate and reliable to the best of my knowledge.</b>
+    </div>
+</div>
+
+<br />
+
+
+@if (Model.EntryID != null)
+{
+    @Html.Action("_AuditLog", "Payroll", new { RequestID = Model.EntryID })
+}
+
+<br />
+
+
+<!-- Buttons -->
+<div class="row">
+    <div class="col-md-12">
+        <!-- Submitter -->
+        <input type="button" class="btn green" value="Save As Draft" id="btnSave" onclick="SaveAsDraft();" />
+        <input type="button" class="btn green" value="Submit" id="btnSubmit" onclick="FormValidation();" />
+        <input type="button" class="btn green" value="Back" id="btnBack" onclick="window.history.back()" />
+    </div>
+</div>
+
+
+<!-- Success Message -->
+<div class="modal fade" id="SuccessSubmit" tabindex="-1" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header Success-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true" style="display: none;"></button>
+                <h4 class="Success-title">Action Successfully Completed</h4>
+            </div>
+            <div class="modal-body Success-body">
+                <div class="well">
+                    Your Payroll Deduction Form Application has been successfully submitted.
+                </div>
+            </div>
+            <div class="modal-footer Success-footer">
+                <button type="submit" class="btn default blue" id="btnOK">
+                    <i class="fa fa-check"></i>
+                    OK
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Confirmation Message -->
+<div class="modal fade" id="ConfirmUpdate" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                <h4 class="modal-title">Confirmation</h4>
+            </div>
+            <div class="modal-body">
+                <div class="well">
+                    Are you sure you want to Submit this Payroll Deduction Form application?\n\rPress Confirm to proceed, or Close to stay on the current page.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="submit" class="btn default blue" id="btnSubmitDraft" onclick="javascript: ApproverAction(this, 'SaveAsDraft')">
+                    <i class="fa fa-check"></i>
+                    Draft
+                </button>
+                <button type="submit" class="btn default blue" id="btnSubmitForm" onclick="javascript: ApproverAction(this, 'Submit')">
+                    <i class="fa fa-check"></i>
+                    Confirm
+                </button>
+                <button type="button" class="btn default" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Loading Gif -->
+<div id="divLoading" style="margin: 0px; padding: 0px; position: fixed; right: 0px;
+    top: 0px; width: 100%; height: 100%; background-color:gainsboro; z-index: 30001;
+    opacity: .8; filter: alpha(opacity=70); display:none;">
+    <p style="position: absolute; top: 30%; left: 30%; color: black;">
+        Loading, please wait...<img src="../Assets/img/ajax-loading.gif" />
+
+    </p>
+</div>
+<script type="text/javascript">
+
+    // Variable
+    //var Path = '/_layouts/15/tnbess';
+    //var Path = '/_layouts/15/essv2';
+    var Path = 'http://localhost:49773';
+    var EmployeeID = '';
+
+    // Helper function
+    function convertDate(inputFormat) {
+        function pad(s) { return (s < 10) ? '0' + s : s; }
+        var monthNames = ["January", "February", "March", "April", "May", "June",
+        "July", "August", "September", "October", "November", "December"
+        ];
+
+        var d = new Date(inputFormat);
+        return [pad(d.getDate()), monthNames[d.getMonth()], d.getFullYear()].join(' ');
+    }
+
+    function parseISO8601(dateStringInRange) {
+        var isoExp = /^\s*(\d{4})-(\d\d)-(\d\d)\s*$/,
+            date = new Date(NaN), month,
+            parts = isoExp.exec(dateStringInRange);
+
+        if (parts) {
+            month = +parts[2];
+            date.setFullYear(parts[1], month - 1, parts[3]);
+            if (month != date.getMonth() + 1) {
+                date.setTime(NaN);
+            }
+        }
+        return date;
+    }
+
+    // On Change event function
+    function DeductionTypeChange() {
+        var HiddenPayrollDeductionTypeDDL = document.getElementById("HiddenPayrollDeductionTypeDDL");
+        var _HiddenPayrollDeductionTypeDDL = HiddenPayrollDeductionTypeDDL.options[HiddenPayrollDeductionTypeDDL.selectedIndex].innerHTML;
+        var _HiddenPayrollDeductionTypeDDLValue = HiddenPayrollDeductionTypeDDL.options[HiddenPayrollDeductionTypeDDL.selectedIndex].value;
+
+        var e = document.getElementById('HiddenPayrollDeductionTypeDDL');
+        var _DeductionName = e.options[e.selectedIndex].text;
+
+        if (_HiddenPayrollDeductionTypeDDLValue == 'D020') {
+
+            $(".hidePayeeKey").removeClass("hidden_1");
+            document.getElementById('HiddenPayeeKeyDDL').value = '0';
+        }
+        else {
+            $(".hidePayeeKey").addClass("hidden_1");
+        }
+
+        if (_HiddenPayrollDeductionTypeDDLValue == '8600' || _HiddenPayrollDeductionTypeDDLValue == '8620' || _HiddenPayrollDeductionTypeDDLValue == '8571') {
+            $("#lblMembershipNo").removeClass("hidden_1");
+        }
+        else {
+            $("#lblMembershipNo").addClass("hidden_1");
+        }
+
+        jQuery.support.cors = true;
+
+        var ddlTarget = "#HiddenPayrollDeductionReasonDDL";
+
+        var form2 = {
+            EmployeeID: document.getElementById('hfEmployeeID').value,
+            DeductionCode: _HiddenPayrollDeductionTypeDDLValue,
+            DeductionName: _DeductionName
+        };
+
+        $.ajax({
+            type: "POST",
+            url: '@Url.Content("~/Payroll/GetDeductionTypeChange")',
+            cache: false,
+            async: false,
+            dataType: "json",
+            data: form2,
+            success: function (data) {
+                document.getElementById('ct01_CurrentDeductedAmount').value = data.CurrentAmount;
+                document.getElementById('ct01_DeductionDescription').value = data.DeductionDescription;
+                document.getElementById('ct01_MembershipAccountNo').value = data.MembershipNo;
+                $(ddlTarget).empty();
+                $.each(data.ListOfDeductionReason, function (index, optionData) {
+                    $(ddlTarget).append("<option value='" + optionData.Value + "'>" + optionData.Text + "</option>");
+                });
+            },
+            error: function (x, y, z) {
+                console.log("error");
+                alert(x + '1_1\n' + y + '1\n' + z);
+            }
+        });
+
+    }
+
+    function PayeeKeyChange() {
+        var HiddenPayeeKeyDDL = document.getElementById("HiddenPayeeKeyDDL");
+        var _HiddenPayeeKeyDDL = HiddenPayeeKeyDDL.options[HiddenPayeeKeyDDL.selectedIndex].innerHTML;
+        var _HiddenPayeeKeyDDLValue = HiddenPayeeKeyDDL.options[HiddenPayeeKeyDDL.selectedIndex].value;
+
+        var HiddenPayrollDeductionTypeDDL = document.getElementById("HiddenPayrollDeductionTypeDDL");
+        var _HiddenPayrollDeductionTypeDDL = HiddenPayrollDeductionTypeDDL.options[HiddenPayrollDeductionTypeDDL.selectedIndex].innerHTML;
+        var _HiddenPayrollDeductionTypeDDLValue = HiddenPayrollDeductionTypeDDL.options[HiddenPayrollDeductionTypeDDL.selectedIndex].value;
+
+        var e = document.getElementById('HiddenPayrollDeductionTypeDDL');
+        var _DeductionName = e.options[e.selectedIndex].text;
+
+        jQuery.support.cors = true;
+
+        var form2 = {
+            EmployeeID: document.getElementById('hfEmployeeID').value,
+            DeductionCode: _HiddenPayrollDeductionTypeDDLValue,
+            DeductionName: _DeductionName,
+            PayeeKey: _HiddenPayeeKeyDDLValue,
+        };
+
+        $.ajax({
+            type: "POST",
+            url: '@Url.Content("~/Payroll/GetDeductionTypeChange")',
+            cache: false,
+            async: false,
+            dataType: "json",
+            data: form2,
+            success: function (data) {
+                document.getElementById('ct01_CurrentDeductedAmount').value = data.CurrentAmount;
+            },
+            error: function (x, y, z) {
+                console.log("error");
+                alert(x + '2_\n' + y + '\n' + z);
+            }
+        });
+
+    }
+
+    // Page on Load
+    function FormConfiguration() {
+        EmployeeID = document.getElementById('hfEmployeeID').value;
+        //GetEmployeeDetails(EmployeeID);
+
+        var StartDate = '@Model.startDateValue';
+        var EndDate = '@Model.endDateValue';
+
+        var DeductionTypeCode = '@Model.DeductionTypeCode.ToString()';
+        var Reason = '@Model.Reason.ToString()';
+        var PayeeKey = '@Model.PayeeKey.ToString()';
+
+        if ('@Model.startDateValue' != null && StartDate.length > 0) {
+            document.getElementById('ct01_DeductionStartDate').value = convertDate(StartDate);
+        }
+
+        if ('@Model.endDateValue' != null && EndDate.length > 0) {
+            document.getElementById('ct01_DeductionEndDate').value =  convertDate(EndDate);
+        }
+
+        if ('@Model.DeductionTypeCode' != null && DeductionTypeCode.length > 0) {
+            document.getElementById('HiddenPayrollDeductionTypeDDL').value = DeductionTypeCode;
+        }
+
+        if ('@Model.Reason' != null && Reason.length > 0) {
+            document.getElementById('HiddenPayrollDeductionReasonDDL').value = Reason;
+        }
+
+
+        if ('@Model.PayeeKey' != null && PayeeKey.length > 0) {
+            if (DeductionTypeCode == 'D020') {
+
+                $(".hidePayeeKey").removeClass("hidden_1");
+                document.getElementById('HiddenPayeeKeyDDL').value = PayeeKey;
+            }
+            else {
+                $(".hidePayeeKey").addClass("hidden_1");
+            }
+        }
+
+
+        else {
+            $(".hidePayeeKey").addClass("hidden_1");
+        }
+
+        if (DeductionTypeCode == '8600' || DeductionTypeCode == '8620' || DeductionTypeCode == '8571') {
+            $("#lblMembershipNo").removeClass("hidden_1");
+        }
+        else {
+            $("#lblMembershipNo").addClass("hidden_1");
+        }
+    }
+
+    $(function () {
+        $("#btnSubmitForm").addClass("hidden_1");
+        $("#btnSubmitDraft").removeClass("hidden_1");
+        FormConfiguration();
+
+        $('.date-picker').datepicker({
+            format: 'dd MM yyyy',
+            autoclose: true
+        });
+
+        // Form plugin function
+        $('#divDeductionStartDate').datepicker('setStartDate', '@dtStrStartMin');
+        $('#divDeductionStartDate').datepicker('setEndDate', '@dtStrStartMax');
+
+        $('#divDeductionEndDate').datepicker('setStartDate', '@dtStrEndMin');
+
+        $("#divDeductionStartDate").datepicker().on('changeDate', function (selected) {
+            var minDate = moment(selected.date).add(1, 'days').format('DD MMMM YYYY');
+            $('#divDeductionEndDate').datepicker('setStartDate', minDate);
+        });
+
+        $("#divDeductionEndDate").datepicker().on('changeDate', function (selected) {
+            var minDate = moment(selected.date).add(-1, 'days').format('DD MMMM YYYY');
+            $('#divDeductionStartDate').datepicker('setEndDate', minDate);
+            });
+
+        $('.dsCV').keydown(function (e) {
+            var key = e.charCode || e.keyCode || 0;
+            // allow backspace, tab, delete, enter, arrows, numbers and keypad numbers ONLY
+            // home, end, period, and numpad decimal
+            return (
+                key == 8 ||
+                key == 9 ||
+                key == 13 ||
+                key == 46 ||
+                key == 110 ||
+                key == 190 ||
+                (key >= 35 && key <= 40) ||
+                (key >= 48 && key <= 57) ||
+                (key >= 96 && key <= 105));
+        });
+        $(".dsCV").on("blur", function (e) {
+            var myNumeric = parseFloat($(this).val().replace(/,/g, ''));
+            if (!myNumeric) {
+
+            }
+            else {
+                $(this).val(myNumeric.toFixed(2));
+
+                var currentValue = parseFloat($("#ct01_DeductionAmount").val().replace(/,/g, ''));
+
+                var currentAvailableValue = parseFloat($("#ct01_AmountToBeDeducted").val().replace(/,/g, ''));
+
+                //remove checking
+                //if (currentValue > currentAvailableValue) {
+                //    alert("You are not allowed to enter Deduction Amount that is larger than Available Amount to be Deducted");
+                //    $(this).val('0.00');
+                //}
+
+
+            }
+
+
+        });
+    });
+
+
+    //   /*** Logical Function / Web Service ***/
+    function GetEmployeeDetails(EmpID) {
+        jQuery.support.cors = true;
+        $.ajax({
+            url: '@Url.Content("~/api/EmployeeWebApi/GetEmployeeDetailsSummary?EmployeeID=")' + EmpID,
+            type: 'GET',
+            contentType: "application/json;charset=utf-8",
+            success: function (data) {
+
+                document.getElementById('ct00_EmployeeCodeRO').innerHTML = data.EmployeeCode;
+                document.getElementById('ct00_EmployeeNameRO').innerHTML = data.EmployeeName;
+                document.getElementById('ct00_NewICRO').innerHTML = data.NewIC;
+                document.getElementById('ct00_PayScaleGroupRO').innerHTML = data.PayScaleGroup;
+                document.getElementById('ct00_CostCenterRO').innerHTML = (data.CostCenterCode + " - " + data.CostCenterName);
+
+                document.getElementById('ct00_JoinedDateRO').innerHTML = convertDate(data.JoinedDate);
+                document.getElementById('ct00_DepartmentRO').innerHTML = data.Department;
+                document.getElementById('ct00_UnitSectionRO').innerHTML = data.UnitSection;
+                document.getElementById('ct00_PositionRO').innerHTML = data.Position;
+                document.getElementById('ct00_ManagerRO').innerHTML = data.ImmediateManager;
+
+                // Hidden Value
+                document.getElementById('ct00_PayScaleGroup').value = data.PayScaleGroup;
+                document.getElementById('ct00_CostCenterCode').value = data.CostCenterCode;
+                document.getElementById('ct00_CostCenterName').value = data.CostCenterName;
+                document.getElementById('ct00_CompanyCode').value = data.CompanyCode;
+                document.getElementById('ct00_CompanyName').value = data.Company;
+                document.getElementById('ct00_AreaCode').value = data.DepartmentCode;
+                document.getElementById('ct00_AreaName').value = data.Department;
+                document.getElementById('ct00_SubAreaCode').value = data.UnitSectionCode;
+                document.getElementById('ct00_SubAreaName').value = data.UnitSection;
+                document.getElementById('ct00_PositionCode').value = data.PositionCode;
+                document.getElementById('ct00_PositionName').value = data.Position;
+                document.getElementById('ct00_ManagerID').value = data.ManagerID;
+
+            },
+            error: function (x, y, z) {
+                alert(x + '1_\n' + y + '\n' + z + '\n ' + '@Url.Content("~/api/EmployeeWebApi/GetEmployeeDetailsSummary?EmployeeID=")' + EmpID);
+            }
+        });
+    }
+
+
+    function FormValidation() {
+        var _Employeee = document.getElementById('hfEmployeeID');
+        var _DeductionType = document.getElementById('HiddenPayrollDeductionTypeDDL');
+        var _StartDate = document.getElementById('ct01_DeductionStartDate');
+        var _EndDate = document.getElementById('ct01_DeductionEndDate');
+        var _DeductionAmount = document.getElementById('ct01_DeductionAmount');
+        var _DeductionReason = document.getElementById('HiddenPayrollDeductionReasonDDL');
+        var _PayeeKey = document.getElementById('HiddenPayeeKeyDDL');
+
+        var _Attachment = document.getElementById('ct_Attachment');
+        var _Disclaimer = document.getElementById('ct_Disclaimer');
+        var _Disclaimer2 = $('#ct_Disclaimer').parent().hasClass('checked');
+
+        var currentValue = parseFloat($("#ct01_DeductionAmount").val().replace(/,/g, ''));
+        var currentAvailableValue = parseFloat($("#ct01_AmountToBeDeducted").val().replace(/,/g, ''));
+
+        var HiddenPayrollDeductionTypeDDL = document.getElementById("HiddenPayrollDeductionTypeDDL");
+        var _HiddenPayrollDeductionTypeDDLValue = HiddenPayrollDeductionTypeDDL.options[HiddenPayrollDeductionTypeDDL.selectedIndex].value;
+        var _MembershipNo = document.getElementById('ct01_MembershipAccountNo');
+
+        var _ValidationMsg = '';
+
+        if (_Employeee.value == '')
+            _ValidationMsg += '- Employee field is required.\n';
+
+        if (_DeductionType.value == '0')
+        {
+            _ValidationMsg += '- Deduction Type field is required.\n';
+        }
+        else if (_DeductionType.value == 'D020')
+        {
+            if (_PayeeKey.value == '0')
+            {
+                _ValidationMsg += '- Payee Key field is required.\n';
+            }
+        }
+
+        if (_HiddenPayrollDeductionTypeDDLValue == '8600' || _HiddenPayrollDeductionTypeDDLValue == '8620' || _HiddenPayrollDeductionTypeDDLValue == '8571') {
+            if (_MembershipNo.value == '')
+                _ValidationMsg += '- Membership No/Account No field is required.\n';
+        }
+
+        if (_DeductionAmount.value == '')
+            _ValidationMsg += '- Deduction Amount field is required.\n';
+
+        if (_DeductionReason.value == '0')
+            _ValidationMsg += '- Deduction Reason field is required.\n';
+
+        if (_HiddenPayrollDeductionTypeDDLValue != '9999') {
+            if (_StartDate.value == '')
+                _ValidationMsg += '- Start Date field is required.\n';
+        }
+
+        if (!_Disclaimer.checked && !_Disclaimer2)
+            _ValidationMsg += '- Please read and check the Disclaimer section before proceeding to submit.\n';
+
+        //remove checking for available value
+        //if (currentValue > currentAvailableValue) {
+        //    _ValidationMsg += '- You are not allowed to enter Deduction Amount that is larger than Available Amount to be Deducted.\n';
+        //}
+
+        if (_ValidationMsg != null && _ValidationMsg != '') {
+            alert(_ValidationMsg);
+        }
+        else {
+            if (_EndDate.value != '') {
+                var _StartParts = _StartDate.value.split('/');
+                var _Start = new Date(_StartParts[2], _StartParts[1] - 1, _StartParts[0]);
+                var _EndParts = _EndDate.value.split('/');
+                var _End = new Date(_EndParts[2], _EndParts[1] - 1, _EndParts[0]);
+
+                if (_Start > _End) {
+                    _ValidationMsg += '- Start Date cannot be greater than End Date.';
+                }
+            }
+
+            if (_ValidationMsg != null && _ValidationMsg != '') {
+                alert(_ValidationMsg);
+            }
+            else {
+                document.getElementById('AttachMandatory').value = 'false';
+                $("#btnSubmitForm").removeClass("hidden_1");
+                $("#btnSubmitDraft").addClass("hidden_1");
+                $("#ConfirmUpdate .modal-body .well").html('Clicking Confirm will submit this application for Approval. If you want to make changes, click Close.');
+                $("#ConfirmUpdate").modal('show');
+            }
+        }
+    }
+
+    function RedirectTo(_Action) {
+        switch (_Action) {
+            case "Submit":
+                window.location.href = '@Url.Action("PayrollHistory", "Payroll")';
+                break;
+            default:
+                window.location.href = '/Pages/default.aspx';
+        }
+    }
+
+    function ApproverAction(btn, _Action) {
+        btn.disabled = true;
+        $("#divLoading").show();
+        var myVar = setTimeout(function () { ConfirmAction(btn, _Action); }, 3000);
+    }
+
+    function SaveAsDraft() {
+        $("#btnSubmitDraft").removeClass("hidden_1");
+        $("#btnSubmitForm").addClass("hidden_1");
+        $("#ConfirmUpdate .modal-body .well").html('Clicking Confirm will Save the form As Draft . If you want to make changes, click Close.');
+        $("#ConfirmUpdate").modal('show');
+        document.getElementById('AttachMandatory').value = 'false';
+    }
+
+    function ConfirmAction(btn, SubmitType) {
+        //$("input[type=button]").attr("disabled", "disabled");
+        var _EntryID = '@Model.EntryID';
+        var _SubmitterID = document.getElementById('hfEmployeeID').value;
+        var _DeductionTypeCode = document.getElementById('HiddenPayrollDeductionTypeDDL').value;
+        var e = document.getElementById('HiddenPayrollDeductionTypeDDL');
+        var _DeductionName = e.options[e.selectedIndex].text;
+        var _DeductionDescription = document.getElementById('ct01_DeductionDescription').value;
+        var _lblCurrentDeductedAmount = document.getElementById('ct01_CurrentDeductedAmount').value;
+        var _lblAmountToBeDeducted = document.getElementById('ct01_AmountToBeDeducted').value;
+        var _txtDeductionAmount = document.getElementById('ct01_DeductionAmount').value;
+        var _dpStartDate = document.getElementById('ct01_DeductionStartDate').value;
+        var _dpEndDate = document.getElementById('ct01_DeductionEndDate').value;
+        var _ReasonCode = document.getElementById('HiddenPayrollDeductionReasonDDL').value;
+        var _Comment = document.getElementById('ct01_comment').value;
+        var _MembershipNo = document.getElementById('ct01_MembershipAccountNo').value;
+        var _ddlPayeeKey = document.getElementById('HiddenPayeeKeyDDL').value;
+        var f = document.getElementById('HiddenPayeeKeyDDL');
+        var _ddlPayeeName = '';
+        if (_ddlPayeeKey != '0')
+        {
+            _ddlPayeeName = f.options[f.selectedIndex].text;
+        }
+        var _AttachMandatory = document.getElementById('AttachMandatory').value;
+
+
+        var ResultMsg = "Your Payroll Deduction Application has been successfully saved.";
+        if (SubmitType == "Submit") {
+            ResultMsg = "Your Payroll Deduction Application has been successfully submitted.";
+        }
+
+        var form = {
+            EntryID: _EntryID,
+            SubmissionType: SubmitType,
+            SubmitterID: _SubmitterID,
+            DeductionTypeCode: _DeductionTypeCode,
+            DeductionName: _DeductionName,
+            DeductionDescription: _DeductionDescription,
+            lblCurrentDeductedAmount: _lblCurrentDeductedAmount,
+            lblAmountToBeDeducted: _lblAmountToBeDeducted,
+            txtDeductionAmount: _txtDeductionAmount,
+            dpStartDate: _dpStartDate,
+            dpEndDate: _dpEndDate,
+            ReasonCode: _ReasonCode,
+            Comment: _Comment,
+            MembershipNo: _MembershipNo,
+            ddlPayeeKey: _ddlPayeeKey,
+            ddlPayeeName: _ddlPayeeName,
+            AttachMandatory: _AttachMandatory,
+        };
+        if ($('#divLoading').is(':visible')) {
+
+
+            $.ajax({
+                type: "POST",
+                url: '@Url.Content("~/Payroll/SubmitForm")',
+                cache: false,
+                async: false,
+                dataType: "json",
+                data: form,
+                success: function (result) {
+                    if (result.Success) {
+                        $("#ConfirmUpdate").modal('toggle');
+                        $("#divLoading").hide();
+                        $(".Success-body .well").html(ResultMsg);
+                        $("#SuccessSubmit").modal();
+
+                        $("#btnOK").click(function () { RedirectTo('Submit'); });
+                    }
+                    else {
+                        $("#ConfirmUpdate").modal('toggle');
+                        $("#divLoading").hide();
+                        btn.disabled = false;
+
+                        alert(result.ErrorMsg);
+                    }
+                },
+                error: function (e) {
+
+                }
+            });
+        }
+    }
+</script>
+
+<script>
+//New function based on emergency CR - 06 June 2021
+//Update also done to FormValidation for the start date
+function toggleTabungPrihatinTNB() {
+
+	//if DDL == Tabung Warga TNB Prihatin
+	if ($('#HiddenPayrollDeductionTypeDDL').val() == '9999') {
+		//toggle the Amount
+		$('#TabungPriharinAmount').show();
+		$('#ct01_DeductionAmount').hide();
+
+		//default the deduction amount;
+		updateDeductionAmountFromTabungPriharinDeduction();
+
+		//toggle Current Deduction Amount
+		$('#ct01_CurrentDeductedAmount').closest('.form-horizontal').hide();
+
+		//toggle Membership No./ Account No.
+		$('#ct01_MembershipAccountNo').closest('.form-horizontal').hide();
+
+		//toggle Deduction Start Date
+		$('#divDeductionStartDate').closest('.form-horizontal').hide();
+		//update Deduction Start Date
+		$('#ct01_DeductionStartDate').val('@Model.startDateMin.Value.ToString("dd MMMM yyyy")');
+
+		//toggle Deduction End Date
+		$('#ct01_DeductionEndDate').closest('.form-horizontal').hide();
+
+		//toggle Comment
+		$('#ct01_comment').closest('.form-horizontal').hide();
+
+		//set to default reason
+		$('#HiddenPayrollDeductionReasonDDL').prop('selectedIndex', 1)
+
+		//toggle Reason
+		$('#HiddenPayrollDeductionReasonDDL').closest('.form-horizontal').hide();
+
+		//toggle Attachment
+		$('#AttachmentControl').hide();
+
+		//note first line
+		//$('div#AttachmentControl').siblings('div').eq(3).find('li').eq(0).text('Tabung Warga TNB prihatin akan dibuka sehingga 31.12.2021.');
+
+		//note second line
+		//$('div#AttachmentControl').siblings('div').eq(3).find('li').eq(1).text('Permohonan pemotongan gaji yang dibuat pada satu-satu bulan akan diproses pada bulan yang berikutnya. //(Contoh: Bagi permohonan gaji yang dibuat pada bulan Ogos 2021, pemotongan sebenar akan berlaku pada bulan September).');
+
+		//note first line
+		$('div#AttachmentControl').siblings('div').eq(3).find('li').eq(0).text('Tabung Warga TNB Prihatin Bantuan Mangsa Banjir telah dibuka.');
+
+		//note second line
+		$('div#AttachmentControl').siblings('div').eq(3).find('li').eq(1).text('Permohonan pemotongan gaji yang dibuat pada satu-satu bulan akan diproses pada bulan yang berikutnya. (Contoh: Bagi permohonan gaji yang dibuat pada bulan Disember 2021, pemotongan sebenar akan berlaku pada bulan Januari 2022).');
+
+	} else {
+
+		$('#TabungPriharinAmount').hide();
+		$('#ct01_DeductionAmount').show();
+
+		//default the deduction amount;
+		$('#ct01_DeductionAmount').val('');
+
+		//toggle Current Deduction Amount
+		$('#ct01_CurrentDeductedAmount').closest('.form-horizontal').show();
+
+		//toggle Membership No./ Account No.
+		$('#ct01_MembershipAccountNo').closest('.form-horizontal').show();
+
+		//toggle Deduction Start Date
+		$('#divDeductionStartDate').closest('.form-horizontal').show();
+		//update Deduction Start Date
+		$('#ct01_DeductionStartDate').val('');
+
+		//toggle Deduction End Date
+		$('#ct01_DeductionEndDate').closest('.form-horizontal').show();
+
+		//toggle Comment
+		$('#ct01_comment').closest('.form-horizontal').show();
+
+		//toggle Reason
+		$('#HiddenPayrollDeductionReasonDDL').closest('.form-horizontal').show();
+
+		//set to default reason
+		$('#HiddenPayrollDeductionReasonDDL').prop('selectedIndex', 0)
+
+		//toggle Attachment
+		$('#AttachmentControl').show();
+
+		//note first line
+		$('div#AttachmentControl').siblings('div').eq(3).find('li').eq(0).text('Please attach request form only.');
+
+		//note second line
+		$('div#AttachmentControl').siblings('div').eq(3).find('li').eq(1).text('This Payroll Deduction Application will be processed depending on monthly payroll run date.');
+	}
+}
+
+function updateDeductionAmountFromTabungPriharinDeduction() {
+	var tabungPriharinAmount = $('#TabungPriharinAmount').val();
+	var tabungPriharinOtherAmount = $('#otherDeductionAmount').val();
+
+	if (tabungPriharinAmount != 'OTHERS') {
+		$('#otherDeductionAmount').hide();
+		$('#otherDeductionAmount').val('');
+		$('#ct01_DeductionAmount').val(tabungPriharinAmount);
+	} else {
+		$('#ct01_DeductionAmount').val('');
+		$('#otherDeductionAmount').show();
+		if (parseInt(tabungPriharinOtherAmount) > 0) {
+			$('#ct01_DeductionAmount').val(tabungPriharinOtherAmount);
+		}
+	}
+}
+
+function addTabungPriharinDeduction() {
+	var selectPrihatinDeductionAmountHtml = '<select class="bs-select form-control" id="TabungPriharinAmount" name="TabungPriharinAmount" style="display: none; width: 110px;"><option value="10">RM 10</option><option value="30">RM 30</option><option value="50">RM 50</option><option value="100" selected>RM 100</option><option value="300">RM 300</option><option value="500">RM 500</option><option value="1000">RM 1000</option><option value="2000">RM 2000</option><option value="3000">RM 3000</option><option value="5000">RM 5000</option><option value="OTHERS">Others</option></select>';
+	var otherAmountHtml = '<input class="form-control" type="text" maxlength="5" id="otherDeductionAmount" style="margin-left: 5px; display: none; width: 98px;" placeholder="Min RM 1" onkeypress="return isNumberKey(event)" onkeyup="this.value = fnc(this.value, 1, 50000);" onchange="updateDeductionAmountFromTabungPriharinDeduction();">';
+	var existingHtml = $('#ct01_DeductionAmount').parent().html();
+	$('#ct01_DeductionAmount').parent().html(existingHtml + '<div class="input-group">' + selectPrihatinDeductionAmountHtml + otherAmountHtml + '</div>');
+}
+
+function updateForTabungPrihatinTNB() {
+	addTabungPriharinDeduction();
+
+	$('#TabungPriharinAmount').change(function() {
+  		updateDeductionAmountFromTabungPriharinDeduction();
+	});
+
+	$('#HiddenPayrollDeductionTypeDDL').change(function() {
+  		toggleTabungPrihatinTNB();
+	});
+}
+
+function isNumberKey(evt) {
+    	var charCode = (evt.which) ? evt.which : event.keyCode
+    	if (charCode > 31 && (charCode < 48 || charCode > 57)) {
+		return false;
+	}
+    	return true;
+}
+
+function fnc(value, min, max) {
+    	if (parseInt(value) < min || isNaN(value)) {
+        	return min;
+	} else if (parseInt(value) > max) {
+        	return max;
+	} else {
+		return value;
+	}
+}
+
+</script>
+
+
+
+@if (Model.EntryID == null)
+{
+
+    <script>
+        //New entry
+        $(window).load(function () {
+            updateForTabungPrihatinTNB();
+        });
+    </script>
+
+}
+else
+{
+
+    <script>
+        //Existing entry
+        $(window).load(function () {
+            addTabungPriharinDeduction();
+
+            $('#TabungPriharinAmount').change(function () {
+                updateDeductionAmountFromTabungPriharinDeduction();
+            });
+
+            toggleTabungPrihatinTNB();
+
+            updateForTabungPrihatinTNB();
+
+            if ($('#HiddenPayrollDeductionTypeDDL').val() == '9999') {
+                if ($('#ct01_DeductionAmount').val() != '') {
+                    $('#TabungPriharinAmount').val(parseInt($('#ct01_DeductionAmount').val()));
+                }
+            }
+        });
+    </script>
+}

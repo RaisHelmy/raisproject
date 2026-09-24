@@ -1,0 +1,997 @@
+﻿@model ESS.Claim.ViewModels.FlexiBenefitsVM
+@{
+    ViewBag.Title = "Flexi Benefits Details";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+    string currentEmpID = ViewBag.CurrEmpID.ToLower();
+    bool isApproverAllowEdit = Model.CurrentApproverID.ToLower().Contains(ViewBag.CurrEmpID.ToLower()) &&
+                               RoleMaintenance.RoleService.IsInRole("Claim - Flexi Benefits", "FlexiBenefitAdmin", currentEmpID) ||
+                               RoleMaintenance.RoleService.IsInRole("Claim - Flexi Benefits", "FlexiBenefitAdmin2", currentEmpID);
+
+    string dtStrStart = ViewBag.dtStrStart;
+    string dtStrEnd = ViewBag.dtStrEnd;
+
+    dtStrStart = String.Format("01/01/{0}", Model.Year);
+    dtStrEnd = String.Format("31/12/{0}", Model.Year);
+}
+
+<style type="text/css">
+    .hidden_1 {
+        display: none;
+    }
+
+    .LabelDisplay {
+        border: 1px #e5e5e5 solid;
+        padding: 6px;
+        width: 100%;
+        background-color: #F9F9F9;
+    }
+</style>
+
+<div class="form-section">
+    <div class="row">
+        <div class="col-md-12">
+            <h1 class="page-title">
+                Flexi Benefits Details
+                <span style="padding-left:20px;">
+                    <small></small>
+                </span>
+            </h1>
+        </div>
+        <div class="col-md-12 ">
+            <div class="pull-right">
+                <a href="@ViewBag.FBForm">Print Flexi Benefits Details</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+@using (Html.BeginForm("FlexiBenefitsViewForm", "Claims", FormMethod.Post, new { @id = "Form_FB" }))
+{
+    <input type="hidden" value="@ViewBag.CurrEmpID" id="hfCurrEmpID" />
+    <input type="hidden" value="@Model.CurrentApproverID" id="hfApproverIDs" />
+    <input type="hidden" value="@Model.StatusCode" id="hfStatusCode" />
+
+    <input type="hidden" value="@Model.ID" name="ID" />
+    <input type="hidden" value="@Model.TaskID" name="TaskID" />
+    <input type="hidden" value="@isApproverAllowEdit.ToString()" name="IsApproverAllowEdit" />
+
+    <!-- Employee Details -->
+    @Html.Partial("_EmployeeInfoClaim", Model.Submiter)
+
+    <!-- Claims Details -->
+    @Html.Partial("_FlexiBenefitsClaimDetails", Model)
+
+    <!-- Claims Subtype Selection -->
+    @Html.Partial("_FlexiBenefitsClaimSubtype", Model.ClaimSubtype)
+
+    <!-- Claims SubType -->
+    <div class="row" id="div_SubType">
+        <div class="col-md-12">
+            <!-- Claim Subtype-->
+            @foreach (var subtype in Model.ClaimSubtype)
+            {
+                if (subtype.IsChoosen)
+                {
+                    if (subtype.FormInterface == "_FBLeavePassage")
+                    {
+                        @Html.Action(@subtype.FormInterface, new { input = Model.LeavePassage, parameter = ViewBag.Parameter })
+                    }
+                    else
+                    {
+                        @Html.Action(@subtype.FormInterface, new { input = subtype, parameter = ViewBag.Parameter })
+                    }
+
+                }
+            }
+
+        </div>
+    </div>
+
+    if (isApproverAllowEdit)
+    {
+        @Html.Action("FlexiBenefitsAttachment", "Claims", new { FBAttachment = Model.FBAttachment })
+    }
+    else if ((Model.StatusCode == "1" || Model.StatusCode == "2" || Model.StatusCode == "3")
+        && currentEmpID == Model.Submiter.ID.ToString().ToLower())
+    {
+        @Html.Action("FlexiBenefitsAttachment", "Claims", new { FBAttachment = Model.FBAttachment })
+    }
+    else
+    {
+        <!-- Attachment -->
+        @Html.Action("FlexiBenefitsAttachment", "Claims", new { FBAttachment = Model.FBAttachment, Mode = "View" })
+    }
+
+    <!-- Summary -->
+    @Html.Partial("_FlexiBenefitsSummary", Model)
+
+    <!-- Payment -->
+    if (Model.Status != "Draft")
+    {
+        @Html.Partial("_FlexiBenefitsClaimPayment", Model)
+    }
+
+    <!-- Audit Log -->
+    @Html.Partial("_AuditLog")
+
+    <!-- Approval -->
+    <div class="row" id="trApprovalComments">
+        <div class="col-md-12">
+            <div class="portlet box blue">
+                <div class="mini-triangle"><img src="../Assets/img/menu-red-triangle.png" /></div>
+                <div class="portlet-title">
+                    <div class="caption">
+                        <i class="fa fa-reorder"></i>
+                        Approval Comments
+                    </div>
+                </div>
+                <div class="portlet-body form">
+                    <div class="form-body">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <label class="control-label col-md-2 col-sm-4 col-xs-4">Comments</label>
+                                        <div class=" col-md-10 col-sm-8 col-xs-8">
+                                            <textarea id="txtApprovalComment" name="Comments" class="form-control" rows="3" cols="60"></textarea>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Disclaimer -->
+    <div id="divDisclaimer" class="row">
+        <div class="col-md-12">
+            <input type="checkbox" id="chkDisclaimer"> <b>I have checked and verified the above claim accordingly.</b>
+        </div>
+    </div>
+
+    <br />
+
+    if ((Model.StatusCode == "1" || Model.StatusCode == "2" || Model.StatusCode == "3")
+        && currentEmpID == Model.Submiter.ID.ToString().ToLower())
+    {
+        <!-- Disclaimer for resubmission -->
+        <div class="row">
+            <div class="col-md-12">
+                <input type="checkbox" id="chkDisclaimerResubmit"> <b>I declare that all the expenses claimed above are expenses that have incurred as per my eligibility stated in the circular.</b>
+            </div>
+        </div>
+
+        <br />
+    }
+
+    <!-- Buttons -->
+    <div class="row">
+        <input type="hidden" name="ctl00$ContentPlaceHolder1$hfDownloadSource" id="ContentPlaceHolder1_hfDownloadSource">
+        <div class="col-md-12">
+            @if ((Model.StatusCode == "1" || Model.StatusCode == "2" || Model.StatusCode == "3")
+            && currentEmpID == Model.Submiter.ID.ToString().ToLower())
+            {
+                <input type="button" class="btn green" value="Save" onclick="SubmitValidation();" />
+            }
+            <input type="button" class="btn green" value="Verify" id="btnVerify" style="display:none;" onclick="VerifyValidation('Verified');" />
+            <input type="button" class="btn green" value="Approve" id="btnApprove" style="display:none;" onclick="ConfirmAction('Approved');" />
+            <input type="button" class="btn green" value="Agree" id="btnAgree" style="display:none;" onclick="ConfirmAction('Agreed');" />
+            <input type="button" class="btn green" value="Return" id="btnDecline" style="display:none;" onclick="DeclineValidation('Declined');" />
+            <input type="button" class="btn green" value="Withdraw" id="btnWithdraw" style="display:none;" onclick="ConfirmAction('Withdrawn');" />
+            <input type="button" class="btn green" value="Back" id="btnBack" style="" onclick="window.history.back()" />
+        </div>
+    </div>
+
+    <!-- Success Message -->
+    <div class="modal fade" id="SuccessSubmit" tabindex="-1" role="basic" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header Success-header">
+                    @*<button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>*@
+                    <h4 class="Success-title">Action Successfully Completed</h4>
+                </div>
+                <div class="modal-body Success-body">
+                    <div class="well">
+                        Your Medical Board application has been successfully submitted.
+                    </div>
+                </div>
+                <div class="modal-footer Success-footer">
+                    <a class="btn default blue" id="btnOK">
+                        <i class="fa fa-check"></i>
+                        OK
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Confirmation Message -->
+    <div class="modal fade" id="ConfirmSubmit" tabindex="-1" role="basic" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                    <h4 class="modal-title">Confirmation</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="well">
+                        Are you sure you want to Submit this Claim?\n\rPress Confirm to proceed, or Close to stay on the current page.
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn default blue " id="btnSubmitForm" onclick="SubmitForm('Submit'); return false;">
+                        <i class="fa fa-check"></i>
+                        Confirm
+                    </button>
+                    <button type="button" class="btn default" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Confirmation Message -->
+    <div class="modal fade" id="ConfirmUpdate" tabindex="-1" role="basic" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                    <h4 class="modal-title">Confirmation</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="well">
+                        Are you sure you want to Submit this Loan application?\n\rPress Confirm to proceed, or Close to stay on the current page.
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn default blue" id="btnSubmitVerified" onclick="javascript: ApproverAction(this, 'Verified')">
+                        <i class="fa fa-check"></i>
+                        Confirm
+                    </button>
+                    <button type="button" class="btn default blue" id="btnSubmitAgreed" onclick="javascript: ApproverAction(this, 'Agreed')">
+                        <i class="fa fa-check"></i>
+                        Confirm
+                    </button>
+                    <button type="button" class="btn default blue" id="btnSubmitDeclined" onclick="javascript: ApproverAction(this,'Declined')">
+                        <i class="fa fa-check"></i>
+                        Confirm
+                    </button>
+                    <button type="button" class="btn default blue" id="btnSubmitWithdrawn" onclick="javascript: ApproverAction(this,'Withdrawn')">
+                        <i class="fa fa-check"></i>
+                        Confirm
+                    </button>
+                    <button type="button" class="btn default blue" id="btnSubmitApproved" onclick="javascript: ApproverAction(this, 'Approved')">
+                        <i class="fa fa-check"></i>
+                        Confirm
+                    </button>
+                    <button type="button" class="btn default" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Gif -->
+    <div id="divLoading" style="margin: 0px; padding: 0px; position: fixed; right: 0px;
+    top: 0px; width: 100%; height: 100%; background-color:gainsboro; z-index: 30001;
+    opacity: .8; filter: alpha(opacity=70);display:none">
+        <p style="position: absolute; top: 30%; left: 30%; color: black;">
+            Loading, please wait...<img src="../Assets/img/ajax-loading.gif" />
+        </p>
+    </div>
+}
+<script>
+    var Path = '@string.Format("{0}://{1}{2}", Request.Url.Scheme, Request.Url.Authority, Url.Content("~"))';
+    var EmployeeID = '@Model.Submiter.ID';
+    var RequestID = '@Model.ID';
+    var TaskID = '@Model.TaskID';
+
+    jQuery(document).ready(function () {
+        $('.date-picker').datepicker({
+            format: 'dd/mm/yyyy',
+            autoclose: true
+        });
+
+        $('.SubtypeTable').dataTable(
+        {
+            "bLengthChange": false,
+            "bFilter": false,
+            "bPaginate": false,
+            "bInfo": false,
+            "bSort": false,
+        });
+
+        FormConfiguration();
+    });
+
+    // Helper function
+    function toDate(dateStr) {
+        var parts = dateStr.split("/");
+        return new Date(parts[2], parts[1] - 1, parts[0]);
+    }
+
+    function getParameterByName(name) {
+        name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
+        var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
+        results = regex.exec(location.search);
+        return results === null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
+    }
+
+    function addRow(tb, subtypeindex) {
+        var $div = $("#" + tb).find('tr[id^="new_line_details_"]:last');
+
+        var id = +$div[0].id.match(/\d+/g) + 1;
+        $div.after($div.clone().attr('id', 'new_line_details_' + id));
+
+        $div = $("#" + tb).find('tr[id^="new_line_details_"]:last');
+        $div.find('.subtypeCheckbox').closest('td').html('<input type="checkbox" class="subtypeCheckbox">');
+        $div.find('.StartDate').attr('name', 'ClaimSubtype[' + subtypeindex + '].SubTypeDetails[' + id + '].StartDate');
+        $div.find('.EndDate').attr('name', 'ClaimSubtype[' + subtypeindex + '].SubTypeDetails[' + id + '].EndDate');
+        $div.find('.Type').attr('name', 'ClaimSubtype[' + subtypeindex + '].SubTypeDetails[' + id + '].Type');
+        $div.find('.SelfDependant').attr('name', 'ClaimSubtype[' + subtypeindex + '].SubTypeDetails[' + id + '].SelfDependant');
+        $div.find('.Name').attr('name', 'ClaimSubtype[' + subtypeindex + '].SubTypeDetails[' + id + '].Name');
+        $div.find('.ClinicName').attr('name', 'ClaimSubtype[' + subtypeindex + '].SubTypeDetails[' + id + '].ClinicName');
+        $div.find('.ProviderName').attr('name', 'ClaimSubtype[' + subtypeindex + '].SubTypeDetails[' + id + '].ProviderName');
+        $div.find('.ShopName').attr('name', 'ClaimSubtype[' + subtypeindex + '].SubTypeDetails[' + id + '].ShopName');
+        $div.find('.ReceiptNo').attr('name', 'ClaimSubtype[' + subtypeindex + '].SubTypeDetails[' + id + '].ReceiptNo');
+        $div.find('.From').attr('name', 'ClaimSubtype[' + subtypeindex + '].SubTypeDetails[' + id + '].From');
+        $div.find('.To').attr('name', 'ClaimSubtype[' + subtypeindex + '].SubTypeDetails[' + id + '].To');
+        $div.find('.Description').attr('name', 'ClaimSubtype[' + subtypeindex + '].SubTypeDetails[' + id + '].Description');
+        $div.find('.Amount').attr('name', 'ClaimSubtype[' + subtypeindex + '].SubTypeDetails[' + id + '].Amount');
+        $div.find('.ApprovedAmount').attr('name', 'ClaimSubtype[' + subtypeindex + '].SubTypeDetails[' + id + '].ApprovedAmount');
+        $div.find('.BrandModel').attr('name', 'ClaimSubtype[' + subtypeindex + '].SubTypeDetails[' + id + '].BrandModel');
+        $div.find('.ParentsInLaws').attr('name', 'ClaimSubtype[' + subtypeindex + '].SubTypeDetails[' + id + '].ParentsInLaws');
+
+        $div.find('.StartDate').val('');
+        $div.find('.EndDate').val('');
+        $div.find('.ShopName').val('');
+        $div.find('.ProviderName').val('');
+        $div.find('.ReceiptNo').val('');
+        $div.find('.From').val('');
+        $div.find('.To').val('');
+        $div.find('.Description').val('');
+        $div.find('.ApprovedAmount').val('');
+        $div.find('.Amount').val('0.00');
+
+        $('.date-picker').datepicker({
+            format: 'dd/mm/yyyy',
+            autoclose: true
+        });
+
+        $('.date-picker').datepicker('setStartDate', '@dtStrStart');
+        $('.date-picker').datepicker('setEndDate', '@dtStrEnd');
+
+        calculateSum(tb);
+        reorderTable(tb);
+        RefineSubtypeReadability($('#' + tb), SubtypeReadabilityEnhance_isEditMode);
+    };
+
+    function add5Row(tb, subtypeindex) {
+        addRow(tb, subtypeindex);
+        addRow(tb, subtypeindex);
+        addRow(tb, subtypeindex);
+        addRow(tb, subtypeindex);
+        addRow(tb, subtypeindex);
+    }
+
+    function DeleteRow(tb) {
+        var thisTable = $('#' + tb);
+        var ch = thisTable.find('tbody input[type=checkbox]');
+        var sel = false;
+        var c = confirm('Confirm delete?');
+        if (c) {
+            ch.each(function () {
+                var $this = $(this);
+                if ($this.is(':checked')) {
+                    sel = true;	//set to true if there is/are selected row
+
+                    if ($(this).closest('tr').is('tr:only-child')) {
+                        alert('Minimum line of record is required. Please uncheck the subtype selection to remove.');
+
+
+                    } else {
+                        $(this).closest("tr.new_line").remove();
+                        calculateSum(tb);
+                    }
+
+
+                }
+            });
+            if (!sel) alert('No data selected');
+        }
+
+        reorderTable(tb);
+    }
+
+    function reorderTable(tableName) {
+        var int = 0;
+        var name = '';
+
+        $.each($('#' + tableName + ' tbody tr'), function (i, val) {
+
+            $.each($(this).find('td [name]'), function (i, val) {
+                var name = $(this).attr('name');
+                $(this).attr('name', reorder(int, name));
+                // var column =  $(this).find('[name]').attr('name').split('.');
+            });
+            int++;
+
+        });
+    }
+
+    function reorder(currentIndex, name) {
+        if (typeof name === "undefined") { } else {
+            var ColumnNaw = name.split('.');
+            var replaceIndex = ColumnNaw[1].match(/\d+/g);
+            ColumnNaw[1] = ColumnNaw[1].replace(replaceIndex, currentIndex);
+            return ColumnNaw.join('.');
+        }
+    }
+
+    function calculateApproveSum(tb) {
+        var sum = 0;
+        var grandApproveAmount = 0;
+        var grandGST = 0;
+        var grandTotal = 0;
+        var thisTable = $('#' + tb);
+
+        thisTable.find(".ApprovedAmount").each(function () {
+
+            var $row = $(this).closest("tr");
+            var amount = $row.find(".ApprovedAmount").val();
+            //add only if the value is number
+            if (!isNaN(amount) && amount.length != 0) {
+                amount = parseFloat(amount.replace(/,/g, '')) || 0;
+                $row.find(".ApprovedAmount").val(amount.toFixed(2));
+                grandApproveAmount = (grandApproveAmount + (amount * 1));
+            }
+            else {
+                $row.find(".ApprovedAmount").val('0.00');
+            }
+        });
+
+        thisTable.find(".GrandApprovedAmount").val(grandApproveAmount.toFixed(2));
+
+        $('#' + tb + 'ApproveSum').html(grandApproveAmount.toFixed(2));
+        CalculateApproveSummary();
+    }
+
+    function CalculateApproveSummary() {
+        var TotalSum = 0;
+        $('.subtypeportlet').each(function (index) {
+            var portletname = this.id;
+
+            $('#' + portletname + ' table').each(function () {
+                var tablename = this.id;
+                var totalValue = $('#' + tablename).find('.GrandApprovedAmount').val();
+                TotalSum = parseFloat(TotalSum) + parseFloat(totalValue);
+            });
+        });
+
+        $('#TotalAppSummary').html(TotalSum.toFixed(2));
+        $('#TotalAppSummaryInput').val(TotalSum.toFixed(2));
+    }
+
+    // Page Load
+    function FormConfiguration() {
+        EmployeeID = document.getElementById('hfCurrEmpID').value;
+
+        if (RequestID == null || RequestID == "") {
+            RequestID = getParameterByName('RequestID');
+        }
+
+        if (TaskID == null || TaskID == "") {
+            TaskID = getParameterByName('TaskID');
+        }
+
+        $('[name="ID"]').val(RequestID);
+        $('[name="TaskID"]').val(TaskID);
+
+        ShowHideSection();
+    }
+
+    function PostBack() {
+        $("#btnNext").click();
+    }
+
+    function ShowHideSection() {
+        var _Status = document.getElementById('txtStatus').value;
+
+        $('#Form_FB #div_SubType input[type=text]').attr('readonly', 'readonly');
+        $('#Form_FB #div_SubType select').attr('readonly', 'readonly');
+        $('#Form_FB #div_SubType textarea').attr('readonly', 'readonly');
+        $('#Remarks').attr('readonly', 'readonly');
+        $('#div_SubtypeSelection').hide();
+        $('.subtypeBtn').hide();
+
+        GetAuditLog(RequestID);
+
+        var Source = getParameterByName('Source');
+        if (Source != "Report") {
+            GetButtonConfiguration(RequestID, function (result) {
+                if (result.CanVerify == '1' || result.CanAgree == '1' || result.CanApprove == '1') {
+                    @if (isApproverAllowEdit) {
+                    <text>
+                    $('#trApprovalComments').show();
+                    $('#txtApprovalComment').removeAttr('readonly');
+
+                    $('#Form_FB #div_SubType input[type=text]').removeAttr('readonly');
+                    $('#Form_FB #div_SubType select').removeAttr('readonly');
+                    $('#Form_FB #div_SubType textarea').removeAttr('readonly');
+
+                    $('#Form_FB #div_SubType input[type=text]').removeAttr('readonly');
+                    $('#Form_FB #div_SubType select').removeAttr('readonly');
+                    $('#Form_FB #div_SubType textarea').removeAttr('readonly');
+
+                    $('#div_SubtypeSelection').show();
+                    $('.subtypeBtn').show();
+
+                    $('#Remarks').removeAttr('readonly');
+                    $.uniform.restore(".subtypeCheckbox");
+                    $('.subtypeCheckbox').show();
+                    $('.subtypeCheckbox').uniform();
+                    </text>
+                    }
+
+                    $('.ApprovedAmount').removeAttr('readonly');
+                    $('.ApprovedAmount').removeAttr('readonly');
+
+                    $('.ApprovalRemarks').removeAttr('readonly');
+                    $('.ApprovalRemarks').removeAttr('readonly');
+
+                    $('.payment').removeAttr('readonly');
+                }
+                else {
+                    $.uniform.restore(".subtypeCheckbox");
+                    $('.subtypeCheckbox').hide();
+                    $('#trApprovalComments').hide();
+                }
+            });
+        }
+    }
+
+    //Logical function (AJAX)
+    function GetAuditLog(_RequestID) {
+        jQuery.support.cors = true;
+
+        $.ajax({
+            url: Path + '/api/FlexiBenefitsWebApi/GetAuditLog?id=' + _RequestID,
+            type: 'GET',
+            contentType: "application/json;charset=utf-8",
+            success: function (result) {
+                if (result != null) {
+
+                    SetAuditLog(result);
+                }
+                else
+                    console.log('failed!');
+            },
+            error: function (x, y, z) {
+                alert(x + '\n' + y + '\n' + z);
+            }
+        });
+    }
+
+    function SetAuditLog(result) {
+        var _AuditTrailBody = '';
+
+        for (var i = 0; i < result.length; i++) {
+            var _AuditTrail = "<tr><td>" + result[i].EmployeeName + "</td><td>" +
+                result[i].FormattedDate + "</td><td>" + result[i].ActivityName + "</td><td>" +
+                result[i].ActivityAction + "</td><td>" + result[i].Comment + "</td></tr>";
+            _AuditTrailBody += _AuditTrail;
+        }
+
+        $('#tblAuditLog').find('tbody').html(_AuditTrailBody);
+    }
+
+    function GetButtonConfiguration(_RequestID, additionalCallback) {
+        jQuery.support.cors = true;
+
+        $.ajax({
+            url: Path + '/api/FlexiBenefitsWebApi/GetActionButtons?RequestID=' + _RequestID + '&CurrentEmployeeID=' + EmployeeID,
+            type: 'GET',
+            contentType: "application/json;charset=utf-8",
+            success: function (result) {
+                if (result != null) {
+                    SetButtonConfiguration(result);
+
+                    if (typeof (additionalCallback) == "function") {
+                        additionalCallback(result);
+                    }
+                }
+                else
+                    console.log('failed!');
+            },
+            error: function (x, y, z) {
+                alert(x + '\n' + y + '\n' + z);
+            }
+        });
+    }
+
+    function SetButtonConfiguration(result) {
+        var ButtonVerify = document.getElementById('btnVerify');
+        var ButtonDecline = document.getElementById('btnDecline');
+        var ButtonWithdraw = document.getElementById('btnWithdraw');
+        var ButtonApprove = document.getElementById('btnApprove');
+        var ButtonAgree = document.getElementById('btnAgree');
+        var _totalApproveAmt = $("#TotalAppSummaryInput").val();
+        var _Balance = document.getElementById('Balance').value;
+        _totalApproveAmt = _totalApproveAmt * 1;
+
+        if (result.CanDecline == '1') {
+            ButtonDecline.style.display = '';
+        }
+        else {
+            ButtonDecline.style.display = 'none';
+        }
+
+        if (result.CanWithdraw == '1') {
+            ButtonWithdraw.style.display = '';
+        }
+        else {
+            ButtonWithdraw.style.display = 'none';
+        }
+
+        //NOTE: Verify and Agree are considered to be the same (intermediate admins (Verify for Admin1, and Agree for Admin2)
+        if (result.CanVerify == '1') {
+            ButtonVerify.style.display = '';
+        }
+        else {
+            ButtonVerify.style.display = 'none';
+        }
+
+        if (result.CanAgree == '1') {
+            ButtonAgree.style.display = '';
+        }
+        else {
+            ButtonAgree.style.display = 'none';
+        }
+
+        if (result.CanApprove == '1') {
+            ButtonApprove.style.display = '';
+
+            //if ((parseFloat(_totalApproveAmt) || 0) > (parseFloat(_Balance) || 0)) {
+            //    ButtonApprove.style.display = 'none';
+            //}
+        }
+        else {
+            ButtonApprove.style.display = 'none';
+        }
+
+        if (result.CanApprove == '1' || result.CanAgree == '1' || result.CanVerify == '1') {
+            $('#divDisclaimer').show();
+        }
+        else {
+            $('#divDisclaimer').hide();
+        }
+
+        if (TaskID == "") {
+            ButtonVerify.style.display = 'none';
+            ButtonAgree.style.display = 'none';
+            ButtonApprove.style.display = 'none';
+            ButtonDecline.style.display = 'none';
+        }
+    }
+
+    function ConfirmAction(_Status) {
+        if ((_Status == "Verified" || _Status == "Agreed" || _Status == "Approved")
+                && !$('#chkDisclaimer').prop("checked")) {
+            alert('Please check the disclaimer.');
+        }
+        else {
+            if (_Status == "Withdrawn") {
+                $("#btnSubmitVerified, #btnSubmitAgreed").addClass("hidden_1");
+                $("#btnSubmitDeclined").addClass("hidden_1");
+                $("#btnSubmitApproved").addClass("hidden_1");
+                $("#btnSubmitWithdrawn").removeClass("hidden_1");
+                $(".modal-body .well").html('Are you sure you want to Withdraw this Flexi Benefits application?\n\rPress Confirm to proceed, or Close to stay on the current page.');
+                $("#btnOK").click(function () { RedirectTo('Withdrawn'); });
+                $("#ConfirmUpdate").modal('show');
+            }
+
+            if (_Status == "Verified") {
+                $("#btnSubmitVerified").removeClass("hidden_1");
+                $("#btnSubmitDeclined, #btnSubmitAgreed").addClass("hidden_1");
+                $("#btnSubmitApproved").addClass("hidden_1");
+                $("#btnSubmitWithdrawn").addClass("hidden_1");
+                $(".modal-body .well").html('Are you sure you want to Verify this Flexi Benefits application?\n\rPress Confirm to proceed, or Close to stay on the current page.');
+                $("#btnOK").click(function () { RedirectTo('Verified'); });
+                $("#ConfirmUpdate").modal('show');
+            }
+
+            if (_Status == "Agreed") {
+                $("#btnSubmitAgreed").removeClass("hidden_1");
+                $("#btnSubmitVerified").addClass("hidden_1");
+                $("#btnSubmitDeclined").addClass("hidden_1");
+                $("#btnSubmitApproved").addClass("hidden_1");
+                $("#btnSubmitWithdrawn").addClass("hidden_1");
+                $(".modal-body .well").html('Are you sure you want to Agree this Flexi Benefits application?\n\rPress Confirm to proceed, or Close to stay on the current page.');
+                $("#btnOK").click(function () { RedirectTo('Agreed'); });
+                $("#ConfirmUpdate").modal('show');
+            }
+
+            if (_Status == "Approved") {
+                $("#btnSubmitVerified, #btnSubmitAgreed").addClass("hidden_1");
+                $("#btnSubmitDeclined").addClass("hidden_1");
+                $("#btnSubmitApproved").removeClass("hidden_1");
+                $("#btnSubmitWithdrawn").addClass("hidden_1");
+                $(".modal-body .well").html('Are you sure you want to Approve this Flexi Benefits application?\n\rPress Confirm to proceed, or Close to stay on the current page.');
+                $("#btnOK").click(function () { RedirectTo('Approved'); });
+                $("#ConfirmUpdate").modal('show');
+            }
+
+            if (_Status == "Declined") {
+                $("#btnSubmitVerified, #btnSubmitAgreed").addClass("hidden_1");
+                $("#btnSubmitDeclined").removeClass("hidden_1");
+                $("#btnSubmitApproved").addClass("hidden_1");
+                $("#btnSubmitWithdrawn").addClass("hidden_1");
+                $(".modal-body .well").html('Are you sure you want to Return this Flexi Benefits application?\n\rPress Confirm to proceed, or Close to stay on the current page.');
+                $("#btnOK").click(function () { RedirectTo('Declined'); });
+                $("#ConfirmUpdate").modal('show');
+            }
+        }
+    }
+
+    function RedirectTo(_Action) {
+        switch (_Action) {
+            case "Verified":
+            case "Agreed":
+            case "Declined":
+            case "Approved":
+                window.location.href = Path + '/MSS/FlexiBenefitsInTray';
+                break;
+            case "Withdrawn":
+                window.location.href = Path + '/Claims/FlexiBenefitsHistory';
+                break;
+            default:
+                window.location.href = '/Pages/default.aspx';
+        }
+    }
+
+    function DeclineValidation(_Status) {
+        var ValidationMsg = '';
+        var _ApprovalComment = $("#txtApprovalComment").val();
+
+        if (_ApprovalComment == '')
+            ValidationMsg += '- Approval Comment is required.\n'
+
+        if (ValidationMsg != null && ValidationMsg != '') {
+            alert(ValidationMsg);
+        }
+        else {
+            ConfirmAction(_Status);
+        }
+
+    }
+
+    function VerifyValidation(_Status) {
+        var ValidationMsg = '';
+        var _firstPayment = $("#FirstPayment").val();
+        var _firstPaymentDate = $("#FirstPaymentDate").val();
+        var _secondPayment = $("#SecondPayment").val();
+        var _secondPaymentDate = $("#SecondPaymentDate").val();
+        var _totalApproveAmt = $("#TotalAppSummaryInput").val();
+        var _totalApproveAmt = $("#TotalAppSummaryInput").val();
+        var _Balance = document.getElementById('Balance').value;
+        _totalApproveAmt = _totalApproveAmt * 1;
+
+        if (_firstPayment == '')
+            ValidationMsg += '- First Payment is required.\n'
+
+        if (_firstPaymentDate == '')
+            ValidationMsg += '- First Payment Date is required.\n'
+
+        if (_firstPayment != '' && _firstPaymentDate != '') {
+            _firstPayment = _firstPayment * 1;
+            if (parseFloat(_firstPayment.toFixed(2)) == parseFloat(_totalApproveAmt.toFixed(2))) {
+                $("#SecondPayment").val('0.00');
+                _secondPayment = $("#SecondPayment").val();
+            }
+            else {
+                if (_secondPayment == '')
+                    ValidationMsg += '- Second Payment is required.\n'
+
+                if (_secondPaymentDate == '')
+                    ValidationMsg += '- Second Payment Date is required.\n'
+
+                if (_firstPaymentDate != '' && _secondPaymentDate != '') {
+                    var f = toDate(_firstPaymentDate);
+                    var t = toDate(_secondPaymentDate);
+
+                    if (t < f) {
+                        ValidationMsg += '- Second Payment Date must greater than First Payment Date.\n'
+                    }
+
+                }
+
+                if (_firstPayment != '' && _secondPayment != '') {
+                    var PaymentAmt = parseFloat(_firstPayment) + parseFloat(_secondPayment);
+
+                    if (parseFloat(PaymentAmt.toFixed(2)) != parseFloat(_totalApproveAmt.toFixed(2))) {
+                        ValidationMsg += '- The sum of Payment Amount not same as Total Approve Amount.\n'
+                    }
+                }
+
+
+            }
+        }
+
+        $('.subtypeportlet').each(function () {
+            var tablename = this.id;
+
+            var Error = eval(tablename + "ApprovalValidation()");
+            if (Error != '') {
+                ValidationMsg = ValidationMsg + Error;
+            }
+        });
+
+        if ((parseFloat(_totalApproveAmt) || 0) > (parseFloat(_Balance) || 0)) {
+            ValidationMsg += '- The Total Approve Amount has exceeded the maximum value.Please edit or delete the record to proceed.\n'
+        }
+
+        if (ValidationMsg != null && ValidationMsg != '') {
+            alert(ValidationMsg);
+        }
+        else {
+            ConfirmAction(_Status);
+        }
+    }
+
+    function ApproverAction(btn, _Action) {
+        btn.disabled = true;
+        $("#divLoading").show();
+        var _ActionReturned = _Action;
+        if (_Action == 'Declined')
+        {
+            _ActionReturned = 'Returned';
+        }
+        $(".Success-body .well").html('The application has been successfully ' + _ActionReturned + '. Status:' + _ActionReturned);
+        var myVar = setTimeout(function () { ApproverActionFunction(btn, _Action); }, 3000);
+    }
+
+    function ApproverActionFunction(btn, _Action) {
+        if (_Action == "Withdrawn") {
+            GetTaskIDForWithdrawal().done(function (returnedTaskID) {
+                $('[name=TaskID]').val(returnedTaskID);
+                PostApproverAction(_Action);
+            });
+        }
+        else {
+            PostApproverAction(_Action);
+        }
+    }
+
+    function PostApproverAction(_Action) {
+        var data = $('#Form_FB').serializeArray();
+        var _ApproverComment = document.getElementById('txtApprovalComment').value;
+
+        //Add in additional data to the original form data:
+        data.push(
+            { name: 'ActionType', value: _Action },
+            { name: 'RequestID', value: RequestID },
+            { name: 'ActionEmpID', value: EmployeeID },
+            { name: 'ApproverComment', value: _ApproverComment }
+        );
+
+        $.ajax({
+            url: '@Url.Content("~/Claims/FBPostApproverAction")',
+            type: 'POST',
+            data: data,
+            success: function (result) {
+
+                if (result.Success == true) {
+                    $("#ConfirmUpdate").modal('toggle');
+                    $("#divLoading").hide();
+                    $("#SuccessSubmit").modal();
+                } else {
+                    $("#ConfirmUpdate").modal('toggle');
+                    $("#divLoading").hide();
+                    alert(result.errorMsg);
+                    btn.disabled = false;
+
+                }
+                // ... Process the result ...
+            }
+        });
+    }
+
+    function GetTaskIDForWithdrawal() {
+        var promise = $.Deferred();
+        $.ajax({
+            url: '@Url.Action("GetTaskIDForFlexiBenefits", "CustomWorkflowConfig")',
+            type: 'GET',
+            data: {RequestID : RequestID},
+            success: function (response) {
+                if (response.Success) {
+                    TaskID = response.TaskID;
+                    promise.resolve(TaskID);
+                }
+                else {
+                    promise.reject();
+                }
+            },
+            error: function (error) {
+                promise.reject(error);
+            }
+        });
+
+        return promise;
+    }
+
+    function SubmitValidation() {
+        var _chkDisclaimer = document.getElementById("chkDisclaimerResubmit").checked;
+        var ValidationMsg = '';
+
+        if (!_chkDisclaimer) {
+            ValidationMsg += '- Disclaimer is required.\n'
+        }
+
+        // Consolidate Message
+        if (ValidationMsg != null && ValidationMsg != '') {
+            alert(ValidationMsg);
+        }
+        else {
+            $("#ConfirmSubmit .modal-body .well").html('Clicking Confirm will submit this application for Approval. If you want to make changes, click Close.');
+            $("#SuccessSubmit .modal-body .well").html('Your application has been successfully submitted.');
+            $("#ConfirmSubmit").modal('show');
+        }
+    }
+
+    function SubmitForm(SubmitType) {
+        $("#divLoading").show();
+
+        var reqID= getParameterByName('RequestID');
+        if (reqID == "") {
+            reqID = document.getElementById('txtRefID').value;
+        }
+
+        $.ajax({
+            url: '@Url.Content("~/Claims/SubmitFBAttachment")',
+            type: 'POST',
+            data: {
+                RequestID: reqID
+            },
+            success: function (result) {
+
+                $("#ConfirmSubmit").modal('hide');
+                $("#divLoading").hide();
+
+                if (result.Success == true) {
+                    $('#SuccessSubmit').modal();
+                    $('#btnOK').attr('href', '../Claims/FlexiBenefitsHistory');
+                } else {
+                    alert(result.ErrorMsg);
+                }
+                // ... Process the result ...
+            }
+        });
+    }
+
+    $("#FirstPayment").on("blur", function (e) {
+        var myNumeric = parseFloat($(this).val().replace(/,/g, ''));
+        if (!myNumeric) {
+            $(this).val('0.00');
+        }
+        else {
+            $(this).val(myNumeric.toFixed(2));
+        }
+    });
+
+    $("#SecondPayment").on("blur", function (e) {
+        var myNumeric = parseFloat($(this).val().replace(/,/g, ''));
+        if (!myNumeric) {
+            $(this).val('0.00');
+        }
+        else {
+            $(this).val(myNumeric.toFixed(2));
+        }
+
+    });
+
+</script>
+
+@Html.Partial("__FBClaimCommonScript")
+@Html.Partial("__ClaimCommonScript")

@@ -1,0 +1,286 @@
+﻿@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewBag.Title = "MSS - EPOP Approval History";
+    DateTime d1 = DateTime.Now.AddYears(-20);
+    DateTime d2 = DateTime.Now.AddYears(20);
+    string dtStrStart = d1.ToString("dd MMM yyyy");
+    string dtStrEnd = d2.ToString("dd MMM yyyy");
+}
+
+<div class="row">
+    <div class="col-md-12">
+        <br />
+        <h1 class="page-title">
+            MSS - EPOP Approval History<span style="padding-left:20px;"><small></small></span>
+        </h1>
+    </div>
+</div>
+<br />
+<div class="form-body">
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-4 control-label">Submission Date (From)</label>
+                    <div class="col-md-8 form-control-static">
+                        <div class="input-group date date-picker" id="divSubmissionDateFrom" data-date-format="dd MM yyyy">
+                            <input type="text" class="form-control" id="SubDateFrom" name="SubDateFrom" />
+                            <span class="input-group-btn">
+                                <button type="button" class="btn default"><i class="fa fa-calendar"></i></button>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-4 control-label">Submission Date (To)</label>
+                    <div class="col-md-8 form-control-static">
+                        <div class="input-group date date-picker" id="divSubmissionDateTo" data-date-format="dd MM yyyy">
+                            <input type="text" class="form-control" id="SubDateTo" name="SubDateTo" />
+                            <span class="input-group-btn">
+                                <button type="button" class="btn default"><i class="fa fa-calendar"></i></button>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-4 control-label">Action Date (From)</label>
+                    <div class="col-md-8 form-control-static">
+                        <div class="input-group date date-picker" id="divActionDateFrom" data-date-format="dd MM yyyy">
+                            <input type="text" class="form-control" id="ActDateFrom" name="ActDateFrom" />
+                            <span class="input-group-btn">
+                                <button type="button" class="btn default"><i class="fa fa-calendar"></i></button>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-4 control-label">Action Date (To)</label>
+                    <div class="col-md-8 form-control-static">
+                        <div class="input-group date date-picker" id="divActionDateTo" data-date-format="dd MM yyyy">
+                            <input type="text" class="form-control" id="ActDateTo" name="ActDateTo" />
+                            <span class="input-group-btn">
+                                <button type="button" class="btn default"><i class="fa fa-calendar"></i></button>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-4 control-label">Category</label>
+                    <div class="col-md-8 form-control-static">
+                        <select class="form-control" id="ddlRequestType">
+                            <option value="">- All -</option>
+                            <option value="Specialist">EPOP Specialist</option>
+                            <option value="Executive">EPOP Executive</option>
+                            <option value="Non-Executive">EPOP Non-Executive</option>
+                        </select>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-4 control-label">Action Type</label>
+                    <div class="col-md-8 form-control-static">
+                        <select class="form-control" id="ActionType">
+                            <option value="">- All -</option>
+                            <option value="PE">Submitted</option>
+                            <option value="A">Submitted</option>
+                            <option value="PE">Submitted</option>
+                            <option value="E6">Extended for 6 months</option>
+                            <option value="E6V">Extended for 6 months (Verified)</option>
+                            <option value="E12">Extended for 12 months</option>
+                            <option value="E12V">Extended for 12 months (Verified)</option>
+                            <option value="R">Recommended</option>
+                            <option value="RV">Recommended (Verified)</option>
+                            <option value="NR">Not Recommended</option>
+                            <option value="NRV">Not Recommended (Verified)</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-4 control-label">Employee</label>
+                    <div class="col-md-8 form-control-static">
+                        @Html.Partial("_PeoplePicker")
+                        @*PeoplePicker hiddenfieldid = hfEmpID, textboxid =txtEmpName*@
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">&nbsp;</div>
+    <div class="row">
+        <div class="col-md-12">
+            <div class="text-right">
+                <input type="button" id="btn-Search" class="btn green btn-Search" value="Search" onclick="SearchListing();">
+                <input id="btn-Clear" type="button" class="btn default " value="Clear" onclick="ClearFilter();">
+            </div>
+        </div>
+    </div>
+    <div class="row">&nbsp;</div>
+    <div class="row">
+        <div class="col-md-12">
+            <div id="SearchResult">
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+    function SearchListing() {
+        var _DateFrom = $('#SubDateFrom').val();
+        var _DateTo = $('#SubDateTo').val();
+        var _ActDateFrom = $('#ActDateFrom').val();
+        var _ActDateTo = $('#ActDateTo').val();
+        var _Type = $('#ddlRequestType').val();
+        var _ActionType = $('#ActionType').val();
+        var _EmpID = $('#hfEmpID').val();
+
+
+        $("#SearchResult").html("LOADING...");
+
+        $.ajax({
+            type: "GET",
+            url: '@Url.Content("~/MSS/_EPOPAppHistoryResult")',
+            cache: false,
+            dataType: "html",
+            data: {
+                SubDateFrom: _DateFrom, SubDateTo: _DateTo, ActDateFrom: _ActDateFrom, ActDateTo: _ActDateTo, Type: _Type, ActionType: _ActionType, SearchEmpID: _EmpID
+            },
+            success: function (content) {
+                $("#SearchResult").html(content);
+            },
+            error: function (e) {
+                console.log(e);
+            }
+        });
+    }
+
+    jQuery(document).ready(function () {
+        $('#divSubmissionDateFrom').datepicker('setStartDate', '@dtStrStart');
+        $('#divSubmissionDateFrom').datepicker('setEndDate', '@dtStrEnd');
+
+        $('#divSubmissionDateTo').datepicker('setStartDate', '@dtStrStart');
+        $('#divSubmissionDateTo').datepicker('setEndDate', '@dtStrEnd');
+
+        $('#divActionDateFrom').datepicker('setStartDate', '@dtStrStart');
+        $('#divActionDateFrom').datepicker('setEndDate', '@dtStrEnd');
+
+        $('#divActionDateTo').datepicker('setStartDate', '@dtStrStart');
+        $('#divActionDateTo').datepicker('setEndDate', '@dtStrEnd');
+
+        $("#divSubmissionDateFrom").datepicker({
+            autoclose: true,
+        }).on('changeDate', function (selected) {
+            var minDate = new Date(selected.date.valueOf());
+
+            minDate.setDate(minDate.getDate() + 1);
+            $('#divSubmissionDateTo').datepicker('setStartDate', minDate);
+        });
+
+        $("#divSubmissionDateTo").datepicker({
+            autoclose: true,
+        })
+            .on('changeDate', function (selected) {
+                var minDate = new Date(selected.date.valueOf());
+                minDate.setDate(minDate.getDate() - 1);
+                $('#divSubmissionDateFrom').datepicker('setEndDate', minDate);
+            });
+
+        $("#divActionDateFrom").datepicker({
+            autoclose: true,
+        }).on('changeDate', function (selected) {
+            var minDate = new Date(selected.date.valueOf());
+
+            minDate.setDate(minDate.getDate() + 1);
+            $('#divActionDateTo').datepicker('setStartDate', minDate);
+        });
+
+        $("#divActionDateTo").datepicker({
+            autoclose: true,
+        })
+            .on('changeDate', function (selected) {
+                var minDate = new Date(selected.date.valueOf());
+                minDate.setDate(minDate.getDate() - 1);
+                $('#divActionDateFrom').datepicker('setEndDate', minDate);
+            });
+
+        $("#SubDateFrom").on("blur", function (e) {
+            if ($('#SubDateFrom').val() == "") {
+                $('#divSubmissionDateTo').datepicker('setStartDate', '@dtStrStart');
+            }
+
+        });
+
+        $("#SubDateTo").on("blur", function (e) {
+            if ($('#SubDateTo').val() == "") {
+                $('#divSubmissionDateFrom').datepicker('setEndDate', '@dtStrEnd');
+            }
+
+        });
+
+        $("#ActDateFrom").on("blur", function (e) {
+            if ($('#ActDateFrom').val() == "") {
+                $('#divActionDateTo').datepicker('setStartDate', '@dtStrStart');
+            }
+
+        });
+
+        $("#ActDateTo").on("blur", function (e) {
+            if ($('#ActDateTo').val() == "") {
+                $('#divActionDateFrom').datepicker('setEndDate', '@dtStrEnd');
+            }
+
+        });
+
+        SearchListing();
+    });
+
+
+    function ClearFilter() {
+        $('#SubDateFrom').val('');
+        $('#SubDateTo').val('');
+        $('#ActDateFrom').val('');
+        $('#ActDateTo').val('');
+        $('#hfEmpID').val('');
+        $('#txtEmpName').val('');
+        $('#Status').val('');
+        SearchListing();
+    }
+</script>

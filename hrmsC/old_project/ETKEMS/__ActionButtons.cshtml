@@ -1,0 +1,74 @@
+﻿@model Tuple<ETKEMS.Models.ETKEMSViewModel, SEP.RoutingManagement.Service.AllowAction>
+@{
+    var Vm = Model.Item1;
+    var ApprovalAction = Model.Item2;
+
+    String CurrentEmployeeID = ViewBag.CurrentEmployeeID;
+    String CurrentApproverID = Vm.ApproverID;
+    String BackUrl = ViewBag.BackUrl;
+    String TaskID = ViewBag.TaskID;
+    ETKEMS.Status Status = ViewBag.Status;
+
+    bool showApprovalAction = !String.IsNullOrEmpty(TaskID) &&
+                              !String.IsNullOrEmpty(CurrentApproverID) &&
+                               CurrentApproverID.Contains(CurrentEmployeeID);
+
+    bool isCurrentEmployeeRequest = Vm.RequestorID.GetValueOrDefault().ToString() == CurrentEmployeeID;
+}
+
+@if (showApprovalAction)
+{
+    @Html.Partial("__ApprovalRemarks")
+}
+
+<div class="row">
+    <div class="col-md-12">
+        @if (isCurrentEmployeeRequest)
+        {
+            if (Status == ETKEMS.Status.Draft || Status == ETKEMS.Status.Declined)
+            {
+                <input type="button" class="btn green" value="Submit" id="btnSubmit" onclick="SubmitForm()" />
+            }
+
+            // If payment not yet made
+            if ((!Vm.PaymentMade && (Status == ETKEMS.Status.Approved || Status == ETKEMS.Status.ExtensionRequest_Approved ||
+                                    Status == ETKEMS.Status.ExtensionRequest_Declined || Status == ETKEMS.Status.PaymentProcessing_Declined)) ||
+                 //if already make payment but extension request is approved, the open for another payment request
+                 (Vm.PaymentMade && Status == ETKEMS.Status.ExtensionRequest_Approved))
+            {
+                <input type="button" id="btnPayment" class="btn green" value="Payment Request" onclick="SubmitPaymentRequest()" />
+            }
+
+            if (Vm.AllowExtension && (Status == ETKEMS.Status.Approved || Status == ETKEMS.Status.PaymentProcessing_Approved ||
+                                      Status == ETKEMS.Status.PaymentProcessing_Declined || Status == ETKEMS.Status.ExtensionRequest_Declined))
+            {
+                <input type="button" id="btnExtension" class="btn green" value="Extension Request" onclick="SubmitExtensionRequest()" />
+            }
+        }
+
+        @if (showApprovalAction)
+        {
+            if (ApprovalAction.CanAgree == "1")
+            {
+                <input type="button" id="btnAgree" class="btn green" value="Agree" onclick="ApproverAction('Agree')" />
+            }
+
+            if (ApprovalAction.CanApprove == "1")
+            {
+                <input type="button" id="btnApprove" class="btn green" value="Approve" onclick="ApproverAction('Approve')" />
+            }
+
+            if (ApprovalAction.CanDecline == "1")
+            {
+                <input type="button" id="btnDecline" class="btn red" value="Decline" onclick="ApproverAction('Decline')" /> <!--validate decline-->
+            }
+        }
+
+        <input type="button" class="btn green" value="Back" id="btnBack" onclick="BackToHistory()" />
+    </div>
+</div>
+<script>
+    function BackToHistory() {
+        window.location.href = '@BackUrl';
+    }
+</script>

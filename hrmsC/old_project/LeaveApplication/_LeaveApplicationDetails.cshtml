@@ -1,0 +1,1521 @@
+﻿@model LeaveApplication.Models.LeaveApplicationVM
+@{
+    Layout = null;
+    string MinResubmitDay = Model.StartDate;
+    string MaxResubmitDay = Model.EndDate;
+
+    string CurrentUserID = ViewBag.CurrentUserID;
+    string CurrentApprovalID = string.IsNullOrEmpty(Model.ApproverID) ? "" : Model.ApproverID;
+    string IsCurrentApproval = CurrentApprovalID.Contains(ViewBag.CurrentUserID) ? "true" : "false";
+    bool IsSubmitter = CurrentUserID == Model.EmployeeID;
+}
+
+<style>
+    .leave-fullwidth-dropdown {
+        width: 100%;
+    }
+
+    input[name=LeaveStatusDescription] {
+        font-weight: bold;
+    }
+
+    .ulLeaveSubtype li {
+        cursor: pointer;
+        padding: 5px 10px;
+        min-width: 150px;
+        list-style-type: none;
+    }
+
+    .ulLeaveSubtype {
+        border-left: 1px solid #999999;
+        border-right: 1px solid #999999;
+        border-bottom: 1px solid #999999;
+        padding: 0;
+        position: absolute;
+        background-color: white;
+        z-index: 9;
+    }
+</style>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="portlet box blue">
+            <div class="mini-triangle"><img src="/_layouts/15/TNBESS/Assets/img/menu-red-triangle.png" /></div>
+            <div class="portlet-title">
+                <div class="caption">
+                    <i class="fa fa-reorder"></i>Application Details
+                    <a href="#" onclick="window.open('http://livewire.tnb.com.my/sites/ghr/downloads/Pages/BorangPekeliling.aspx')" title="Link to Pekeliling">
+                        <img src="../../images/info16by16.gif" />
+                    </a>
+                </div>
+                <div class="tools">
+                    <a title="" data-original-title="" href="javascript:;" class="collapse"> </a>
+                </div>
+            </div>
+            <div class="portlet-body form">
+                @*Brand new form*@
+                @if ((Model.LeaveStatus == "Draft" || Model.LeaveStatus == "DR") && Model.IsNewRecord)
+                {
+                    <div class="form-body">
+                        <div class="row" style="display : none;">
+                            <div class="col-md-6">
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <label class="control-label col-md-4">Reference No.</label>
+                                        <div class="col-md-8 form-control-static">
+                                            <input type="text" class="form-control" readonly style="font-weight:bold; color:blue;"
+                                                   name="LeaveNo" value="@Model.LeaveNo">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <label class="control-label col-md-4">Leave Status</label>
+                                        <div class="col-md-8 form-control-static">
+                                            <input type="hidden" name="LeaveStatus" value="@Model.LeaveStatus" />
+
+                                            @if (Model.LeaveStatus == "Declined" || Model.LeaveStatus == "Withdrawn" || Model.LeaveStatus == "Cancelled" ||
+                                                 Model.LeaveStatus == "DE" || Model.LeaveStatus == "WD" || Model.LeaveStatus == "CA")
+                                            {
+                                                <input type="text" class="form-control" readonly style="color: red;"
+                                                       name="LeaveStatusDescription" value="@Model.LeaveStatusDescription">
+                                            }
+                                            else
+                                            {
+                                                <input type="text" class="form-control" readonly style="color:green;"
+                                                       name="LeaveStatusDescription" value="@Model.LeaveStatusDescription">
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <label class="control-label col-md-4">
+                                            Leave Type <span style="color:red;"> *</span>
+                                        </label>
+                                        <div class="col-md-8 form-control-static">
+                                            <input type="hidden" name="LeaveTypeCode" />
+                                            <input type="hidden" name="LeaveTypeName" />
+                                            <select tabindex="0" id="ddlLeaveType" class="form-control" onchange="OnLeaveTypeChanged(); PopulateLeaveSubtype(); TransitionFocus('ddlLeaveSubtype');"></select>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <label class="control-label col-md-4">
+                                            Leave Subtype <span style="color:red;"> *</span>
+                                        </label>
+                                        <div class="col-md-8 form-control-static">
+                                            <input type="hidden" name="LeaveSubtypeCode" />
+                                            <input type="hidden" name="LeaveSubtypeName" />
+                                            <select tabindex="0" id="ddlLeaveSubtype" class="form-control">
+                                                <option value=""> - Please Select - </option>
+                                            </select>
+                                            <div class="ulLeaveSubtypeDiv" style="display:none">
+                                                <ul class="ulLeaveSubtype">
+                                                    <li data-value=""> - Please Select - </li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row EmployeePicker" style="display : none;">
+                            <div class="col-md-6">
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <label class="control-label col-md-4">Employee</label>
+                                        <div class="col-md-8 form-control-static">
+                                            @Html.Action("_PeoplePickerExt", "PeoplePicker", new { CurrEmpID = Model.Submiter.ID, SearchType = "TwoLevelSubordinates" })
+                                            @*PeoplePicker hiddenfieldid = hfEmpID, textboxid =txtEmpName*@
+
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!--Start Date & End Date-->
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <label class="control-label col-md-2">
+                                            Start Date <span style="color:red;"> *</span>
+                                        </label>
+                                        <div class="col-md-4 form-control-static">
+                                            <div class="input-group date start-date-picker" data-date-format="dd/mm/yyyy">
+                                                <input type="text" class="form-control StartDate" id="StartDate" name="StartDate" onchange="UpdateTotalDays(event);TransitionFocus('btnEndDate');" />
+                                                <span class="input-group-btn">
+                                                    <button type="button" id="btnStartDate" class="btn default"><i class="fa fa-calendar"></i></button>
+                                                </span>
+                                            </div>
+                                        </div>
+
+                                        <label class="control-label col-md-2">
+                                            End Date <span style="color:red;"> *</span>
+                                        </label>
+                                        <div class="col-md-4 form-control-static">
+                                            <div class="input-group date end-date-picker" data-date-format="dd/mm/yyyy">
+                                                <input type="text" class="form-control EndDate" id="EndDate" name="EndDate" onchange="UpdateTotalDays(event);TransitionFocus('ddlLeaveReason');" />
+                                                <span class="input-group-btn">
+                                                    <button type="button" id="btnEndDate" class="btn default"><i class="fa fa-calendar"></i></button>
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <label class="control-label col-md-4">Available / Balance</label>
+                                        <div class="col-md-8 form-control-static">
+                                            @*<input type="text" id="LeaveBalanceInfo" class="form-control" readonly
+                                                style="background: white url('@Url.Content("/_layouts/15/images/info16by16.gif")') right no-repeat; cursor: pointer; background-position: 95%;">*@
+                                            <label name="LeaveBalanceInfo" id="LeaveBalanceInfo" style="padding: 5px 15px;"></label>
+                                            <img id="imgBalanceInfo" src="/_layouts/15/images/info16by16.gif" alt="leaveInfo" title="">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <label class="control-label col-md-4">Total Days</label>
+                                        <div class="col-md-8 form-control-static">
+                                            <input type="text" id="TotalDay" class="form-control" readonly
+                                                   name="TotalDay" value="@Model.TotalDay">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="divExtraFields">
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <label class="control-label col-md-4">
+                                            Reason <span style="color:red;"> *</span>
+                                        </label>
+                                        <div class="col-md-8 form-control-static">
+                                            <input type="hidden" name="Reason" />
+                                            <select id="ddlLeaveReason" class="form-control" onchange="OnLeaveReasonChanged();"></select>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <label class="control-label col-md-2">Description/Comment <span style="color: red; display: none" id='spanComment'> *</span></label>
+                                        <div class="col-md-10 form-control-static">
+                                            @Html.TextAreaFor(m => m.Comment, new { @class = "form-control", rows = "5", maxlength = 2000 })
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+                @*Opening a draft/ withdrawn or cancelled leave*@
+                else if (Model.IsEditable && !Model.IsNewRecord && IsSubmitter)
+                {
+                    <div class="form-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <label class="control-label col-md-4">Reference No.</label>
+                                        <div class="col-md-8 form-control-static">
+                                            <input type="text" class="form-control" readonly style="font-weight:bold; color:blue"
+                                                   name="LeaveNo" value="@Model.LeaveNo">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <label class="control-label col-md-4">Leave Status</label>
+                                        <div class="col-md-8 form-control-static">
+                                            <input type="hidden" name="LeaveStatus" value="@Model.LeaveStatus" />
+                                            @if (Model.LeaveStatus == "Declined" || Model.LeaveStatus == "Withdrawn" || Model.LeaveStatus == "Cancelled" ||
+                                                 Model.LeaveStatus == "DE" || Model.LeaveStatus == "WD" || Model.LeaveStatus == "CA")
+                                            {
+                                                <input type="text" class="form-control" readonly style="color: red;"
+                                                       name="LeaveStatusDescription" value="@Model.LeaveStatusDescription">
+                                            }
+                                            else
+                                            {
+                                                <input type="text" class="form-control" readonly style="color:green;"
+                                                       name="LeaveStatusDescription" value="@Model.LeaveStatusDescription">
+                                            }
+
+
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        @if (Model.LeaveStatus == "Draft" || Model.LeaveStatus == "DR")
+                        {
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-horizontal">
+                                        <div class="form-group">
+                                            <label class="control-label col-md-4">Leave Type <span style="color:red;"> *</span> </label>
+                                            <div class="col-md-8 form-control-static">
+                                                <input type="hidden" name="LeaveTypeCode" value="@Model.LeaveTypeCode" />
+                                                <input type="hidden" name="LeaveTypeName" value="@Model.LeaveTypeName" />
+                                                <select tabindex="0" id="ddlLeaveType" class="form-control" onchange="OnLeaveTypeChanged();PopulateLeaveSubtype();TransitionFocus('ddlLeaveSubtype');"></select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-horizontal">
+                                        <div class="form-group">
+                                            <label class="control-label col-md-4">Leave Subtype <span style="color:red;"> *</span> </label>
+                                            <div class="col-md-8 form-control-static">
+                                                <input type="hidden" name="LeaveSubtypeCode" value="@Model.LeaveSubtypeCode" />
+                                                <input type="hidden" name="LeaveSubtypeName" value="@Model.LeaveSubtypeName" />
+                                                <select tabindex="0" id="ddlLeaveSubtype" class="form-control">
+                                                    <option value=""> - Please Select - </option>
+                                                </select>
+                                                <div class="ulLeaveSubtypeDiv" style="display:none">
+                                                    <ul class="ulLeaveSubtype">
+                                                        <li data-value=""> - Please Select - </li>
+                                                    </ul>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-horizontal">
+                                        <div class="form-group">
+                                            <label class="control-label col-md-4">Leave Type</label>
+                                            <div class="col-md-8 form-control-static">
+                                                <input type="hidden" name="LeaveTypeCode" value="@Model.LeaveTypeCode" />
+                                                <input type="hidden" name="LeaveTypeName" value="@Model.LeaveTypeName" />
+                                                <input type="text" class="form-control" readonly
+                                                       value="@Model.LeaveTypeName">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-horizontal">
+                                        <div class="form-group">
+                                            <label class="control-label col-md-4">Leave Subtype</label>
+                                            <div class="col-md-8 form-control-static">
+                                                <input type="hidden" name="LeaveSubtypeCode" value="@Model.LeaveSubtypeCode" />
+                                                <input type="hidden" name="LeaveSubtypeName" value="@Model.LeaveSubtypeName" />
+                                                <input type="text" class="form-control" readonly
+                                                       value="@Model.LeaveSubtypeName">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+
+
+                        <div class="row EmployeePicker" style="display : none;">
+                            <div class="col-md-6">
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <label class="control-label col-md-4">Employee</label>
+                                        <div class="col-md-8 form-control-static">
+                                            @Html.Action("_PeoplePickerExt", "PeoplePicker", new { CurrEmpID = Model.Submiter.ID, SearchType = "TwoLevelSubordinates" })
+                                            @*PeoplePicker hiddenfieldid = hfEmpID, textboxid =txtEmpName*@
+
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!--Start Date & End Date-->
+                        <input type="hidden" value="@Model.StartDate" id="MinResubmitDate" />
+                        <input type="hidden" value="@Model.EndDate" id="MaxResubmitDate" />
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <label class="control-label col-md-2">
+                                            Start Date <span style="color:red;"> *</span>
+                                        </label>
+                                        <div class="col-md-4 form-control-static">
+                                            <div class="input-group date start-date-picker" data-date-format="dd/mm/yyyy">
+                                                <input type="text" class="form-control StartDate"
+                                                       id="StartDate" name="StartDate" value="@Model.StartDate" onchange="UpdateTotalDays(event);TransitionFocus('btnEndDate');" />
+                                                <span class="input-group-btn">
+                                                    <button type="button" id="btnStartDate" class="btn default"><i class="fa fa-calendar"></i></button>
+                                                </span>
+                                            </div>
+                                        </div>
+
+                                        <label class="control-label col-md-2">
+                                            End Date <span style="color:red;"> *</span>
+                                        </label>
+                                        <div class="col-md-4 form-control-static">
+                                            <div class="input-group date end-date-picker" data-date-format="dd/mm/yyyy">
+                                                <input type="text" class="form-control EndDate"
+                                                       id="EndDate" name="EndDate" value="@Model.EndDate" onchange="UpdateTotalDays(event);TransitionFocus('ddlLeaveReason');" />
+                                                <span class="input-group-btn">
+                                                    <button type="button" id="btnEndDate" class="btn default"><i class="fa fa-calendar"></i></button>
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <label class="control-label col-md-4">Available / Balance</label>
+                                        <div class="col-md-8 form-control-static">
+                                            @*<input type="text" id="LeaveBalanceInfo" class="form-control" readonly
+                                                style="background: white url('@Url.Content("/_layouts/15/images/info16by16.gif")') right no-repeat; cursor: pointer; background-position: 95%;">*@
+                                            <label name="LeaveBalanceInfo" id="LeaveBalanceInfo" style="padding: 5px 15px;"></label>
+                                            <img id="imgBalanceInfo" src="/_layouts/15/images/info16by16.gif" alt="leaveInfo" title="">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <label class="control-label col-md-4">Total Days</label>
+                                        <div class="col-md-8 form-control-static">
+                                            <input type="text" id="TotalDay" class="form-control" readonly
+                                                   name="TotalDay" value="@Model.TotalDay">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="divExtraFields">
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <label class="control-label col-md-4">Reason <span style="color:red;"> *</span> </label>
+                                        <div class="col-md-8 form-control-static">
+                                            <input type="hidden" name="Reason" value="@Model.Reason" />
+                                            <select id="ddlLeaveReason" class="form-control" onchange="OnLeaveReasonChanged();"></select>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <label class="control-label col-md-2">Description/Comment <span style="color: red; display: none" id='spanComment'> *</span></label>
+                                        <div class="col-md-10 form-control-static">
+                                            @Html.TextAreaFor(m => m.Comment, new { @Value = Model.Comment, @class = "form-control", rows = "5", maxlength = 2000 })
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+                // View Mode
+                else
+                {
+                    <div class="form-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <label class="control-label col-md-4">Reference No.</label>
+                                        <div class="col-md-8 form-control-static">
+                                            <input type="text" class="form-control" readonly style="font-weight:bold; color:blue"
+                                                   name="LeaveNo" value="@Model.LeaveNo">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <label class="control-label col-md-4">Leave Status</label>
+                                        <div class="col-md-8 form-control-static">
+                                            <input type="hidden" name="LeaveStatus" value="@Model.LeaveStatus" />
+                                            @if (Model.LeaveStatus == "Declined" || Model.LeaveStatus == "Withdrawn" || Model.LeaveStatus == "Cancelled" ||
+                                                 Model.LeaveStatus == "DE" || Model.LeaveStatus == "WD" || Model.LeaveStatus == "CA")
+                                            {
+                                                <input type="text" class="form-control" readonly style="color: red;"
+                                                       name="LeaveStatusDescription" value="@Model.LeaveStatusDescription">
+                                            }
+                                            else
+                                            {
+                                                <input type="text" class="form-control" readonly style="color:green;"
+                                                       name="LeaveStatusDescription" value="@Model.LeaveStatusDescription">
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+
+                        @if (!String.IsNullOrEmpty(Model.ApproverName))
+                        {
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-horizontal">
+                                        <div class="form-group">
+                                            <label class="control-label col-md-4">Current Approver</label>
+                                            <div class="col-md-8 form-control-static">
+                                                <input type="hidden" name="ApproverID" value="@Model.ApproverID" />
+                                                <input type="hidden" name="ApproverName" value="@Model.ApproverName" />
+                                                <input type="text" class="form-control" readonly
+                                                       value="@Model.ApproverName" title="@Model.ApproverName">
+
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <label class="control-label col-md-4">Leave Type</label>
+                                        <div class="col-md-8 form-control-static">
+                                            <input type="hidden" name="LeaveTypeCode" value="@Model.LeaveTypeCode" />
+                                            <input type="hidden" name="LeaveTypeName" value="@Model.LeaveTypeName" />
+                                            <input type="text" class="form-control" readonly
+                                                   value="@Model.LeaveTypeName">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <label class="control-label col-md-4">Leave Subtype</label>
+                                        <div class="col-md-8 form-control-static">
+                                            <input type="hidden" name="LeaveSubtypeCode" value="@Model.LeaveSubtypeCode" />
+                                            <input type="hidden" name="LeaveSubtypeName" value="@Model.LeaveSubtypeName" />
+                                            <input type="text" class="form-control" readonly
+                                                   value="@Model.LeaveSubtypeName">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row EmployeePicker" style="display : none;">
+                            <div class="col-md-12">
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <label class="control-label col-md-2">
+                                            Employee
+                                        </label>
+                                        <div class="col-md-4 form-control-static">
+                                            <input type="text" class="form-control" readonly
+                                                   id="txtEmpName" value="@(Model.Submiter.EmployeeCode + " - " + Model.Submiter.EmployeeName)">
+                                            <input type="hidden" name="EmployeeID" value="@Model.EmployeeID" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        @if (IsCurrentApproval == "false" ||
+                                                                            (Model.LeaveStatus == "PC" || Model.LeaveStatus == "Pending Cancellation"))
+                        {
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="form-horizontal">
+                                        <div class="form-group">
+                                            <label class="control-label col-md-2">
+                                                Start Date
+                                            </label>
+                                            <div class="col-md-4 form-control-static">
+                                                <input type="text" class="form-control" readonly
+                                                       id="StartDate" name="StartDate" value="@Model.StartDate">
+                                            </div>
+
+                                            <label class="control-label col-md-2">
+                                                End Date
+                                            </label>
+                                            <div class="col-md-4 form-control-static">
+                                                <input type="text" class="form-control" readonly
+                                                       id="EndDate" name="EndDate" value="@Model.EndDate">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="form-horizontal">
+                                        <div class="form-group">
+                                            <label class="control-label col-md-2">
+                                                Start Date
+                                            </label>
+                                            <div class="col-md-4 form-control-static">
+                                                <div class="input-group date start-date-picker" data-date-format="dd/mm/yyyy">
+                                                    <input type="text" class="form-control StartDate"
+                                                           id="StartDate" name="StartDate" value="@Model.StartDate" onchange="UpdateTotalDays(event);" />
+                                                    <span class="input-group-btn">
+                                                        <button type="button" id="btnStartDate" class="btn default"><i class="fa fa-calendar"></i></button>
+                                                    </span>
+                                                </div>
+                                            </div>
+
+                                            <label class="control-label col-md-2">
+                                                End Date
+                                            </label>
+                                            <div class="col-md-4 form-control-static">
+                                                <div class="input-group date end-date-picker" data-date-format="dd/mm/yyyy">
+                                                    <input type="text" class="form-control EndDate"
+                                                           id="EndDate" name="EndDate" value="@Model.EndDate" onchange="UpdateTotalDays(event);" />
+                                                    <span class="input-group-btn">
+                                                        <button type="button" id="btnEndDate" class="btn default"><i class="fa fa-calendar"></i></button>
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <label class="control-label col-md-4">Available / Balance</label>
+                                        <div class="col-md-8 form-control-static">
+                                            @*<input type="text" id="LeaveBalanceInfo" class="form-control" readonly
+                                                style="background: white url('@Url.Content("/_layouts/15/images/info16by16.gif")') right no-repeat; cursor: pointer; background-position: 95%;">*@
+                                            <label name="LeaveBalanceInfo" id="LeaveBalanceInfo" style="padding: 5px 15px;"></label>
+                                            <img id="imgBalanceInfo" src="/_layouts/15/images/info16by16.gif" alt="leaveInfo" title="">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <label class="control-label col-md-4">Total Days</label>
+                                        <div class="col-md-8 form-control-static">
+                                            <input type="text" id="TotalDay" class="form-control" readonly
+                                                   name="TotalDay" value="@Model.TotalDay">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="divExtraFields">
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <label class="control-label col-md-4">Reason</label>
+                                        <div class="col-md-8 form-control-static">
+                                            <input type="text" class="form-control" readonly
+                                                   name="Reason" value="@Model.Reason">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <label class="control-label col-md-2">Description/Comment</label>
+                                        <div class="col-md-10 form-control-static">
+                                            @Html.TextAreaFor(m => m.Comment, new { @Value = @Model.Comment, @class = "form-control", rows = "5", maxlength = 2000, @readonly = "readonly" })
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    var LeaveTypes = null;
+    var LeaveSubtypes = null;
+
+    $(function () {
+        $('[data-toggle="tooltip"]').tooltip();
+        
+        $('#ddlLeaveType').select2({
+            showSearchInput: false,
+            minimumResultsForSearch: -1
+        });
+
+        //$('#ddlLeaveSubtype').select2({
+        //    showSearchInput: false,
+        //    minimumResultsForSearch: -1
+        //});
+
+        $('#ddlLeaveReason').select2({
+            showSearchInput: false,
+            minimumResultsForSearch: -1
+        });
+
+        $("#txtEmpName").val('@(Model.Submiter.EmployeeCode + " - " + Model.Submiter.EmployeeName)');
+        $("#hfEmpID").val('@Model.EmployeeID');
+
+        @if (Model.LeaveStatus == "Draft" || Model.LeaveStatus == "Cancelled" || Model.LeaveStatus == "Withdrawn" ||
+             Model.LeaveStatus == "DR"    || Model.LeaveStatus == "CA"        || Model.LeaveStatus == "WD")
+        {
+        <text>
+            RetrieveLeaveTypeOptions();
+        </text>
+        }
+
+        var dpkStartDate = $(".start-date-picker");
+        var dpkEndDate = $(".end-date-picker");
+
+        dpkStartDate.datepicker({
+            format: 'dd/mm/yyyy',
+            autoclose: true
+        });
+
+        dpkEndDate.datepicker({
+            format: 'dd/mm/yyyy',
+            autoclose: true
+        });
+
+        @*// For Cancelled/Withdrawn, only allow date range on the first submit
+        @if (Model.LeaveStatus == "Cancelled" ||
+             Model.LeaveStatus == "Withdrawn" ||
+             Model.LeaveStatus == "CA"        ||
+             Model.LeaveStatus == "WD"      )
+        {
+            @Html.Raw("ConfigureResubmitDateRange();");
+        }*@
+
+        if ('@Model.LeaveStatus' != "Draft" && '@Model.LeaveStatus' != "DR") {
+            ConfigureResubmitDateRange();
+        }
+
+        // For non draft, retrieve leave balance/extra fields on startup rather than dynamically.
+        @if (Model.LeaveStatus != "Draft" && Model.LeaveStatus != "DR")
+        {
+        <text>
+            UpdateLeaveBalance();
+            UpdateExtraFields();
+            UpdateEmployeePickerField();
+        </text>
+        }
+
+        $('#AttachmentListing').on('DOMNodeInserted', function (e) {
+            UpdateAttachmentChecklistOptions();
+        });
+    });
+
+    function RetrieveLeaveTypeOptions() {
+        var data = {
+            EmployeeID: '@Model.EmployeeID'
+        };
+        
+        $.get('@Url.Action("GetEmployeeLeaveTypeOptions", "LeaveApplication")', data, function (result) {
+            if ($('#ddlLeaveType option').length > 0)
+                return;
+            
+            LeaveTypes = result;
+            PopulateLeaveType();
+
+            HideLoadingScreen();
+        });
+    }
+
+    // Populate leave type dropdown
+    function PopulateLeaveType() {
+        var ddlLeaveType = $('#ddlLeaveType');
+
+        var i = 0;
+        ddlLeaveType.empty();
+        ddlLeaveType.append('<option value="" selected="selected"> - Please Select - </option>');
+        for (i = 0; i < LeaveTypes.length; i++) {
+            ddlLeaveType.append('<option value="' + LeaveTypes[i].LeaveTypeCode + '">' + LeaveTypes[i].LeaveTypeName + '</option>');
+        }
+
+        var selectedLeaveTypeCode = $('input[name="LeaveTypeCode"]');
+        var selectedLeaveTypeName = $('input[name="LeaveTypeName"]');
+
+        // Set dropdown value if has previous value available
+        if (selectedLeaveTypeCode.val()) {
+            ddlLeaveType.val(selectedLeaveTypeCode.val());
+        }
+
+        $('#ddlLeaveType').select2({
+            showSearchInput: false,
+            minimumResultsForSearch: -1
+        });
+
+        // Populate leave subtype afterward.
+        if (ddlLeaveType.val() != undefined) {
+            OnLeaveTypeChanged();
+        }
+        
+        PopulateLeaveSubtype();
+    }
+
+    function PopulateLeaveSubtype() {
+        var ddlLeaveSubtype = $('#ddlLeaveSubtype');
+        var ulLeaveSubtype = $('.ulLeaveSubtype');
+        var selectedLeaveSubTypeCode = $('input[name="LeaveSubtypeCode"]');
+        var selectedLeaveSubTypeName = $('input[name="LeaveSubtypeName"]');
+        
+        leaveType = LeaveTypes.filter(function (item) {
+            return item.LeaveTypeCode == $('input[name="LeaveTypeCode"]').val();
+        })[0];
+        
+        if (leaveType) {
+            LeaveSubtypes = leaveType["LeaveSubtypes"];
+        }
+        else {
+            LeaveSubtypes = null;
+        }
+        
+        ddlLeaveSubtype.find("option:first-child").html(' - Please Select - ');
+        ddlLeaveSubtype.find("option:first-child").val('');
+
+        var i = 0;
+        ulLeaveSubtype.empty();
+        ulLeaveSubtype.append('<li data-value=""> - Please Select - </li>');
+        
+        if (LeaveSubtypes) {
+            for (i = 0; i < LeaveSubtypes.length; i++) {
+                ulLeaveSubtype.append('<li data-value="' + LeaveSubtypes[i].LeaveSubtypeCode + '">' + LeaveSubtypes[i].LeaveSubtypeName + '</li>');
+            }
+
+            if (selectedLeaveSubTypeCode.val()) {
+                ulLeaveSubtype.find('li').each(function (idx, li) {
+                    var listItem = $(li);
+                    
+                    if (listItem.data("value") == selectedLeaveSubTypeCode.val()) {
+                        ddlLeaveSubtype.find("option:first-child").html(listItem.html());
+                        ddlLeaveSubtype.find("option:first-child").val(listItem.data("value"));
+                    }
+                });
+            }
+
+            if (selectedLeaveSubTypeCode.val() == "UP02") {
+                ulLeaveSubtype.find('li').each(function (idx, li) {
+                    var listItem = $(li);
+
+                    if (listItem.data("value") == "UP01") {
+                        ddlLeaveSubtype.find("option:first-child").html(listItem.html());
+                        ddlLeaveSubtype.find("option:first-child").val(listItem.data("value"));
+                    }
+                });
+            }
+
+            ulLeaveSubtype.find('li').each(function (idx, li) {
+                var listItem = $(li);
+
+                var tooltip = '';
+
+                var leaveSubtypes = LeaveSubtypes.filter(function (item) {
+                    return item.LeaveSubtypeCode == listItem.data("value");
+                });
+
+                if (leaveSubtypes.length > 0) {
+                    tooltip = leaveSubtypes[0].Tooltip;
+                }
+                
+                if (tooltip) {
+                    listItem.qtip({
+                        content: decodeHtml(tooltip),
+                        position: {
+                            target: 'mouse',
+                            adjust: {
+                                mouse: true
+                            }
+                        },
+                        style: {
+                            width: " + this.Width + ",
+                            border: {
+                                width: 2,
+                                radius: 5,
+                                color: '#CECECE'
+                            },
+                            padding: 5,
+                            tip: true,
+                            name: 'light'
+                        },
+                        show: {
+                            event: 'mouseover'
+                        },
+                        hide: {
+                            event: 'mouseout'
+                        }
+                    });
+                }
+            });
+        }
+
+        //$('#ddlLeaveSubtype').select2({
+        //    showSearchInput: false,
+        //    minimumResultsForSearch: -1
+        //});
+
+        if (ddlLeaveSubtype.val() != undefined) {
+            OnLeaveSubtypeChanged();
+        }
+
+        PopulateLeaveReason();
+    }
+
+    function PopulateLeaveReason() {
+        var ddlLeaveReason = $('#ddlLeaveReason');
+        var selectedLeaveReason = $('input[name="Reason"]');
+
+        var leaveSubtype = null;
+        var leaveReasons = null;
+
+        if (LeaveSubtypes) {
+            leaveSubtype = LeaveSubtypes.filter(function (item) {
+                return item.LeaveSubtypeCode == $('input[name="LeaveSubtypeCode"]').val();
+            })[0];
+        }
+
+        if (leaveSubtype) {
+            leaveReasons = leaveSubtype["LeaveReasons"];
+        }
+
+        var i = 0;
+        ddlLeaveReason.empty();
+        ddlLeaveReason.append('<option value="" selected="selected"> - Please Select - </option>');
+
+        if (leaveReasons) {
+            for (i = 0; i < leaveReasons.length; i++) {
+                ddlLeaveReason.append('<option value="' + leaveReasons[i] + '">' + leaveReasons[i] + '</option>');
+            }
+        }
+
+        if (selectedLeaveReason.val()) {
+            ddlLeaveReason.val(selectedLeaveReason.val());
+
+            if (!ddlLeaveReason.val()) {
+                ddlLeaveReason.val("");
+            }
+        }
+
+        $('#ddlLeaveReason').select2({
+            showSearchInput: false,
+            minimumResultsForSearch: -1
+        });
+
+        if (ddlLeaveReason.val() != undefined) {
+            OnLeaveReasonChanged();
+        }
+    }
+
+    function OnLeaveTypeChanged() {
+        $('input[name="LeaveTypeCode"]').val($('#ddlLeaveType option:selected').val());
+        $('input[name="LeaveTypeName"]').val($('#ddlLeaveType option:selected').text());
+    }
+
+    function OnLeaveSubtypeChanged() {
+        $('input[name="LeaveSubtypeCode"]').val($('#ddlLeaveSubtype option:first').val());
+        $('input[name="LeaveSubtypeName"]').val($('#ddlLeaveSubtype option:first').text());
+
+        UpdateLeaveBalance();
+        UpdateTotalDays();
+        UpdateExtraFields();
+        UpdateEmployeePickerField();
+        UpdateAllowedDate();
+        UpdateAttachmentChecklistOptions();
+        UpdateAllowDraftButton();
+    }
+
+    function OnLeaveReasonChanged() {
+        $('input[name="Reason"]').val($('#ddlLeaveReason option:selected').val());
+    }
+
+    function UpdateAllowedDate() {
+        //if (!LeaveSubtypes) return;
+
+        //// Selected leave subtype
+        //var leaveSubtype = LeaveSubtypes[$('#ddlLeaveSubtype').prop("selectedIndex") - 1];
+
+        //if (!leaveSubtype) return;
+
+        //var dpkStartDate = $(".start-date-picker");
+        //var dpkEndDate = $(".end-date-picker");
+
+        //dpkStartDate.datepicker('setStartDate', leaveSubtype.MinimumDate);
+        //dpkStartDate.datepicker('setEndDate', leaveSubtype.MaximumDate);
+
+        //dpkEndDate.datepicker('setStartDate', leaveSubtype.MinimumDate);
+        //dpkEndDate.datepicker('setEndDate', leaveSubtype.MaximumDate);
+    }
+
+    function GetLeaveSubtypeObj() {
+        if (!LeaveSubtypes) return null;
+
+        var selectedSubtypeCode = $('#ddlLeaveSubtype option:selected').val();
+        var i;
+        for (i = 0; i < LeaveSubtypes.length; i++) {
+            if (LeaveSubtypes[i].LeaveSubtypeCode == selectedSubtypeCode) {
+                return LeaveSubtypes[i];
+            }
+        }
+    }
+
+    function UpdateLeaveBalance() {
+        var data = {
+            EmployeeID: '@Model.EmployeeID',
+            LeaveSubtypeCode: $('input[name="LeaveSubtypeCode"]').val(),
+            StartDate: $('#StartDate').val() || moment().format("DD/MM/YYYY")
+        };
+
+        $.post('@Url.Action("GetLeaveBalance", "LeaveApplication")', data, function (result) {
+            if (!result) return;
+
+            $('#LeaveBalanceInfo').text(parseFloat(result.Available).toFixed(2) + " / " + parseFloat(result.Balance).toFixed(2));
+            $('#imgBalanceInfo').qtip({
+                content: createLeaveBalanceTooltips(result),
+                position: {
+                    corner: {
+                        target: 'rightMiddle',
+                        tooltip: 'leftMiddle',
+                        adjust: {
+                            method: 'shift none'
+                        }
+                    }
+                },
+                show: {
+                    ready: false, // Show the tooltip when ready
+                    solo: true
+                },
+                style: {
+                    width: " + this.Width + ",
+                    border: {
+                        width: 2,
+                        radius: 5,
+                        color: '#CECECE'
+                    },
+                    padding: 5,
+                    tip: true,
+                    name: 'light'
+                }
+            });
+        });
+    }
+
+    function createLeaveBalanceTooltips(result) {
+        return '<table align="center">' +
+            '<tr><td colspan="2" align="center" style="color:navy;text-decoration: underline;font-size: 11pt;font-weight: bold">Leave Info</td></tr>' +
+            '<tr><td>Entitlement    :   </td><td align=right>' + parseFloat(result.Entitlement).toFixed(2)  + '</td></tr>' +
+            '<tr><td>Opsyen :   </td><td align=right>' + parseFloat(result.Opsyen).toFixed(2) + '</td></tr>' +
+            '<tr><td>Leaves Taken   :   </td><td align=right>' + parseFloat(result.LeaveTaken).toFixed(2) + '</td></tr>' +
+            '<tr><td>Leaves Approved    :   </td><td align=right>' + parseFloat(result.LeaveApproved).toFixed(2) + '</td></tr>' +
+            '<tr><td>Leave Balance  :   </td><td align=right>' + parseFloat(result.Balance).toFixed(2) + '</td></tr>' +
+            '<tr> <td>Leaves Pending    :   </td> <td align=right>' + parseFloat(result.LeavePending).toFixed(2) + '</td></tr>' +
+            '<tr><td>Leave Available    :   </td><td align=right>' + parseFloat(result.Available).toFixed(2) + '</td></tr>' +
+            '</table > ';
+    }
+
+    function ConfigureResubmitDateRange() {
+        var minResubmit = '@Model.StartDate';
+        var maxResubmit = '@Model.EndDate';
+
+        var dpkStartDate = $(".start-date-picker");
+        var dpkEndDate = $(".end-date-picker");
+
+        //dpkStartDate.datepicker({
+        //    format: 'dd/mm/yyyy',
+        //    autoclose: true
+        //});
+
+        //dpkEndDate.datepicker({
+        //    format: 'dd/mm/yyyy',
+        //    autoclose: true
+        //});
+
+        dpkStartDate.datepicker('setStartDate', minResubmit);
+        dpkStartDate.datepicker('setEndDate', maxResubmit);
+
+        dpkEndDate.datepicker('setStartDate', minResubmit);
+        dpkEndDate.datepicker('setEndDate', maxResubmit);
+    }
+
+    function UpdateTotalDays(event) {
+        var leaveSubtype = null;
+        if (LeaveSubtypes) {
+            leaveSubtype = LeaveSubtypes.filter(function (item) {
+                return item.LeaveSubtypeCode == $('input[name="LeaveSubtypeCode"]').val();
+            })[0];
+        }
+
+        if (leaveSubtype == null) {
+            return;
+        }
+
+        var dpkStartDate = $(".start-date-picker");
+        var dpkEndDate = $(".end-date-picker");
+
+        //dpkStartDate.datepicker({
+        //    format: 'dd/mm/yyyy',
+        //    autoclose: true
+        //});
+
+        //dpkEndDate.datepicker({
+        //    format: 'dd/mm/yyyy',
+        //    autoclose: true
+        //});
+
+        var dtStartDate = moment(dpkStartDate.datepicker('getDate'));
+        var dtEndDate = moment(dpkEndDate.datepicker('getDate'));
+
+        if (dtStartDate == null && dtEndDate == null)
+            return;
+
+        if (dtStartDate == null && dtEndDate != null) {
+            dpkStartDate.datepicker("setDate", dtEndDate._d);
+        }
+
+        if (dtEndDate == null && dtStartDate != null) {
+            dpkEndDate.datepicker("setDate", dtStartDate._d);
+        }
+
+        dtStartDate = moment(dpkStartDate.datepicker('getDate'));
+        dtEndDate = moment(dpkEndDate.datepicker('getDate'));
+
+        @*if ('@Model.LeaveStatus' == "Draft" || '@Model.LeaveStatus' == "DR") {
+            if (leaveSubtype.MaxDayPerApplicationDay != null && leaveSubtype.MaxDayPerApplicationDayType == "Calendar Day") {
+                // minus 1 to include the start date
+                var maxAppEndDate = dtStartDate.add('days', leaveSubtype.MaxDayPerApplicationDay - 1);
+
+                //dpkEndDate.datepicker('setEndDate', maxAppEndDate._d);
+                if (maxAppEndDate.diff(dtEndDate) < 0) {
+                    //dpkEndDate.datepicker('setDate', maxAppEndDate._d);
+                }
+            }
+            else {
+                //dpkEndDate.datepicker('setEndDate', null);
+            }
+
+            dtStartDate = moment(dpkStartDate.datepicker('getDate'));
+            dtEndDate = moment(dpkEndDate.datepicker('getDate'));
+        }*@
+
+        // IF start date is a later date than end date, set the start and end date to same day
+        if ((dtStartDate != null && dtEndDate != null &&
+            dtStartDate.isAfter(dtEndDate)) ||
+            //If current selected subtype is half day leave, set the start and end date to same day
+            (leaveSubtype && (leaveSubtype.LeaveSubtypeCode == "AN03" ||
+                leaveSubtype.LeaveSubtypeCode == "AN04" ||
+                leaveSubtype.LeaveSubtypeCode == "SP03" ||
+                leaveSubtype.LeaveSubtypeCode == "SP04"))) {
+
+            if (event != undefined && event.target.name == "EndDate" && !dtEndDate.isSame(dtStartDate)) {
+                dpkStartDate.datepicker("setDate", dtEndDate.toDate());
+            }
+            else {
+                dpkEndDate.datepicker("setDate", dtStartDate.toDate());
+            }
+        }
+
+        dtStartDate = moment(dpkStartDate.datepicker('getDate'));
+        dtEndDate = moment(dpkEndDate.datepicker('getDate'));
+
+
+        if (leaveSubtype && (leaveSubtype.MaxDayPerApplicationDayType == "Calendar Day")) {
+            var totalDays = dtEndDate.diff(dtStartDate, 'd') + 1;
+            $('#TotalDay').val(totalDays.toFixed(2));
+
+            if (leaveSubtype && (leaveSubtype.LeaveSubtypeCode == "AN03" ||
+                leaveSubtype.LeaveSubtypeCode == "AN04" ||
+                leaveSubtype.LeaveSubtypeCode == "SP03" ||
+                leaveSubtype.LeaveSubtypeCode == "SP04")) {
+
+                $('#TotalDay').val('0.5');
+            }
+        }
+        else {
+            var data = {
+                EmployeeID: '@Model.EmployeeID',
+                StartDate: $('#StartDate').val(),
+                EndDate: $('#EndDate').val()
+            };
+
+            $.post('@Url.Action("GetTotalDays", "LeaveApplication")', data, function (result) {
+                var totalDays = parseFloat(result);
+                $('#TotalDay').val(totalDays.toFixed(2));
+
+                if (leaveSubtype && (leaveSubtype.LeaveSubtypeCode == "AN03" ||
+                    leaveSubtype.LeaveSubtypeCode == "AN04" ||
+                    leaveSubtype.LeaveSubtypeCode == "SP03" ||
+                    leaveSubtype.LeaveSubtypeCode == "SP04") && totalDays > 0) {
+                    $('#TotalDay').val('0.5');
+                }
+            });
+
+            UpdateLeaveBalance();
+        }
+
+        checkLeaveOverlapOT()
+    }
+
+    function checkLeaveOverlapOT() {
+        var data = {
+            //EmployeeID: '@Model.EmployeeID',
+            StartDate: $('#StartDate').val(),
+            EndDate: $('#EndDate').val(),
+            leaveSubtypeCode: $('#ddlLeaveSubtype').val()
+        };
+
+        $.ajax({
+            type: "POST",
+            url: '@Url.Action("CheckLeaveOverlapOT", "LeaveApplication")',
+            data: data,
+            success: function (content) {
+
+                $('#ConfirmationValidation_Message').hide();
+                if (content.result) {
+                    if (content.overlapMessage) {
+                        $('#ConfirmationValidation_Message').show();
+                        $('#ConfirmationValidation_Message').text(content.overlapMessage);
+                    }
+                } else {
+                    return content.overlapMessage;
+                }
+            },
+            error: function (e) {
+                console.log(e);
+            }
+        });
+    }
+
+    function UpdateEmployeePickerField() {
+        var leaveSubtypeCode = $('input[name="LeaveSubtypeCode"]').val();
+        var empPicker = $('.EmployeePicker');
+
+        switch (leaveSubtypeCode) {
+            case "UP03":
+            case "UP04":
+            case "UP05":
+            case "UP06":
+            case "UP07":
+            case "MC05":
+                empPicker.css("display", "block");
+                break;
+            default :
+                empPicker.css("display", "none");
+                break;
+        }
+    }
+
+    function UpdateExtraFields() {
+        var data = $('form').serializeArray();
+        data.push({ name: "AppointmentDate",        value: "@Model.AppointmentDate" });
+        data.push({ name: "DeathDate",              value: "@Model.DeathDate" });
+        data.push({ name: "RegisterDate",           value: "@Model.RegisterDate" });
+        data.push({ name: "SpouseCode",             value: "@Model.SpouseCode" });
+        data.push({ name: "SpouseIC",               value: "@Model.SpouseIC" });
+        data.push({ name: "SpouseName",             value: "@Model.SpouseName" });
+        data.push({ name: "OldOfficeLoc",           value: "@Model.OldOfficeLoc" });
+        data.push({ name: "NewOfficeLoc",           value: "@Model.NewOfficeLoc" });
+        data.push({ name: "HospitalName",           value: "@Model.HospitalName" });
+        data.push({ name: "HospitalLoc",            value: "@Model.HospitalLoc" });
+        data.push({ name: "IsRepeat",               value: "@Model.IsRepeat" });
+        data.push({ name: "Distance",               value: "@Model.Distance" });
+        data.push({ name: "Relationship",           value: "@Model.Relationship" });
+        data.push({ name: "DepartureAirport",       value: "@Model.DepartureAirport" });
+        data.push({ name: "DepartureFlightNo",      value: "@Model.DepartureFlightNo" });
+        data.push({ name: "ReturnAirport",          value: "@Model.ReturnAirport" });
+        data.push({ name: "ReturnFlightNo",         value: "@Model.ReturnFlightNo" });
+        data.push({ name: "ReportToDutyDate",       value: "@Model.ReportToDutyDate" });
+        data.push({ name: "StateOfBirth",           value: "@Model.StateOfBirth" });
+        data.push({ name: "PlaceOfBirth",           value: "@Model.PlaceOfBirth" });
+        data.push({ name: "DateOfBirth",            value: "@Model.DateOfBirth" });
+        data.push({ name: "MedicalCause",           value: "@Model.MedicalCause" });
+        data.push({ name: "ClaimPerkeso",           value: "@Model.ClaimPerkeso" });
+
+        $.post('@Url.Action("GetExtraFields", "LeaveApplication")', data, function (result) {
+            $('#divExtraFields').html(result);
+            InitializeCommonControls();
+        });
+    }
+
+    var ATTACHMENT_CHECKLIST = JSON.parse('@Html.Raw(ViewBag.AttachmentChecklistOptions)');
+
+    var CHECKLIST_OPTS =
+    {
+        "Haji": ["Jadual Penerbangan", "Surat Panggilan Haji", "Lain-lain"],
+        "IringKeluargaSakit": ["Surat Rujukan Dari Doktor Panel TNB"],
+        "Paternity": ["Sijil Kelahiran", "My kid", "Lain-lain"]
+    };
+    function UpdateAttachmentChecklistOptions() {
+        var opts = null;
+        var tblAttachment = $('#tblAttachment');
+        var ddlChecklist = $("#CustomTextValue1");
+        //var leaveSubtype = GetLeaveSubtypeObj() || {};
+        //var leaveSubtypeCode = $('input[name="LeaveSubtypeCode"]').val();
+
+        var opts = ATTACHMENT_CHECKLIST.filter(function (item) {
+            return item.LeaveSubtypeCode == $('input[name="LeaveSubtypeCode"]').val();
+        })[0];
+
+        //switch (leaveSubtypeCode) {
+        //    case "OH02":
+        //    case "OH05":
+        //        opts = CHECKLIST_OPTS["Haji"];
+        //        break;
+        //    case "OH03":
+        //        opts = CHECKLIST_OPTS["IringKeluargaSakit"];
+        //        break;
+        //    case "SP08":
+        //        opts = CHECKLIST_OPTS["Paternity"];
+        //        break;
+        //    //case "UP03":
+        //    //case "UP04":
+        //    //case "UP06":
+        //    //case "UP07":
+        //    //    opts = CHECKLIST_OPTS["CutiSakitBerpanjangan"];
+        //    //    break;
+        //    default:
+        //        opts = null;
+        //        break;
+        //}
+
+        ddlChecklist.empty();
+
+        if (opts == null) {
+            ddlChecklist.parent().parent().hide();
+            $('#tblAttachment').find('.checklist_column').hide();
+        }
+        else {
+            var optTexts = opts.Text;
+            for (var i = 0; i < optTexts.length; i++) {
+                ddlChecklist.append('<option value="' + optTexts[i] + '"+>' + optTexts[i] + '</option>');
+            }
+            ddlChecklist.parent().parent().show();
+            $('#tblAttachment').find('.checklist_column').show();
+        }
+    }
+    function UpdateAllowDraftButton() {
+        var leaveSubtype = GetLeaveSubtypeObj() || {};
+        var btnDraft = $("#btnDraft");
+
+        if (leaveSubtype.AllowDraft == "1") {
+            btnDraft.show();
+            btnDraft.prop("disabled", false);
+        }
+        else {
+            btnDraft.hide();
+            btnDraft.prop("disabled", true);
+        }
+    }
+
+    function TransitionFocus(nextElement) {
+        if (nextElement == "ddlLeaveSubtype") {
+            $('.select2-container-active').removeClass('select2-container-active');
+            $(':focus').blur();
+            $('#ddlLeaveSubtype').focus();
+            $('#ddlLeaveSubtype').click();
+        }
+        else if (nextElement == "btnStartDate") {
+            $('#btnStartDate').click();
+        }
+        else if (nextElement == "btnEndDate") {
+            $('#btnEndDate').click();
+        }
+        //else if (nextElement == "ddlLeaveReason") {
+        //    $('#ddlLeaveReason').select2("open");
+        //}
+    }
+
+    $('#ddlLeaveSubtype').click(function (event) {
+        var select = $(this);
+        var list = select.next().find("ul:first");
+
+        list.width(select.parent().width() - 2);
+
+        list.children().css("background-color", "white");
+
+        list.children()
+            .filter(function () { return $(this).data("value") == select.val() })
+            .css("background-color", "#ddd");
+
+        select.toggleClass('active');
+        list.parent().slideToggle(0);
+    });
+
+    $('#ddlLeaveSubtype').mousedown(function (e) {
+        $(this).focus();
+
+        e.preventDefault();
+    });
+
+    $('#ddlLeaveSubtype').keydown(function (e) {
+        if (e.keyCode == 13) {
+            $(this).focus();
+
+            e.preventDefault();
+        }
+    });
+
+    $('body').on('click', '.ulLeaveSubtype li', function () {
+        var select = $("#ddlLeaveSubtype");
+        var inputName = $("[name='LeaveSubtypeName']");
+        var inputCode = $("[name='LeaveSubtypeCode']");
+
+        var listItemText = $(this).html();
+        var listItemValue = $(this).data("value");
+
+        if (!$(this).data("value")) {
+            listItemText = '- Please Select -';
+            listItemValue = '';
+        }
+
+        select.find("option:first").html(listItemText);
+        select.find("option:first").val(listItemValue);
+
+        inputName.val(listItemText);
+        inputCode.val(listItemValue);
+
+        $(this).parent().children().trigger('mouseout');
+
+        OnLeaveSubtypeChanged();
+        PopulateLeaveReason();
+        TransitionFocus('btnStartDate');
+    });
+
+    $('body').on('mouseenter', '.ulLeaveSubtype li', function () {
+        $(this).siblings().css("background-color", "white");
+        $(this).css("background-color", "#ddd");
+    });
+
+    $(document).mouseup(function (event) {
+        var target = event.target;
+        var select = $("#ddlLeaveSubtype");
+
+        if (!select.is(target)) {
+            if (!target.id)
+                select.filter('.active').focus();
+
+            select.filter('.active').click();
+        }
+    });
+
+    $(document).keydown(function (e) {
+        var target = e.target;
+        var select = $("#ddlLeaveSubtype");
+        var list = select.next().find("ul:first");
+
+        if (select.is(target)) {
+            if (!select.hasClass('active')) {
+                if (e.keyCode == 40) {
+                    select.click();
+                }
+            }
+            else {
+                if (e.keyCode == 9) {
+                    select.toggleClass('active');
+                    list.parent().slideToggle(0);
+                }
+
+                if (e.keyCode == 38 || e.keyCode == 40 || e.keyCode == 13) {
+                    var listItem = list.children()
+                        .filter(function () { return $(this).css("background-color") == 'rgb(221, 221, 221)' });
+
+                    if (e.keyCode == 38) {
+                        var prev = listItem.prev();
+
+                        if (prev.length > 0) {
+                            prev.css("background-color", "#ddd");
+                            listItem.css("background-color", "white");
+                        }
+                    }
+
+                    if (e.keyCode == 40) {
+                        var next = listItem.next();
+
+                        if (next.length > 0) {
+                            next.css("background-color", "#ddd");
+                            listItem.css("background-color", "white");
+                        }
+                    }
+
+                    if (e.keyCode == 13) {
+                        listItem.click();
+                        select.click();
+                    }
+                }
+            }
+        }
+    });
+
+    function decodeHtml(html) {
+        var txt = document.createElement("textarea");
+        txt.innerHTML = html;
+        return txt.value;
+    }
+</script>

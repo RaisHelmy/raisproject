@@ -1,0 +1,376 @@
+﻿@using ESS.Core
+@model ESS.Claim.ViewModels.ClaimsSubtype
+
+@{
+    Layout = null;
+    string ClaimType = Model.ClaimSubTypeCategory;
+    string ClaimsSubtypeName = ViewBag.LSAElaunKhasMakan_ClaimsSubtypeName;
+    string GSTEnabled = (ViewBag.LSAElaunKhasMakan_GSTEnabled + "").ToLower();
+    string Status = ViewBag.LSAElaunKhasMakan_Status;
+    string dtStrStart = ViewBag.LSAElaunKhasMakan_StartDate;
+    string dtStrEnd = ViewBag.LSAElaunKhasMakan_EndDate;
+    string GSTMaximumValue = ViewBag.LSAElaunKhasMakan_GSTMaximumValue;
+    double Rate = ViewBag.LSAElaunKhasMakan_Rate;
+    string Description = ViewBag.LSAElaunKhasMakan_Description;
+}
+<div class="portlet box blue subtypeportlet" id="dTable_LSAElaunKhasMakan">
+    <div class="mini-triangle"><img src="../Assets/img/menu-red-triangle.png" /></div>
+    <div class="portlet-title">
+        <div class="caption">
+            <i class="fa fa-reorder"></i>@ClaimType - @ClaimsSubtypeName
+        </div>
+        @if (Status == "Draft" || Status == "Withdrawn" || Status == "Declined" || Status =="Returned")
+        {
+            <div class="tools">
+                <a href="javascript:;" onclick="RemoveSubtype('@Model.categoryIndex','@Model.subtypeIndex')"><img style=" vertical-align: initial;" src="../Assets/img/portlet-remove-icon-white.png" /></a>
+            </div>
+
+        }
+        <div class="tools">
+            <a title="" data-original-title="" href="javascript:;" class="collapse"> </a>
+        </div>
+    </div>
+    <div class="portlet-body form">
+        <div class="form-body">
+            <div class="form-horizontal">
+                <div class="table-toolbar">
+                    <table class="table table-striped table-bordered table-hover table-full-width" id="tblLSAElaunKhasMakan">
+                        <thead>
+                            <tr>
+                                <th scope="col" width="5%"></th>
+                                <th scope="col">Charge Code *</th>
+                                <th scope="col">Rate</th>
+                                <th scope="col">With Spouse?</th>
+                                <th scope="col">Amount (RM) *</th>
+                                <th scope="col">GST Amount (RM)</th>
+                                <th scope="col">Total Amount (RM)</th>
+                            </tr>
+                        </thead>
+                        @if (Status == "Draft" || Status == "Withdrawn" || Status == "Declined" || Status =="Returned")
+                        {
+                            if (Model.SubTypeDetails == null)
+                            {
+                                <tbody>
+                                    <tr>
+                                        <td><input type="checkbox" class="LSAElaunKhasMakanRemoveCheckbox" /></td>
+                                        <td>
+                                            <input type="hidden" class="hfChargeCode" />
+                                            <select style="min-width:130px" class="form-control ddlChargeCode SubTypeColumn0" name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[0].SubTypeColumn0" onchange="ChargeCodeChange(this); CalculateChargeCodeSummary();">
+                                                <option value="">Select One</option>
+                                            </select>
+                                        </td>
+                                        <td><input type="text" style="width:250px" class="form-control SubTypeColumn1" name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[0].SubTypeColumn1" /></td>
+                                        <td>
+                                            <input type="checkbox" value="true" class="form-control SubTypeColumn2" name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[0].SubTypeColumn2" onchange="LSAElaunKhasMakanCalculate()" />
+                                            <label>Yes</label>
+                                        </td>
+                                        <td><input type="text" style="min-width:130px" class="form-control text-right Amount" name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[0].Amount" /></td>
+                                        <td><input type="text" style="min-width:130px" class="form-control text-right GSTAmount" name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[0].GSTAmount" readonly /></td>
+                                        <td><input type="text" style="min-width:130px" class="form-control text-right TotalAmount" name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[0].TotalAmount" id="txtTotalAmount" readonly /></td>
+                                    </tr>
+                                </tbody>
+                                <tfoot>
+                                    <tr>
+                                        <td colspan="4"></td>
+                                        <td><input type="text" class="form-control text-right GrandAmount" readonly /></td>
+                                        <td><input type="text" class="form-control text-right GrandGSTAmount" readonly /></td>
+                                        <td><input type="text" class="form-control text-right GrandTotalAmount" readonly /></td>
+                                    </tr>
+                                </tfoot>
+                            }
+                            else
+                            {
+                                int count = 0;
+
+                                <tbody>
+                                    @foreach (var thisDetail in Model.SubTypeDetails)
+                                    {
+                                        <tr>
+                                            <td><input type="checkbox" class="LSAElaunKhasMakanRemoveCheckbox" /></td>
+                                            <td>
+                                                <input type="hidden" class="hfChargeCode" value="@thisDetail.SubTypeColumn0" />
+                                                <select style="min-width:130px" class="form-control ddlChargeCode SubTypeColumn0" name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[@count].SubTypeColumn0" onchange="ChargeCodeChange(this); CalculateChargeCodeSummary();">
+                                                    <option value="">Select One</option>
+                                                </select>
+                                            </td>
+                                            <td>
+                                                <input type="text" style="width:250px" class="form-control SubTypeColumn1" value="@thisDetail.SubTypeColumn1"
+                                                       name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[@count].SubTypeColumn1" />
+                                            </td>
+                                            <td>
+                                                <input type="hidden" value="@thisDetail.SubTypeColumn2" />
+                                                <input type="checkbox" class="form-control SubTypeColumn2" value="true" onchange="LSAElaunKhasMakanCalculate()"
+                                                       name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[@count].SubTypeColumn2" />
+                                                <label>Yes</label>
+                                            </td>
+
+                                            <td>
+                                                <input type="text" style="min-width:130px" class="form-control text-right Amount" value="@thisDetail.Amount"
+                                                       name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[@count].Amount" />
+                                            </td>
+                                            <td>
+                                                <input type="text" style="min-width:130px" class="form-control text-right GSTAmount" value="@thisDetail.GSTAmount"
+                                                       name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[@count].GSTAmount" id="txtGSTAmount" readonly />
+                                            </td>
+                                            <td>
+                                                <input type="text" style="min-width:130px" class="form-control text-right TotalAmount" value="@thisDetail.TotalAmount"
+                                                       name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[@count].TotalAmount" id="txtTotalAmount" readonly />
+                                            </td>
+                                        </tr>
+
+                                        count++;
+                                    }
+                                </tbody>
+                                <tfoot>
+                                    <tr>
+                                        <td colspan="4"></td>
+                                        <td><input type="text" class="form-control text-right GrandAmount" value="@String.Format("{0:0.00}", Model.SubTypeDetails.Sum(m => (String.IsNullOrEmpty(m.Amount) ? 0.00 : Convert.ToDouble(m.Amount))))" readonly /></td>
+                                        <td><input type="text" class="form-control text-right GrandGSTAmount" value="@String.Format("{0:0.00}", Model.SubTypeDetails.Sum(m => (String.IsNullOrEmpty(m.GSTAmount) ? 0.00 : Convert.ToDouble(m.GSTAmount))))" readonly /></td>
+                                        <td><input type="text" class="form-control text-right GrandTotalAmount" value="@String.Format("{0:0.00}", Model.SubTypeDetails.Sum(m => (String.IsNullOrEmpty(m.TotalAmount) ? 0.00 : Convert.ToDouble(m.TotalAmount))))" readonly /></td>
+                                    </tr>
+                                </tfoot>
+                            }
+                        }
+                        else
+                        {
+                            int count = 0;
+
+                            <tbody>
+                                @foreach (var thisDetail in Model.SubTypeDetails)
+                                {
+                                    <tr>
+                                        <td></td>
+                                        <td>
+                                            <input type="text" style="min-width:130px" class="form-control SubTypeColumn0" value="@thisDetail.SubTypeColumn0" readonly
+                                                   name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[@count].SubTypeColumn0" />
+                                        </td>
+                                        <td>
+                                            <input type="text" style="width:250px" class="form-control SubTypeColumn1" value="@thisDetail.SubTypeColumn1" readonly
+                                                   name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[@count].SubTypeColumn1" />
+                                        </td>
+                                        <td>
+                                            <input type="hidden" value="@thisDetail.SubTypeColumn2" />
+                                            <input type="checkbox" class="form-control SubTypeColumn2" value="true" readonly
+                                                   name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[@count].SubTypeColumn2" />
+                                            <label>Yes</label>
+                                        </td>
+                                        <td>
+                                            <input type="text" style="min-width:130px" class="form-control text-right Amount" value="@thisDetail.Amount" readonly
+                                                   name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[@count].Amount" />
+                                        </td>
+                                        <td>
+                                            <input type="text" style="min-width:130px" class="form-control text-right GSTAmount" value="@thisDetail.GSTAmount" readonly
+                                                   name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[@count].GSTAmount" />
+                                        </td>
+                                        <td>
+                                            <input type="text" style="min-width:130px" class="form-control text-right TotalAmount" value="@thisDetail.TotalAmount" readonly
+                                                   name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[@count].TotalAmount" />
+                                        </td>
+                                    </tr>
+
+                                    count++;
+                                }
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <td colspan="4"></td>
+                                    <td><input type="text" class="form-control text-right GrandAmount" value="@String.Format("{0:0.00}", Model.SubTypeDetails.Sum(m => (String.IsNullOrEmpty(m.Amount) ? 0.00 : Convert.ToDouble(m.Amount))))" readonly /></td>
+                                    <td><input type="text" class="form-control text-right GrandGSTAmount" value="@String.Format("{0:0.00}", Model.SubTypeDetails.Sum(m => (String.IsNullOrEmpty(m.GSTAmount) ? 0.00 : Convert.ToDouble(m.GSTAmount))))" readonly /></td>
+                                    <td><input type="text" class="form-control text-right GrandTotalAmount" value="@String.Format("{0:0.00}", Model.SubTypeDetails.Sum(m => (String.IsNullOrEmpty(m.TotalAmount) ? 0.00 : Convert.ToDouble(m.TotalAmount))))" readonly /></td>
+                                </tr>
+                            </tfoot>
+                        }
+                    </table>
+                </div>
+            </div>
+            @if (Status == "Draft" || Status == "Withdrawn" || Status == "Declined" || Status =="Returned")
+            {
+                <div class="form-horizontal hidden">
+                    <div class="table-toolbar">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="btn-group">
+                                    <a class="BtnPlus btn green" title="dTable_LSAElaunKhasMakan" href="javascript:LSAElaunKhasMakan_addRow();">
+                                        Add Row
+                                        <i class="fa fa-plus"></i>
+                                    </a>
+                                </div>
+                                <div class="btn-group">
+                                    <a class="BtnPlus5 btn green" title="dTable_LSAElaunKhasMakan" href="javascript:LSAElaunKhasMakan_add5Row();">
+                                        Add 5 Rows
+                                        <i class="fa fa-plus"></i>
+                                    </a>
+                                </div>
+                                <div class="btn-group">
+                                    <a class="deleteall btn red" title="dTable_LSAElaunKhasMakan" href="javascript:LSAElaunKhasMakan_removeRow();">
+                                        Delete Row
+                                        <i class="fa fa-minus"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+    var _LSAElaunKhasMakanTable = $('#tblLSAElaunKhasMakan').DataTable({
+        "bLengthChange": false,
+        "bFilter": false,
+        "bPaginate": false,
+        "bInfo": false,
+        "bSort": false
+    });
+
+    function dTable_LSAElaunKhasMakanValidation() { // LSAElaunKhasMakanValidation
+        var _ValidationMsg = '';
+
+        var thisTable = $('#tblLSAElaunKhasMakan');
+        thisTable.find(".Amount").each(function () {
+            var $row = $(this).closest("tr");
+            var _Amount = $row.find(".Amount").val();
+            var _ChargeCode = $row.find(".SubTypeColumn0").val();
+            if (_ChargeCode == null || _ChargeCode == '') {
+                _ValidationMsg += '- @ClaimsSubtypeName (Charge Code) is required.\n'
+            }
+        });
+
+        return _ValidationMsg;
+    }
+
+    function LSAElaunKhasMakan_removeRow() {
+        $.each($('input[class="LSAElaunKhasMakanRemoveCheckbox"]:checked'), function (i, val) {
+            var row = $(this).closest("tr").get(0);
+            var id = $(this).attr("id");
+            _LSAElaunKhasMakanTable.fnDeleteRow(mytable.fnGetPosition(row));
+        });
+
+        reorderTable('#tblLSAElaunKhasMakan');
+    }
+
+    function LSAElaunKhasMakan_add5Row() {
+        LSAElaunKhasMakan_addRow();
+        LSAElaunKhasMakan_addRow();
+        LSAElaunKhasMakan_addRow();
+        LSAElaunKhasMakan_addRow();
+        LSAElaunKhasMakan_addRow();
+    }
+
+    function LSAElaunKhasMakan_addRow() {
+        _LSAElaunKhasMakanTable.fnAddData([
+            '<input type="checkbox" class="DayTripRemoveCheckbox" />',
+            '<input type="hidden" class="hfChargeCode" /><select class="form-control ddlChargeCode SubTypeColumn0" name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[' + _LSAElaunKhasMakanTable.fnSettings().fnRecordsTotal() + '].SubTypeColumn0" onchange="ChargeCodeChange(this);"><option value="">Select One</option></select>',
+            '<div class="input-group date date-picker" data-date-format="dd MM yyyy"><input type="text" class="form-control startdate" name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[' + _LSAElaunKhasMakanTable.fnSettings().fnRecordsTotal() + '].SubTypeColumn1" value="" /><span class="input-group-btn"><button type="button" class="btn default"><i class="fa fa-calendar"></i></button></span></div>',
+            '<input type="text" name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[' + _LSAElaunKhasMakanTable.fnSettings().fnRecordsTotal() + '].SubTypeColumn2" class="form-control" maxlength="200" />',
+            '<input type="text" name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[' + _LSAElaunKhasMakanTable.fnSettings().fnRecordsTotal() + '].Amount" value="" class="form-control text-right Amount" onkeypress="NumberOnly(event);" onkeyup="LSAElaunKhasMakan_CalculateSum();" />',
+            '<input type="text" name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[' + _LSAElaunKhasMakanTable.fnSettings().fnRecordsTotal() + '].GSTAmount" value="" class="form-control text-right GSTAmount" readonly />',
+            '<input type="text" name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[' + _LSAElaunKhasMakanTable.fnSettings().fnRecordsTotal() + '].TotalAmount" value="" class="form-control text-right TotalAmount" readonly />'
+        ]);
+
+        LSAElaunKhasMakan_Initialize();
+    }
+
+    function LSAElaunKhasMakan_Initialize() {
+        $('#tblLSAElaunKhasMakan .date-picker').datepicker({
+            format: 'dd/mm/yyyy',
+            autoclose: true,
+        });
+        $('#tblLSAElaunKhasMakan .date-picker').datepicker('setStartDate', '@dtStrStart');
+        $('#tblLSAElaunKhasMakan .date-picker').datepicker('setEndDate', '@dtStrEnd');
+
+        if ('@GSTEnabled' == 'false') {
+            $('#tblLSAElaunKhasMakan tbody tr').each(function () {
+                var _GSTAmount = $(this).children('td:eq(5)').children('input[type=text]');
+
+                _GSTAmount.prop('readonly', true);
+                _GSTAmount.val('0.00');
+            });
+        }
+        LSAElaunKhasMakanCalculate();
+        
+
+        BindtoDDL();
+    }
+
+    function LSAElaunKhasMakanCalculate() {
+        @if (Status == "Draft" || Status == "Withdrawn" || Status == "Declined" || Status == "Returned")
+        {
+    <text>
+        $('#tblLSAElaunKhasMakan tbody tr').each(function () {
+
+            var _rate = $(this).children('td:eq(2)').children('input[type=text]');
+            _rate.prop('readonly', true);
+            _rate.val('@Description');
+
+            var _Amount = $(this).children('td:eq(4)').children('input[type=text]');
+            _Amount.prop('readonly', true);
+
+            var _TotalAmount = $(this).children('td:eq(6)').children('input[type=text]');
+            _TotalAmount.prop('readonly', true);
+
+            var _WithSpouseCheckBox = $(this).children('td:eq(3)').find('input[type=checkbox]').is(':checked');
+            if (!_WithSpouseCheckBox) {
+                _Amount.val('@((Rate * 2).ToString("0.00"))');
+                _TotalAmount.val('@((Rate * 2).ToString("0.00"))');
+            }
+            else {
+
+                _Amount.val('@((Rate * 2 * 2).ToString("0.00"))');
+                _TotalAmount.val('@((Rate * 2 * 2).ToString("0.00"))');
+            }
+        });
+    </text>
+        }
+        
+
+        LSAElaunKhasMakanCalculateSubtotal();
+        CalculateSummary();
+    }
+
+
+    function LSAElaunKhasMakanCalculateSubtotal() {
+        var sum = 0;
+        var grandAmount = 0;
+        var grandGST = 0;
+        var grandTotal = 0;
+        var thisTable = $('#tblLSAElaunKhasMakan');
+        thisTable.find(".Amount").each(function () {
+            var $row = $(this).closest("tr");
+            var _Amount = $row.find(".Amount").val();
+            var _GSTAmount = $row.find(".GSTAmount").val();
+            var _TotalAmount = $row.find(".TotalAmount").val();
+
+            if (!isNaN(_Amount) && _Amount.length != 0) {
+                grandAmount = (grandAmount + (_Amount * 1));
+                grandGST = (grandGST + (_GSTAmount * 1));
+                grandTotal = grandTotal + (_TotalAmount * 1);
+            }
+        });
+        thisTable.find(".GrandAmount").val(grandAmount.toFixed(2));
+        thisTable.find(".GrandGSTAmount").val(grandGST.toFixed(2));
+        thisTable.find(".GrandTotalAmount").val(grandTotal.toFixed(2));
+    }
+
+    function LSAElaunKhasMakanGetDDLListInputValues() {
+        $('#tblLSAElaunKhasMakan tbody tr').each(function () {
+            var _CCSelect = $(this).children('td:eq(1)').children('select');
+            var _CCHidden = $(this).children('td:eq(1)').children('input[type=hidden]');
+            _CCSelect.val(_CCHidden.val());
+
+            var _WithSpouseHidden = $(this).children('td:eq(3)').children('input[type=hidden]');
+            var _WithSpouseCheckBox = $(this).children('td:eq(3)').children('input[type=checkbox]');
+
+            if (_WithSpouseHidden.val() == "true") {
+                _WithSpouseCheckBox.prop('checked', true);
+            }
+        });
+    }
+
+    $(document).ready(function () {
+        LSAElaunKhasMakanGetDDLListInputValues();
+        LSAElaunKhasMakan_Initialize();
+    });
+</script>

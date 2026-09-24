@@ -1,0 +1,94 @@
+﻿@using ServiceAcceptance.Models
+@model ServiceAcceptanceVM
+
+<div class="portlet box blue">
+    <div class="mini-triangle"><img src="@Url.Content("~/Assets/img/menu-red-triangle.png")" /></div>
+    <div class="portlet-title">
+        <div class="caption">
+            <i class="fa fa-reorder"></i>Service Acceptance History
+        </div>
+        <div class="tools">
+            <a title="" data-original-title="" href="javascript:;" class="collapse"> </a>
+        </div>
+    </div> 
+    <div class="portlet-body form">
+        <div class="form-body">
+            <div class="form-horizontal">
+                <div class="table-toolbar">
+                    <table id="tblServiceAcceptanceHistory" class="table table-striped table-bordered table-hover table-full-width">
+                        <thead>
+                            <tr>
+                                <th>Staff No.</th>
+                                <th>Rel. Code</th>
+                                <th>Release or Cancel Release</th>
+                                <th>Type</th>
+                                <th>Message</th>
+                                <th>Date</th>
+                                <th>Time</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (@Model.History != null && @Model.History.Count > 0)
+                            {
+                                foreach (var item in @Model.History)
+                                {
+                                    <tr>
+                                        <td>@item.StaffNo</td>
+                                        <td>@item.ReleaseCode</td>
+                                        <td>@item.Status</td>
+                                        @if (item.Type == "I") {<td>Info</td>}
+                                        else if (item.Type == "E") {<td>Error</td>}
+                                        else if (item.Type == "W") {<td>Warning</td>}
+                                        else {<td>@item.Type</td>}
+                                        <td>@item.Message</td>
+                                        <td>@item.Date</td>
+                                        <td>@item.Time</td>
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        @if (ViewBag.IsCheck == true)
+        {
+            if (ViewBag.Status == "R")
+            {
+                <input type="button" class="btn green" value="Approve" id="btnSubmit" onclick="Release()" />
+            }
+            else
+            {
+                <input type="button" class="btn green" value="Cancel Release" id="btnSubmit" onclick="Reset()" />
+            }
+        }
+    </div>
+</div>
+
+<script>
+    $(function () {
+        $('#tblServiceAcceptanceHistory').dataTable({
+            "bLengthChange": false,
+            "bFilter": false,
+            "bPaginate": false,
+            "bInfo": false,
+            "bSortable": false,
+        });
+
+        $('.date-picker').datepicker({
+            format: 'dd/mm/yyyy',
+            autoclose: true,
+        });
+
+        if ('@ViewBag.IsCheck' == 'False')
+        {
+            $("#ct_PostDate").prop('disabled', true);
+            alert('@Html.Raw(ViewBag.BlockMessage.Replace("'", "\\'").Replace("\\\"", "\\\\\""))');
+        }
+    });
+</script>

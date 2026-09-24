@@ -1,0 +1,111 @@
+﻿@model List<ESS.Core.AttachmentObject>
+
+@{
+    ViewBag.Title = "Medical Board List Form";
+
+    var Path = string.Format("{0}://{1}{2}", Request.Url.Scheme, Request.Url.Authority, Url.Content("~"));
+}
+
+<div class="form-section">
+    <div class="row">
+        <div class="col-md-12">
+            <h1 class="page-title">
+                Medical Board List Form
+                <span style="padding-left:20px;">
+                </span>
+            </h1>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <div id="AttachmentControl" class="row">
+            <div class="col-md-12">
+                <div class="portlet box blue">
+                    <div class="mini-triangle"><img src="/_layouts/15/TNBESS/Assets/img/menu-red-triangle.png" /></div>
+                    <div class="portlet-title">
+                        <div class="caption">
+                            <i class="fa fa-reorder"></i>Result of Medical Board Attachment
+                        </div>
+                        <div class="tools">
+                            <a title="" data-original-title="" href="javascript:;" class="collapse"> </a>
+                        </div>
+                    </div>
+                    <div class="portlet-body form">
+                        <div class="form-body">
+
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="form-horizontal col-md-12" style="overflow-x:auto;">
+                                        <div id="AttachmentListing">
+                                            <div class="table-toolbar">
+                                                <table id="tblAttachment" class="table table-striped table-bordered table-hover table-full-width">
+                                                    <thead>
+                                                        <tr>
+                                                            <th></th>
+                                                            <th>Attachment</th>
+                                                            <th>Attachment Description </th>
+                                                            <th>Attached by</th>
+                                                            <th>Created Date</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        @foreach (var item in @Model)
+                                                        {
+                                                            <tr>
+                                                                <td>
+                                                                    <a class="btn blue btn-sm btn-download-attachment" data-id="@item.ID"><i class="fa fa-download"></i></a>
+                                                                </td>
+                                                                <td><p style="white-space: pre-wrap">@item.FileName</p></td>
+                                                                <td><p style="white-space: pre-wrap">@item.Description</p></td>
+                                                                <td>@item.EmployeeName</td>
+                                                                @if (@item.CreatedDate.HasValue)
+                                                                {
+                                                                    <td>@item.CreatedDate.Value.ToString("dd/MM/yyyy")</td>
+                                                                }
+                                                                else
+                                                                {
+                                                                    <td>-</td>
+                                                                }
+                                                            </tr>
+                                                        }
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+    $('#tblAttachment').dataTable(
+    {
+        "bLengthChange": false,
+        "bFilter": false,
+        "bPaginate": false,
+        "bInfo": false,
+        "bSortable": false,
+    });
+
+    $(document).on('click', '.btn-download-attachment', function () {
+        var id = $(this).data('id');
+        DownloadAttachment(id);
+    });
+
+    function DownloadAttachment(_AttachmentID) {
+        var AttachmentID = _AttachmentID;
+
+        var jqxhr = $.ajax('@Path' + '/ETKMS')
+            .done(function () {
+                window.open('@Path' + '/MedicalBoard/DownloadFile/' + AttachmentID);
+            });
+    }
+</script>

@@ -1,0 +1,77 @@
+﻿@model Tuple<string, string, string>
+@{
+    Layout = null;
+
+    string FormType = Model.Item1;
+    string PriorApprovalFormID = Model.Item2;
+    string EmployeeID = Model.Item3;
+    string Source = "";
+    string Description = "";
+
+    if (FormType == "OUTSTATION_FORM")
+    {
+        Source = "OutstationForm";
+        Description = "Outstation Form";
+    }
+    else if(FormType == "OVERSEAS_FORM")
+    {
+        Source = "OverseasForm";
+        Description = "Overseas Form";
+    }
+    else if (FormType == "OTHERS_FORM")
+    {
+        Source = "OthersForm";
+        Description = "Others Form";
+    }
+}
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="portlet box blue">
+            <div class="mini-triangle"><img src="~/Assets/img/menu-red-triangle.png" /></div>
+            <div class="portlet-title">
+                <div class="caption">
+                    <i class="fa fa-reorder"></i>
+                    Prior Approval Attachments (@Description)
+                </div>
+            </div>
+            <div class="portlet-body form">
+                <div class="form-body">
+                    <div class="form-horizontal">
+                        <div id="PriorApprovalAttachmentListing">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+    $(function () {
+        LoadPriorApprovalFormAttachment();
+    });
+    
+    function LoadPriorApprovalFormAttachment() {
+        $.ajax({
+            type: "GET",
+            url: '@Url.Content("~/Attachment/AttachmentListing/")',
+            cache: false,
+            dataType: "html",
+            data: {
+                Mode: 'View',
+                RequestID: '@PriorApprovalFormID',
+                EmployeeID: '@EmployeeID',
+                SourceType: '@Source',
+                AttachmentTableID : 'tblPriorApprovalFormAttachment'
+            },
+            async: false,
+            success: function (content) {
+                $("#PriorApprovalAttachmentListing").html(content);
+            },
+            error: function (e) {
+                alert(x + '\n' + y + '\n' + z);
+            }
+        });
+    }
+</script>

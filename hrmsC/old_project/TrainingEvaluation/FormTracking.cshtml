@@ -1,0 +1,421 @@
+﻿@model Tuple<List<ESS.Core.CourseAttendeeSAP>, List<ESS.Core.CourseAttendeeSAP>, List<ESS.Core.CourseAttendeeSAP>>
+
+@{
+    ViewBag.Title = "Evaluation Form";
+}
+
+<div class="form-section">
+    <div class="row">
+        <div class="col-md-12">
+            <h1 class="page-title">
+                Evaluation Form
+                <span style="padding-left:20px;">
+                    <small></small>
+                </span>
+            </h1>
+        </div>
+    </div>
+</div>
+@using (Html.BeginForm("", "TrainingEvaluation", FormMethod.Post, new { @class = "form-horizontal", @id = "MainForm" }))
+{
+    <input id="hfEmployeeID" type="hidden" value="@ViewBag.EmployeeID" />
+    <input id="hfEvaluationID" type="hidden" value="@ViewBag.EvaluationID" />
+
+    //Step 1 to Step 2
+    <div class="row">
+        <div class="col-md-12">
+            <div class="col-md-2 col-sm-2 col-xs-2">
+                Preview
+            </div>
+            <div class="col-md-1 col-sm-1 col-xs-1">
+                <img src="/_layouts/tnbess/ui/silver_arrow.png" /> 
+            </div>
+            <div class="col-md-2 col-sm-2 col-xs-2">
+                <b>Form Tracking</b>
+            </div>
+        </div>
+    </div>
+    <br />
+
+    //Attendee Details
+    <div class="row">
+        <div class="col-md-12">
+            <div class="portlet box blue">
+                <div class="mini-triangle"><img src="../Assets/img/menu-red-triangle.png" /></div>
+                <div class="portlet-title">
+                    <div class="caption">
+                        <i class="fa fa-reorder"></i>Attendee Details
+                    </div>
+                </div>
+                <div class="portlet-body form">
+                    <div class="form-body" id="ct01_CustomFieldFormView">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <div class="col-md-12">
+                                            <div class="table-toolbar">
+                                                <table id="tblAttendeeDetails" class="table table-striped table-bordered table-hover table-full-width AttendeeTableList">
+                                                    <thead>
+                                                        <tr>
+                                                            <th style="width:5%;"><input class="DestroyUniform" type="checkbox" ID="chkSelectAllQuestion" name="chkSelectAllQuestion" value="" onclick="javascript: SelectheaderCheckboxes(this, 'tblAttendeeDetails')"></th>
+                                                            <th>Attendee</th>
+                                                            <th style="width:15%;">Evaluation Ref. No.</th>
+                                                            <th style="width:15%;">Status</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        @foreach (var item in Model.Item1)
+                                                        {
+                                                            <tr>
+                                                                <td>
+                                                                    <input type="checkbox" class="DestroyUniform" ID="chkSelect1" name="chkSelect1" value="@item.EmployeeID">
+                                                                </td>
+                                                                <td>@item.Employee</td>
+                                                                <td>
+                                                                    <a href="~/TrainingEvaluation/AttendeeEvaluationForm?EvaluationID=@ViewBag.EvaluationID&EvaluationRecipientID=@item.EvaluationRecipientID&FromSource=FormTracking">@item.EvaluationRefNo</a>
+                                                                </td>
+                                                                <td style="color:#22BB22;font-weight: bold;">@item.StatusDesc</td>
+                                                            </tr>
+                                                        }
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    //Immediate Manager Details
+    <div class="row">
+        <div class="col-md-12">
+            <div class="portlet box blue">
+                <div class="mini-triangle"><img src="../Assets/img/menu-red-triangle.png" /></div>
+                <div class="portlet-title">
+                    <div class="caption">
+                        <i class="fa fa-reorder"></i>Immediate Manager Details
+                    </div>
+                </div>
+                <div class="portlet-body form">
+                    <div class="form-body" id="ct01_CustomFieldFormView">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <div class="col-md-12">
+                                            <div class="table-toolbar">
+                                                <table id="tblIMAttendeeDetails" class="table table-striped table-bordered table-hover table-full-width AttendeeTableList">
+                                                    <thead>
+                                                        <tr>
+                                                            <th style="width:5%;"><input class="DestroyUniform" type="checkbox" ID="chkSelectAllQuestion" name="chkSelectAllQuestion" value="" onclick="javascript: SelectheaderCheckboxes(this, 'tblIMAttendeeDetails')"></th>
+                                                            <th>Immediate Manager</th>
+                                                            <th>Attendee</th>
+                                                            <th style="width:15%;">Evaluation Ref. No.</th>
+                                                            <th style="width:15%;">Status</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        @foreach (var item in Model.Item2)
+                                                        {
+                                                            <tr>
+                                                                <td>
+                                                                    <input type="checkbox" class="DestroyUniform" ID="chkSelect1" name="chkSelect1" value="@item.EmployeeID">
+                                                                </td>
+                                                                <td>@item.ImmediateManager</td>
+                                                                <td>@item.Employee</td>
+                                                                <td><a href="~/TrainingEvaluation/AttendeeEvaluationForm?EvaluationID=@ViewBag.EvaluationID&EvaluationRecipientID=@item.EvaluationRecipientID&FromSource=FormTracking">@item.EvaluationRefNo</a></td>
+                                                                <td style="color:#22BB22;font-weight: bold;">@item.StatusDesc</td>
+                                                             
+                                                            </tr>
+                                                        }
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    //Send Email Reminder
+    <input type="button" class="btn green" value="Send Email Reminder" id="btnSendEmailReminder" onclick="NextPreviousStep('SendEmail')" />
+    <p></p>
+    <p></p>
+
+    //Course Attendee
+    <div class="row">
+        <div class="col-md-12">
+            <div class="portlet box blue">
+                <div class="mini-triangle"><img src="../Assets/img/menu-red-triangle.png" /></div>
+                <div class="portlet-title">
+                    <div class="caption">
+                        <i class="fa fa-reorder"></i>Course Attendee
+                    </div>
+                </div>
+                <div class="portlet-body form">
+                    <div class="form-body" id="ct01_CustomFieldFormView">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <div class="col-md-12">
+                                            <div class="table-toolbar">
+                                                <table id="tblCourseAttendee" class="table table-striped table-bordered table-hover table-full-width AttendeeTableList">
+                                                    <thead>
+                                                        <tr>
+                                                            <th style="width:5%;"><input class="DestroyUniform" type="checkbox" ID="chkSelectAllQuestion" name="chkSelectAllQuestion" value="" onclick="javascript: SelectheaderCheckboxes(this, 'tblCourseAttendee')"></th>
+                                                            <th>Attendees</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        @foreach (var item in Model.Item3)
+                                                        {
+                                                            <tr>
+                                                                <td>
+                                                                    <input type="checkbox" class="DestroyUniform" ID="chkSelect2" name="chkSelect2" value="@item.EmployeeID">
+                                                                </td>
+                                                                <td>@item.Employee</td>
+                                                            </tr>
+                                                        }
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-12">
+                                            <input type="button" class="btn green" value="Assign Evaluation Form" id="btnAssignEvaluationForm" onclick="AssignEvaluationForm('chkSelect2')" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    //Add Attendee
+    @Html.Action("_MultiPeoplePickerChkbox", "TrainingEvaluation", new {  mode="adHoc"  })
+
+    <input type="button" class="btn green" value="Back" id="btnBack" onclick="NextPreviousStep('Back')" />
+    <input type="button" class="btn green" value="Close" id="btnAttach" onclick="NextPreviousStep('Close')" />
+
+    <!-- Confirmation Message -->
+    <div class="modal fade" id="ConfirmUpdate" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                    <h4 class="modal-title">Confirmation</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="well">
+                        Are you sure you want to proceed? Press Confirm to proceed, or Close to stay on the current page.
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn default blue" id="btnSubmitDraft" value="Draft" onclick="javascript: ConfirmAdd();">
+                        <i class="fa fa-check"></i>
+                        Confirm
+                    </button>
+                    <button type="button" class="btn default" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Success Message -->
+    <div class="modal fade" id="SuccessSubmit" tabindex="-1" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header Success-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true" style="display: none;"></button>
+                    <h4 class="Success-title">Action Successfully Completed</h4>
+                </div>
+                <div class="modal-body Success-body">
+                    <div class="well">
+                        Email reminder has been sent to the selected Attendee/Immediate Manager.
+                    </div>
+                </div>
+                <div class="modal-footer Success-footer">
+                    <button type="button" class="btn default blue" id="btnOK">
+                        <i class="fa fa-check"></i>
+                        OK
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    //Loading
+    <div id="divLoading" style="margin: 0px; padding: 0px; position: fixed; right: 0px; top: 0px; width: 100%; height: 100%; background-color: gainsboro; z-index: 30001; opacity: .8; filter: alpha(opacity=70); display: none; ">
+        <p style="position: absolute; top: 30%; left: 30%; color: black;">
+            Performing action, please wait...<img src="/_layouts/15/TNBESS/Assets/img/ajax-loading.gif">
+        </p>
+    </div>
+}
+
+<script>
+    var CheckBoxId = "";
+    $('.AttendeeTableList').dataTable(
+      {
+          "bLengthChange": false,
+          "bFilter": false,
+          "bPaginate": false,
+          "bInfo": false,
+          "bSortable": false,
+          "bRetrieve": true,
+          "bDestroy": true
+      });
+
+    $(window).load(function () {
+        $.uniform.restore(".DestroyUniform");
+    });
+
+    function NextPreviousStep(_Action) {
+        if (_Action == "Back") {
+            location.href = '/_layouts/15/essv2/TrainingEvaluation/EvaluationFormPreview?EvaluationID=' + '@ViewBag.EvaluationID';
+        }else if (_Action == "Close") {
+            location.href = '/_layouts/15/essv2/trainingEvaluation/EvaluationFormHistory';
+        } else if (_Action == "SendEmail") {
+            $('#btnOK').click(function () { RedirectTo(); });
+            $("#divLoading").css("display", "block");
+            var myVar = setTimeout(SendEmailReminder, 1000);
+        }
+    }
+
+    function SendEmailReminder() {
+
+        var _SelectedAttendees = "";
+
+        $("input[id=chkSelect1]:checked").each(function () {
+            var AttendeesID = $(this).val();
+
+            _SelectedAttendees += AttendeesID + ",";
+        });
+
+        if (_SelectedAttendees == "") {
+            alert('Please select at least one Attendee/Immediate Manager to send the email reminder.');
+            $("#divLoading").css("display", "none");
+            return false;
+        }
+        _SelectedAttendees = _SelectedAttendees.slice(0, -1);
+        
+        $.ajax({
+            url: '@Url.Content("~/TrainingEvaluation/PerformSendEmailReminder")',
+            type: 'POST',
+            cache: false,
+            async: false,
+            dataType: "json",
+            data: { EvaluationID: $("#hfEvaluationID").val(), SelectedAttendees: _SelectedAttendees },
+            success: function (result) {
+                if (result.Success) {
+                    $("#divLoading").css("display", "none");
+                    $("#SuccessSubmit").modal();
+                } else {
+                    $("#divLoading").css("display", "none");
+                    alert(result.ErrorMsg);
+                    console.log(result.ErrorMsg);
+                }
+            },
+            error: function (x, y, z) {
+                $("#divLoading").css("display", "none");
+                console.log(x + '\n' + y + '\n' + z);
+            }
+        });
+
+    }
+
+    function AssignEvaluationForm(_CheckBox) {
+        CheckBoxId = _CheckBox;
+        var _Attendees = "";
+        $("input[id=" + CheckBoxId + "]:checked").each(function () {
+            var AttendeesID = $(this).val();
+
+            _Attendees += AttendeesID + ",";
+        });
+        if (_Attendees == "") {
+            alert('You need to select at least one Attendee.');
+            return false;
+        }
+        $('#ConfirmUpdate').modal('toggle');
+    }
+
+    function ConfirmAdd() {
+        $("#ConfirmUpdate").modal('toggle');
+        $("#divLoading").css("display", "block");
+        var myVar = setTimeout(SaveSelectedAttendees, 1000);
+    }
+
+    function SaveSelectedAttendees() {
+        var _Attendees = "";
+        var _EvaluationID = $("#hfEvaluationID").val();
+        $("input[id=" + CheckBoxId + "]:checked").each(function () {
+            var AttendeesID = $(this).val();
+
+            _Attendees += AttendeesID + ",";
+        });
+        if (_Attendees == "") {
+            alert('You need to select at least one Attendee.');
+            return false;
+        }
+        _Attendees = _Attendees.slice(0, -1);
+
+        $.ajax({
+            url: '@Url.Content("~/TrainingEvaluation/PerformAddAdHocSurveyRecipient")',
+            type: 'POST',
+            cache: false,
+            async: false,
+            dataType: "json",
+            data: { Attendees: _Attendees, EvaluationID: _EvaluationID },
+            success: function (result) {
+                if (result.Success) {
+                    //$("#divLoading").css("display", "none");
+                    window.location.replace("/_layouts/15/essv2/TrainingEvaluation/FormTracking?EvaluationID=" + result.EvaluationID);
+                } else {
+                    $("#divLoading").css("display", "none");
+                    alert(result.ErrorMsg);
+                    console.log(result.ErrorMsg);
+                }
+            },
+            error: function (x, y, z) {
+                $("#divLoading").css("display", "none");
+                console.log(x + '\n' + y + '\n' + z);
+            }
+        });
+    }
+
+
+    function SelectheaderCheckboxes(headerchk,tableid) {
+        var gvcheck = $("#" + tableid);
+
+        //Condition to check header checkbox selected or not if that is true checked all checkboxes
+        if (headerchk.checked) {
+            $.each(gvcheck.find('tbody tr'), function (index, value) {
+                $(this).find('input').attr("checked", "checked");
+            });
+        }
+            //if condition fails uncheck all checkboxes in gridview
+        else {
+            $.each(gvcheck.find('tbody tr'), function (index, value) {
+                $(this).find('input').removeAttr("checked");
+            });
+        }
+    }
+
+    function RedirectTo() {
+        window.location.href = '/_layouts/15/essv2/TrainingEvaluation/FormTracking?EvaluationID='+ $("#hfEvaluationID").val();
+    }
+</script>
+

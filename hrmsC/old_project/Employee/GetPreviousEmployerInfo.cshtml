@@ -1,0 +1,240 @@
+﻿@model Tuple<List<ESS.Employee.Models.EmploymentHistoryInfo>, ESS.Employee.Models.Setting>
+@using ESS.Employee;
+@{
+    string ID = "";
+    string module = "PreviousEmployer";
+
+    string divMode = "";
+
+    bool runFieldVisible = false;
+    if (Model.Item2 != null)
+    {
+        runFieldVisible = true;
+    }
+}
+@if (Model.Item1 != null)
+{
+<div class="form-body">
+    <div class="form-horizontal">
+        <div class="table-toolbar">
+
+            <table id="tblResultPreviousEmployerInfo" class="table table-striped table-bordered table-hover table-full-width">
+                <thead>
+                    <tr>
+                        <th class="hidden">
+                            <input id="RemovePreviousEmployerCheckboxHeader" type="checkbox" onchange="SelectAllPreviousEmployer(this)" />
+                        </th>
+                        <th>Previous Employer</th>
+                        <th>Position</th>
+                        <th>Start Date</th>
+                        <th>End Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in @Model.Item1)
+                    {
+                        <tr>
+                            <td class="hidden">
+                                @{
+                                    ID = "RemovePreviousEmployerCheckbox_" + item.PreviousEmployer.Replace(" ", "");
+                                }
+                                <input type="checkbox" id="@ID" class="RemovePreviousEmployerCheckbox" value="@item.PreviousEmployer" />
+                            </td>
+                            <td>
+                                <a href="#ProfilePreviousEmployer"
+                                   class="ViewPreviousEmployer"
+                                   data-LockIndicator="@item.LockIndicator" 
+                                   data-ObjectID="@item.ObjectID" 
+                                   data-RecordNumber="@item.RecordNumber" 
+                                   data-SubType="@item.SubType" 
+                                   data-StartDate="@Service.FormatDateInNumber(item.StartDate, "dd/MM/yyyy")"
+                                   data-EndDate="@Service.FormatDateInNumber(item.EndDate, "dd/MM/yyyy")">
+                                    @item.PreviousEmployer
+                                </a>
+                            </td>
+                            <td>@((string.IsNullOrEmpty(item.Position)) ? "-" : item.Position)</td>
+                            @if (!string.IsNullOrEmpty(item.StartDate + ""))
+                            {
+                                <td>@Service.FormatDateInNumber(item.StartDate, "dd/MM/yyyy")</td>
+                            }
+                            else
+                            {
+                                <td>-</td>
+                            }
+                            @if (!string.IsNullOrEmpty(item.EndDate + ""))
+                            {
+                            <td>@Service.FormatDateInNumber(item.EndDate, "dd/MM/yyyy")</td>
+                            }
+                            else
+                            {
+                                <td>-</td>
+                            }
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="form-horizontal">
+        <div class="table-toolbar">
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="btn-group addPreviousEmployerDiv hidden">
+                        <a class="btn green" id="btnAddPreviousEmployer" onclick="OpenNewPanel('Add New Previous Employer Info', '@module', 'INSERT');">
+                            Add
+                            <i class="fa fa-plus"></i>
+                        </a>
+                    </div>
+                    <div class="btn-group hidden">
+                        <a class="btn red" id="btnRemovePreviousEmployer" onclick="RemovePreviousEmployer();">
+                            Delete
+                            <i class="fa fa-minus"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<input type="hidden" id="CountClick" value="0" />
+
+<script type="text/javascript">
+    transformTable("#tblResultPreviousEmployerInfo");
+    function SelectAllPreviousEmployer(element) {
+        $('#tblResultPreviousEmployerInfo .RemovePreviousEmployerCheckbox').attr('checked', element.checked);
+    }
+
+    $(document).ready(function () {
+
+        App.initAjax();
+
+        var divMode = "@divMode";
+        var runFieldVisible = "@runFieldVisible";
+
+        if (runFieldVisible.toUpperCase() == "TRUE") {
+            Setting_FieldVisible = JSON.parse('@Html.Raw(Json.Encode(Model.Item2.FieldVisible))');
+            Setting_FieldEnable = JSON.parse('@Html.Raw(Json.Encode(Model.Item2.FieldEnable))');
+            Setting_FieldChecked = JSON.parse('@Html.Raw(Json.Encode(Model.Item2.FieldChecked))');
+            Setting_FieldValue = JSON.parse('@Html.Raw(Json.Encode(Model.Item2.FieldValue))');
+
+            PopulateSetting(divMode, "#SearchGetPreviousEmployerInfo", "#SettingSection", Setting_FieldVisible, Setting_FieldEnable, Setting_FieldChecked, Setting_FieldValue);
+            //PopulateSetting(divMode, divMain, LogDiv, Setting_FieldVisible, Setting_FieldEnable, Setting_FieldChecked, Setting_FieldValue)
+        }
+
+        $('#uniform-RemovePreviousEmployerCheckboxHeader').click(function (e)
+        {
+            var CountClick = $("#CountClick").val();
+            CountClick++;
+            var divBoxes = $("div[id^='uniform-RemovePreviousEmployerCheckbox_']"); //checkbox items
+
+            if (CountClick % 2 === 0)
+            {
+                /* we are even */
+                if ($("#uniform-RemovePreviousEmployerCheckboxHeader span").hasClass("checked")) {
+                    $("#uniform-RemovePreviousEmployerCheckboxHeader span").removeClass("checked")
+                }
+                for (i = 0; i < divBoxes.length; i++) {
+
+                    var A = divBoxes[i].id;
+                    if ($("#" + A + " span").hasClass("checked")) {
+                        $("#" + A + " span").removeClass("checked");
+                    }
+                }
+            }
+            else {
+                /* we are odd */
+
+                if (!$("#uniform-RemovePreviousEmployerCheckboxHeader span").hasClass("checked")) {
+                    $("#uniform-RemovePreviousEmployerCheckboxHeader span").addClass("checked")
+                }
+
+                for (i = 0; i < divBoxes.length; i++) {
+
+                    var A = divBoxes[i].id;
+                    if (!$("#" + A + " span").hasClass("checked")) {
+                        $("#" + A + " span").addClass("checked");
+                    }
+                }
+            }
+
+
+            $("#CountClick").val(CountClick);
+        });
+
+        $('.RemovePreviousEmployerCheckbox').click(function (e)
+        {
+            var CountClick = $("#CountClick").val();
+            var id = this.id;
+            //uniform-id
+
+            if (!$("#uniform-" + id +" span").hasClass("checked"))
+            {
+                //uncheck "select all", if one of the listed checkbox item is unchecked
+                if ($("#uniform-RemovePreviousEmployerCheckboxHeader span").hasClass("checked"))
+                {
+                    CountClick++;
+                    $("#uniform-RemovePreviousEmployerCheckboxHeader span").removeClass("checked");
+                }
+
+            }
+
+            var divBoxes = $("div[id^='uniform-RemovePreviousEmployerCheckbox_']"); //checkbox items
+            var Count = 0;
+            for (i = 0; i < divBoxes.length; i++)
+            {
+                var A = divBoxes[i].id;
+                if ($("#" + A + " span").hasClass("checked"))
+                {
+                    Count++;
+                }
+            }
+
+            if(Count == divBoxes.length)
+            {
+                if (!$("#uniform-RemovePreviousEmployerCheckboxHeader span").hasClass("checked"))
+                {
+                    CountClick++;
+                    $("#uniform-RemovePreviousEmployerCheckboxHeader span").addClass("checked");
+                }
+            }
+            $("#CountClick").val(CountClick);
+        });
+    });
+
+    $('.ViewPreviousEmployer').click(function (e) {
+        e.preventDefault();
+        var LockIndicator = $(this).attr('data-LockIndicator');
+        var ObjectID = $(this).attr('data-ObjectID');
+        var RecordNumber = $(this).attr('data-RecordNumber');
+        var SubType = $(this).attr('data-SubType');
+        var StartDate = $(this).attr('data-StartDate');
+        var EndDate = $(this).attr('data-EndDate');
+
+
+        //var EmployeeCode = $(this).attr('data-EmployeeCode');
+        var EmployeeCode = $("#EmployeeCode").val();
+        var EmployeeID = $("#EmployeeID").val();
+
+        var Action = 'View';
+
+        $("#FormCategory").val("@module");
+        $("#FormAction").val(Action);
+        var url="@Url.Content("~/Employee/_PreviousEmployerForm")";
+        var data = {
+            EmployeeCode: EmployeeCode,
+            EmployeeID: EmployeeID,
+            LockIndicator: LockIndicator,
+            ObjectID: ObjectID,
+            RecordNumber: RecordNumber,
+            SubType: SubType,
+            StartDate: StartDate,
+            EndDate: EndDate,
+            Mode: Action
+        };
+        OpenEditPanel('View Previous Employer Info', Action, url, data)
+    });
+
+
+
+</script>
+}

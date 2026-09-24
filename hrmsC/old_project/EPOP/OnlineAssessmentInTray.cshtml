@@ -1,0 +1,257 @@
+﻿@using ESS.Core
+@model List<ESS.Core.DropDownObject>
+
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewBag.Title = "Pending Assessment (HR)";
+
+    if (!(ESS.EPop.Service.isApprover(Common.GetEmployeeID(), "SSC") || ESS.EPop.Service.isApprover(Common.GetEmployeeID(), "HRBP")))
+    {
+        Response.Redirect("~/AccessControl/ErrorPermission");
+    }
+}
+<div class="row">
+    <div class="col-md-12">
+        <br />
+        <h1 class="page-title">
+            EPOP - Pending Assessment (HR)<span style="padding-left:20px;"><small></small></span>
+        </h1>
+    </div>
+</div>
+<br />
+<input type="hidden" id="hfEmployeeID" value="@ViewBag.EmployeeID" />
+<div class="form-body">
+    
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-4 control-label">Company</label>
+                    <div class="col-md-8 form-control-static">
+                        @Html.DropDownList("Company", new SelectList(Model, "Value", "Text"), "- All -", new { @class = "bs-select form-control", @onchange = "changeCompany(this)" })
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-4 control-label">Division / Department</label>
+                    <div class="col-md-8 form-control-static">
+                        @Html.Action("_DDLDepartment", "Training", new {  })
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-4 control-label">Unit / Section</label>
+                    <div class="col-md-8 form-control-static">
+                        @Html.Action("_DDLUnitSection", "Training", new { })
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-4 control-label">Employee</label>
+                    <div class="col-md-8 form-control-static">
+                        <input class="form-control" type="text" id="EmployeeName" />
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-4 control-label">Category</label>
+                    <div class="col-md-8 form-control-static">
+                        <select name="ExecutiveCategory" class="bs-select form-control" id="ExecutiveCategory">
+                            <option value="">- All -</option>
+                            <option value="Non-Executive">Non-Executive</option>
+                            <option value="Executive">Executive</option>
+                            <option value="Specialist">Specialist</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-4 control-label">Request Reference No</label>
+                    <div class="col-md-8 form-control-static">
+                        <input class="form-control" id="ReferenceNo" />
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">&nbsp;</div>
+    <div class="row">
+        <div class="col-md-12">
+            <div class="text-right">
+                <input type="button" id="btn-Search" class="btn green btn-Search" value="Search" onclick="SearchListing();">
+               
+            </div>
+        </div>
+    </div>
+    <div class="row">&nbsp;</div>
+    <div class="row">
+        <div class="col-md-12">
+            <div id="SearchResult">
+
+            </div>
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+    jQuery(document).ready(function () {
+        $('.date-picker').datepicker({
+            format: 'dd/mm/yyyy',
+            autoclose: true
+        });
+
+        SearchListing();
+    });
+
+    
+
+    function ClearFilter() {
+        $('#SubDateFrom').val('');
+        $('#SubDateTo').val('');
+        $('#Status').val('');
+        $('#txtEmpName').val('');
+        $('#hfEmpID').val('');
+        SearchListing();
+    }
+
+
+    function SearchListing() {
+        var _CompanyCode = $('#Company option:selected').val();
+        var _DepartmentCode = $('#Department option:selected').val();
+        var _UnitSectionCode = $('#UnitSection option:selected').val();
+        var _EmployeeName = $('#EmployeeName').val();
+        var _Category = $('#ExecutiveCategory option:selected').val();
+        var _ReferenceNo = $('#ReferenceNo').val();
+
+        $("#SearchResult").html("LOADING...");
+
+        $.ajax({
+            type: "GET",
+            url: '@Url.Content("~/EPOP/_OnlineAssessmentInTrayResult")',
+            cache: false,
+            dataType: "html",
+            data: {
+                Division: _CompanyCode, Department: _DepartmentCode,
+                UnitSection: _UnitSectionCode, EmployeeCode: _EmployeeName,
+                Category: _Category, ReferenceNo: _ReferenceNo, SubmitterID: "@ViewBag.EmployeeID"
+            },
+            success: function (content) {
+                $("#SearchResult").html(content);
+                ExportToExcel();
+            },
+            error: function (e) {
+                console.log(e);
+            }
+        });
+    }
+
+    function changeCompany(e) {
+        $.ajax({
+            type: "GET",
+            url: '@Url.Content("~/EPOP/_DDLDepartment")',
+            cache: false,
+            dataType: "html",
+            data: { CompanyCode: e.value, RoleCode: "@ViewBag.RoleCode" },
+            success: function (content) {
+                $("#DepartmentResult").html(content);
+            },
+            error: function (e) {
+                console.log(e);
+            }
+        });
+    }
+
+    function changeDepartment(e) {
+        $.ajax({
+            type: "GET",
+            url: '@Url.Content("~/EPOP/_DDLUnitSection")',
+            cache: false,
+            dataType: "html",
+            data: { DepartmentCode: e.value, RoleCode: "@ViewBag.RoleCode" },
+            success: function (content) {
+                $("#UnitSectionResult").html(content);
+            },
+            error: function (e) {
+                console.log(e);
+            }
+        });
+    }
+    function ExportExcel() {
+        var dt = new Date();
+        var day = dt.getDate();
+        var month = dt.getMonth() + 1;
+        var year = dt.getFullYear();
+        var hour = dt.getHours();
+        var mins = dt.getMinutes();
+        var postfix = day + "." + month + "." + year + "_" + hour + "." + mins;
+
+
+        var _CompanyCode = $('#Company option:selected').val();
+        var _DepartmentCode = $('#Department option:selected').val();
+        var _UnitSectionCode = $('#UnitSection option:selected').val();
+        var _EmployeeName = $('#EmployeeName').val();
+        var _Category = $('#ExecutiveCategory option:selected').val();
+        var _ReferenceNo = $('#ReferenceNo').val();
+
+        var JsonObjectFilter = {
+            "Division": _CompanyCode,
+            "Department": _DepartmentCode,
+            "UnitSection": _UnitSectionCode,
+            "EmployeeCode": _EmployeeName,
+            "Category": _Category,
+            "ReferenceNo": _ReferenceNo,
+            "SubmitterID": "@ViewBag.EmployeeID"
+        }
+
+        var Filter = JSON.stringify(JsonObjectFilter);
+
+        window.open("../EPOP/_ExportToExcelGeneral?FileName=EPOP_PendingAssessment" + postfix +
+                    "&ReportCategory=" + "PendingAssessment" +
+                    "&Filter=" + Filter);
+
+    }
+
+    //function ExportToExcel() {
+    //    var dt = new Date();
+    //    var day = dt.getDate();
+    //    var month = dt.getMonth() + 1;
+    //    var year = dt.getFullYear();
+    //    var hour = dt.getHours();
+    //    var mins = dt.getMinutes();
+    //    var postfix = day + "." + month + "." + year + "_" + hour + "." + mins;
+
+    //    var _CompanyCode = $('#Company option:selected').val();
+    //    var _DepartmentCode = $('#Department option:selected').val();
+    //    var _UnitSectionCode = $('#UnitSection option:selected').val();
+    //    var _EmployeeName = $('#EmployeeName').val();
+    //    var _TrainingCategory = $('#TrainingCategory option:selected').val();
+    //    var _TrainingType = $('#TrainingType option:selected').val();
+    //    var _CourseTitle = $('#CourseTitle').val();
+    //    var _Status = $('#Status').val();
+    //    var _Provider = $('#Provider').val();
+    //    var _Venue = $('#Venue').val();
+    //    var _ReferenceNo = $('#ReferenceNo').val();
+
+    //    window.open("../Training/_ExportToExcel?FileName=TrainingRequest_Report_" + postfix + "&DateFrom=" + _DateFrom +
+    //                "&DateTo=" + _DateTo + "&CompanyCode=" + _CompanyCode + "&DepartmentCode=" + _DepartmentCode + "&UnitSectionCode=" + _UnitSectionCode + "&EmployeeName=" + _EmployeeName + "&TrainingCategory=" + _TrainingCategory + "&TrainingType=" + _TrainingType
+    //                + "&CourseTitle=" + _CourseTitle + "&Status=" + _Status + "&Provider=" + _Provider + "&Venue=" + _Venue + "&ReferenceNo=" + _ReferenceNo);
+    //}
+</script>

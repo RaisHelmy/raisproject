@@ -1,0 +1,96 @@
+﻿@model ETKEMS.Models.ETKEMSViewModel
+
+@{
+    Layout = null;
+    string Status = ViewBag.Status;
+}
+
+<table id="tblAuthEmps" class="table table-striped table-bordered table-hover table-full-width">
+    <thead>
+        <tr>
+            @if (Model.EStatus == ETKEMS.Status.Draft || Model.EStatus == ETKEMS.Status.Declined)
+            {
+                    <th>
+                        <input type="checkbox" onchange="SelectAll(this)" />
+                    </th>
+            }
+            <th>Employee <span style="color:red;"> *</span></th>
+            <th>Position</th>
+            <th>Position No.</th>
+            <th>Salary Grade</th>
+            <th>Job</th>
+            <th>Position Grade</th>
+
+            @if (Model.EStatus != ETKEMS.Status.Draft && Model.EStatus != ETKEMS.Status.Declined)
+            {
+                <th>Task(%)</th>
+            }
+        </tr>
+    </thead>
+    <tbody>
+        @if (Model.AuthorizedEmployees != null)
+        {
+            foreach (var item in Model.AuthorizedEmployees)
+            {
+                int count = 0;
+
+                <tr>
+                    @if (Model.EStatus == ETKEMS.Status.Draft || Model.EStatus == ETKEMS.Status.Declined)
+                    {
+                        <td>
+                            <input type="hidden" name="AuthEmpID" value="@item.AuthEmpID" />
+                            <input type="checkbox" class="RemoveRowCheckbox" value="@item.AuthEmpID" />
+                        </td>
+                    }
+                    <td class="EmployeeCode">
+                        <input type="hidden" name="AuthorizedEmployees[@count].AuthID" value="@item.AuthEmpID" />
+                        <input type="hidden" name="AuthorizedEmployees[@count].AuthEmp" value="@item.AuthEmp"/>
+                        @item.AuthEmp
+                    </td>
+                    <td class="Position">
+                        <input type="hidden" name="AuthorizedEmployees[@count].AuthPosition" value="@item.AuthPosition"/>
+                        @item.AuthPosition
+                    </td>
+                    <td class="PositionNo">
+                        <input type="hidden" name="AuthorizedEmployees[@count].AuthPositionNo" value="@item.AuthPositionNo" />
+                        @item.AuthPositionNo
+                    </td>
+                    <td class="SalaryGrade">
+                        <input type="hidden" name="AuthorizedEmployees[@count].AuthSalaryGrade" value="@item.AuthSalaryGrade"/>
+                        @item.AuthSalaryGrade
+                    </td>
+                    <td class="Job">
+                        <input type="hidden" name="AuthorizedEmployees[@count].AuthDuty" value="@item.AuthDuty"/>
+                        @item.AuthDuty
+                    </td>
+                    <td class="PositionGrade">
+                        <input type="hidden" name="AuthorizedEmployees[@count].AuthJobGrade" value="@item.AuthJobGrade"/>
+                        @item.AuthJobGrade
+                    </td>
+
+                    @if (Model.EStatus != ETKEMS.Status.Draft && Model.EStatus != ETKEMS.Status.Declined)
+                    {
+                        <th class="TaskPercent">
+                            @item.TaskPercent.ToString("0")
+                        </th>
+                    }
+                </tr>
+
+                count++;
+            }
+        }
+    </tbody>
+</table>
+
+<script>
+    $('#tblAuthEmps').dataTable({
+        "bLengthChange": false,
+        "bFilter": false,
+        "bPaginate": false,
+        "bInfo": false,
+        "bSortable": false,
+    });
+    function SelectAll(element) {
+        $('#tblAuthEmps .RemoveRowCheckbox').attr('checked', element.checked);
+    }
+</script>

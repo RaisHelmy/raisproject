@@ -1,0 +1,99 @@
+﻿@model ESS.Claim.ViewModels.ClaimsSubtype
+@{
+    ViewBag.Title = "Test";
+    Layout = null;
+}
+
+<div class="portlet box blue">
+    <div class="portlet-title">
+        <div class="caption">
+            <i class="fa fa-reorder"></i>Bus
+        </div>
+        <div class="tools">
+        </div>
+    </div>
+    <div class="portlet-body form">
+        <div class="form-body">
+
+            <table class="table table-striped table-bordered table-hover table-full-width" id="dTable_Bus">
+                <thead>
+                    <tr>
+                        <th scope="col" width="15%">Date</th>
+                        <th scope="col" width="35%">Description</th>
+                        <th scope="col" width="15%">Amount (RM)</th>
+                        <th scope="col" width="15%">GST Amount (RM)</th>
+                        <th scope="col" width="15%">Total Amount (RM)</th>
+                    </tr>
+                </thead>
+                <tbody>
+
+                    @if (Model.SubTypeDetails == null)
+                    {
+
+                        <tr id="new_line_details_0" class="new_line">
+                            <td><input type="checkbox" class="checkbox" /></td>
+                            <td>
+                                <div class="input-group date date-picker" data-date-format="dd MM yyyy">
+                                    <input type="text" class="form-control" id="StartDate" name="StartDate" />
+                                    <span class="input-group-btn">
+                                        <button type="button" class="btn default"><i class="fa fa-calendar"></i></button>
+                                    </span>
+                                </div>
+                            </td>
+                            <td><input type="text" name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[0].Description" class="form-control Description" maxlength="200" /></td>
+                            <td><input type="text" name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[0].Amount" class="form-control text-right Amount" maxlength="10" onkeypress="NumberOnly(event);" onpaste="return false"></td>
+                            <td><input type="text" name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[0].GSTAmount" class="form-control text-right GSTAmount" readonly id="txtGSTAmount" /></td>
+                            <td><input type="text" name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[0].TotalAmount" class="form-control text-right SubTotalAmount" readonly id="txtTotalAmount" /></td>
+                        </tr>
+                    }
+                    else
+                    {
+                        foreach (var thisDetail in Model.SubTypeDetails)
+                        {
+                            <tr id="new_line_details_0" class="new_line">
+                                <td>
+                                    <input type="text" class="form-control" id="StartDate" readonly name="StartDate" value="@thisDetail.StartDate" />
+                                </td>
+                                <td><input type="text" name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[0].Description" value="@thisDetail.Description" class="form-control Description disabled" readonly maxlength="200" /></td>
+                                <td><input type="text" name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[0].Amount" value="@thisDetail.Amount" class="form-control text-right Amount disabled" readonly maxlength="10" onkeypress="NumberOnly(event);" onpaste="return false"></td>
+                                <td><input type="text" name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[0].GSTAmount" value="@thisDetail.GSTAmount" class="form-control text-right GSTAmount disabled" readonly id="txtGSTAmount" /></td>
+                                <td><input type="text" name="ClaimsSubtypeCategory[@Model.categoryIndex].ClaimSubtype[@Model.subtypeIndex].SubTypeDetails[0].TotalAmount" value="@thisDetail.TotalAmount" class="form-control text-right SubTotalAmount disabled" readonly id="txtTotalAmount" /></td>
+                            </tr>
+                        }
+
+                    }
+
+
+
+                </tbody>
+                <tfoot>
+                    
+                    <tr>
+                        <td colspan="2"></td>
+                        <td><input type="text" class="form-control text-right GrandAmount" value="@Model.SubTypeDetails.Sum(m => Convert.ToDecimal(m.Amount))" readonly /></td>
+                        <td><input type="text" class="form-control text-right GrandGSTAmount" value="@Model.SubTypeDetails.Sum(m => Convert.ToDecimal(m.GSTAmount.Trim()))" readonly /></td>
+                        <td><input type="text" class="form-control text-right GrandTotalAmount" value="@Model.SubTypeDetails.Sum(m => Convert.ToDecimal(m.TotalAmount.Trim()))" readonly /></td>
+
+                    </tr>
+
+                </tfoot>
+            </table>
+
+            
+
+        </div>
+    </div>
+</div>
+@*<script>
+        jQuery(document).ready(function () {
+                //$(".BtnPlus").click(addRow);
+                //$(".BtnPlus5").click(add5Row);
+
+            $(".BtnPlus").click(function () {
+                alert($(this).attr('title'));
+                    addRow();
+                });
+        }
+        )
+    </script>*@
+

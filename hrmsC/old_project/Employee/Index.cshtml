@@ -1,0 +1,1452 @@
+﻿@model ESS.Employee.Models.EmployeeVM
+@using ESS.Core
+@{
+    ViewBag.Title = "TNB Employee Profile";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+    string EmployeeID = ViewBag.EmployeeID;
+    string ActionerID = ViewBag.ActionerID;
+    string XXX = ViewBag.TryGet;
+
+    DateTime officeAddressModuleHideDate = new DateTime(2022, 6, 26);
+}
+<style>
+    .refno {
+        color: #0000CC;
+        font-weight: bold;
+    }
+</style>
+@if (Model != null)
+{
+    bool CheckFamily = Model.divFamilyVisible ?? false;
+    bool CheckEmergency = Model.divEmergencyVisible ?? false;
+    bool CheckAddress = Model.divAddressVisible ?? false;
+    bool CheckOfficeAddress = Model.divOfficeAddressVisible ?? false;
+    bool CheckEmploymentHistroy = Model.divEmploymentHistoryVisible ?? false;
+    bool CheckEducation = Model.divEducationVisible ?? false;
+    bool CheckTraining = Model.divTrainingAttendedVisible ?? false;
+    bool CheckSalary = Model.divPayrollVisible ?? false;
+    bool CheckAttachment = Model.divAttachmentVisible ?? false;
+
+    string Title = "Employee Profile";
+    if ((Model.EmployeeID == Model.ActionerID) ? true : false)
+    {
+        Title = "My Profile";
+    }
+
+    <div>
+        <div class="form-section">
+            <div class="row">
+                <div class="col-md-12">
+                    <h1 class="page-title">
+                        @Title
+                        <span style="padding-left:20px;">
+                            <small></small>
+                        </span>
+                    </h1>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-12">
+
+                <a class="btn green pull-right" style="margin: 5px;" href="javascript:CollapseAll();">Collapse All  <i class="fa fa-angle-down"></i></a>
+
+                <a class="btn green pull-right" style="margin: 5px;" href="javascript:ExpendAll();">Expand All  <i class="fa fa-angle-up"></i></a>
+            </div>
+        </div>
+
+        <div id="PersonalInfo" class="row">
+            <div class="col-md-12">
+                <div class="EmployeePortlet portlet box blue">
+                    <div class="mini-triangle"><img src="../Assets/img/menu-red-triangle.png" /></div>
+                    <div class="portlet-title">
+                        <div class="caption">
+                            <i class="fa fa-reorder"></i>Personal Info
+                        </div>
+                        <div class="tools">
+                            <a href="javascript:;" class="collapse" id="hidePersonalInfo">
+                            </a>
+                        </div>
+                    </div>
+                    <div class="portlet-body form" id="SearchGetPersonalInfo">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="FamilyInfo" class="row">
+            <div class="col-md-12">
+                <div class="EmployeePortlet portlet box blue">
+                    <div class="mini-triangle"><img src="../Assets/img/menu-red-triangle.png" /></div>
+                    <div class="portlet-title">
+                        <div class="caption">
+                            <i class="fa fa-reorder"></i>Family Info
+                        </div>
+                        <div class="tools">
+                            <a href="javascript:;" class="collapse" id="hideFamilyInfo">
+                            </a>
+                        </div>
+                    </div>
+                    <div class="portlet-body form" id="SearchGetFamilyInfo">
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="EmergencyContactInfo" class="row">
+            <div class="col-md-12">
+                <div class="EmployeePortlet portlet box blue">
+                    <div class="mini-triangle"><img src="../Assets/img/menu-red-triangle.png" /></div>
+                    <div class="portlet-title">
+                        <div class="caption">
+                            <i class="fa fa-reorder"></i>Emergency Contact Info
+                        </div>
+                        <div class="tools">
+                            <a href="javascript:;" class="collapse" id="hideEmergencyContactInfo">
+                            </a>
+                        </div>
+                    </div>
+                    <div class="portlet-body form" id="SearchGetEmergencyContactInfo">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="AddressInfo" class="row">
+            <div class="col-md-12">
+                <div class="EmployeePortlet portlet box blue">
+                    <div class="mini-triangle"><img src="../Assets/img/menu-red-triangle.png" /></div>
+                    <div class="portlet-title">
+                        <div class="caption">
+                            <i class="fa fa-reorder"></i>Address
+                        </div>
+                        <div class="tools">
+                            <a href="javascript:;" class="collapse" id="hideAddressInfo">
+                            </a>
+                        </div>
+                    </div>
+                    <div class="portlet-body form" id="SearchGetAddressInfo">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        @{
+            if (DateTime.Now <= officeAddressModuleHideDate)
+            {
+                <div id="OfficeAddressInfo" class="row">
+                    <div class="col-md-12">
+                        <div class="EmployeePortlet portlet box blue">
+                            <div class="mini-triangle"><img src="../Assets/img/menu-red-triangle.png" /></div>
+                            <div class="portlet-title">
+                                <div class="caption">
+                                    <i class="fa fa-reorder"></i>Office Address (Your actual work address / base)
+                                </div>
+                                <div class="tools">
+                                    <a href="javascript:;" class="collapse" id="hideOfficeAddressInfo">
+                                    </a>
+                                </div>
+                            </div>
+                            <div class="portlet-body form" id="SearchGetOfficeAddressInfo">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+
+        <div id="CurrentEmploymentInfo" class="row">
+            <div class="col-md-12">
+                <div class="EmployeePortlet portlet box blue">
+                    <div class="mini-triangle"><img src="../Assets/img/menu-red-triangle.png" /></div>
+                    <div class="portlet-title">
+                        <div class="caption">
+                            <i class="fa fa-reorder"></i>Current Employment Info
+                        </div>
+                        <div class="tools">
+                            <a href="javascript:;" class="collapse" id="hideCurrentEmploymentInfo">
+                            </a>
+                        </div>
+                    </div>
+                    <div class="portlet-body form" id="SearchGetCurrentEmploymentInfo">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        @*<div id="PreviousEmployerInfo" class="row">
+                <div class="col-md-12">
+                    <div class="EmployeePortlet portlet box blue">
+                        <div class="mini-triangle"><img src="../Assets/img/menu-red-triangle.png" /></div>
+                        <div class="portlet-title">
+                            <div class="caption">
+                                <i class="fa fa-reorder"></i>Previous Employer
+                            </div>
+                            <div class="tools">
+                                <a href="javascript:;" class="collapse" id="hidePreviousEmployerInfo">
+                                </a>
+                            </div>
+                        </div>
+                        <div class="portlet-body form" id="SearchGetPreviousEmployerInfo">
+                        </div>
+                    </div>
+                </div>
+            </div>*@
+
+        @*<div id="EducationInfo" class="row">
+                <div class="col-md-12">
+                    <div class="EmployeePortlet portlet box blue">
+                        <div class="mini-triangle"><img src="../Assets/img/menu-red-triangle.png" /></div>
+                        <div class="portlet-title">
+                            <div class="caption">
+                                <i class="fa fa-reorder"></i>Education Info
+                            </div>
+                            <div class="tools">
+                                <a href="javascript:;" class="collapse" id="hideEducationInfo">
+                                </a>
+                            </div>
+                        </div>
+                        <div class="portlet-body form" id="SearchGetEducationInfo">
+                        </div>
+                    </div>
+                </div>
+            </div>*@
+
+        @*<div id="TrainingApprovedInfo" class="row">
+                <div class="col-md-12">
+                    <div class="EmployeePortlet portlet box blue">
+                        <div class="mini-triangle"><img src="../Assets/img/menu-red-triangle.png" /></div>
+                        <div class="portlet-title">
+                            <div class="caption">
+                                <i class="fa fa-reorder"></i>Training Approved in ESS
+                            </div>
+                            <div class="tools">
+                                <a href="javascript:;" class="collapse" id="hideTrainingApprovedInfo">
+                                </a>
+                            </div>
+                        </div>
+                        <div class="portlet-body form" id="SearchGetTrainingApprovedInfo">
+                        </div>
+                    </div>
+                </div>
+            </div>*@
+
+        <div id="SalaryInfo" class="row">
+            <div class="col-md-12">
+                <div class="EmployeePortlet portlet box blue">
+                    <div class="mini-triangle"><img src="../Assets/img/menu-red-triangle.png" /></div>
+                    <div class="portlet-title">
+                        <div class="caption">
+                            <i class="fa fa-reorder"></i>Salary Info
+                        </div>
+                        <div class="tools">
+                            <a href="javascript:;" class="collapse" id="hideSalaryInfo">
+                            </a>
+                        </div>
+                    </div>
+                    <div class="portlet-body form" id="SearchGetSalaryInfo">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        @*@Html.Action("AttachmentControl", "Employee", new { EmployeeID = Model.EmployeeID, Mode = "View", SourceType = Model.AttachmentSourceType, RequestID = Model.EmployeeID })*@
+
+        <div id="AttachmentInfo" class="row">
+            <div class="col-md-12">
+                <div class="EmployeePortlet portlet box blue">
+                    <div class="mini-triangle"><img src="../Assets/img/menu-red-triangle.png" /></div>
+                    <div class="portlet-title">
+                        <div class="caption">
+                            <i class="fa fa-reorder"></i>Attachment Info
+                        </div>
+                        <div class="tools">
+                            <a href="javascript:;" class="collapse" id="hideAttachmentInfo">
+                            </a>
+                        </div>
+                    </div>
+                    <div class="portlet-body form" id="">
+                        <div id="SearchGetAttachmentInfo"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        @if ((Model.EmployeeID == Model.ActionerID) ? true : false)
+        {
+            <div id="Info" class="row">
+                <div class="col-md-12">
+                    <div class="portlet box">
+                        <div class="portlet-title">
+
+                        </div>
+                        <div class="portlet-body form">
+                            <div class="form-body">
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <div class="form-horizontal">
+                                            <div class="form-group">
+                                                <div class="col-md-12 form-control-static">
+                                                    <b>Pengesahan Data</b>
+                                                    <br /><br />
+                                                    Tarikh Terakhir Pengesahan Maklumat:
+                                                    @{
+                                                        var lblText = string.IsNullOrEmpty(Model.lblLastConfirmDate) ? "Tiada" : Model.lblLastConfirmDate;
+                                                        var lblColor = Model.cbConfirmVisible.Value ? "darkgreen" : "red";
+                                                    }
+                                                    <b>
+                                                        <label id="lblLastConfirmDate" style="font-weight:bold; color: @lblColor">@lblText</label>
+                                                    </b>
+
+                                                    <br /><br />
+                                                    <label class="mt-checkbox" style="display:inline-flex">
+                                                        @Html.CheckBox("chkHODDisclaimer", Model.cbConfirmVisible.Value, new { @id = "chkHODDisclaimer" }) Saya dengan ini mengesahkan maklumat yang direkodkan di atas adalah maklumat peribadi saya yang terkini untuk rujukan dan kegunaan Sumber Manusia dan Pengurusan TNB.
+                                                        <span></span>
+                                                    </label>
+                                                    <br />
+                                                    <br />
+                                                    <button class="btn btn-primary" onclick="ConfirmProfileUpdate()">Confirm</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+        <br />
+        <br />
+        @if (!string.IsNullOrEmpty(ViewBag.BackUrl + ""))
+        {
+            <div class="row">
+                <div class="col-md-12">
+                    <input type="button" class="btn green" value="Back" id="btnBack" onclick="BackToHistory()" />
+                </div>
+            </div>
+        }
+
+        <div id="divEPM_Modal">
+            <div class="modal fade" id="FormModal" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-lg">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                            <h4 id="ConfirmationDialog_Title" class="modal-title"></h4>
+                        </div>
+                        <div class="modal-body">
+                            <div class="row hidden">
+                                <div class="col-md-12 btnModeEdit hidden">
+                                    <a class="btn green pull-right" style="margin: 5px;" href="javascript:AllowRefresh(this);">Refresh</a>
+                                </div>
+                            </div>
+                            <div id="_Form">
+
+                            </div>
+                            <div id="_Attachment" class="divAttachment">
+
+                            </div>
+                            <div id="FormInformation" class="hidden divEPMSecretForm">
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <div class="form-horizontal">
+                                            <div class="form-group">
+                                                <label class="control-label col-md-4">
+                                                    Employee ID
+                                                </label>
+                                                <div class="col-md-8 form-control-static">
+                                                    <input type="text" class="form-control"
+                                                           name="EmployeeID" value="@Model.EmployeeID" id="EmployeeID">
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="control-label col-md-4">
+                                                    Employee Code
+                                                </label>
+                                                <div class="col-md-8 form-control-static">
+                                                    <input type="text" class="form-control"
+                                                           name="EmployeeCode" value="@Model.EmployeeCode" id="EmployeeCode">
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="control-label col-md-4">
+                                                    Photo ID :  @((string.IsNullOrEmpty(Model.PhotoID + "")) ? "No" : "Yes")
+                                                </label>
+                                                <div class="col-md-8 form-control-static">
+                                                    <input type="text" class="form-control"
+                                                           name="PhotoID" value="@Model.PhotoID" id="PhotoID">
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="control-label col-md-4">
+                                                    Actioner ID (Created By)
+                                                </label>
+                                                <div class="col-md-8 form-control-static">
+                                                    <input type="text" class="form-control"
+                                                           name="ActionerID" value="@Model.ActionerID" id="ActionerID">
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="control-label col-md-4">
+                                                    Form Category
+                                                </label>
+                                                <div class="col-md-8 form-control-static">
+                                                    <input type="text" class="form-control"
+                                                           name="FormCategory" value="" id="FormCategory">
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="control-label col-md-4">
+                                                    Form Action
+                                                </label>
+                                                <div class="col-md-8 form-control-static">
+                                                    <input type="text" class="form-control"
+                                                           name="FormAction" value="" id="FormAction">
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="control-label col-md-4">
+                                                    Form Url
+                                                </label>
+                                                <div class="col-md-8 form-control-static">
+                                                    <input type="text" class="form-control"
+                                                           name="FormUrl" value="" id="FormUrl">
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="control-label col-md-4">
+                                                    Attachment Session Name
+                                                </label>
+                                                <div class="col-md-8 form-control-static">
+                                                    <input type="text" class="form-control"
+                                                           name="AttachmentSessionName" value="" id="AttachmentSessionName">
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="control-label col-md-4">
+                                                    Attachment Source Type
+                                                </label>
+                                                <div class="col-md-8 form-control-static">
+                                                    <input type="text" class="form-control"
+                                                           name="AttachmentSourceType" value="" id="AttachmentSourceType">
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="control-label col-md-4">
+                                                    Section Visible
+                                                </label>
+                                                <div class="col-md-8 form-control-static">
+                                                    <textarea id="SettingSection" class="form-control" name="SettingSection" Rows="6"></textarea>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="control-label col-md-4">
+                                                    Form On Load
+                                                </label>
+                                                <div class="col-md-8 form-control-static">
+                                                    <textarea id="SettingFormLoad" class="form-control" name="SettingFormLoad" Rows="6"></textarea>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="control-label col-md-4">
+                                                    Form On Change
+                                                </label>
+                                                <div class="col-md-8 form-control-static">
+                                                    <textarea id="SettingFormChange" class="form-control" name="SettingFormChange" Rows="6"></textarea>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn default blue btnModeAllowEdit hidden" onclick="AllowEdit(this)">
+                                Edit
+                            </button>
+                            <button type="button" class="btn default blue btnModeInsert hidden" id="PanelFormAdd" onclick="FormValidation(this)">
+                                Add
+                            </button>
+                            <button type="button" class="btn default blue btnModeEdit hidden" id="PanelFormEdit" onclick="FormValidation(this)">
+                                Update
+                            </button>
+                            <button type="button" class="btn default" data-dismiss="modal">
+                                Close
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="divLoading2" style="margin: 0px; padding: 0px; position: fixed; right: 0px;
+        top: 0px; width: 100%; height: 100%; background-color:gainsboro; z-index: 25000;
+        opacity: .8; filter: alpha(opacity=70); display:none;">
+            </div>
+
+            <!-- Confirmation Message -->
+            <div class="modal fade" id="ConfirmUpdate" tabindex="-1" aria-hidden="true" style="z-index: 27000!important;">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal" aria-hidden="true" onclick="ClosedivLoading2()"></button>
+                            <h4 class="modal-title">Confirmation</h4>
+                        </div>
+                        <div class="modal-body">
+                            <div class="well">
+
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="submit" class="btn default blue btnModeInsert hidden" id="btnSubmit" onclick="javascript: ApproverAction(this)">
+                                <i class="fa fa-check"></i>
+                                Confirm
+                            </button>
+                            <button type="submit" class="btn default blue btnModeEdit hidden" id="btnEdit" onclick="javascript: ApproverAction(this)">
+                                <i class="fa fa-check"></i>
+                                Confirm
+                            </button>
+                            <button type="button" class="btn default" data-dismiss="modal" onclick="ClosedivLoading2()">Close</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal fade" id="SuccessSubmit" tabindex="-1" aria-hidden="true" data-backdrop="static" data-keyboard="false" style="z-index: 27003!important;">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header Success-header">
+                            <button type="button" class="close" data-dismiss="modal" aria-hidden="true" style="display: none;"></button>
+                            <h4 class="Success-title">Action Successfully Completed</h4>
+                        </div>
+                        <div class="modal-body Success-body">
+                            <div class="well">
+                                Your Application has been successfully submitted.
+                            </div>
+                        </div>
+                        <div class="modal-footer Success-footer">
+                            <button type="submit" class="btn default blue" id="btnOK">
+                                <i class="fa fa-check"></i>
+                                OK
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Buttons -->
+        <div class="row hidden">
+            <input type="hidden" name="ctl00$ContentPlaceHolder1$hfDownloadSource" id="ContentPlaceHolder1_hfDownloadSource">
+            <div class="col-md-12">
+                <input type="button" class="btn green" value="Confirm" id="btnSave" onclick="SaveAsDraft();" />
+            </div>
+        </div>
+
+        <!-- Loading Gif -->
+        <div id="divLoading" style="margin: 0px; padding: 0px; position: fixed; right: 0px;
+    top: 0px; width: 100%; height: 100%; background-color:gainsboro; z-index: 30001;
+    opacity: .8; filter: alpha(opacity=70); display:none;">
+            <p style="position: absolute; top: 30%; left: 30%; color: black;">
+                Loading, please wait...<img src="../Assets/img/ajax-loading.gif" />
+
+            </p>
+        </div>
+
+
+
+        <script type="text/javascript">
+        function BackToHistory() {
+            window.location.href = '@ViewBag.BackUrl';
+        }
+    function ExpendAll() {
+        $('.EmployeePortlet  .form').show();
+        $('.EmployeePortlet  a.expand').removeClass('expand').addClass('collapse');
+    }
+
+    function CollapseAll() {
+        $('.EmployeePortlet  .form').hide();
+        $('.EmployeePortlet  a.collapse').removeClass('collapse').addClass('expand');
+    }
+    function SearchGetPersonalInfo()
+    {
+        $("#SearchGetPersonalInfo").html("LOADING...");
+
+        $.ajax({
+            type: "GET",
+            url: '@Url.Content("~/Employee/GetPersonalInfo")',
+            cache: false,
+            dataType: "html",
+            data: { EmployeeID: '@Model.EmployeeID', EmployeeCode: '@Model.EmployeeCode', PhotoID: '@Model.PhotoID' },
+            success: function (content) {
+                $("#SearchGetPersonalInfo").html(content);
+            },
+            error: function (e) {
+                console.log(e);
+            }
+        });
+    }
+
+    function SearchGetFamilyInfo() {
+        var CheckFamily = "@CheckFamily";
+		console.log(CheckFamily);
+        if (CheckFamily.toUpperCase() == "TRUE")
+        {
+            $("#FamilyInfo").removeClass("hidden");
+            $("#SearchGetFamilyInfo").html("LOADING...");
+
+            $.ajax({
+                type: "GET",
+                url: '@Url.Content("~/Employee/GetFamilyInfo")',
+                cache: false,
+                dataType: "html",
+                data: { EmployeeID: '@Model.EmployeeID', EmployeeCode: '@Model.EmployeeCode' },
+                success: function (content) {
+                    $("#SearchGetFamilyInfo").html(content);
+                },
+                error: function (e) {
+                    console.log(e);
+                }
+            });
+        }
+        else
+        {
+            $("#SearchGetFamilyInfo").html("Access is denied");
+            $("#FamilyInfo").addClass("hidden");
+        }
+
+    }
+
+    function SearchGetEmergencyContactInfo() {
+        var CheckEmergency = "@CheckEmergency";
+
+        if (CheckEmergency.toUpperCase() == "TRUE")
+        {
+            $("#EmergencyContactInfo").removeClass("hidden");
+            $("#SearchGetEmergencyContactInfo").html("LOADING...");
+
+            $.ajax({
+                type: "GET",
+                url: '@Url.Content("~/Employee/GetEmergencyContactInfo")',
+                cache: false,
+                dataType: "html",
+                data: { EmployeeID: '@Model.EmployeeID', EmployeeCode: '@Model.EmployeeCode' },
+                success: function (content) {
+                    $("#SearchGetEmergencyContactInfo").html(content);
+                },
+                error: function (e) {
+                    console.log(e);
+                }
+            });
+        }
+        else {
+            $("#SearchGetEmergencyContactInfo").html("Access is denied");
+            $("#EmergencyContactInfo").addClass("hidden");
+        }
+    }
+
+    function SearchGetAddressInfo() {
+        var CheckAddress = "@CheckAddress";
+
+        if (CheckAddress.toUpperCase() == "TRUE")
+        {
+            $("#AddressInfo").removeClass("hidden");
+            $("#SearchGetAddressInfo").html("LOADING...");
+
+            $.ajax({
+                type: "GET",
+                url: '@Url.Content("~/Employee/GetAddressInfo")',
+                cache: false,
+                dataType: "html",
+                data: { EmployeeID: '@Model.EmployeeID', EmployeeCode: '@Model.EmployeeCode' },
+                success: function (content) {
+                    $("#SearchGetAddressInfo").html(content);
+                },
+                error: function (e) {
+                    console.log(e);
+                }
+            });
+        }
+        else {
+            $("#SearchGetAddressInfo").html("Access is denied");
+            $("#AddressInfo").addClass("hidden");
+        }
+    }
+
+    function SearchGetOfficeAddressInfo() {
+        var CheckOfficeAddress = "@CheckOfficeAddress";
+
+        if (CheckOfficeAddress.toUpperCase() == "TRUE")
+        {
+            $("#AddressInfo").show();
+            $("#SearchGetAddressInfo").html("LOADING...");
+
+            $.ajax({
+                type: "GET",
+                url: '@Url.Content("~/Employee/GetOfficeAddressInfo")',
+                cache: false,
+                dataType: "html",
+                data: { EmployeeID: '@Model.EmployeeID' },
+                success: function (content) {
+                    $("#SearchGetOfficeAddressInfo").html(content);
+                },
+                error: function (e) {
+                    console.log(e);
+                }
+            });
+        }
+        else {
+            $("#SearchGetOfficeAddressInfo").html("Access is denied");
+            $("#OfficeAddressInfo").hide();
+        }
+    }
+
+    function SearchGetCurrentEmploymentInfo() {
+
+        $("#SearchGetCurrentEmploymentInfo").html("LOADING...");
+
+        $.ajax({
+            type: "GET",
+            url: '@Url.Content("~/Employee/GetCurrentEmploymentInfo")',
+            cache: false,
+            dataType: "html",
+            data: { EmployeeID: '@Model.EmployeeID', EmployeeCode: '@Model.EmployeeCode' },
+            success: function (content) {
+                $("#SearchGetCurrentEmploymentInfo").html(content);
+            },
+            error: function (e) {
+                console.log(e);
+            }
+        });
+    }
+
+    function SearchGetPreviousEmployerInfo() {
+        var CheckEmploymentHistroy = "@CheckEmploymentHistroy";
+
+        if (CheckEmploymentHistroy.toUpperCase() == "TRUE")
+        {
+            $("#PreviousEmployerInfo").removeClass("hidden");
+            $("#SearchGetPreviousEmployerInfo").html("LOADING...");
+
+            $.ajax({
+                type: "GET",
+                url: '@Url.Content("~/Employee/GetPreviousEmployerInfo")',
+                cache: false,
+                dataType: "html",
+                data: { EmployeeID: '@Model.EmployeeID', EmployeeCode: '@Model.EmployeeCode' },
+                success: function (content) {
+                    $("#SearchGetPreviousEmployerInfo").html(content);
+                },
+                error: function (e) {
+                    console.log(e);
+                }
+            });
+        }
+        else {
+            $("#SearchGetPreviousEmployerInfo").html("Access is denied");
+            $("#PreviousEmployerInfo").addClass("hidden");
+        }
+    }
+
+    function SearchGetEducationInfo() {
+        var CheckEducation = "@CheckEducation";
+
+        if (CheckEducation.toUpperCase() == "TRUE") {
+            $("#EducationInfo").removeClass("hidden");
+            $("#SearchGetEducationInfo").html("LOADING...");
+
+            $.ajax({
+                type: "GET",
+                url: '@Url.Content("~/Employee/GetEducationInfo")',
+                cache: false,
+                dataType: "html",
+                data: { EmployeeID: '@Model.EmployeeID', EmployeeCode: '@Model.EmployeeCode' },
+                success: function (content) {
+                    $("#SearchGetEducationInfo").html(content);
+                },
+                error: function (e) {
+                    console.log(e);
+                }
+            });
+        }
+        else {
+            $("#SearchGetEducationInfo").html("Access is denied");
+            $("#EducationInfo").addClass("hidden");
+        }
+    }
+
+    function SearchGetTrainingApprovedInfo() {
+        var CheckTraining = "@CheckTraining";
+
+        if (CheckTraining.toUpperCase() == "TRUE") {
+            $("#TrainingApprovedInfo").removeClass("hidden");
+            $("#SearchGetTrainingApprovedInfo").html("LOADING...");
+
+            $.ajax({
+                type: "GET",
+                url: '@Url.Content("~/Employee/GetTrainingApprovedInfo")',
+                cache: false,
+                dataType: "html",
+                data: { EmployeeID: '@Model.EmployeeID', EmployeeCode: '@Model.EmployeeCode' },
+                success: function (content) {
+                    $("#SearchGetTrainingApprovedInfo").html(content);
+                },
+                error: function (e) {
+                    console.log(e);
+                }
+            });
+        }
+        else {
+            $("#SearchGetTrainingApprovedInfo").html("Access is denied");
+            $("#TrainingApprovedInfo").addClass("hidden");
+        }
+    }
+
+    function SearchGetSalaryInfo() {
+        var CheckSalary = "@CheckSalary";
+
+        if (CheckSalary.toUpperCase() == "TRUE") {
+            $("#SalaryInfo").removeClass("hidden");
+            $("#SearchGetSalaryInfo").html("LOADING...");
+
+            $.ajax({
+                type: "GET",
+                url: '@Url.Content("~/Employee/GetSalaryInfo")',
+                cache: false,
+                dataType: "html",
+                data: { EmployeeID: '@Model.EmployeeID', EmployeeCode: '@Model.EmployeeCode' },
+                success: function (content) {
+                    $("#SearchGetSalaryInfo").html(content);
+                },
+                error: function (e) {
+                    console.log(e);
+                }
+            });
+        }
+        else {
+            $("#SearchGetSalaryInfo").html("Access is denied");
+            $("#SalaryInfo").addClass("hidden");
+        }
+    }
+
+    function SearchGetAttachmentInfo() {
+        var CheckAttachment = "@CheckAttachment";
+
+        if (CheckAttachment.toUpperCase() == "TRUE") {
+            $("#AttachmentInfo").removeClass("hidden");
+            $("#SearchGetAttachmentInfo").html("LOADING...");
+
+            $.ajax({
+                type: "GET",
+                url: '@Url.Content("~/Employee/GetAttachment")',
+                cache: false,
+                dataType: "html",
+                data: { EmployeeID: '@Model.EmployeeID',DetailID:'' },
+                success: function (content) {
+                    $("#SearchGetAttachmentInfo").html(content);
+                },
+                error: function (e) {
+                    console.log(e);
+                }
+            });
+        }
+        else {
+            $("#SearchGetAttachmentInfo").html("Access is denied");
+            $("#AttachmentInfo").addClass("hidden");
+        }
+	}
+
+	//jQuery(document).ready
+	$(function () {
+
+        $('#ConfirmUpdate').modal({
+            backdrop: 'static',
+            keyboard: false,  // to prevent closing with Esc button (if you want this too)
+            show: false
+		})
+
+        setTimeout(function () {
+            //$("#hidePersonalInfo").trigger('click');
+            $('#PersonalInfo .EmployeePortlet  .form').show();
+            $('#PersonalInfo .EmployeePortlet  a.expand').removeClass('expand').addClass('collapse');
+            SearchGetPersonalInfo();
+
+            //$("#hideFamilyInfo").trigger('click');
+            $('#FamilyInfo .EmployeePortlet  .form').hide();
+            $('#FamilyInfo .EmployeePortlet  a.collapse').removeClass('collapse').addClass('expand');
+
+            SearchGetFamilyInfo();
+
+            //$("#hideEmergencyContactInfo").trigger('click');
+            $('#EmergencyContactInfo .EmployeePortlet  .form').hide();
+            $('#EmergencyContactInfo .EmployeePortlet  a.collapse').removeClass('collapse').addClass('expand');
+            SearchGetEmergencyContactInfo();
+
+
+            //$("#hideAddressInfo").trigger('click');
+            $('#AddressInfo .EmployeePortlet  .form').hide();
+            $('#AddressInfo .EmployeePortlet  a.collapse').removeClass('collapse').addClass('expand');
+            SearchGetAddressInfo();
+
+            @{
+                if (DateTime.Now <= officeAddressModuleHideDate)
+                {
+                    @:$('#OfficeAddressInfo .EmployeePortlet  .form').hide();
+                    @:$('#OfficeAddressInfo .EmployeePortlet  a.collapse').removeClass('collapse').addClass('expand');
+                    @:SearchGetOfficeAddressInfo();
+                }
+            }
+
+            //$("#hideCurrentEmploymentInfo").trigger('click');
+            $('#CurrentEmploymentInfo .EmployeePortlet  .form').hide();
+            $('#CurrentEmploymentInfo .EmployeePortlet  a.collapse').removeClass('collapse').addClass('expand');
+                  SearchGetCurrentEmploymentInfo();
+
+            //$("#hidePreviousEmployerInfo").trigger('click');
+            //$('#PreviousEmployerInfo .EmployeePortlet  .form').hide();
+            //$('#PreviousEmployerInfo .EmployeePortlet  a.collapse').removeClass('collapse').addClass('expand');
+            //SearchGetPreviousEmployerInfo();
+
+            //$("#hideEducationInfo").trigger('click');
+            //$('#EducationInfo .EmployeePortlet  .form').hide();
+            //$('#EducationInfo .EmployeePortlet  a.collapse').removeClass('collapse').addClass('expand');
+            //SearchGetEducationInfo();
+
+            //$("#hideTrainingApprovedInfo").trigger('click');
+            //$('#TrainingApprovedInfo .EmployeePortlet  .form').hide();
+            //$('#TrainingApprovedInfo .EmployeePortlet  a.collapse').removeClass('collapse').addClass('expand');
+            //SearchGetTrainingApprovedInfo();
+
+            //$("#hideSalaryInfo").trigger('click');
+            $('#SalaryInfo .EmployeePortlet  .form').hide();
+            $('#SalaryInfo .EmployeePortlet  a.collapse').removeClass('collapse').addClass('expand');
+                  SearchGetSalaryInfo();
+
+            $('#AttachmentInfo .EmployeePortlet  .form').hide();
+            $('#AttachmentInfo .EmployeePortlet  a.collapse').removeClass('collapse').addClass('expand');
+                  SearchGetAttachmentInfo();
+
+                  }, 10);
+        $("#_Attachment").html("");
+
+    });
+
+    //New Form
+    function OpenNewPanel(title, Category, Action, url) {
+        $('#FormModal').modal();
+        $("#ConfirmationDialog_Title").html(title);
+        $("#_Form").html("LOADING...");
+        $("#_Attachment").html("");
+        $("#FormCategory").val(Category);
+        $("#FormAction").val(Action);
+
+        $("#divLoading").show();
+
+        $.ajax({
+            type: "GET",
+            url: '@Url.Content("~/Employee/_Form")',
+            cache: false,
+            dataType: "html",
+            data: { EmployeeCode: "@Model.EmployeeCode", EmployeeID: "@Model.EmployeeID", Category: Category, Mode: Action },
+            success: function (content) {
+                $("#_Form").html(content);
+                //$("#divLoading").hide();
+            },
+            error: function (e) {
+                console.log(e);
+                //$("#divLoading").hide();
+            }
+            @*,
+            complete: function (event, xhr, settings) {
+
+                //var settingsUrl = settings.url +"";
+                //if (settingsUrl.indexOf("@Url.Content("~/Employee/_Form")") > -1) {
+                $("#divLoading").hide();
+                //}*
+            }*@
+        });
+
+        setTimeout(function () { $("#divLoading").hide(); }, 3000);
+
+        // link.NavigateUrl = "javascript:openWindow('ProfileFamily.aspx?EmployeeID=" + profileID + "&RelationshipType=" + relationshipTypeCode + "&FamilyNo=" + familyNo.Replace("&nbsp;", "") + "', 'ProfileFamily', '1000', '650')";
+    }
+
+    function OpenEditPanel(title, Action, url, data) {
+        $('#FormModal').modal();
+        $("#ConfirmationDialog_Title").html(title);
+        $("#_Form").html("LOADING...");
+        $("#_Attachment").html("");
+
+
+        $("#divLoading").show();
+
+        $.ajax({
+            type: "GET",
+            url: url,
+            //   link.NavigateUrl = "javascript:openWindow('ProfileEmergency.aspx?EmployeeID=" + profileID + "&FamilyNo=" + familyNo + "', 'ProfileEmergency', '700', '370')";
+            cache: false,
+            dataType: "html",
+            data: data,
+            success: function (content) {
+                $("#_Form").html(content);
+            },
+            error: function (e) {
+                console.log(e);
+            }
+        });
+
+        setTimeout(function () { $("#divLoading").hide(); }, 3000);
+    }
+
+    @*$(document).ajaxComplete(function (event, xhr, settings) {
+
+        var settingsUrl = settings.url +"";
+        if (settingsUrl.indexOf("@Url.Content("~/Employee/_Form")") > -1) {
+            $("#divLoading").hide();
+        }
+    });*@
+
+    function SearchGet_AttachmentInfo(Category, Criteria, RequestID) {
+        var FormCategory = $("#FormCategory").val();
+
+        if ($('.divAttachment').css('display') != 'none')
+        {
+            $("#_Attachment").html("Loading...");
+
+            //value might be overight by user if choose not to attached
+            $("#" + FormCategory + "AttachMandatory").val("true");
+            //force attachment
+            $("#Hidden" + FormCategory + "AttachMandatory").val("true");
+            var A = "@Model.EmployeeID'";
+            var AttachmentSessionName = $("#AttachmentSessionName").val();
+            var AttachmentSourceType = $("#AttachmentSourceType").val();
+            $.ajax({
+                type: "GET",
+                url: '@Url.Content("~/Employee/_Attachment")',
+                cache: false,
+                dataType: "html",
+                data: { EmployeeID: '@Model.EmployeeID', Category: Category, Criteria: Criteria, RequestID: RequestID, SessionName: AttachmentSessionName, SourceType: AttachmentSourceType },
+                success: function (content) {
+                    $("#_Attachment").html(content);
+                },
+                error: function (e) {
+                    console.log(e);
+                }
+            });
+        }
+        else
+        {
+            $("#" + FormCategory + "AttachMandatory").val("false");
+        }
+    }
+
+    function ApproverAction(btn) {
+        btn.disabled = true;
+        $("#divLoading").show();
+
+        var FormCategory = $("#FormCategory").val();
+        var FormAction = $("#FormAction").val();
+
+        setTimeout(function () {
+        switch (FormCategory) {
+            case "ProfileImage":
+                //
+                var myVar = ConfirmAction_ProfileImage(btn, FormAction);
+                break;
+
+            case "Personal":
+                //
+                var myVar = ConfirmAction_Personal(btn, FormAction);
+                break;
+
+            case "Family":
+                var myVar = ConfirmAction_Family(btn, FormAction);
+                    //setTimeout(function () { ConfirmAction_Family(btn, FormAction); }, 50);
+                    //function () { ConfirmAction_Family(btn, FormAction); };
+                break;
+            case "EmergencyContact":
+                //
+                var myVar = ConfirmAction_EmergencyContact(btn, FormAction);
+                //setTimeout(function () { ConfirmAction_Family(btn, FormAction); }, 50);
+                //function () { ConfirmAction_Family(btn, FormAction); };
+                break;
+            case "Address":
+                //
+                var myVar = ConfirmAction_Address(btn, FormAction);
+                break;
+
+            case "PreviousEmployer":
+                //
+                var myVar = ConfirmAction_PreviousEmployer(btn, FormAction);
+                break;
+
+            case "OfficeAddress":
+                var myVar = ConfirmAction_OfficeAddress(btn, FormAction);
+                break;
+
+            case "CurrentEmployment":
+                //
+                var myVar = ConfirmAction_CurrentEmployment(btn, FormAction);
+                break;
+
+            case "Education":
+                //
+                var myVar = ConfirmAction_Education(btn, FormAction);
+                break;
+        }
+        }, 2500);
+
+    }
+
+    function AllowEdit(btn) {
+        btn.disabled = true;
+        $("#divLoading2").hide();
+        $("#divLoading").show();
+
+        var FormCategory = $("#FormCategory").val();
+        var FormAction = $("#FormAction").val();
+
+        if ($('#divLoading').is(':visible')) {
+            switch (FormCategory) {
+                case "Personal":
+                    //Dint have
+
+                case "CurrentEmployment":
+                    //case "CurrentEmployment"
+
+                case "Family":
+                    var myVar = AllowEdit_Family(btn, FormAction);
+                    break;
+
+                case "EmergencyContact":
+                    //
+                    var myVar = AllowEdit_EmergencyContact(btn, FormAction);
+                    break;
+
+                case "Address":
+                    //
+                    var myVar = AllowEdit_Address(btn, FormAction);
+                    break;
+
+                case "PreviousEmployer":
+                    //
+                    var myVar = AllowEdit_PreviousEmployer(btn, FormAction);
+                    break;
+
+                case "Education":
+                    //
+                    var myVar = AllowEdit_Education(btn, FormAction);
+                    break;
+            }
+        }
+    }
+
+    function AllowRefresh(btn) {
+       btn.disabled = true;
+
+       var FormCategory = $("#FormCategory").val();
+       var FormAction = $("#FormAction").val();
+
+       switch (FormCategory) {
+           case "Personal":
+               //Dint have
+               var myVar = AllowRefresh_Personal(btn, FormAction);
+               break;
+
+           case "Family":
+               var myVar = AllowEdit_Family(btn, FormAction);
+               break;
+
+           case "EmergencyContact":
+               //
+               var myVar = AllowEdit_EmergencyContact(btn, FormAction);
+               break;
+
+           case "Address":
+               //
+               var myVar = AllowEdit_Address(btn, FormAction);
+               break;
+
+           case "CurrentEmployment":
+               //Dint have
+               var myVar = AllowRefresh_CurrentEmployment(btn, FormAction);
+               break;
+
+           case "PreviousEmployer":
+               //
+               var myVar = AllowEdit_PreviousEmployer(btn, FormAction);
+               break;
+
+           case "Education":
+               //
+               var myVar = AllowEdit_Education(btn, FormAction);
+               break;
+       }
+
+
+    }
+
+    function ClosedivLoading2()
+    {
+        $("#divLoading2").hide();
+    }
+
+    function PopulateSetting(divMode, divMain, LogDiv, Setting_FieldVisible, Setting_FieldEnable, Setting_FieldChecked, Setting_FieldValue) {
+
+        divMain = $.trim(divMain);
+        divMode = $.trim(divMode);
+        var PopulateSettingLog = "";
+        PopulateSettingLog += "DivMode: " + divMode + "; ";
+        PopulateSettingLog += "DivMain: " + divMain + "; ";
+        PopulateSettingLog += "Log: " + LogDiv + "; "+"\n";
+
+        //var ddlRelationshipType = $('#ddlRelationshipType');
+        if (Setting_FieldVisible != null) {
+            var i = 0;
+            PopulateSettingLog += "Setting: Setting_FieldVisible" + "\n";
+            PopulateSettingLog += "-----------Start---------------" + "\n";
+            for (i = 0; i < Setting_FieldVisible.length; i++) {
+
+                var checkdivMode = divMode;
+                var checkConfirmation = Setting_FieldVisible[i].ConfirmationButton + "";
+                var checkVisible = Setting_FieldVisible[i].Visible + "";
+                var checkVisibleName = Setting_FieldVisible[i].Name;
+                checkVisibleName = $.trim(checkVisibleName);
+
+                PopulateSettingLog += "No: " + i + "; "
+                PopulateSettingLog += "Name: " + Setting_FieldVisible[i].Name + "; "
+                PopulateSettingLog += "Visible: " + Setting_FieldVisible[i].Visible + "; ";
+                PopulateSettingLog += "ConfirmationButton: " + Setting_FieldVisible[i].ConfirmationButton + "; ";
+
+                if (checkConfirmation.toUpperCase() == "TRUE")
+                {
+                    checkdivMode = "";
+                }
+
+                PopulateSettingLog += "Final divMode: " + checkdivMode + "; ";
+                PopulateSettingLog += "Final Name: " + divMain + " ." + checkVisibleName + checkdivMode + "; ";
+
+                if (checkVisible.toUpperCase() == "TRUE") {
+                    //show it
+                    // check if the hidden properties is added before
+                    // if yes, remove hidden class
+                    PopulateSettingLog += "Check Visible: TRUE" + "; ";
+
+                    $(divMain + " ." + checkVisibleName + checkdivMode).each(function (i, obj) {
+                        PopulateSettingLog += "HAS CLASS HIDDEN: " + $(this).hasClass("hidden") + "; ";
+                        if ($(this).hasClass("hidden")) {
+                            $(this).removeClass("hidden");
+                            PopulateSettingLog += "Remove Hidden Class" + "; ";
+                        }
+                    });
+                }
+                else {
+                    //hide it.
+
+                    PopulateSettingLog += "Check Visible: False" + "; ";
+                    // check if the hidden properties is added before
+                    // if not, add hidden class
+                    $(divMain + " ." + checkVisibleName + checkdivMode).each(function (i, obj) {
+                        PopulateSettingLog += "DO NOT HAS CLASS HIDDEN: " + $(this).hasClass("hidden") + "; ";
+                        if(!($(this).hasClass("hidden")))
+                        {
+                            $(this).addClass("hidden");
+                            //alert("False-OK");
+                            PopulateSettingLog += "Add Hidden Class" + "; ";
+                        }
+                    });
+
+                }
+
+                PopulateSettingLog += "\n";
+            }
+
+            PopulateSettingLog += "\n" + "-----------End------------------" + "\n \n";
+        }
+
+        if (Setting_FieldEnable != null) {
+            var j = 0;
+            PopulateSettingLog += "Setting: Setting_FieldEnable" + "\n";
+            PopulateSettingLog += "-----------Start---------------" + "\n";
+            for (j = 0; j < Setting_FieldEnable.length; j++) {
+
+                var checkdivMode = divMode;
+                var checkEnable = Setting_FieldEnable[j].Enable + "";
+                var checkEnableName = Setting_FieldEnable[j].Name;
+                checkEnableName = $.trim(checkEnableName);
+                var FinalName1 = divMain + " #" + checkEnableName;
+                var FinalName2 = divMain + " #uniform-" + checkEnableName;
+
+                PopulateSettingLog += "No: " + j + "; "
+                PopulateSettingLog += "Name: " + Setting_FieldEnable[j].Name + "; "
+                PopulateSettingLog += "Enable: " + Setting_FieldEnable[j].Enable + "; ";
+
+                PopulateSettingLog += "Final divMode: " + checkdivMode + "; ";
+                PopulateSettingLog += "Final Name1: " + FinalName1 + "; ";
+                PopulateSettingLog += "Final Name2: " + FinalName2 + "; ";
+
+                if (checkEnable.toUpperCase() == "TRUE")
+                {
+                    //enable it
+                    // check if the enable properties is added before
+                    // if yes, remove enable class
+                    PopulateSettingLog += "Check Enable: TRUE" + "; ";
+
+                    PopulateSettingLog += "Check Has Disabled Attribute (YES):" + $(FinalName1).is(':disabled') + "; ";
+
+                    if ($(FinalName1).is(':disabled')) {
+                        $(FinalName1).removeAttr("disabled");
+                        PopulateSettingLog += "Remove Main Disabled Attribute" + "; ";
+                    }
+
+                    if ($(FinalName2).hasClass("disabled")) {
+                        $(FinalName2).removeClass("disabled");
+                        PopulateSettingLog += "Remove Sub Disabled Attribute" + "; ";
+                    }
+                }
+                else {
+                    //hide it.
+
+                    PopulateSettingLog += "Check Enable: False" + "; ";
+                    PopulateSettingLog += "Check Has Disabled Attribute (NO):" + $(FinalName1).is(':disabled') + "; ";
+                    // check if the enable properties is added before
+                    // if not, add enable class
+                    if (!$(FinalName1).is(':disabled')) {
+                        $(FinalName1).attr('disabled', 'disabled');
+                        PopulateSettingLog += "Add Main Disabled Attribute" + "; ";
+                    }
+
+                    if (!$(FinalName2).hasClass("disabled")) {
+                        $(FinalName2).addClass("disabled");
+                        PopulateSettingLog += "Add Sub Disabled Attribute" + "; ";
+                    }
+                }
+
+                PopulateSettingLog += "\n";
+            }
+
+            PopulateSettingLog += "\n" + "-----------End------------------" + "\n \n";
+        }
+
+        if (Setting_FieldChecked != null) {
+            var k = 0;
+
+            for (k = 0; k < Setting_FieldChecked.length; k++) {
+                var checkChecked = Setting_FieldChecked[k].Checked + "";
+                var checkCheckedName = Setting_FieldChecked[k].Name;
+                checkCheckedName = $.trim(checkCheckedName);
+
+				if (checkChecked.toUpperCase() == "TRUE") {
+                    $(divMain + " #" + checkCheckedName).prop('checked', true);
+                }
+                else {
+                    $(divMain + " #" + checkCheckedName).prop('checked', false);
+                }
+                //if (checkChecked.toUpperCase() == "TRUE") {
+                //    //is checked
+
+                //    // check if the checked properties is added before
+                //    // if not, checked it
+                //    if (!$(divMain + " #" + checkCheckedName).is(":checked")) {
+                //        $(divMain + " #" + checkCheckedName).attr('checked');
+                //    }
+                //    else {
+                //        // is not checked
+                //        // check if the checked properties is added before
+                //        // if yes, remove enable class
+                //        if ($(divMain + " #" + checkCheckedName).is(":checked")) {
+                //            //$(divMain + " #" + checkCheckedName).removeAttr("checked");
+                //        }
+                //    }
+                //}
+            }
+        }
+
+        if (Setting_FieldValue != null) {
+            var m = 0;
+            PopulateSettingLog += "Setting: Setting_FieldValue" + "\n";
+            PopulateSettingLog += "-----------Start---------------" + "\n";
+            for (m = 0; m < Setting_FieldValue.length; m++)
+            {
+
+                var checkName = Setting_FieldValue[m].Name;
+                var checkValue = Setting_FieldValue[m].Value + "";
+                var checkType = Setting_FieldValue[m].Type + "";
+
+                checkName = $.trim(checkName);
+                var FinalName = divMain + " #" + checkName;
+                PopulateSettingLog += "No: " + m + "; "
+                PopulateSettingLog += "Name: " + checkName + "; "
+                PopulateSettingLog += "Value: " + checkValue + "; ";
+                PopulateSettingLog += "Type: " + checkType + "; ";
+                PopulateSettingLog += "Final Name: " + FinalName + "; ";
+
+                if (checkType.toUpperCase() == "DROPDOWNLIST") {
+                    PopulateSettingLog += "DROPDOWNLIST : TRUE" + "; ";
+
+                    $(FinalName).val(checkValue).change();
+                }
+                else if (checkType.toUpperCase() == "TEXTBOX") {
+                    PopulateSettingLog += "TEXTBOX : TRUE" + "; ";
+
+                    $(FinalName).val(checkValue);
+                }
+
+                PopulateSettingLog += "\n";
+            }
+
+            PopulateSettingLog += "\n" + "-----------End------------------" + "\n \n";
+        }
+
+        $(LogDiv).val(PopulateSettingLog);
+        }
+
+
+        function ConfirmProfileUpdate() {
+            if ($('#chkHODDisclaimer').is(':checked') === false) {
+                alert('Please check the declaration checkbox before you proceed.');
+                return false;
+            }
+
+            $("#divLoading").show();
+            $.ajax({
+                url: '@Url.Action("ConfirmUpdateProfile", "Employee")',
+                data: {EmployeeID : '@Model.EmployeeID'},
+                success: function (response) {
+                    alert(response.Message);
+                    if (response.Success) {
+                        location.reload();
+                    }
+                    else {
+                        console.log(response.TechnicalError);
+                    }
+
+                },
+                error: function (err) {
+                    console.log(err);
+                    alert('Pengesahan Data tuan/puan tidak dapat disimpan pada masa ini.\n Mohon cuba semula.');
+                }
+            });
+    }
+        </script>
+    </div>
+}
+@*else
+    {
+        <div>
+            EmployeeID = @EmployeeID
+        </div>
+        <div>
+            ActionerID = @ActionerID
+        </div>
+        <div>
+            ActionerID = @XXX
+        </div>
+
+        <div>
+            @Common.GetEmployeeID()
+        </div>
+    }*@

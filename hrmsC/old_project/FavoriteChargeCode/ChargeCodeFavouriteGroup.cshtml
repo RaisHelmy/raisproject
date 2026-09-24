@@ -1,0 +1,115 @@
+﻿@model IEnumerable<ESS.ChargeCode.Models.ChargeCodeFavouriteGroup>
+
+@{
+    ViewBag.Title = "My Charge Code Favourite Group";
+}
+
+<div class="row">
+    <div class="col-md-12">
+        <br />
+        <h1 class="page-title">
+            My Favourite Charge Code Groups<span style="padding-left:20px;"><small></small></span>
+        </h1>
+
+    </div>
+</div>
+
+
+<div class="portlet box blue">
+    <div class="mini-triangle"><img src="../Assets/img/menu-red-triangle.png"></div>
+    <div class="portlet-title">
+        <div class="caption">
+            <i class="fa fa-reorder"></i>Charge Code Groups
+        </div>
+        <a href="@Url.Action("CreateChargeCodeFavoriteGroup", "FavoriteChargeCode")" class="btn btn-xs green pull-right"><i class="fa fa-plus"></i> Add New Group</a>
+    </div>
+
+    <div class="portlet-body form">
+        <div class="form-horizontal">
+            <div class="form-body">
+                <div class="table-toolbar">
+                    <table id="tblGroups" class="table table-striped table-bordered table-hover table-full-width">
+                        <thead>
+                            <tr>
+                                <th width="20px fixed"></th>
+                                <th>Group Name</th>
+                                <th>Description</th>
+                                <th>Last Modified</th>
+                                <th width="40px fixed">Delete</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model)
+                            {
+                                <tr>
+                                    <td>
+                                        <a class="btn blue btn-sm" data-toggle="modal" href="@Url.Action("EditChargeCodeFavoriteGroup", new { groupID = item.ID})">
+                                            <i class="fa fa-edit"></i>
+                                        </a>
+                                    </td>
+                                    <td>
+                                        @Html.DisplayFor(modelItem => item.GroupName)
+                                    </td>
+                                    <td>@Html.DisplayFor(modelItem => item.Description)</td>
+                                    <td>@Html.DisplayFor(modelItem => item.ModifiedDate)</td>
+                                    <td>
+                                        <a class="btn red btn-sm" data-toggle="modal" onclick="javascript: DeleteGroup(this,'@item.ID')">
+                                            Delete
+                                        </a>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="DeleteGroupModal" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                    <h4 class="modal-title" id="deleteText">Remove charge code from group</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="well">
+                        <p>Clicking on "Delete" button will remove this group from your favourite group list. To cancel, click on "Close" button to return to the group listing.</p>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <a class="btn default red" id="btnDelete" href="">Delete</a>
+                    <button type="button" class="btn default" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+
+<script>
+
+    $(document).ready(function () {
+        $('#tblGroups').dataTable()
+        var tableWrapper = "#tblGroups_wrapper";
+
+        jQuery(tableWrapper + ' .dataTables_filter input').addClass("form-control input-medium input-inline"); // modify table search input
+        jQuery(tableWrapper + ' .dataTables_length select').addClass("form-control input-small"); // modify table per page dropdown
+        jQuery(tableWrapper + ' .dataTables_length select').select2({
+            showSearchInput: false //hide search box with special css class
+        });
+    });
+
+    function DeleteGroup(element, groupId) {
+        console.log("In deletion function")
+        $(element).attr('href', function () {
+            return this.href = '#DeleteGroupModal';
+        });
+
+        console.log(groupId);
+        var url = '@Url.Action("DeleteChargeCodeFavoriteGroup")?groupId=' + groupId;
+        $("#btnDelete").attr("href", url);
+    }
+</script>

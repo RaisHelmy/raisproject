@@ -1,0 +1,43 @@
+﻿@using ESS.Claim.ClaimSubtype
+@using ESS.Claim.ViewModels
+@model Tuple<ColumnTemplate, ClaimsSubtype>
+
+@{
+    ColumnTemplate col = Model.Item1;
+    ClaimsSubtype subtype = Model.Item2;
+}
+
+@if (col.IsReadOnly)
+{
+    <input type="text" 
+           value="@col.ColumnValue"
+           style="min-width:130px;"
+           class="form-control @col.ColumnName"
+           name="ClaimsSubtypeCategory[@subtype.categoryIndex].ClaimSubtype[@subtype.subtypeIndex].SubTypeDetails[0].@col.ColumnName"
+           readonly="readonly" />
+}
+else
+{
+    <select name="ClaimsSubtypeCategory[@subtype.categoryIndex].ClaimSubtype[@subtype.subtypeIndex].SubTypeDetails[0].@col.ColumnName"
+            class="bs-select form-control @col.ColumnName @col.ColumnClass"
+            style="@col.ColumnStyle"
+            onchange="@col.OnChange"
+            onfocus="@col.OnFocus"
+            onblur="@col.OnBlur"
+            onload="@col.OnLoad"
+            onclick="@col.OnClick;@(col.IsReadOnly ? "return false;" : "")"
+            @(col.IsReadOnly ? "readonly=\"readonly\"" : "")>
+
+        @foreach (var sli in col.DropdownItems)
+        {
+            if (sli.Value == col.SelectedDropdownItem)
+            {
+                <option value="@sli.Value" selected="selected">@sli.Text</option>
+            }
+            else
+            {
+                <option value="@sli.Value">@sli.Text</option>
+            }
+        }
+    </select>
+}

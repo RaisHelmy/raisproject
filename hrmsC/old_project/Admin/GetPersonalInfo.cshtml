@@ -1,0 +1,481 @@
+﻿@*@model ESS.Employee.Models.PersonalInfo*@
+@using System.Data
+@model Tuple<ESS.Employee.Models.PersonalInfo, ESS.Employee.Models.Setting, DataTable>
+@using ESS.Employee
+@{
+    Layout = null;
+    string ID = "";
+    string module = "Personal";
+    string module2 = "ProfileImage";
+
+    string divMode = "";
+
+    bool runFieldVisible = false;
+    if (Model.Item2 != null)
+    {
+        runFieldVisible = true;
+    }
+    bool hasProfileImg = false;
+    //Obtain from Index
+    if (string.IsNullOrEmpty(ViewBag.Base64String + ""))
+    {
+        hasProfileImg = true;
+        //< img src = "http://localhost:49773/Assets/img/fb-profile.jpg" />
+        ViewBag.Base64String = Url.Action("../Assets/img/fb-profile.jpg");
+    }
+
+    DataTable dt = Model.Item3;
+}
+<style>
+    .boxFormViewGeneralInfo_Photo2 img {
+        display: block;
+        margin: 0 auto;
+    }
+
+    .divProfileImage {
+        text-align: center;
+    }
+
+    .boxFormViewGeneralInfo_Photo {
+        padding: 7px;
+        width: 150px;
+        border: 1px solid #ffffff;
+        /*border-radius: 50% !important;*/
+        background-size: cover;
+        margin: 0 auto;
+    }
+
+    .imgProfile {
+        /*background-image: url("/_layouts/15/ESS/Assets/img/fb-profile.jpg") !important; */
+        /*border-radius: 50% !important;*/
+        background-repeat: no-repeat;
+        background-position: center center;
+        background-size: cover;
+    }
+
+    .left {
+        float: left;
+        width: 50%;
+    }
+
+    .clearfix::after {
+        clear: both;
+        display: table;
+    }
+
+    .right {
+        float: right;
+        width: 50%;
+    }
+
+    @@media only screen and (max-width: 768px) {
+        .container {
+            flex-direction: column-reverse;
+        }
+
+        .left, .right {
+            width: 100%;
+        }
+    }
+
+    #MasterDataTable th, #MasterDataTable td {
+        padding-right: 2em;
+        padding-left: 5px;
+        white-space: nowrap;
+    }
+</style>
+<div class="portlet box blue">
+    @*<div class="mini-triangle"><img src="~/Assets/img/menu-red-triangle.png" /></div>*@
+    <div class="portlet-title">
+        <div class="caption">
+            <i class="fa fa-reorder"></i>@Model.Item1.EmployeeCode - @Model.Item1.EmployeeName
+        </div>
+        <div class="tools">
+            <a href="javascript:;" class="collapse" id="hidePersonalInfo">
+            </a>
+        </div>
+    </div>
+    <div class="portlet-body">
+        <div class="row">
+            @*<div class="col-md-3">
+                    <div>
+                        Quick Links
+                        <ul>
+                            <li>
+                                <a class="" target="_blank" href="@Url.Action("ProfileMaintenanceReport", "Employee")?ID=@Model.Item1.EmployeeID">
+                                    Employee Profile
+                                </a>
+                            </li>
+                            <li>
+                                <a class="" target="_blank" href="@Url.Action("Claimsreport", "ClaimsReport")?ID=@Model.Item1.EmployeeID">
+                                    Claims
+                                </a>
+                            </li>
+                            <li>
+                                <a class="" target="_blank" href="@Url.Action("FlexiBenefitsReport", "Claims")?ID=@Model.Item1.EmployeeID">
+                                    Flexi Benefits
+                                </a>
+                            </li>
+                            <li>
+                                <a class="" target="_blank" href="@Url.Action("OutstationFormReport", "ClaimsReport")?ID=@Model.Item1.EmployeeID">
+                                    Outstation Form
+                                </a>
+                            </li>
+                            <li>
+                                <a class="" target="_blank" href="@Url.Action("RequestReport", "LeaveQuota")?ID=@Model.Item1.EmployeeID">
+                                    Leave Quota
+                                </a>
+                            </li>
+                            <li>
+                                <a class="" target="_blank" href="@Url.Action("TrainingRequestReport", "Training")?ID=@Model.Item1.EmployeeID">
+                                    Training Request
+                                </a>
+                            </li>
+                            <li>
+                                <a class="" target="_blank" href="@Url.Action("TrainingEvaluationReport", "TrainingEvaluation")?ID=@Model.Item1.EmployeeID">
+                                    Training Evaluation
+                                </a>
+                            </li>
+                            <li>
+                                <a class="" target="_blank" href="@Url.Action("TrainingSummaryTrackingReport", "Training")?ID=@Model.Item1.EmployeeID">
+                                    Training Request Summary Report
+                                </a>
+                            </li>
+                            <li>
+                                <a class="" target="_blank" href="@Url.Action("AdminSearch", "TemporaryPosition")?ID=@Model.Item1.EmployeeID">
+                                    Temporary Position
+                                </a>
+                            </li>
+                            <li>
+                                <a class="" target="_blank" href="@Url.Action("OfferAcceptanceReport", "LTIP")?ID=@Model.Item1.EmployeeID">
+                                    LTIP Offer Acceptance
+                                </a>
+                            </li>
+                            <li>
+                                <a class="" target="_blank" href="@Url.Action("CDSMaintenanceReport", "LTIP")?ID=@Model.Item1.EmployeeID">
+                                    LTIP CDS Maintenance
+                                </a>
+                            </li>
+                            <li>
+                                <a class="" target="_blank" href="@Url.Action("PayrollReport", "Payroll")?ID=@Model.Item1.EmployeeID">
+                                    Payroll
+                                </a>
+                            </li>
+                            <li>
+                                <a class="" target="_blank" href="@Url.Action("RequestReport", "OJA")?ID=@Model.Item1.EmployeeID">
+                                    OJA (By Employee)
+                                </a>
+                            </li>
+                            <li>
+                                <a class="" target="_blank" href="@Url.Action("RequestReportByVacancy", "OJA")?ID=@Model.Item1.EmployeeID">
+                                    OJA (By Vacancy)
+                                </a>
+                            </li>
+                            <li>
+                                <a class="" target="_blank" href="@Url.Action("AllowanceReport", "Allowance")?ID=@Model.Item1.EmployeeID">
+                                    Allowance
+                                </a>
+                            </li>
+                            <li>
+                                <a class="" target="_blank" href="@Url.Action("VendorReport", "Vendor")?ID=@Model.Item1.EmployeeID">
+                                    iDispensary
+                                </a>
+                            </li>
+                            <li>
+                                <a class="" target="_blank" href="@Url.Action("LoanReport", "Loan")?ID=@Model.Item1.EmployeeID">
+                                    Loan
+                                </a>
+                            </li>
+                            <li>
+                                <a class="" target="_blank" href="@Url.Action("MedicalBoardReport", "MedicalBoard")?ID=@Model.Item1.EmployeeID">
+                                    Medical Board
+                                </a>
+                            </li>
+                            <li>
+                                <a class="" target="_blank" href="@Url.Action("WorkScheduleReport", "WorkSchedule")?ID=@Model.Item1.EmployeeID">
+                                    Work Schedule
+                                </a>
+                            </li>
+                            <li>
+                                <a class="" target="_blank" href="@Url.Action("AssetSearch", "Asset")?ID=@Model.Item1.EmployeeID">
+                                    Harta
+                                </a>
+                            </li>
+                            <li>
+                                <a class="" target="_blank" href="@Url.Action("ReportMemo", "EPOP")?ID=@Model.Item1.EmployeeID">
+                                    EPOP Memo
+                                </a>
+                            </li>
+                            <li>
+                                <a class="" target="_blank" href="@Url.Action("ReportStatus", "EPOP")?ID=@Model.Item1.EmployeeID">
+                                    EPOP By Status
+                                </a>
+                            </li>
+
+                        </ul>
+                    </div>
+                </div>*@
+            <div class="col-md-12">
+                <input class="btn" type="submit" name="btnGeneralInfo" value="View General Info" id="btnGeneralInfo" disabled="disabled">
+                <input class="btn" type="submit" name="btnMasterData" value="View Master Data" id="btnMasterData">
+            </div>
+            <div class="col-md-9" id="EmployeeGeneralInfo">
+                <div class="clearfix">
+                    <div class="row right">
+                        <div class="col-md-8">
+                            <div class="form-horizontal">
+                                <div class="form-group">
+                                    <div class="col-md-12 form-control-static boxFormViewGeneralInfo_Photo2">
+                                        <div class="boxFormViewGeneralInfo_Photo">
+                                            <div id="imgProfile" class="imgProfile">
+                                                <br />
+                                                <br />
+                                                <br />
+                                                <br />
+                                                <br />
+                                                <br />
+                                                <br />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row left">
+                        <div class="col-md-12">
+                            <div class="form-horizontal">
+                                <div class="form-group divEmployeeNo">
+                                    <label class="control-label col-md-4 ">
+                                        Employee No.
+                                    </label>
+                                    <div class="col-md-8 form-control-static leftPading">
+                                        <label>@((string.IsNullOrEmpty(Model.Item1.EmployeeCode)) ? "-" : Model.Item1.EmployeeCode)</label>
+                                    </div>
+                                </div>
+                                <div class="form-group divEmployeeName">
+                                    <label class="control-label col-md-4 ">
+                                        Employee Name
+                                    </label>
+                                    <div class="col-md-8 form-control-static leftPading">
+                                        <label>@((string.IsNullOrEmpty(Model.Item1.EmployeeName)) ? "-" : Model.Item1.EmployeeName)</label>
+                                    </div>
+                                </div>
+                                <div class="form-group divTitle">
+                                    <label class="control-label col-md-4">
+                                        Title
+                                    </label>
+                                    <div class="col-md-8 form-control-static leftPading">
+                                        <label>@((string.IsNullOrEmpty(Model.Item1.Title)) ? "-" : Model.Item1.Title)</label>
+                                    </div>
+                                </div>
+                                <div class="form-group divDateOfBirth">
+                                    <label class="control-label col-md-4 ">
+                                        Date of Birth
+                                    </label>
+                                    <div class="col-md-8  form-control-static leftPading">
+                                        @if (!string.IsNullOrEmpty(Model.Item1.DateOfBirth + ""))
+                                        {
+                                            <label>
+                                                @Service.FormatDateInNumber(Model.Item1.DateOfBirth, "dd/MM/yyyy")
+                                            </label>
+                                        }
+                                        else
+                                        {
+                                            <label>-</label>
+                                        }
+                                    </div>
+                                </div>
+                                <div class="form-group divAge">
+                                    <label class="control-label col-md-4 ">
+                                        Age
+                                    </label>
+                                    <div class="col-md-8  form-control-static leftPading">
+                                        <label>@((string.IsNullOrEmpty(Model.Item1.Age)) ? "-" : Model.Item1.Age)</label>
+                                    </div>
+                                </div>
+                                <div class="form-group divNewICNo">
+                                    <label class="control-label col-md-4 ">
+                                        New IC No.
+                                    </label>
+                                    <div class="col-md-8  form-control-static leftPading">
+                                        <label>@((string.IsNullOrEmpty(Model.Item1.NewICNo)) ? "-" : Model.Item1.NewICNo)</label>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-horizontal">
+                            <div class="form-group divOldICNo">
+                                <label class="control-label col-md-4 ">
+                                    Old IC No.
+                                </label>
+                                <div class="col-md-8  form-control-static">
+                                    <label>@((string.IsNullOrEmpty(Model.Item1.OldICNo)) ? "-" : Model.Item1.OldICNo)</label>
+                                </div>
+                            </div>
+                            <div class="form-group divPassportNo">
+                                <label class="control-label col-md-4 ">
+                                    Passport No.
+                                </label>
+                                <div class="col-md-8  form-control-static">
+                                    <label>@((string.IsNullOrEmpty(Model.Item1.PassportNo)) ? "-" : Model.Item1.PassportNo)</label>
+                                </div>
+                            </div>
+                            <div class="form-group divGender">
+                                <label class="control-label col-md-4 ">
+                                    Gender
+                                </label>
+                                <div class="col-md-8  form-control-static">
+                                    <label>@((string.IsNullOrEmpty(Model.Item1.Gender)) ? "-" : Model.Item1.Gender)</label>
+                                </div>
+                            </div>
+                            <div class="form-group divNationality">
+                                <label class="control-label col-md-4 ">
+                                    Nationality
+                                </label>
+                                <div class="col-md-8  form-control-static">
+                                    <label>@((string.IsNullOrEmpty(Model.Item1.Nationality)) ? "-" : Model.Item1.Nationality)</label>
+                                </div>
+                            </div>
+                            <div class="form-group divRace">
+                                <label class="control-label col-md-4 ">
+                                    Race
+                                </label>
+                                <div class="col-md-8  form-control-static">
+                                    <label>@((string.IsNullOrEmpty(Model.Item1.Race)) ? "-" : Model.Item1.Race)</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-horizontal">
+                            <div class="form-group divBumiputera">
+                                <label class="control-label col-md-4 ">
+                                    Bumiputera
+                                </label>
+                                <div class="col-md-8  form-control-static">
+                                    <label>@((string.IsNullOrEmpty(Model.Item1.Bumiputera)) ? "-" : Model.Item1.Bumiputera)</label>
+                                </div>
+                            </div>
+                            <div class="form-group divReligion">
+                                <label class="control-label col-md-4 ">
+                                    Religion
+                                </label>
+                                <div class="col-md-8  form-control-static">
+                                    <label>@((string.IsNullOrEmpty(Model.Item1.Religion)) ? "-" : Model.Item1.Religion)</label>
+                                </div>
+                            </div>
+                            <div class="form-group divMaritalStatus">
+                                <label class="control-label col-md-4 ">
+                                    Marital Status
+                                </label>
+                                <div class="col-md-8  form-control-static">
+                                    <label>@((string.IsNullOrEmpty(Model.Item1.MaritalStatus)) ? "-" : Model.Item1.MaritalStatus)</label>
+                                </div>
+                            </div>
+                            <div class="form-group divMaritalStatusDate">
+                                <label class="control-label col-md-4 ">
+                                    Marital Status Date
+                                </label>
+                                <div class="col-md-8  form-control-static">
+                                    @if (!string.IsNullOrEmpty(Model.Item1.MaritalStatusDate + ""))
+                                    {
+                                        <label>
+                                            @Service.FormatDateInNumber(@Model.Item1.MaritalStatusDate, "dd/MM/yyyy")
+                                        </label>
+                                    }
+                                    else
+                                    {
+                                        <label>-</label>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-9" id="EmployeeMasterData" hidden="hidden">
+                <div class="clearfix">
+                    <div class="row left">
+                        <div class="col-md-12">
+                            <div class="form-horizontal">
+                                <table id="MasterDataTable" border="1">
+                                    <tbody>
+                                        @{
+                                            if (dt != null)
+                                            {
+                                                DataRow firstRow = dt.Rows[0];
+                                                foreach (DataColumn col in dt.Columns)
+                                                {
+                                                    <tr>
+                                                        <td> @col.ColumnName </td>
+                                                        <td> @firstRow[col] </td>
+                                                    </tr>
+                                                }
+                                            }
+                                        }
+                                    </tbody>
+
+                                </table>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@*script Main Function *@
+<script type="text/javascript">
+    $(document).ready(function () {
+
+        App.initAjax();
+
+        var x = "@ViewBag.Base64String";
+        $('#imgProfile').css('background-image', 'url( ' + x + ') ');
+
+        var divMode = "@divMode";
+        var runFieldVisible = "@runFieldVisible";
+
+        if (runFieldVisible.toUpperCase() == "TRUE") {
+            Setting_FieldVisible = JSON.parse('@Html.Raw(Json.Encode(Model.Item2.FieldVisible))');
+            Setting_FieldEnable = JSON.parse('@Html.Raw(Json.Encode(Model.Item2.FieldEnable))');
+            Setting_FieldChecked = JSON.parse('@Html.Raw(Json.Encode(Model.Item2.FieldChecked))');
+            Setting_FieldValue = JSON.parse('@Html.Raw(Json.Encode(Model.Item2.FieldValue))');
+
+            //locate it at Employe/index page
+            //PopulateSetting(divMode, "#SearchGetPersonalInfo", "#SettingSection", Setting_FieldVisible, Setting_FieldEnable, Setting_FieldChecked, Setting_FieldValue);
+            //PopulateSetting(divMode, divMain, LogDiv, Setting_FieldVisible, Setting_FieldEnable, Setting_FieldChecked, Setting_FieldValue)
+        }
+    });
+</script>
+@*Script Load Click Function*@
+<script type="text/javascript">
+
+    $('#btnGeneralInfo').click(function () {
+        $('#btnGeneralInfo').prop("disabled", "disabled");
+        $('#btnMasterData').removeAttr('disabled');
+        $('#EmployeeGeneralInfo').removeAttr('hidden');
+        $('#EmployeeMasterData').prop("hidden", "hidden");
+    });
+
+    $('#btnMasterData').click(function () {
+        $('#btnGeneralInfo').removeAttr('disabled');
+        $('#btnMasterData').prop("disabled", "disabled");
+        $('#EmployeeGeneralInfo').prop("hidden", "hidden");
+        $('#EmployeeMasterData').removeAttr('hidden');
+    });
+
+</script>
+
+

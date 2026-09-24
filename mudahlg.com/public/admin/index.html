@@ -1,0 +1,969 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin — MudahLG</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://code.highcharts.com/highcharts.js"></script>
+  <script src="https://code.highcharts.com/modules/accessibility.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root { --red: #A50034; --dark: #1A1A1A; --gray: #6B6B6B; --light: #F4F4F6; --border: #E2E2E6; }
+    body { font-family: 'Inter', -apple-system, sans-serif; background: var(--light); color: var(--dark); min-height: 100vh; }
+
+    /* ── LOGIN ── */
+    #login-view { display: flex; align-items: center; justify-content: center; min-height: 100vh; }
+    .login-box { background: white; border-radius: 16px; padding: 40px 36px; width: 360px; box-shadow: 0 4px 32px rgba(0,0,0,0.10); }
+    .login-logo { display: flex; align-items: center; gap: 12px; margin-bottom: 28px; }
+    .login-logo .sub { font-size: 12px; color: var(--gray); margin-top: 2px; }
+    .login-box h2 { font-size: 20px; font-weight: 700; margin-bottom: 4px; }
+    .login-box p.sub { font-size: 14px; color: var(--gray); margin-bottom: 24px; }
+    .field-label { display: block; font-size: 13px; font-weight: 600; color: #555; margin-bottom: 6px; }
+    .field-input { width: 100%; padding: 11px 14px; border: 1.5px solid var(--border); border-radius: 9px; font-size: 15px; font-family: inherit; outline: none; transition: border-color 0.2s; }
+    .field-input:focus { border-color: var(--red); }
+    .login-btn { width: 100%; margin-top: 18px; padding: 13px; background: var(--red); color: white; border: none; border-radius: 9px; font-size: 15px; font-weight: 600; font-family: inherit; cursor: pointer; }
+    .login-btn:hover { background: #8a002c; }
+    .err-msg { color: var(--red); font-size: 13px; margin-top: 10px; display: none; }
+
+    /* ── HEADER ── */
+    #admin-view { display: none; }
+    header { background: var(--dark); color: white; display: flex; align-items: center; justify-content: space-between; padding: 0 28px; height: 58px; position: sticky; top: 0; z-index: 10; box-shadow: 0 2px 12px rgba(0,0,0,0.18); }
+    .header-brand { display: flex; align-items: center; gap: 14px; }
+    .header-divider { width: 1px; height: 28px; background: rgba(255,255,255,0.15); }
+    .header-title { font-weight: 700; font-size: 15px; }
+    .header-sub { font-size: 11px; color: rgba(255,255,255,0.5); }
+    .logout-btn { display: flex; align-items: center; gap: 6px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.18); color: rgba(255,255,255,0.85); padding: 7px 14px; border-radius: 7px; font-size: 13px; font-family: inherit; cursor: pointer; }
+    .logout-btn:hover { background: rgba(255,255,255,0.14); }
+    .icon-sm { width: 16px; height: 16px; display: inline-block; vertical-align: -3px; flex-shrink: 0; }
+    .icon-md { width: 20px; height: 20px; display: inline-block; vertical-align: -5px; flex-shrink: 0; }
+
+    /* ── NAV TABS ── */
+    .nav-tabs { background: white; border-bottom: 2px solid var(--border); display: flex; gap: 0; padding: 0 28px; }
+    .nav-tab { padding: 14px 20px; font-size: 14px; font-weight: 600; color: var(--gray); cursor: pointer; border-bottom: 3px solid transparent; margin-bottom: -2px; transition: all 0.15s; user-select: none; display: flex; align-items: center; gap: 8px; }
+    .nav-tab:hover { color: var(--dark); }
+    .nav-tab.active { color: var(--red); border-bottom-color: var(--red); }
+    .nav-tab svg { opacity: 0.7; }
+    .nav-tab.active svg { opacity: 1; }
+
+    /* ── LAYOUT ── */
+    .container { padding: 24px 28px; max-width: 1300px; margin: 0 auto; }
+
+    /* ── STATS ── */
+    .stats-row { display: flex; gap: 14px; margin-bottom: 20px; flex-wrap: wrap; }
+    .stat-card { background: white; border-radius: 12px; padding: 16px 22px; min-width: 140px; box-shadow: 0 1px 6px rgba(0,0,0,0.06); border-left: 4px solid transparent; }
+    .stat-card.total   { border-color: var(--dark); }
+    .stat-card.pending { border-color: var(--red); }
+    .stat-card.done    { border-color: #16a34a; }
+    .stat-card.views   { border-color: #3b82f6; }
+    .stat-card.conv    { border-color: #f59e0b; }
+    .stat-label { font-size: 11px; font-weight: 600; color: var(--gray); text-transform: uppercase; letter-spacing: 0.6px; }
+    .stat-value { font-size: 30px; font-weight: 700; margin-top: 4px; line-height: 1; }
+    .stat-card.pending .stat-value { color: var(--red); }
+    .stat-card.done    .stat-value { color: #16a34a; }
+    .stat-card.views   .stat-value { color: #3b82f6; }
+    .stat-card.conv    .stat-value { color: #f59e0b; }
+
+    /* ── TRAFFIC TABLE ── */
+    .traffic-wrap { background: white; border-radius: 12px; box-shadow: 0 1px 6px rgba(0,0,0,0.06); overflow-x: auto; margin-bottom: 20px; }
+    .traffic-header { display: flex; align-items: center; justify-content: space-between; padding: 14px 20px; border-bottom: 1px solid var(--border); }
+    .traffic-header h3 { font-size: 14px; font-weight: 700; }
+    .traffic-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .traffic-table th { padding: 9px 14px; text-align: left; font-size: 10px; font-weight: 600; color: var(--gray); text-transform: uppercase; letter-spacing: 0.6px; background: #fafafa; border-bottom: 2px solid var(--border); white-space: nowrap; }
+    .traffic-table td { padding: 10px 14px; border-bottom: 1px solid #f0f0f0; vertical-align: middle; }
+    .traffic-table tbody tr:last-child td { border-bottom: none; }
+    .traffic-table tbody tr:hover td { background: #fafafe; }
+    .bar-bg { background: #f0f0f4; border-radius: 4px; height: 6px; min-width: 60px; }
+    .bar-fill { height: 6px; border-radius: 4px; background: var(--red); }
+    .bar-fill.blue { background: #3b82f6; }
+    .conv-badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 700; }
+    .conv-high { background: #dcfce7; color: #15803d; }
+    .conv-mid  { background: #fef9c3; color: #a16207; }
+    .conv-low  { background: #f3f4f6; color: #4b5563; }
+
+    /* ── TABLE VIEW ── */
+    .table-wrap { background: white; border-radius: 12px; box-shadow: 0 1px 6px rgba(0,0,0,0.06); overflow-x: auto; }
+    .table-header { display: flex; align-items: center; justify-content: space-between; padding: 16px 20px; border-bottom: 1px solid var(--border); flex-wrap: wrap; gap: 10px; }
+    .table-header h3 { font-size: 15px; font-weight: 700; }
+    .refresh-btn { display: inline-flex; align-items: center; gap: 6px; background: none; border: 1px solid var(--border); color: var(--gray); padding: 6px 14px; border-radius: 7px; font-size: 13px; font-family: inherit; cursor: pointer; }
+    .refresh-btn:hover { border-color: var(--dark); color: var(--dark); }
+    table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    thead tr { background: #fafafa; border-bottom: 2px solid var(--border); }
+    th { padding: 11px 16px; text-align: left; font-size: 11px; font-weight: 600; color: var(--gray); text-transform: uppercase; letter-spacing: 0.6px; white-space: nowrap; }
+    td { padding: 13px 16px; border-bottom: 1px solid #f0f0f0; vertical-align: middle; }
+    tbody tr:last-child td { border-bottom: none; }
+    tbody tr:hover td { background: #fafafe; }
+    .cell-id { color: #bbb; font-size: 12px; }
+    .cell-date { color: #666; font-size: 13px; white-space: nowrap; }
+    .cell-name { font-weight: 600; }
+    .cell-ic { font-size: 13px; color: #333; font-family: monospace; letter-spacing: 0.5px; }
+    .cell-small { color: #555; font-size: 13px; }
+    .cell-total { font-weight: 600; white-space: nowrap; }
+
+    .wa-link { display: inline-flex; align-items: center; gap: 6px; color: #16a34a; text-decoration: none; font-weight: 500; white-space: nowrap; padding: 5px 10px; background: #f0fdf4; border-radius: 20px; font-size: 13px; }
+    .wa-link:hover { background: #dcfce7; }
+
+    .followup-btn { display: inline-flex; align-items: center; gap: 5px; padding: 5px 14px; border-radius: 20px; border: none; cursor: pointer; font-size: 12px; font-weight: 600; font-family: inherit; white-space: nowrap; }
+    .followup-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+    .followup-btn.pending { background: #fee2e2; color: #b91c1c; }
+    .followup-btn.pending:hover:not(:disabled) { background: #fecaca; }
+    .followup-btn.done { background: #dcfce7; color: #16a34a; }
+    .followup-btn.done:hover:not(:disabled) { background: #bbf7d0; }
+
+    .open-btn { display: inline-flex; align-items: center; gap: 5px; padding: 6px 14px; background: var(--red); color: white; border-radius: 20px; font-size: 12px; font-weight: 700; text-decoration: none; white-space: nowrap; }
+    .open-btn:hover { background: #8a002c; }
+
+    .status-pill { display: inline-block; padding: 2px 9px; border-radius: 10px; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+    .sp-new  { background: #dbeafe; color: #1d4ed8; }
+    .sp-hot  { background: #fee2e2; color: #b91c1c; }
+    .sp-warm { background: #ffedd5; color: #c2410c; }
+    .sp-cold { background: #f3f4f6; color: #4b5563; }
+    .sp-won  { background: #dcfce7; color: #15803d; }
+    .sp-lost { background: #f1f5f9; color: #475569; }
+
+    .state-msg { text-align: center; padding: 48px 20px; color: var(--gray); font-size: 15px; }
+    .state-msg.error { color: var(--red); }
+
+    /* ── PROFILES VIEW ── */
+    #view-profiles { display: none; }
+
+    .search-card { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 1px 6px rgba(0,0,0,0.06); margin-bottom: 20px; }
+    .search-card h3 { font-size: 14px; font-weight: 700; margin-bottom: 12px; color: var(--gray); text-transform: uppercase; letter-spacing: 0.5px; }
+    .search-row { display: flex; gap: 10px; }
+    .search-row input { flex: 1; padding: 11px 16px; border: 2px solid var(--border); border-radius: 10px; font-size: 15px; font-family: inherit; outline: none; transition: border-color 0.2s; }
+    .search-row input:focus { border-color: var(--red); }
+    .search-row button { display: inline-flex; align-items: center; gap: 6px; padding: 11px 20px; background: var(--light); color: var(--gray); border: 1px solid var(--border); border-radius: 10px; font-size: 14px; font-weight: 600; font-family: inherit; cursor: pointer; }
+    .search-row button:hover { background: #e0e0e8; color: var(--dark); }
+
+    .profiles-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 14px; }
+    .profile-card { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 1px 6px rgba(0,0,0,0.06); border: 2px solid transparent; transition: border-color 0.2s, box-shadow 0.2s; }
+    .profile-card:hover { border-color: var(--red); box-shadow: 0 4px 16px rgba(165,0,52,0.10); }
+    .pc-top { display: flex; align-items: flex-start; gap: 14px; margin-bottom: 14px; }
+    .pc-avatar { width: 48px; height: 48px; border-radius: 50%; background: linear-gradient(135deg, var(--red), #8a002c); color: white; font-size: 18px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .pc-info { flex: 1; min-width: 0; }
+    .pc-name { font-size: 16px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .pc-date { font-size: 11px; color: var(--gray); margin-top: 2px; }
+    .pc-rows { border-top: 1px solid #f0f0f0; padding-top: 12px; display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px; }
+    .pc-row { display: flex; gap: 8px; align-items: flex-start; }
+    .pc-lbl { font-size: 10px; font-weight: 700; color: var(--gray); text-transform: uppercase; letter-spacing: 0.5px; min-width: 52px; padding-top: 1px; }
+    .pc-val { font-size: 13px; color: var(--dark); word-break: break-word; }
+    .pc-val.ic { font-family: monospace; font-size: 14px; font-weight: 600; letter-spacing: 0.5px; }
+    .pc-val.empty { color: #ccc; }
+    .pc-actions { display: flex; gap: 8px; }
+    .pc-open { flex: 1; display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 10px; background: var(--red); color: white; border-radius: 9px; font-size: 13px; font-weight: 700; text-decoration: none; }
+    .pc-open:hover { background: #8a002c; }
+    .pc-wa { display: inline-flex; align-items: center; justify-content: center; padding: 10px 14px; background: #f0fdf4; color: #16a34a; border-radius: 9px; font-size: 13px; font-weight: 600; text-decoration: none; }
+    .pc-wa:hover { background: #dcfce7; }
+    .pc-del { display: inline-flex; align-items: center; justify-content: center; padding: 10px 12px; background: #fee2e2; color: #b91c1c; border: none; border-radius: 9px; cursor: pointer; font-family: inherit; }
+    .pc-del:hover { background: #fecaca; }
+    .no-results { text-align: center; padding: 48px 20px; color: var(--gray); font-size: 15px; }
+
+    /* ── VISITORS VIEW ── */
+    #view-visitors { display: none; }
+    .vis-stat-card.sessions  { border-color: #3b82f6; }
+    .vis-stat-card.converted { border-color: #16a34a; }
+    .vis-stat-card.bounced   { border-color: var(--gray); }
+    .vis-stat-card.rate      { border-color: #f59e0b; }
+    .vis-stat-card.sessions  .stat-value { color: #3b82f6; }
+    .vis-stat-card.converted .stat-value { color: #16a34a; }
+    .vis-stat-card.rate      .stat-value { color: #f59e0b; }
+    .filter-bar { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+    .filter-btn { padding: 7px 16px; border-radius: 20px; border: 1.5px solid var(--border); background: white; font-size: 13px; font-weight: 600; font-family: inherit; cursor: pointer; color: var(--gray); transition: all 0.15s; }
+    .filter-btn:hover { border-color: var(--dark); color: var(--dark); }
+    .filter-btn.active { background: var(--dark); color: white; border-color: var(--dark); }
+    .filter-btn.active.green { background: #16a34a; border-color: #16a34a; }
+    .filter-btn.active.gray  { background: #6b7280; border-color: #6b7280; }
+    .vis-pill { display: inline-flex; align-items: center; gap: 5px; padding: 3px 10px; border-radius: 10px; font-size: 11px; font-weight: 700; white-space: nowrap; }
+    .vis-pill.converted { background: #dcfce7; color: #15803d; }
+    .vis-pill.bounced   { background: #f3f4f6; color: #4b5563; }
+    .pages-chip { display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; border-radius: 50%; background: #eff6ff; color: #3b82f6; font-size: 11px; font-weight: 700; }
+    .lead-link { color: var(--red); font-weight: 600; font-size: 13px; text-decoration: none; }
+    .lead-link:hover { text-decoration: underline; }
+
+    /* ── ANALYTICS VIEW ── */
+    #view-analytics { display: none; }
+    .charts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; }
+    .chart-card { background: white; border-radius: 12px; box-shadow: 0 1px 6px rgba(0,0,0,0.06); padding: 16px; }
+    .chart-card.full { grid-column: 1 / -1; }
+    .chart-card h3 { font-size: 13px; font-weight: 700; color: var(--gray); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 12px; }
+    .chart-box { width: 100%; height: 280px; }
+    .chart-box.tall { height: 340px; }
+
+    @media (max-width: 800px) {
+      .charts-grid { grid-template-columns: 1fr; }
+      .chart-card.full { grid-column: 1; }
+    }
+
+    @media (max-width: 640px) {
+      .container { padding: 14px; }
+      header { padding: 0 14px; }
+      .nav-tabs { padding: 0 14px; }
+      .nav-tab { padding: 12px 12px; font-size: 13px; }
+      .stats-row { gap: 10px; }
+      .stat-card { min-width: 100px; padding: 12px 14px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login-view">
+  <div class="login-box">
+    <div class="login-logo">
+      <img src="/images/logo-lg-100-44.svg" alt="LG" style="height:38px;">
+      <div>
+        <div style="font-weight:700;font-size:16px">MudahLG</div>
+        <div class="sub">Admin Panel</div>
+      </div>
+    </div>
+    <h2>Sign In</h2>
+    <p class="sub">Enter your password to continue</p>
+    <label class="field-label" for="pw">Password</label>
+    <input class="field-input" type="password" id="pw" placeholder="••••••••••••" autocomplete="current-password">
+    <p class="err-msg" id="err-msg">Incorrect password. Try again.</p>
+    <button class="login-btn" onclick="login()">Sign In</button>
+  </div>
+</div>
+
+<!-- ADMIN -->
+<div id="admin-view">
+
+  <!-- Header -->
+  <header>
+    <div class="header-brand">
+      <svg width="72" height="32" viewBox="0 0 225 99" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M134.874 68.7831H165.274V81.2487H120.202V17.2373H134.874V68.7831Z" fill="white"/>
+        <path d="M197.534 56.8451H209.482V68.0462C207.288 68.8892 202.987 69.7323 198.905 69.7323C185.694 69.7323 181.301 62.9711 181.301 49.241C181.301 36.1374 185.483 28.4265 198.682 28.4265C206.039 28.4265 210.213 30.7533 213.675 35.1904L222.802 26.7376C217.227 18.726 207.5 16.2981 198.365 16.2981C177.83 16.2897 167.033 27.5807 167.033 49.1314C167.033 70.5753 176.79 82.2007 198.256 82.2007C208.113 82.2007 217.748 79.6716 222.992 75.9651V44.9078H197.534V56.8451Z" fill="white"/>
+        <path d="M83.831 84.5045C103.008 65.1736 103.007 33.831 83.829 14.499C64.6508 -4.83307 33.5576 -4.83396 14.3805 14.497C-4.79664 33.8279 -4.79576 65.1705 14.3825 84.5025C33.5607 103.835 64.6538 103.835 83.831 84.5045Z" fill="#A50034"/>
+        <path d="M61.1184 66.6079H51.0826V28.5984H47.3721V70.3594H51.0909V70.3341H61.1268L61.1184 66.6079Z" fill="white"/>
+        <path d="M86.1485 51.0737H61.1759V47.3447H89.8088C89.8479 48.0669 89.8674 48.7891 89.8674 49.5198C89.8674 71.9725 71.7136 90.1707 49.3252 90.1707C26.9368 90.1707 8.78027 71.9809 8.78027 49.5169C8.78027 27.053 26.9313 8.86597 49.3224 8.86597C49.9134 8.86597 50.5016 8.87814 51.0871 8.9025V12.6034C50.5016 12.5772 49.9153 12.5641 49.328 12.5641C28.9775 12.5641 12.474 29.11 12.474 49.5169C12.474 69.9239 28.9747 86.4726 49.328 86.4726C69.121 86.4726 85.2899 70.8175 86.1457 51.1777L86.1485 51.0737Z" fill="white"/>
+        <path d="M34.2066 39.8496C35.3263 39.8441 36.4193 39.5043 37.3476 38.8732C38.276 38.2421 38.9981 37.3479 39.4227 36.3036C39.8474 35.2592 39.9557 34.1114 39.7339 33.005C39.5121 31.8987 38.9701 30.8834 38.1764 30.0872C37.3827 29.2911 36.3728 28.7497 35.2742 28.5316C34.1756 28.3134 33.0374 28.4282 32.0035 28.8614C30.9695 29.2946 30.086 30.0268 29.4645 30.9657C28.8429 31.9046 28.5112 33.008 28.5112 34.1367C28.5131 34.8888 28.6618 35.6331 28.949 36.3273C29.2362 37.0214 29.6563 37.6517 30.1851 38.1822C30.714 38.7127 31.3413 39.133 32.0313 39.4191C32.7213 39.7052 33.4605 39.8515 34.2066 39.8496Z" fill="white"/>
+      </svg>
+      <div class="header-divider"></div>
+      <div>
+        <div class="header-title">MudahLG Admin</div>
+        <div class="header-sub">Leads Management</div>
+      </div>
+    </div>
+    <button class="logout-btn" onclick="logout()">
+      <svg class="icon-sm" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15m3 0 3-3m0 0-3-3m3 3H9"/></svg>
+      Logout
+    </button>
+  </header>
+
+  <!-- Navigation Tabs -->
+  <div class="nav-tabs">
+    <div class="nav-tab active" id="tab-leads" onclick="showTab('leads')">
+      <svg class="icon-md" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 6.75h12M8.25 12h12m-12 5.25h12M3.75 6.75h.007v.008H3.75V6.75Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0ZM3.75 12h.007v.008H3.75V12Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm-.375 5.25h.007v.008H3.75v-.008Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z"/></svg>
+      All Leads
+    </div>
+    <div class="nav-tab" id="tab-profiles" onclick="showTab('profiles')">
+      <svg class="icon-md" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 0 0 2.625.372 9.337 9.337 0 0 0 4.121-.952 4.125 4.125 0 0 0-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 0 1 8.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0 1 11.964-3.07M12 6.375a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0Zm8.25 2.25a2.625 2.625 0 1 1-5.25 0 2.625 2.625 0 0 1 5.25 0Z"/></svg>
+      Customer Profiles
+    </div>
+    <div class="nav-tab" id="tab-visitors" onclick="showTab('visitors')">
+      <svg class="icon-md" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/></svg>
+      Visitors
+    </div>
+    <div class="nav-tab" id="tab-analytics" onclick="showTab('analytics')">
+      <svg class="icon-md" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 0 1 3 19.875v-6.75ZM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V8.625ZM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V4.125Z"/></svg>
+      Analytics
+    </div>
+  </div>
+
+  <!-- ── VIEW: ALL LEADS ── -->
+  <div id="view-leads">
+    <div class="container">
+
+      <!-- Stats row: lead counts + traffic summary -->
+      <div class="stats-row">
+        <div class="stat-card total">
+          <div class="stat-label">Total Leads</div>
+          <div class="stat-value" id="stat-total">—</div>
+        </div>
+        <div class="stat-card pending">
+          <div class="stat-label">Pending Followup</div>
+          <div class="stat-value" id="stat-pending">—</div>
+        </div>
+        <div class="stat-card done">
+          <div class="stat-label">Followed Up</div>
+          <div class="stat-value" id="stat-done">—</div>
+        </div>
+        <div class="stat-card views">
+          <div class="stat-label">Total Page Views</div>
+          <div class="stat-value" id="stat-views">—</div>
+        </div>
+        <div class="stat-card conv">
+          <div class="stat-label">Conversion Rate</div>
+          <div class="stat-value" id="stat-conv">—</div>
+        </div>
+      </div>
+
+      <!-- Traffic & Conversion Table -->
+      <div class="traffic-wrap" id="traffic-section">
+        <div class="traffic-header">
+          <h3>Traffic &amp; Lead Conversion by Page</h3>
+          <span style="font-size:12px;color:var(--gray)">Views → Leads</span>
+        </div>
+        <div id="traffic-state" class="state-msg" style="padding:24px;font-size:13px">Loading traffic data…</div>
+        <table class="traffic-table" id="traffic-table" style="display:none">
+          <thead>
+            <tr>
+              <th>Page</th>
+              <th>Views</th>
+              <th>Traffic</th>
+              <th>Leads</th>
+              <th>Conversion</th>
+            </tr>
+          </thead>
+          <tbody id="traffic-body"></tbody>
+        </table>
+      </div>
+
+      <!-- Leads Table -->
+      <div class="table-wrap">
+        <div class="table-header">
+          <h3>All Leads</h3>
+          <button class="refresh-btn" onclick="fetchLeads()">
+            <svg class="icon-sm" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99"/></svg>
+            Refresh
+          </button>
+        </div>
+        <div id="table-state" class="state-msg">Loading leads…</div>
+        <table id="leads-table" style="display:none">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Date</th>
+              <th>Name</th>
+              <th>IC / Passport</th>
+              <th>WhatsApp</th>
+              <th>Products</th>
+              <th>Total</th>
+              <th>Status</th>
+              <th>Followup</th>
+              <th>Profile</th>
+            </tr>
+          </thead>
+          <tbody id="leads-body"></tbody>
+        </table>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ── VIEW: CUSTOMER PROFILES ── -->
+  <div id="view-profiles">
+    <div class="container">
+      <div class="search-card">
+        <h3>Find Customer by IC / Passport</h3>
+        <div class="search-row">
+          <input type="text" id="profile-search" placeholder="Type IC number, passport, name, or phone…" oninput="filterProfiles()" autocomplete="off">
+          <button onclick="clearProfileSearch()">
+            <svg class="icon-sm" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/></svg>
+            Clear
+          </button>
+        </div>
+      </div>
+      <div id="profiles-state" class="state-msg" style="display:none">Loading profiles…</div>
+      <div id="profiles-grid" class="profiles-grid"></div>
+    </div>
+  </div>
+
+  <!-- ── VIEW: VISITORS ── -->
+  <div id="view-visitors">
+    <div class="container">
+
+      <div class="stats-row" id="vis-stats-row">
+        <div class="stat-card vis-stat-card sessions">
+          <div class="stat-label">Total Sessions</div>
+          <div class="stat-value" id="vis-total">—</div>
+        </div>
+        <div class="stat-card vis-stat-card converted">
+          <div class="stat-label">Converted</div>
+          <div class="stat-value" id="vis-converted">—</div>
+        </div>
+        <div class="stat-card vis-stat-card bounced">
+          <div class="stat-label">Did Not Convert</div>
+          <div class="stat-value" id="vis-bounced">—</div>
+        </div>
+        <div class="stat-card vis-stat-card rate">
+          <div class="stat-label">Session Conversion</div>
+          <div class="stat-value" id="vis-rate">—</div>
+        </div>
+      </div>
+
+      <div class="filter-bar">
+        <button class="filter-btn active" id="vf-all"       onclick="setVisitorFilter('all')">All</button>
+        <button class="filter-btn green"  id="vf-converted" onclick="setVisitorFilter('converted')">Converted</button>
+        <button class="filter-btn gray"   id="vf-bounced"   onclick="setVisitorFilter('bounced')">Did Not Convert</button>
+      </div>
+
+      <div class="table-wrap">
+        <div class="table-header">
+          <h3>Visitor Sessions</h3>
+          <button class="refresh-btn" onclick="fetchVisitors()">
+            <svg class="icon-sm" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99"/></svg>
+            Refresh
+          </button>
+        </div>
+        <div id="vis-state" class="state-msg">Loading visitors…</div>
+        <table id="vis-table" style="display:none">
+          <thead>
+            <tr>
+              <th>Session</th>
+              <th>Date</th>
+              <th>First Page</th>
+              <th>Last Page</th>
+              <th>Pages</th>
+              <th>Source</th>
+              <th>Device</th>
+              <th>Browser</th>
+              <th>Status</th>
+              <th>Lead</th>
+            </tr>
+          </thead>
+          <tbody id="vis-body"></tbody>
+        </table>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ── VIEW: ANALYTICS ── -->
+  <div id="view-analytics">
+    <div class="container">
+      <div class="charts-grid">
+        <div class="chart-card full">
+          <h3>Leads Over Time (Last 30 Days)</h3>
+          <div id="chart-leads-time" class="chart-box tall"></div>
+        </div>
+        <div class="chart-card">
+          <h3>Lead Status Breakdown</h3>
+          <div id="chart-status" class="chart-box"></div>
+        </div>
+        <div class="chart-card">
+          <h3>Traffic Sources</h3>
+          <div id="chart-sources" class="chart-box"></div>
+        </div>
+        <div class="chart-card full">
+          <h3>Page Views Breakdown</h3>
+          <div id="chart-pages" class="chart-box"></div>
+        </div>
+        <div class="chart-card full">
+          <h3>Conversion Rate by Page (%)</h3>
+          <div id="chart-conv" class="chart-box"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- end admin-view -->
+
+<script>
+  var PASSWORD = 'P@ssw0rd123';
+  var leads = [];
+  var visitors = [];
+  var visitorFilter = 'all';
+  var analyticsData = null;
+  var chartsRendered = false;
+
+  /* ── Icon SVG strings for JS-rendered content ── */
+  function icon(path, w, sw) {
+    w = w || 14; sw = sw || '1.5';
+    return '<svg style="width:' + w + 'px;height:' + w + 'px;display:inline-block;vertical-align:-2px;flex-shrink:0" fill="none" viewBox="0 0 24 24" stroke-width="' + sw + '" stroke="currentColor">' + path + '</svg>';
+  }
+  var ICO = {
+    check:   icon('<path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5"/>', 14, '2.5'),
+    clock:   icon('<path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/>'),
+    trash:   icon('<path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0"/>'),
+    folder:  icon('<path stroke-linecap="round" stroke-linejoin="round" d="M3.75 9.776c.112-.017.227-.026.344-.026h15.812c.117 0 .232.009.344.026m-16.5 0a2.25 2.25 0 0 0-1.883 2.542l.857 6a2.25 2.25 0 0 0 2.227 1.932H19.05a2.25 2.25 0 0 0 2.227-1.932l.857-6a2.25 2.25 0 0 0-1.883-2.542m-16.5 0V6A2.25 2.25 0 0 1 6 3.75h3.879a1.5 1.5 0 0 1 1.06.44l2.122 2.12a1.5 1.5 0 0 0 1.06.44H18A2.25 2.25 0 0 1 20.25 9v.776"/>'),
+    wa:      '<svg style="width:14px;height:14px;display:inline-block;vertical-align:-2px;flex-shrink:0" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>',
+  };
+
+  /* ── AUTH ── */
+  function init() {
+    if (sessionStorage.getItem('adminAuth') === PASSWORD) showAdmin();
+    document.getElementById('pw').addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') login();
+    });
+  }
+
+  function login() {
+    var pw = document.getElementById('pw').value;
+    if (pw === PASSWORD) {
+      sessionStorage.setItem('adminAuth', pw);
+      document.getElementById('err-msg').style.display = 'none';
+      showAdmin();
+    } else {
+      document.getElementById('err-msg').style.display = 'block';
+    }
+  }
+
+  function logout() {
+    sessionStorage.removeItem('adminAuth');
+    document.getElementById('admin-view').style.display = 'none';
+    document.getElementById('login-view').style.display = 'flex';
+    document.getElementById('pw').value = '';
+  }
+
+  function showAdmin() {
+    document.getElementById('login-view').style.display = 'none';
+    document.getElementById('admin-view').style.display = 'block';
+    fetchLeads();
+    fetchAnalytics();
+  }
+
+  /* ── TABS ── */
+  function showTab(tab) {
+    ['leads','profiles','visitors','analytics'].forEach(function(t) {
+      document.getElementById('tab-' + t).classList.toggle('active', t === tab);
+      document.getElementById('view-' + t).style.display = t === tab ? 'block' : 'none';
+    });
+    if (tab === 'profiles') renderProfiles();
+    if (tab === 'visitors') { if (visitors.length === 0) fetchVisitors(); else renderVisitors(); }
+    if (tab === 'analytics' && analyticsData) renderCharts();
+  }
+
+  /* ── FETCH LEADS ── */
+  function fetchLeads() {
+    document.getElementById('table-state').style.display = 'block';
+    document.getElementById('table-state').className = 'state-msg';
+    document.getElementById('table-state').textContent = 'Loading leads…';
+    document.getElementById('leads-table').style.display = 'none';
+
+    fetch('/api/admin/leads', { headers: { 'Authorization': 'Bearer ' + PASSWORD } })
+      .then(function(res) {
+        if (!res.ok) return res.text().then(function(b) { throw new Error('HTTP ' + res.status + ': ' + b); });
+        return res.json();
+      })
+      .then(function(data) { leads = data; renderLeads(); })
+      .catch(function(err) {
+        document.getElementById('table-state').textContent = 'Error: ' + (err.message || err);
+        document.getElementById('table-state').className = 'state-msg error';
+      });
+  }
+
+  /* ── FETCH ANALYTICS ── */
+  function fetchAnalytics() {
+    document.getElementById('traffic-state').style.display = 'block';
+    document.getElementById('traffic-table').style.display = 'none';
+
+    fetch('/api/admin/analytics', { headers: { 'Authorization': 'Bearer ' + PASSWORD } })
+      .then(function(res) { return res.json(); })
+      .then(function(data) {
+        analyticsData = data;
+        renderTrafficTable(data);
+        renderConvStats(data);
+        chartsRendered = false;
+        if (document.getElementById('view-analytics').style.display !== 'none') renderCharts();
+      })
+      .catch(function() {
+        document.getElementById('traffic-state').textContent = 'Could not load traffic data.';
+      });
+  }
+
+  /* ── RENDER CONV STATS ── */
+  function renderConvStats(data) {
+    var s = data.summary || {};
+    document.getElementById('stat-views').textContent = s.totalViews || 0;
+    var rate = s.totalViews > 0 ? ((s.totalLeads / s.totalViews) * 100).toFixed(1) + '%' : '—';
+    document.getElementById('stat-conv').textContent = rate;
+  }
+
+  /* ── RENDER TRAFFIC TABLE ── */
+  function renderTrafficTable(data) {
+    var rows = data.conversionTable || [];
+    if (rows.length === 0) {
+      document.getElementById('traffic-state').textContent = 'No traffic data yet. Pages will appear once visitors arrive.';
+      return;
+    }
+
+    var maxViews = rows.reduce(function(m, r) { return Math.max(m, r.views); }, 1);
+    var maxLeads = rows.reduce(function(m, r) { return Math.max(m, r.leads); }, 1);
+
+    var html = '';
+    for (var i = 0; i < rows.length; i++) {
+      var r = rows[i];
+      var vPct = Math.round((r.views / maxViews) * 100);
+      var lPct = Math.round((r.leads / maxLeads) * 100);
+      var convClass = r.rate >= 5 ? 'conv-high' : r.rate >= 1 ? 'conv-mid' : 'conv-low';
+      html += '<tr>';
+      html += '<td style="font-size:13px;max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="' + esc(r.page) + '">' + esc(r.page) + '</td>';
+      html += '<td style="font-weight:600">' + r.views + '</td>';
+      html += '<td style="min-width:100px"><div class="bar-bg"><div class="bar-fill blue" style="width:' + vPct + '%"></div></div></td>';
+      html += '<td style="font-weight:600">' + r.leads + '</td>';
+      html += '<td><span class="conv-badge ' + convClass + '">' + r.rate + '%</span></td>';
+      html += '</tr>';
+    }
+
+    document.getElementById('traffic-body').innerHTML = html;
+    document.getElementById('traffic-state').style.display = 'none';
+    document.getElementById('traffic-table').style.display = 'table';
+  }
+
+  /* ── VISITORS ── */
+  function fetchVisitors() {
+    document.getElementById('vis-state').style.display = 'block';
+    document.getElementById('vis-state').className = 'state-msg';
+    document.getElementById('vis-state').textContent = 'Loading visitors…';
+    document.getElementById('vis-table').style.display = 'none';
+
+    fetch('/api/admin/visitors', { headers: { 'Authorization': 'Bearer ' + PASSWORD } })
+      .then(function(res) { return res.json(); })
+      .then(function(data) {
+        visitors = data;
+        renderVisitorStats();
+        renderVisitors();
+      })
+      .catch(function(err) {
+        document.getElementById('vis-state').textContent = 'Error: ' + (err.message || err);
+        document.getElementById('vis-state').className = 'state-msg error';
+      });
+  }
+
+  function renderVisitorStats() {
+    var total = visitors.length;
+    var converted = visitors.filter(function(v) { return v.converted === 1; }).length;
+    var bounced = total - converted;
+    var rate = total > 0 ? ((converted / total) * 100).toFixed(1) + '%' : '—';
+    document.getElementById('vis-total').textContent = total;
+    document.getElementById('vis-converted').textContent = converted;
+    document.getElementById('vis-bounced').textContent = bounced;
+    document.getElementById('vis-rate').textContent = rate;
+  }
+
+  function setVisitorFilter(f) {
+    visitorFilter = f;
+    ['all','converted','bounced'].forEach(function(k) {
+      var btn = document.getElementById('vf-' + k);
+      btn.classList.toggle('active', k === f);
+    });
+    renderVisitors();
+  }
+
+  function renderVisitors() {
+    var filtered = visitors.filter(function(v) {
+      if (visitorFilter === 'converted') return v.converted === 1;
+      if (visitorFilter === 'bounced')   return v.converted !== 1;
+      return true;
+    });
+
+    if (filtered.length === 0) {
+      document.getElementById('vis-state').textContent = visitorFilter === 'all'
+        ? 'No visitor sessions yet. They will appear once people browse the site.'
+        : 'No sessions in this category.';
+      document.getElementById('vis-state').style.display = 'block';
+      document.getElementById('vis-table').style.display = 'none';
+      return;
+    }
+
+    var rows = '';
+    for (var i = 0; i < filtered.length; i++) {
+      var v = filtered[i];
+      var isConv = v.converted === 1;
+      var sid = String(v.id || '').slice(0, 10) + '…';
+      var src = v.referrer && v.referrer !== 'direct'
+        ? (function(r) { try { return new URL(r).hostname; } catch(e) { return r.slice(0, 30); } })(v.referrer)
+        : 'Direct';
+
+      rows += '<tr>';
+      rows += '<td style="font-size:11px;font-family:monospace;color:#aaa">' + esc(sid) + '</td>';
+      rows += '<td class="cell-date">' + formatDate(v.created_at) + '</td>';
+      rows += '<td style="font-size:12px;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="' + esc(v.first_page) + '">' + esc(v.first_page || '—') + '</td>';
+      rows += '<td style="font-size:12px;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="' + esc(v.last_page) + '">' + esc(v.last_page || '—') + '</td>';
+      rows += '<td><span class="pages-chip">' + (v.page_count || 1) + '</span></td>';
+      rows += '<td style="font-size:12px;color:#555">' + esc(src) + '</td>';
+      rows += '<td style="font-size:12px;color:#555">' + esc(v.device || '—') + '</td>';
+      rows += '<td style="font-size:12px;color:#555">' + esc(v.browser || '—') + '</td>';
+      rows += '<td>';
+      if (isConv) {
+        rows += '<span class="vis-pill converted">✓ Converted</span>';
+      } else {
+        rows += '<span class="vis-pill bounced">No Lead</span>';
+      }
+      rows += '</td>';
+      rows += '<td>';
+      if (isConv && v.lead_id) {
+        rows += '<a class="lead-link" href="/admin/lead.html?id=' + v.lead_id + '">';
+        rows += (v.lead_name ? esc(v.lead_name) : '#' + v.lead_id);
+        rows += '</a>';
+      } else {
+        rows += '<span style="color:#ccc;font-size:12px">—</span>';
+      }
+      rows += '</td>';
+      rows += '</tr>';
+    }
+
+    document.getElementById('vis-body').innerHTML = rows;
+    document.getElementById('vis-state').style.display = 'none';
+    document.getElementById('vis-table').style.display = 'table';
+  }
+
+  /* ── RENDER HIGHCHARTS ── */
+  function renderCharts() {
+    if (chartsRendered || !analyticsData) return;
+    chartsRendered = true;
+    var data = analyticsData;
+
+    var HC_THEME = {
+      colors: ['#A50034','#3b82f6','#16a34a','#f59e0b','#8b5cf6','#ef4444','#06b6d4','#84cc16'],
+      chart: { style: { fontFamily: "'Inter', sans-serif" }, backgroundColor: 'white' },
+      title: { text: null },
+      credits: { enabled: false },
+      legend: { itemStyle: { fontWeight: '600', fontSize: '12px' } },
+    };
+
+    /* 1. Leads over time */
+    var daysMap = {};
+    (data.leadsPerDay || []).forEach(function(r) { daysMap[r.date] = r.count; });
+    var dates = [], counts = [];
+    for (var i = 29; i >= 0; i--) {
+      var d = new Date(); d.setDate(d.getDate() - i);
+      var key = d.toISOString().slice(0, 10);
+      dates.push(key.slice(5));
+      counts.push(daysMap[key] || 0);
+    }
+    Highcharts.chart('chart-leads-time', Object.assign({}, HC_THEME, {
+      chart: Object.assign({}, HC_THEME.chart, { type: 'area' }),
+      xAxis: { categories: dates, tickInterval: 5, labels: { style: { fontSize: '11px' } } },
+      yAxis: { title: { text: null }, allowDecimals: false, min: 0 },
+      tooltip: { headerFormat: '<b>{point.key}</b><br>', pointFormat: '{point.y} leads' },
+      plotOptions: { area: { fillOpacity: 0.15, marker: { radius: 3 }, lineWidth: 2 } },
+      series: [{ name: 'Leads', data: counts, color: '#A50034' }],
+    }));
+
+    /* 2. Status donut */
+    var statusColors = { new:'#3b82f6', hot:'#ef4444', warm:'#f97316', cold:'#9ca3af', won:'#16a34a', lost:'#374151' };
+    var statusData = (data.statusBreakdown || []).map(function(r) {
+      return { name: r.status.charAt(0).toUpperCase() + r.status.slice(1), y: r.count, color: statusColors[r.status] || '#ccc' };
+    });
+    Highcharts.chart('chart-status', Object.assign({}, HC_THEME, {
+      chart: Object.assign({}, HC_THEME.chart, { type: 'pie' }),
+      tooltip: { pointFormat: '<b>{point.y}</b> leads ({point.percentage:.1f}%)' },
+      plotOptions: { pie: { innerSize: '55%', dataLabels: { format: '{point.name}: {point.y}', style: { fontSize: '12px' } } } },
+      series: [{ name: 'Leads', colorByPoint: true, data: statusData }],
+    }));
+
+    /* 3. Traffic sources */
+    var refs = (data.referrers || []).slice(0, 10);
+    var refLabels = refs.map(function(r) {
+      var ref = r.referrer || 'direct';
+      if (ref === 'direct') return 'Direct';
+      try { return new URL(ref).hostname || ref; } catch { return ref.slice(0, 40); }
+    });
+    var refCounts = refs.map(function(r) { return r.count; });
+    Highcharts.chart('chart-sources', Object.assign({}, HC_THEME, {
+      chart: Object.assign({}, HC_THEME.chart, { type: 'bar' }),
+      xAxis: { categories: refLabels, labels: { style: { fontSize: '11px' } } },
+      yAxis: { title: { text: null }, allowDecimals: false },
+      tooltip: { pointFormat: '<b>{point.y}</b> leads' },
+      plotOptions: { bar: { dataLabels: { enabled: true, style: { fontSize: '11px' } } } },
+      series: [{ name: 'Leads', data: refCounts, color: '#3b82f6' }],
+    }));
+
+    /* 4. Page views bar */
+    var pvRows = (data.pageViews || []).slice(0, 15);
+    Highcharts.chart('chart-pages', Object.assign({}, HC_THEME, {
+      chart: Object.assign({}, HC_THEME.chart, { type: 'bar' }),
+      xAxis: { categories: pvRows.map(function(r) { return r.page; }), labels: { style: { fontSize: '11px' } } },
+      yAxis: { title: { text: null }, allowDecimals: false },
+      tooltip: { pointFormat: '<b>{point.y}</b> views' },
+      plotOptions: { bar: { dataLabels: { enabled: true, style: { fontSize: '11px' } } } },
+      series: [{ name: 'Views', data: pvRows.map(function(r) { return r.views; }), color: '#A50034' }],
+    }));
+
+    /* 5. Conversion rate bar */
+    var convRows = (data.conversionTable || []).filter(function(r) { return r.views >= 5; }).slice(0, 15);
+    Highcharts.chart('chart-conv', Object.assign({}, HC_THEME, {
+      chart: Object.assign({}, HC_THEME.chart, { type: 'bar' }),
+      xAxis: { categories: convRows.map(function(r) { return r.page; }), labels: { style: { fontSize: '11px' } } },
+      yAxis: { title: { text: 'Conversion %' }, min: 0, max: 100 },
+      tooltip: { pointFormat: '<b>{point.y}%</b> conversion ({point.custom.leads} leads / {point.custom.views} views)' },
+      plotOptions: {
+        bar: {
+          dataLabels: { enabled: true, format: '{y}%', style: { fontSize: '11px' } },
+          colorByPoint: true,
+          colors: convRows.map(function(r) { return r.rate >= 5 ? '#16a34a' : r.rate >= 1 ? '#f59e0b' : '#9ca3af'; }),
+        },
+      },
+      series: [{
+        name: 'Conversion Rate',
+        data: convRows.map(function(r) { return { y: r.rate, custom: { leads: r.leads, views: r.views } }; }),
+      }],
+    }));
+  }
+
+  /* ── RENDER LEADS TABLE ── */
+  function renderLeads() {
+    var pending = 0, done = 0;
+    for (var i = 0; i < leads.length; i++) {
+      if (leads[i].followup) done++; else pending++;
+    }
+    document.getElementById('stat-total').textContent = leads.length;
+    document.getElementById('stat-pending').textContent = pending;
+    document.getElementById('stat-done').textContent = done;
+
+    if (leads.length === 0) {
+      document.getElementById('table-state').textContent = 'No leads yet.';
+      document.getElementById('table-state').style.display = 'block';
+      return;
+    }
+
+    var rows = '';
+    for (var j = 0; j < leads.length; j++) rows += buildRow(leads[j]);
+    document.getElementById('leads-body').innerHTML = rows;
+    document.getElementById('table-state').style.display = 'none';
+    document.getElementById('leads-table').style.display = 'table';
+  }
+
+  function buildRow(lead) {
+    var isDone = lead.followup === 1;
+    var waNum = formatWA(lead.whatsapp);
+    var products = parseProducts(lead.products);
+    var date = formatDate(lead.created_at);
+
+    var row = '<tr onclick="window.location=\'/admin/lead.html?id=' + lead.id + '\'" style="cursor:pointer">';
+    row += '<td class="cell-id">' + lead.id + '</td>';
+    row += '<td class="cell-date">' + date + '</td>';
+    row += '<td class="cell-name">' + esc(lead.name) + '</td>';
+    row += '<td class="cell-ic">' + (lead.ic ? esc(lead.ic) : '<span style="color:#bbb">—</span>') + '</td>';
+    row += '<td>';
+    row += '<a class="wa-link" href="https://wa.me/' + waNum + '" target="_blank" rel="noopener" onclick="event.stopPropagation()">';
+    row += ICO.wa + ' ' + esc(lead.whatsapp) + '</a></td>';
+    row += '<td class="cell-small">' + products + '</td>';
+    row += '<td class="cell-total">' + esc(lead.total_estimate || '—') + '</td>';
+    row += '<td>' + buildStatusPill(lead.status) + '</td>';
+    row += '<td><button class="followup-btn ' + (isDone ? 'done' : 'pending') + '" onclick="event.stopPropagation();toggleFollowup(' + lead.id + ',this)">';
+    row += (isDone ? ICO.check + ' Done' : ICO.clock + ' Pending') + '</button></td>';
+    row += '<td><a class="open-btn" href="/admin/lead.html?id=' + lead.id + '" onclick="event.stopPropagation()">' + ICO.folder + ' Profile</a></td>';
+    row += '</tr>';
+    return row;
+  }
+
+  /* ── RENDER PROFILES ── */
+  function renderProfiles() {
+    var q = (document.getElementById('profile-search').value || '').trim().toLowerCase();
+    var filtered = leads.filter(function(l) {
+      if (!q) return true;
+      return [l.name, l.ic, l.whatsapp, l.email, l.address].some(function(v) {
+        return v && v.toLowerCase().indexOf(q) !== -1;
+      });
+    });
+
+    var grid = document.getElementById('profiles-grid');
+    if (filtered.length === 0) {
+      grid.innerHTML = '<div class="no-results">' + (q ? 'No matches for "' + esc(q) + '"' : 'No leads yet.') + '</div>';
+      return;
+    }
+
+    var html = '';
+    for (var i = 0; i < filtered.length; i++) html += buildProfileCard(filtered[i]);
+    grid.innerHTML = html;
+  }
+
+  function buildProfileCard(lead) {
+    var initials = lead.name
+      ? lead.name.trim().split(/\s+/).map(function(w) { return w[0]; }).slice(0, 2).join('').toUpperCase()
+      : '?';
+    var waNum = formatWA(lead.whatsapp);
+    var products = parseProducts(lead.products);
+
+    var html = '<div class="profile-card">';
+    html += '<div class="pc-top">';
+    html += '<div class="pc-avatar">' + esc(initials) + '</div>';
+    html += '<div class="pc-info"><div class="pc-name">' + esc(lead.name) + '</div>';
+    html += '<div class="pc-date">Lead #' + lead.id + ' &middot; ' + formatDate(lead.created_at) + '</div></div>';
+    html += buildStatusPill(lead.status);
+    html += '</div>';
+    html += '<div class="pc-rows">';
+    html += '<div class="pc-row"><span class="pc-lbl">IC / No.</span><span class="pc-val ic">' + (lead.ic ? esc(lead.ic) : '<span class="empty">—</span>') + '</span></div>';
+    html += '<div class="pc-row"><span class="pc-lbl">Phone</span><span class="pc-val">' + esc(lead.whatsapp || '—') + '</span></div>';
+    html += '<div class="pc-row"><span class="pc-lbl">Products</span><span class="pc-val">' + (products || '<span class="empty">—</span>') + '</span></div>';
+    if (lead.total_estimate) html += '<div class="pc-row"><span class="pc-lbl">Total</span><span class="pc-val">' + esc(lead.total_estimate) + '</span></div>';
+    html += '</div>';
+    html += '<div class="pc-actions">';
+    html += '<a class="pc-open" href="/admin/lead.html?id=' + lead.id + '">' + ICO.folder + ' Open Profile</a>';
+    html += '<a class="pc-wa" href="https://wa.me/' + waNum + '" target="_blank" rel="noopener">' + ICO.wa + '</a>';
+    html += '<button class="pc-del" onclick="deleteLeadFromList(' + lead.id + ',\'' + esc(lead.name) + '\')">' + ICO.trash + '</button>';
+    html += '</div>';
+    html += '</div>';
+    return html;
+  }
+
+  function filterProfiles() { renderProfiles(); }
+  function clearProfileSearch() { document.getElementById('profile-search').value = ''; renderProfiles(); }
+
+  /* ── FOLLOWUP TOGGLE ── */
+  function toggleFollowup(id, btn) {
+    btn.disabled = true;
+    fetch('/api/admin/leads/' + id + '/followup', { method: 'POST', headers: { 'Authorization': 'Bearer ' + PASSWORD } })
+      .then(function(res) { return res.json(); })
+      .then(function(data) {
+        if (data.success) {
+          for (var i = 0; i < leads.length; i++) {
+            if (leads[i].id === id) { leads[i].followup = data.followup; break; }
+          }
+          var isDone = data.followup === 1;
+          btn.className = 'followup-btn ' + (isDone ? 'done' : 'pending');
+          btn.innerHTML = isDone ? ICO.check + ' Done' : ICO.clock + ' Pending';
+          var pending = 0, done = 0;
+          for (var j = 0; j < leads.length; j++) { if (leads[j].followup) done++; else pending++; }
+          document.getElementById('stat-pending').textContent = pending;
+          document.getElementById('stat-done').textContent = done;
+        }
+        btn.disabled = false;
+      })
+      .catch(function() { btn.disabled = false; });
+  }
+
+  /* ── DELETE LEAD FROM LIST ── */
+  function deleteLeadFromList(id, name) {
+    if (!confirm('Delete lead "' + name + '" (#' + id + ') and all their data?\n\nThis cannot be undone.')) return;
+    fetch('/api/admin/leads/' + id, { method: 'DELETE', headers: { 'Authorization': 'Bearer ' + PASSWORD } })
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        if (data.success) {
+          leads = leads.filter(function(l) { return l.id !== id; });
+          renderLeads();
+          renderProfiles();
+        } else { alert('Delete failed.'); }
+      }).catch(function() { alert('Error deleting lead.'); });
+  }
+
+  /* ── HELPERS ── */
+  function buildStatusPill(status) {
+    var labels = { new: 'New', hot: 'Hot', warm: 'Warm', cold: 'Cold', won: 'Won', lost: 'Lost' };
+    return '<span class="status-pill sp-' + (status || 'new') + '">' + (labels[status] || 'New') + '</span>';
+  }
+
+  function parseProducts(raw) {
+    try {
+      var arr = JSON.parse(raw);
+      if (Array.isArray(arr) && arr.length > 0)
+        return arr.map(function(p) { return esc(typeof p === 'object' ? (p.name || p.title || p.model || '') : String(p)); }).join(', ');
+    } catch(e) {}
+    return esc(raw || '');
+  }
+
+  function formatWA(number) {
+    if (!number) return '';
+    var digits = number.replace(/\D/g, '');
+    return digits.charAt(0) === '0' ? '60' + digits.slice(1) : digits;
+  }
+
+  function formatDate(dt) {
+    if (!dt) return '—';
+    var d = new Date(dt.includes('T') ? dt : dt + ' UTC');
+    return d.toLocaleDateString('en-MY', { day: '2-digit', month: 'short', year: 'numeric' })
+      + ' ' + d.toLocaleTimeString('en-MY', { hour: '2-digit', minute: '2-digit', hour12: false });
+  }
+
+  function esc(str) {
+    return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  init();
+</script>
+</body>
+</html>

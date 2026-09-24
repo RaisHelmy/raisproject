@@ -1,0 +1,57 @@
+﻿@model VerificationLetter.Models.VerificationModel
+@{
+    Layout = null;
+    Dictionary<string, object> htmlAttributes = new Dictionary<string, object>();
+    htmlAttributes.Add("class", "form-control");
+    if (!string.IsNullOrEmpty(Model.ID))
+    {
+        htmlAttributes.Add("readonly", "readonly");
+    }
+
+    htmlAttributes.Add("rows", "12");
+    List<SelectListItem> carBrandList = new List<SelectListItem>
+{
+        new SelectListItem { Value = "Mercedes", Text = "Mercedes" },
+        new SelectListItem { Value = "BMW", Text = "BMW" }
+    };
+    SelectList carBrandDDL = new SelectList(carBrandList, "Value", "Text");
+    ViewBag.CarBrandDDL = carBrandDDL;
+
+
+
+}
+
+<div class="form-group">
+    <label class="col-md-2 control-label">Car Brand <span style="color:red">*</span></label>
+    <div class="col-md-6">
+        @{
+            if (Model.Status == null)
+            {
+                @Html.DropDownListFor(m => m.CarBrand, (SelectList)ViewBag.CarBrandDDL, new { @class = "bs-select form-control" })
+            }
+            else
+            {
+                @Html.HiddenFor(m => m.CarBrand)
+                @Html.DropDownListFor(m => m.CarBrand, (SelectList)ViewBag.CarBrandDDL, new { @class = "bs-select form-control", disabled = "disabled" })
+            }
+        }
+    </div>
+</div>
+
+<div class="form-group">
+    <label class="col-md-2 control-label">Car Model <span style="color:red">*</span></label>
+    <div class="col-md-6">
+        @Html.TextBoxFor(m => m.CarModel, htmlAttributes)
+    </div>
+</div>
+
+<div class="form-group">
+    <label class="col-md-2 control-label">
+        Kepada <span style="color:red">*</span>
+    </label>
+    <div class="col-md-6">
+        @Html.TextAreaFor(m => m.AddressTo, htmlAttributes)
+        <span>*Sila masukkan nama dan alamat penuh penerima (contoh: Bank, Koperasi, Badan Kerajaan dan lain-lain).</span>
+    </div>
+</div>
+

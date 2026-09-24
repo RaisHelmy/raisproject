@@ -1,0 +1,228 @@
+﻿@model LeaveQuota.Models.LeaveQuotaModel
+@{
+    ViewBag.Title = "Off In Lieu Application";
+    List<DateTime> Holidays = ViewBag.EmployeeHolidays;
+
+    bool HasApprover = !String.IsNullOrEmpty(Model.CurrentEmployee.ManagerID);
+}
+
+<style>
+    .highlight-row {
+        background-color: yellow !important;
+    }
+</style>
+
+<div class="form-section">
+    <div class="row">
+        <div class="col-md-12">
+            <h1 class="page-title">
+                @*@Model.Leave.GetDisplayName() Quota Application Form*@
+                @Model.Leave.GetDisplayName() Application
+            </h1>
+        </div>
+    </div>
+</div>
+
+@if (!HasApprover)
+{
+    <div class="row">
+        <div class="col-md-12">
+            <div class="note note-danger">
+                <h4 class="block">
+                    @*Manager not found, please contact Administrator for assistance.<br />
+        Leave quota submission has been disabled.*@
+                    @Html.Raw(ViewBag.NoApproverMessage)
+                </h4>
+                @*<p>
+
+                    </p>*@
+            </div>
+        </div>
+    </div>
+}
+
+@Html.Action("_RequestorDetails", "LeaveQuota", new { ID = Model.RequestID })
+
+@Html.Partial(Model.Leave.GetPartialViewName(), Model.Leave, new ViewDataDictionary() { { "CurrentEmployeeID", Model.CurrentEmployee.ID }, { "ReferenceNo", "Draft" } })
+
+@if (HasApprover)
+{
+    <div class="row" style="padding-top:20px;">
+        <div class="col-md-12">
+            <a class="btn green" onclick="javascript: Submit('Draft')">Save as Draft</a>
+            <a class="btn green" onclick="javascript: Submit('Pending')">Submit</a>
+        </div>
+    </div>
+}
+
+<!-- Loading Gif -->
+<div id="divLoading" style="margin: 0px; padding: 0px; position: fixed; right: 0px; top: 0px; width: 100%; height: 100%; background-color: gainsboro; z-index: 30001; opacity: .8; filter: alpha(opacity=70); display: none; ">
+    <p style="position: absolute; top: 30%; left: 30%; color: black;">
+        Performing action, please wait...<img src="/_layouts/15/TNBESS/Assets/img/ajax-loading.gif">
+    </p>
+</div>
+
+<div class="modal fade" id="LeaveModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                <h4 class="modal-title">Confirmation</h4>
+            </div>
+            <div class="modal-body">
+                <div class="well">
+                    Are you sure you want to <p id="modalAction" style="display:inline">submit</p> this Leave Quota Application? <br />Press Confirm to proceed, or Close to stay on the current page.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn default blue" id="btnConfirm" value="Submit">
+                    <i class="fa fa-check"></i>
+                    Confirm
+                </button>
+                <button type="button" id="btnClose" class="btn default" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Success Message -->
+<div class="modal fade" id="resultModal" tabindex="-1" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header Success-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true" style="display: none;"></button>
+                <h4 class="Success-title">Action Successfully Completed</h4>
+            </div>
+            <div class="modal-body Success-body">
+                <div class="well">
+                    <p id="resultModalBody">Your request has been successfully submitted.</p>
+                </div>
+            </div>
+            <div class="modal-footer Success-footer">
+                <button type="button" class="btn default blue" id="btnOK">
+                    <i class="fa fa-check"></i>
+                    OK
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@Html.Partial("__EmployeeHolidays", Holidays)
+
+<script>
+    function displayModal() {
+        var deferred = $.Deferred();
+
+        if (validate == "undefined") {
+            deferred.reject();
+            alert("Validate function for form not found");
+            return deferred;
+        }
+
+        if (!validate()) {
+            deferred.reject();
+            return deferred;
+        }
+        $('#LeaveModal').modal();
+
+        $('#btnConfirm').click(function () {
+            deferred.resolve();
+        });
+        $('#btnClose').click(function () {
+            deferred.reject();
+        });
+        return deferred;
+    }
+
+    function Submit(Status) {
+
+        if (Status == 'Draft')
+            $("#modalAction").text('save');
+        else
+            $("#modalAction").text('submit');
+
+        displayModal().done(function () {
+
+            $('#LeaveModal').modal('hide');
+            $('#divLoading').show();
+
+            var subtypeDetails = GetData();
+            //var model = new Object();
+
+            var model = {
+                ModelType: '@Model.Leave.GetType()',
+                RequestStatus : Status,
+                CreatedBy : '@Model.CurrentEmployee.ID',
+                QuotaTypeName: '@Model.QuotaTypeName',
+                LeaveSubtypeCode: '@Model.LeaveSubtypeCode',
+                QuotaNo: '@Model.QuotaNo',
+                ApplicantDescription: $("#ApplicantDescription").val(),
+                Leave: subtypeDetails
+            }
+
+            $.ajax({
+                type: "POST",
+                url: '@Url.Action("CreateLeave", "LeaveQuota")',
+                data: model,
+                content: "application/json",
+                success: function (response) {
+                    $('#divLoading').hide();
+
+                    if (response.Success) {
+                        $("#resultModal").modal();
+                        $("#resultModalBody").html(response.Message);
+                        $("#btnOK").click(function () {
+                            //redirect to the request history page
+                            location.href = '@Url.Action("RequestHistory", "LeaveQuota")';
+                        });
+                    }
+                    else {
+                        if (response.IsWorkflowError) {
+                            $("#resultModal").modal();
+                            $("#resultModalBody").html(response.Message);
+                            $("#btnOK").click(function () {
+                                //redirect to the request history page
+                                location.href = '@Url.Action("EditRequest", "LeaveQuota")?Id=' + response.RequestId;
+                            });
+                        }
+                        else {
+                            alert(response.TechnicalError);
+                            for (var i = 0; i < response.Positions.length; i++) {
+                                var pos = response.Positions[i];
+                                console.log(pos);
+                                $("#tblOIL>tbody>tr:eq(" + pos + ")").css('background-color', '#EB7D70');
+                            }
+
+                            $("#btnOK").click(function () {
+                                //redirect to the request history page
+                                $("#resultModal").modal('hide');
+
+                                console.log("Technical error: " + response.TechnicalError);
+                            });
+                        }
+                    }
+                },
+                error: function (err) {
+                    console.log(err.responseText);
+                    $('#divLoading').hide();
+                }
+            });
+
+        }).fail(function () { });
+    }
+
+    //convert date from dd/mm/yyyy to mm/dd/yyyy to store it
+    //function FormatDate(date) {
+    //    if (date == null || date == "undefined")
+    //        return "";
+
+    //    var dateArray = date.split('/');
+    //    var day = dateArray[0];
+    //    var month = dateArray[1];
+    //    var year = dateArray[2];
+
+    //    var formattedDate = month + '/' + day + '/' + year;
+    //    return formattedDate;
+    //}
+</script>

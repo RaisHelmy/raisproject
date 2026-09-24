@@ -1,0 +1,60 @@
+﻿@model List<ESS.Claim.ViewModels.FBEntitlement>
+@{
+    Layout = null;
+}
+
+<div class="portlet box blue">
+    <div class="mini-triangle"><img src="../Assets/img/menu-red-triangle.png" /></div>
+    <div class="portlet-title">
+        <div class="caption">
+            <i class="fa fa-reorder"></i>Entitlement Report
+        </div>
+        <input type="button" id="btn-Export" class="btn btn-xs green pull-right" value="Export To Excel" />
+    </div>
+    <div class="portlet-body form">
+        <div class="form-body">
+            <div class="form-horizontal">
+                <div class="table-toolbar">
+                    <table id="tblResult" class="table table-striped table-bordered table-hover table-full-width">
+                        <thead>
+                            <tr>
+                                <th></th>
+                                <th>Year</th>
+                                <th>Employee</th>
+                                <th>Entitlement (RM)</th>
+                                <th>Adjustment (RM)</th>
+                                <th>Total Entitlement (RM)</th>
+                                <th>Total Claimed (RM)</th>
+                                <th>Balance (RM)</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            @foreach (var item in @Model)
+                            {
+                                <tr>
+
+                                    <td>
+                                        <a class="btn blue btn-sm" href="@Url.Content("~/Claims/FlexiBenefitsEntitlement")?EmployeeID=@item.EmployeeID&Year=@item.Year">
+                                            <i class="fa fa-search"></i>
+                                        </a>
+                                    </td>
+                                    <td>@item.Year</td>
+                                    <td>@item.EmployeeCode - @item.EmployeeName</td>
+                                    <td class="text-right">@String.Format("{0:0.00}", (String.IsNullOrEmpty(item.Entitlement) ? 0.00 : Convert.ToDouble(item.Entitlement)))</td>
+                                    <td class="text-right">@String.Format("{0:0.00}", (String.IsNullOrEmpty(item.Adjustment) ? 0.00 : Convert.ToDouble(item.Adjustment)))</td>
+                                    <td class="text-right">@String.Format("{0:0.00}", ((String.IsNullOrEmpty(item.Adjustment) ? 0.00 : Convert.ToDouble(item.Adjustment)) + (String.IsNullOrEmpty(item.Entitlement) ? 0.00 : Convert.ToDouble(item.Entitlement))))</td>
+                                    <td class="text-right">@String.Format("{0:0.00}", (String.IsNullOrEmpty(item.Claimed) ? 0.00 : Convert.ToDouble(item.Claimed)))</td>
+                                    <td class="text-right">@String.Format("{0:0.00}", (String.IsNullOrEmpty(item.Balance) ? 0.00 : Convert.ToDouble(item.Balance)))</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+    transformTable("#tblResult");
+</script>

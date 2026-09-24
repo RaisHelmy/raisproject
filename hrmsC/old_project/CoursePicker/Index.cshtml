@@ -1,0 +1,136 @@
+﻿@model TNB_ESS_MVC.Controllers.CoursePickerController.CoursePicker
+
+@{
+    Layout = null;
+    DateTime dtStart = DateTime.Now.AddDays(30);
+    string dtStrStart = dtStart.ToString("dd/MM/yyyy");
+}
+<input type="hidden" id="CPCategoryCode" value="@ViewBag.CategoryCode"/>
+<div class="row" onkeypress="return event.keyCode!=13;">
+    <div class="col-md-12">
+        <div class="form-horizontal">
+            <div class="form-body">
+                <div class="form-group">
+                    <label class="control-label col-md-2 ">
+                        Start Date
+                    </label>
+                    <div class="col-md-4 form-control-static">
+                        <input class="form-control" type="text" id="CPStartDate" value="" readonly/>
+                        @*<div class="col-md-12 input-group date date-picker date-picker2" data-date-format="dd/mm/yyyy">
+                            <input class="form-control" type="text" id="CPStartDate" value=""/>
+                            <span class="input-group-btn datepick-btn">
+                                <button class="btn default" type="button"><i class="fa fa-calendar"></i></button>
+                            </span>
+                        </div>*@
+                    </div>
+                    <label class="control-label col-md-2 ">
+                        End Date
+                    </label>
+                    <div class="col-md-4 form-control-static">
+                        <div class="col-md-12 input-group date date-picker" data-date-format="dd/mm/yyyy">
+                            <input class="form-control" type="text" id="CPEndDate" value="" />
+                            <span class="input-group-btn datepick-btn">
+                                <button class="btn default" type="button"><i class="fa fa-calendar"></i></button>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group hide">
+                    <label class="control-label col-md-2 ">
+                        Category
+                    </label>
+                    <div class="col-md-4 form-control-static">
+                        @*<input class="form-control" type="text" name="CPTrainingCateogry" id="CPTrainingCateogry" value="@ViewBag.CategoryDesc"readonly />*@
+                        <input class="form-control" type="text" name="CPTrainingCateogry" id="CPTrainingCateogry" value="" readonly />
+                    </div>
+                    <label class="control-label col-md-2 ">
+                        Type
+                    </label>
+                    <div class="col-md-4  form-control-static">
+                        <input class="form-control" type="text" name="CPTrainingType" id="CPTrainingType" value="@ViewBag.TrainingTypeCode" readonly/>
+                        @*@Html.DropDownList("CPTrainingType", new SelectList(Model.TrainType, "Value", "Text"), new { @class = "bs-select form-control" })*@
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="control-label col-md-2 ">
+                        Course Title
+                    </label>
+                    <div class="col-md-4 form-control-static">
+                        <input class="form-control" type="text" name="_CPCourseTitle" id="_CPCourseTitle" />
+                    </div>
+                    <label class="control-label col-md-2 ">
+                        Division
+                    </label>
+                    <div class="col-md-4  form-control-static">
+                        @Html.DropDownList("CPDivision", new SelectList(Model.Division, "Value", "Text"), new { @class = "bs-select form-control" })
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="control-label col-md-2 ">
+                        Grade
+                    </label>
+                    <div class="col-md-4 form-control-static">
+                        @Html.DropDownList("CPCourseGrade", new SelectList(Model.CourseGrade, "Value", "Text"),  new { @class = "bs-select form-control" })
+                    </div>
+                </div>
+                <div class="form-group ">
+                    <div class="col-md-12 text-right">
+                        <input id="btn-Search" type="button" value="Search" class="btn green btn-Search" onclick="SearchCourse();">
+                    </div>
+                </div>
+            </div>
+            <br />
+            <div id="CourseTitleResult">
+
+            </div>
+            
+        </div>
+    </div>
+</div>
+
+<script>
+    jQuery(document).ready(function () {
+
+        $('.date-picker').datepicker({
+            format: 'dd/mm/yyyy',
+            autoclose: true
+        });
+
+        $('.date-picker2').datepicker('setStartDate', '@dtStrStart');
+        $('#CPStartDate').val('@dtStrStart');
+        $('#CPTrainingType').val($("#TrainingType option:selected").text());
+        $('#CPTrainingCateogry').val($("#TrainingCategory option:selected").text());
+    });
+
+    function SearchCourse() {
+        var _StartDate = $('#CPStartDate').val();
+        var _EndDate = $('#CPEndDate').val();
+        var _CategoryCode = $('#CPCategoryCode').val();
+        var _TrainingType = $('#TrainingType').val();
+        var _CourseTitle = $('#_CPCourseTitle').val();
+        var _Division = $('#CPDivision').val();
+        var _Grade = $('#CPCourseGrade').val();
+
+        //var pattern = /(\d{2})\/(\d{2})\/(\d{4})/;
+        //var dateFrom = new Date(_StartDate.replace(pattern, '$3-$2-$1'));
+        //var dateTo = new Date(_EndDate.replace(pattern, '$3-$2-$1'));
+
+        //var dateFrom =_StartDate.replace(pattern, '$3-$2-$1');
+        //var dateTo = _EndDate.replace(pattern, '$3-$2-$1');
+
+        $("#CourseTitleResult").html("LOADING...");
+
+        $.ajax({
+            type: "GET",
+            url: '@Url.Content("~/CoursePicker/_CourseTitleResult")',
+            cache: false,
+            dataType: "html",
+            data: { StartDate: _StartDate, EndDate: _EndDate, CategoryCode: _CategoryCode, TrainingType: _TrainingType, CourseTitle: _CourseTitle, Division: _Division, Grade: _Grade },
+            success: function (content) {
+                $("#CourseTitleResult").html(content);
+            },
+            error: function (e) {
+            }
+        });
+    }
+</script>

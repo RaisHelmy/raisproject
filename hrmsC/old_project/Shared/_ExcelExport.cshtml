@@ -1,0 +1,170 @@
+﻿<script src="~/Scripts/table2CSV.js"></script>
+<iframe id="txtArea1" style="display:none"></iframe>
+<script>
+    var TABLE_TO_EXPORT_ID = 'tblExport';
+
+    function BindExport() {
+        $("#btn-Export").on('click', function (event) {
+
+            var dt = new Date();
+            var day = dt.getDate();
+            var month = dt.getMonth() + 1;
+            var year = dt.getFullYear();
+            var hour = dt.getHours();
+            var mins = dt.getMinutes();
+            var postfix = day + "." + month + "." + year + "_" + hour + "." + mins;
+            var _fileName = '@(ViewBag.Title)_' + postfix + '.csv';
+
+            ExportTableToCSV.apply(this, [$('#' + TABLE_TO_EXPORT_ID), _fileName]);
+
+            // IF CSV, don't do event.preventDefault() or return false
+            // We actually need this to be a typical hyperlink
+        });
+    }
+
+    function ExportTableToCSV($table, filename) {
+
+        //var $rows = $table.find('tr:has(td),tr:has(th)'),
+
+        //    // Temporary delimiter characters unlikely to be typed by keyboard
+        //    // This is to avoid accidentally splitting the actual contents
+        //    tmpColDelim = String.fromCharCode(11), // vertical tab character
+        //    tmpRowDelim = String.fromCharCode(0), // null character
+
+        //    // actual delimiter characters for CSV format
+        //    colDelim = '","',
+        //    rowDelim = '"\r\n"',
+
+        //    // Grab text from table into CSV formatted string
+        //    csv = '"' + $rows.map(function (i, row) {
+        //        var $row = $(row), $cols = $row.find('td,th');
+
+        //        return $cols.map(function (j, col) {
+        //            var $col = $(col), text = $col.text().trim();
+
+        //            return text.replace(/"/g, '""'); // escape double quotes
+
+        //        }).get().join(tmpColDelim);
+
+        //    }).get().join(tmpRowDelim)
+        //        .split(tmpRowDelim).join(rowDelim)
+        //        .split(tmpColDelim).join(colDelim) + '"',
+
+            // Data URI
+        var csv = $('#' + TABLE_TO_EXPORT_ID).table2CSV({
+            delivery: 'value'
+        });
+
+        csvData = 'data:application/csv;charset=utf-8,' + encodeURIComponent(csv);
+
+        var ua = window.navigator.userAgent;
+        var msie = ua.indexOf("MSIE ");
+
+        if (msie > 0 || !!navigator.userAgent.match(/Trident.*rv\:11\./))      // If Internet Explorer
+        {
+            txtArea1.document.open("txt/html", "replace");
+            txtArea1.document.write('sep=,\r\n' + csv);
+            txtArea1.document.close();
+            txtArea1.focus();
+            sa = txtArea1.document.execCommand("SaveAs", true, filename);
+        }
+        else {
+            try {
+                var blob = new Blob([csv], { type: "text/plain;charset=utf-8;" });
+                window.URL = window.URL || window.webkitURL;
+                link = window.URL.createObjectURL(blob);
+                a = document.createElement("a");
+                if (document.getElementById("caption") != null) {
+                    a.download = filename;
+                }
+                else {
+                    a.download = filename;
+                }
+
+                a.href = link;
+                document.body.appendChild(a);
+
+                a.click();
+                document.body.removeChild(a);
+            } catch (e) {
+                console.log(e);
+            }
+        }
+
+        //if (window.navigator.msSaveBlob) { // IE 10+
+        //    //alert('IE' + csv);
+        //    window.navigator.msSaveOrOpenBlob(new Blob([csv], { type: "text/plain;charset=utf-8;" }), "csvname.csv")
+        //}
+        //else {
+        //    $(this).attr({ 'download': filename, 'href': csvData, 'target': '_blank' });
+        //}
+    }
+
+    function ExportLargeTableToExcel() {
+        var tab_text = "<table border='1'><tr bgcolor='#87AFC6'>";
+        var textRange; var j = 0;
+        tab = document.getElementById(TABLE_TO_EXPORT_ID);//.getElementsByTagName('table'); // id of table
+
+        var dt = new Date();
+        var day = dt.getDate();
+        var month = dt.getMonth() + 1;
+        var year = dt.getFullYear();
+        var hour = dt.getHours();
+        var mins = dt.getMinutes();
+        var postfix = day + "." + month + "." + year + "_" + hour + "." + mins;
+        var _fileName = '@(ViewBag.Title)_' + postfix + '.xls';
+
+        if (tab == null) {
+            return false;
+        }
+        if (tab.rows.length == 0) {
+            return false;
+        }
+
+        for (j = 0; j < tab.rows.length; j++) {
+            tab_text = tab_text + tab.rows[j].innerHTML + "</tr>";
+            //tab_text=tab_text+"</tr>";
+        }
+
+        tab_text = tab_text + "</table>";
+        tab_text = tab_text.replace(/<A[^>]*>|<\/A>/g, "");//remove if u want links in your table
+        tab_text = tab_text.replace(/<img[^>]*>/gi, ""); // remove if u want images in your table
+        tab_text = tab_text.replace(/<input[^>]*>|<\/input>/gi, ""); // reomves input params
+
+        var ua = window.navigator.userAgent;
+        var msie = ua.indexOf("MSIE ");
+
+        if (msie > 0 || !!navigator.userAgent.match(/Trident.*rv\:11\./))      // If Internet Explorer
+        {
+            txtArea1.document.open("txt/html", "replace");
+            txtArea1.document.write(tab_text);
+            txtArea1.document.close();
+            txtArea1.focus();
+            sa = txtArea1.document.execCommand("SaveAs", true, _fileName);
+        }
+        else {
+            try {
+                var blob = new Blob([tab_text], { type: "application/vnd.ms-excel" });
+                window.URL = window.URL || window.webkitURL;
+                link = window.URL.createObjectURL(blob);
+                a = document.createElement("a");
+                if (document.getElementById("caption") != null) {
+                    a.download = _fileName;
+                }
+                else {
+                    a.download = _fileName;
+                }
+
+                a.href = link;
+
+                document.body.appendChild(a);
+
+                a.click();
+
+                document.body.removeChild(a);
+            } catch (e) { }
+        }
+
+        return false;
+    }
+</script>

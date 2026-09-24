@@ -1,0 +1,72 @@
+﻿@using ESS.Claim.ClaimSubtype
+@using ESS.Claim.ViewModels
+@model ClaimsSubtype
+
+@{
+    Layout = null;
+    string TableID = "tbl" + Model.FormInterface + "_" + Model.categoryIndex + "_" + Model.subtypeIndex;
+    string Status = ViewBag.ClaimStatus;
+
+    double MaxClaimable = ViewBag.MaxClaimable;
+    int ClaimTerm = ViewBag.ClaimTerm;
+    int ClaimFrequency = ViewBag.ClaimFrequency;
+    string Message = ViewBag.Message;
+    
+    Model.Template = new Template(Model);
+    Model.Template.TableID = TableID;
+    Model.Template.IsReadonly = !(Status == "Draft" || Status == "Withdrawn" || Status == "Declined" || Status == "Returned");
+
+    Model.Template.Columns.Add(ColumnTemplate.CheckboxWithLabel("", "").SetColumnClass("RemoveCheckbox"));
+
+    Model.Template.Columns.Add(ColumnTemplate.ChargeCodeDropdown("Charge Code", "SubTypeColumn0").SetIsMandatory(true));
+
+    Model.Template.Columns.Add(ColumnTemplate.DatePickerWithLabel("Receipt Date", "ReceiptDate").SetIsMandatory(true));
+
+    Model.Template.Columns.Add(ColumnTemplate.TextBoxWithLabel("Receipt No.", "ReceiptNo").SetIsMandatory(true));
+
+    Model.Template.Columns.Add(ColumnTemplate.TextBoxWithLabel("Description", "Description"));
+
+    Model.Template.Columns.Add(ColumnTemplate.CurrencyTextBoxWithLabel("Amount", "ActualAmount").SetIsMandatory(true).SetOnBlur(TableID + "_subtype.calculateAmount(this);"));
+
+    Model.Template.Columns.Add(ColumnTemplate.TextBoxForAmount(Model.Template, "Total Claimable (RM)", "Amount").SetReadonly(true));
+    Model.Template.Columns.Add(ColumnTemplate.TextBoxForTaxAmount(Model.Template, "Tax Amount (RM)", "GSTAmount"));
+    Model.Template.Columns.Add(ColumnTemplate.TextBoxForTotalAmount(Model.Template, "Total Amount (RM)", "TotalAmount"));
+}
+
+@Html.Partial("~/Views/ClaimsSubtype/SubtypeView.cshtml", Model)
+
+<script>
+    @(TableID)_subtype.OnReceiptChange = function (row) {
+        @(TableID)_subtype.calculateAmount(row);
+    };
+
+    @(TableID)_subtype.calculateAmount = function (row) {
+        var $row = $(row).closest("tr");
+
+        var _ActualAmount = $row.find('.ActualAmount');
+        var _TotalClaimable = $row.find('.Amount');
+
+        var actualAmount = parseFloat(_ActualAmount.val()) || 0;
+
+        if (actualAmount > @MaxClaimable.ToString("0.00")) {
+            actualAmount = @MaxClaimable.ToString("0.00");
+        }
+
+        _TotalClaimable.val(actualAmount.toFixed(2));
+
+        @(TableID)_subtype.calculateTax($row);
+        @(TableID)_subtype.calculateSubtotal($row);
+    };
+
+    @(TableID)_subtype.subInitialize = function () {
+    };
+
+    $(function () {
+        @if (!String.IsNullOrEmpty(Message) && !Model.Template.IsReadonly)
+        {
+        <text>
+        alert('@Message');
+        </text>
+        }
+    });
+</script>

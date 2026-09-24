@@ -1,0 +1,191 @@
+﻿@{
+    Layout = "";
+}
+
+<div class="form-body">
+    <div class="row">
+        <div class="col-md-2">
+            @Html.Label("Search Type :", new { @class = "control-label" })
+        </div>
+        <div class="col-md-4">
+            <select id="chargecodesearchtype" class="form-control" onchange="toggleCCFavouriteBtn()">
+                <option value="ALL">All</option>
+                <option selected value="Favourite">Favourite</option>
+            </select>
+        </div>
+        <div class="col-md-4">
+        </div>
+    </div>
+
+    <div id="chargecoderow">
+        <div class="row" style="margin-top:10px">
+            <div class="col-md-2">
+                @Html.Label("Charge Type :", new { @class = "control-label" })
+            </div>
+            <div class="col-md-4">
+                <select id="chargecodedll" class="form-control">
+                    <option selected="selected" value="ALL">All</option>
+                    <option value="CC">Cost Center</option>
+                    <option value="PM">Order Number (Plant Maintenance)</option>
+                    <option value="JO">Order Number (Job Order)</option>
+                    <option value="WB">WBS Element</option>
+                    <option value="NT">Network Number And Operation Activity Number</option>
+                </select>
+            </div>
+            <div class="col-md-4">
+            </div>
+        </div>
+        <div class="row" style="margin-top:10px">
+            <div class="col-md-2">
+                @Html.Label("Search :", new { @class = "control-label" })
+            </div>
+            <div class="col-md-4">
+                <input type="text" id="chargecodevalue" class="form-control" />
+            </div>
+            <div class="col-md-4">
+                <a class="btn green" href="javascript:SearchChargeCode()">
+                    Search
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <hr />
+
+    <input type="hidden" name="SourceID" value="@ViewBag.SourceID" />
+
+    <div class="row" style="margin-top:10px;">
+        <div class="col-md-12">
+            <div id="ChargeCodeResult">
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    var currentSelectedCC = null
+
+	$(function () { })
+
+	function SetCurrentSelectedCC(el) {
+		currentSelectedCC = $(el);
+
+		$('#ChargeCodeResult').empty();
+		$('#chargecodesearchtype').val('Favourite');
+        $('#chargecodedll').val('ALL');
+		$('#chargecodevalue').val('');
+
+		toggleCCFavouriteBtn();
+
+		SearchChargeCode();
+	}
+
+    function SearchChargeCode(value)
+    {
+		var SearchType = $('#chargecodesearchtype').val()
+        var ChargeType = $('#chargecodedll').val();
+        var CCValue = $('#chargecodevalue').val();
+        var CurrentCC = '';
+		
+        if (value == 'EMPTY') {
+            ChargeType = 'EMPTY';
+        }
+
+        $('#ChargeCodeResult').html('Loading...');
+
+        $.ajax({
+            url: '@Url.Content("~/StandbyPlanning/_SPChargeCodeSearchResult")',
+            type: 'POST',
+            data: { Type: ChargeType, Value: CCValue, CurrentChargeCode: CurrentCC, SearchType: SearchType },
+            success: function (result) {
+                $('#ChargeCodeResult').html(result);
+            }
+        });
+    }
+
+	function setSelectedChargeCode() {
+		$.each($('input[name="AddChargeCode"]:checked'), function (i, val) {
+			var chargeType = $(this).parent().parent().find('.ChargeType').text().trim();
+			var chargeCode = $(this).parent().parent().find('.ChargeCode').text().trim();
+			var chargeDesc = $(this).parent().parent().find('.ChargeDesc').text().trim();
+
+			$(currentSelectedCC).parent().siblings('.SPChargeCodePickerName').val(chargeCode + " - " + chargeDesc);
+			$(currentSelectedCC).parent().siblings('.SPChargeCodePickerType').val(chargeType);
+			$(currentSelectedCC).parent().siblings('.SPChargeCodePickerCC').val(chargeCode);
+			$(currentSelectedCC).parent().siblings('.SPChargeCodePickerDesc').val(chargeDesc);
+            $(currentSelectedCC).parent().siblings('.SPChargeCodePickerName').change();
+
+			$('#SearchChargeCode').modal('toggle');
+
+			currentSelectedCC = null;
+		});
+    }
+
+	function toggleCCFavouriteBtn() {
+		var searchType = $('#chargecodesearchtype').val();
+
+		if (searchType == 'Favourite') {
+			$('#btnAddFavCC').attr('disabled', true);
+			$('#btnDeleteFavCC').attr('disabled', false);
+		}
+		else {
+			$('#btnAddFavCC').attr('disabled', false);
+			$('#btnDeleteFavCC').attr('disabled', true);
+		}
+	}
+
+    function InsertFavCC() {
+        var _empCode = '';
+        $("#tblChargeCodeSearch td input[type=radio]").each(function () {
+            var row = $(this).closest('tr');
+            var _selected = $(this).prop("checked");
+            if (_selected) {
+                _empCode = row.find(".ChargeCode").text();
+                console.log(row.find(".ChargeCode").text());
+            }
+        });
+        if (_empCode != '') {
+            $.ajax({
+                url: '../TimeAttendance/InsertFavChargeCode',
+                type: 'POST',
+                data: {
+                    FavouriteCode: _empCode
+                },
+                success: function (result) {
+                    if (result.Result == 'True') {
+                        alert('Successfully added to favourite.');
+                    }
+                }
+            });
+        }
+    }
+
+    function DeleteFavCC() {
+        var _empCode = '';
+        $("#tblChargeCodeSearch td input[type=radio]").each(function () {
+            var row = $(this).closest('tr');
+            var _selected = $(this).prop("checked");
+            if (_selected) {
+                _empCode = row.find(".ChargeCode").text();
+                console.log(row.find(".ChargeCode").text());
+            }
+        });
+
+        if (_empCode != '') {
+            $.ajax({
+                url: '../TimeAttendance/DeleteFavChargeCode',
+                type: 'POST',
+                data: {
+                    FavouriteCode: _empCode
+                },
+                success: function (result) {
+                    if (result.Result == 'True') {
+                        alert('Successfully deleted from favourite.');
+                        SearchChargeCode();
+                    }
+                }
+            });
+        }
+    }
+</script>

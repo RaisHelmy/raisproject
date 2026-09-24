@@ -1,0 +1,37 @@
+﻿@using ESS.Claim.ClaimSubtype
+@using ESS.Claim.ViewModels
+@model Tuple<ColumnTemplate, ClaimsSubtype>
+
+@{
+    ColumnTemplate col = Model.Item1;
+    ClaimsSubtype subtype = Model.Item2;
+}
+
+@if (subtype.Template.IsReadonly)
+{
+    if (!String.IsNullOrEmpty(col.ColumnName))
+    {
+        <input type="checkbox"
+               class="@col.ColumnName @col.ColumnClass"
+               @(col.CheckboxChecked ? "checked=\"checked\"" : "")
+               disabled="disabled"
+               readonly="readonly"
+               name="ClaimsSubtypeCategory[@subtype.categoryIndex].ClaimSubtype[@subtype.subtypeIndex].SubTypeDetails[0].@col.ColumnName" />
+    }
+}
+else
+{
+    <input type="hidden" class="checkbox-companion"
+           name="ClaimsSubtypeCategory[@subtype.categoryIndex].ClaimSubtype[@subtype.subtypeIndex].SubTypeDetails[0].@col.ColumnName"
+           value="@col.ColumnValue" />
+
+    <input type="checkbox" class="@col.ColumnName @col.ColumnClass"
+           @(col.CheckboxChecked ? "checked=\"checked\"" : "")
+           onchange="@col.OnChange"
+           onfocus="@col.OnFocus"
+           onblur="@col.OnBlur"
+           onload="@col.OnLoad"
+           onclick="@col.OnClick;@(col.IsReadOnly ? "return false;" : "")"
+           @(col.IsReadOnly ? "readonly=\"readonly\"" : "") />
+    @col.CheckboxDescription
+}

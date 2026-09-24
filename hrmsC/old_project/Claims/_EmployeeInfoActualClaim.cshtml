@@ -1,0 +1,196 @@
+﻿@model ESS.Claim.ViewModels.ClaimVM
+@{
+    Layout = null;
+}
+
+<div id="EmployeeDetails" class="row">
+    <div class="col-md-12">
+        <div class="portlet box blue">
+            <div class="mini-triangle"><img src="../Assets/img/menu-red-triangle.png" /></div>
+            <div class="portlet-title">
+                <div class="caption">
+                    <i class="fa fa-reorder"></i>Employee Details
+                </div>
+            </div>
+            <div class="portlet-body form">
+                <div class="form-body" id="ct00_CustomFieldFormView">
+                    <div class="row">
+                        <div class="col-md-6">
+							<div class="form-horizontal">
+								<div class="form-group">
+									<label class="control-label col-md-4 ">
+										Employee Number
+									</label>
+									<div class="col-md-8 form-control-static">
+										<a href="#" onclick="window.open('@Url.Action("Index","Employee", new { EmployeeID = Model.Submiter.ID })');">
+											@Model.Submiter.EmployeeCode
+										</a>
+									</div>
+								</div>
+								<div class="form-group">
+									<label class="control-label col-md-4 ">
+										Employee Name
+									</label>
+									<div class="col-md-8 form-control-static">
+										@Model.Submiter.EmployeeName
+
+									</div>
+								</div>
+								<div class="form-group">
+									<label class="control-label col-md-4">
+										New IC Number
+									</label>
+									<div class="col-md-8 form-control-static">
+										@Model.Submiter.NewIC
+									</div>
+								</div>
+								<div class="form-group">
+									<label class="control-label col-md-4 ">
+										Pay Scale Group
+									</label>
+									<div class="col-md-8  form-control-static">
+										@if (ESS.Claim.Maintenance.MaintenanceService.IsHRAdmin())
+										{
+											@String.Format("{0} ({1})", Model.Submiter.PayScaleGroup, Model.EquivalentPayScaleGroup)
+										}
+										else
+										{
+											@Model.Submiter.PayScaleGroup
+										}
+									</div>
+								</div>
+								<div class="form-group">
+									<label class="control-label col-md-4 ">
+										Joined Date (Contract)
+									</label>
+									<div class="col-md-8  form-control-static">
+										@if (Model.Submiter.ContractJoinDate != DateTime.MinValue)
+										{
+											@Model.Submiter.ContractJoinDate.ToString("dd/MM/yyyy");
+										}
+									</div>
+								</div>
+								<div class="form-group">
+									<label class="control-label col-md-4 ">
+										Joined Date (Permanent)
+									</label>
+									<div class="col-md-8  form-control-static">
+										@if (Model.Submiter.PermanentJoinDate != DateTime.MinValue)
+										{
+											@Model.Submiter.PermanentJoinDate.ToString("dd/MM/yyyy");
+										}
+									</div>
+								</div>
+							</div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-horizontal">
+                                @*<div class="form-group">
+                                        <label class="control-label col-md-4 ">
+                                            Joined Date
+                                        </label>
+                                            @if (!String.IsNullOrEmpty(Model.Submiter.JoinedDate.ToString()))
+                                            {
+                                                <div class="col-md-8  form-control-static">
+                                                  @Model.Submiter.JoinedDate.ToString("dd/MM/yyyy")
+                                                </div>
+                                            }
+                                            else
+                                            {
+                                               <div class="col-md-8  form-control-static">
+                                                  <span>-</span>
+                                                </div>
+                                            }
+                                    </div>*@
+                                <div class="form-group">
+                                    <label class="control-label col-md-4 ">
+                                        Immediate Manager
+                                    </label>
+                                    <div class="col-md-8  form-control-static">
+                                        @Model.Submiter.ImmediateManager
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="control-label col-md-4 ">
+                                        Company
+                                    </label>
+                                    <div class="col-md-8  form-control-static">
+                                        @Model.Submiter.CompanyCode - @Model.Submiter.Company
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="control-label col-md-4 ">
+                                        Department
+                                    </label>
+                                    <div class="col-md-8  form-control-static">
+                                        @Model.Submiter.Department
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="control-label col-md-4 ">
+                                        Unit / Section
+                                    </label>
+                                    <div class="col-md-8  form-control-static">
+                                        @Model.Submiter.UnitSection
+
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="control-label col-md-4 ">
+                                        Position
+                                    </label>
+                                    <div class="col-md-8  form-control-static">
+                                        @Model.Submiter.Position
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="control-label col-md-4 ">
+                                        Cost Center
+                                    </label>
+                                    <div class="col-md-8  form-control-static">
+                                        @Model.Submiter.CostCenterCode - @Model.Submiter.CostCenterName
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="hdEmpInfo">
+                        <input type="hidden" name="Submiter.Company" value="@Model.Submiter.Company" />
+                        <input type="hidden" name="Submiter.CompanyCode" value="@Model.Submiter.CompanyCode" />
+                        <input type="hidden" name="Submiter.CostCenterCode" value="@Model.Submiter.CostCenterCode" />
+                        <input type="hidden" name="Submiter.CostCenterName" value="@Model.Submiter.CostCenterName" />
+                        <input type="hidden" name="Submiter.Department" value="@Model.Submiter.Department" />
+                        <input type="hidden" name="Submiter.DepartmentCode" value="@Model.Submiter.DepartmentCode" />
+                        <input type="hidden" name="Submiter.Email2" value="@Model.Submiter.Email2" />
+                        <input type="hidden" name="Submiter.EmailAddress" value="@Model.Submiter.EmailAddress" />
+                        <input type="hidden" name="Submiter.EmployeeCode" value="@Model.Submiter.EmployeeCode" />
+                        <input type="hidden" name="Submiter.EmployeeGroup" value="@Model.Submiter.EmployeeGroup" />
+                        <input type="hidden" name="Submiter.EmployeeName" value="@Model.Submiter.EmployeeName" />
+                        <input type="hidden" name="Submiter.EmployeeSubGroup" value="@Model.Submiter.EmployeeSubGroup" />
+                        <input type="hidden" name="Submiter.HODID" value="@Model.Submiter.HODID" />
+                        <input type="hidden" name="Submiter.HODName" value="@Model.Submiter.HODName" />
+                        <input type="hidden" name="Submiter.ID" value="@Model.Submiter.ID" />
+                        <input type="hidden" name="Submiter.ImmediateManager" value="@Model.Submiter.ImmediateManager" />
+                        <input type="hidden" name="Submiter.Job" value="@Model.Submiter.Job" />
+                        <input type="hidden" name="Submiter.JoinedDate" value="@Model.Submiter.JoinedDate" />
+                        <input type="hidden" name="Submiter.ManagerID" value="@Model.Submiter.ManagerID" />
+                        <input type="hidden" name="Submiter.NewIC" value="@Model.Submiter.NewIC" />
+                        <input type="hidden" name="Submiter.OfficeExtension" value="@Model.Submiter.OfficeExtension" />
+                        <input type="hidden" name="Submiter.OfficeFax" value="@Model.Submiter.OfficeFax" />
+                        <input type="hidden" name="Submiter.OfficeMobile" value="@Model.Submiter.OfficeMobile" />
+                        <input type="hidden" name="Submiter.OfficeNo" value="@Model.Submiter.OfficeNo" />
+                        <input type="hidden" name="Submiter.PayScaleGroup" value="@Model.Submiter.PayScaleGroup" />
+                        <input type="hidden" name="EquivalentPayScaleGroup" value="@Model.EquivalentPayScaleGroup" />
+                        <input type="hidden" name="Submiter.Position" value="@Model.Submiter.Position" />
+                        <input type="hidden" name="Submiter.PositionCode" value="@Model.Submiter.PositionCode" />
+                        <input type="hidden" name="Submiter.UnitSection" value="@Model.Submiter.UnitSection" />
+                        <input type="hidden" name="Submiter.UnitSectionCode" value="@Model.Submiter.UnitSectionCode" />
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+

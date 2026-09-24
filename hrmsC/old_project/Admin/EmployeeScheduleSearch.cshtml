@@ -1,0 +1,120 @@
+﻿@using Admin
+@{
+    ViewBag.Title = "Employee Schedule Search";
+    DateTime d1 = DateTime.Now.AddYears(-20);
+    DateTime d2 = DateTime.Now.AddYears(20);
+    string dtStrStart = d1.ToString("dd MMM yyyy");
+    string dtStrEnd = d2.ToString("dd MMM yyyy");
+}
+
+<style>
+    .position-form .form-group {
+        margin-bottom: 6px;
+    }
+</style>
+
+<div class="row">
+    <div class="col-md-12">
+        <br />
+        <h1 class="page-title">
+            Employee Schedule Search<span style="padding-left:20px;"><small></small></span>
+        </h1>
+    </div>
+</div>
+<br />
+
+<div class="row">
+    <div class="col-md-12">
+        <form id="empScheduleForm">
+            <div class="form-horizontal">
+                <div class="form-body position-form">
+                    <div class="form-group">
+                        <label class="col-md-2 control-label">Employee Code</label>
+                        <div class="col-md-4 form-control-static">
+                            <input class="form-control" id="EmployeeCode" name="EmployeeCode" @*value="@ViewBag.EmployeeCode"*@ />
+                        </div>
+ 
+                    </div>
+                    <div class="form-group">
+                        <label class="col-md-2 control-label">Holiday Date From</label>
+                        <div class="col-md-4 form-control-static">
+                            <div class="input-group date date-picker" data-date-format="dd MM yyyy">
+                                <input type="text" class="form-control" id="StartDateFrom" name="StartDateFrom" />
+                                <span class="input-group-btn">
+                                    <button type="button" class="btn default"><i class="fa fa-calendar"></i></button>
+                                </span>
+                            </div>
+                        </div>
+                        <label class="col-md-2 control-label">Holiday Date To</label>
+                        <div class="col-md-4 form-control-static">
+                            <div class="input-group date date-picker" data-date-format="dd MM yyyy">
+                                <input type="text" class="form-control" id="EndDateTo" name="EndDateTo" />
+                                <span class="input-group-btn">
+                                    <button type="button" class="btn default"><i class="fa fa-calendar"></i></button>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="text-right">
+            <a id="btn-Search" class="btn green btn-Search" value="Search" onclick="SearchEmployeeSchedule();">Search</a>
+        </div>
+    </div>
+</div>
+<div class="row">&nbsp;</div>
+<div class="row">
+    <div class="col-md-12">
+        <div id="EmployeeScheduleSearchResult">
+
+        </div>
+    </div>
+</div>
+
+<script>
+
+    jQuery(document).ready(function () {
+        $('.date-picker').datepicker({
+            format: 'dd/mm/yyyy',
+            autoclose: true,
+            setStartDate: '@dtStrStart',
+            setEndDate: '@dtStrEnd'
+        });
+    });
+
+    function Validate() {
+        var EmployeeCode = $("#EmployeeCode").val();
+        if (EmployeeCode == null || EmployeeCode == '') {
+            alert("Please insert Employee Code.");
+            return false;
+        }
+        return true;
+    }
+
+    function SearchEmployeeSchedule() {
+
+        if (!Validate())
+            return false;
+
+        $("#EmployeeScheduleSearchResult").html("LOADING...");
+        $.ajax({
+            type: "GET",
+            cache: false,
+            url: '@Url.Content("~/Admin/_EmployeeScheduleSearchResult")',
+            data: $("#empScheduleForm").serialize(),
+            success: function (listingContent) {
+                $("#EmployeeScheduleSearchResult").empty().append(listingContent);
+            },
+            error: function (err) {
+
+                console.log(err);
+            }
+        });
+    }
+</script>

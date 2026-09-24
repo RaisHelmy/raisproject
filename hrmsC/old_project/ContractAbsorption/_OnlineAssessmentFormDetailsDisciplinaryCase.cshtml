@@ -1,0 +1,193 @@
+﻿@model Tuple<ESS.ContractAbsorption.Models.EContractAbsorptionVM, SEP.RoutingManagement.Models.RoutingRule>
+
+@using ESS.Core
+
+@{
+	Layout = null;
+
+	string TaskID = (string)ViewData["TaskID"];
+	string RequestID = (string)ViewData["RequestID"];
+	string ApprovalLevel = (string)ViewData["ApprovalLevel"];
+	string Source = (string)ViewData["Source"];
+	string EmployeeID = (string)ViewData["EmployeeID"];
+
+	int applvl = String.IsNullOrEmpty(ApprovalLevel) ? 0 : Convert.ToInt32(ApprovalLevel);
+
+	string Checked2_1 = "";
+	string Checked2_2 = "";
+
+	switch (Model.Item1.DisciplinaryCase)
+	{
+		case "D":
+			Checked2_1 = "checked";
+			break;
+		case "ND":
+			Checked2_2 = "checked";
+			break;
+	}
+
+	if (Model.Item1.btnSubmit == true && applvl == 5)
+	{
+		<style>
+			.EdittableDisciplinaryCaseContent {
+				display: block;
+			}
+
+			.NonEdittableDisciplinaryCaseContent {
+				display: none;
+			}
+		</style>
+	}
+	else
+	{
+		<style>
+			.EdittableDisciplinaryCaseContent {
+				display: none;
+			}
+
+			.NonEdittableDisciplinaryCaseContent {
+				display: block;
+			}
+		</style>
+	}
+}
+
+@if (applvl >= 5 && new Guid(Common.GetEmployeeID()) != Model.Item1.Submiter.EmployeeID)
+{
+	<div class="row">
+		<div class="col-md-12">
+			<div class="portlet box blue">
+				<div class="mini-triangle"><img src="../Assets/img/menu-red-triangle.png" /></div>
+				<div class="portlet-title">
+					<div class="caption">
+						<i class="fa fa-reorder"></i>Disciplinary Case
+					</div>
+				</div>
+				<div class="portlet-body form">
+					<div class="form-body" id="ct01_CustomFieldFormView">
+						<div class="form-horizontal EdittableDisciplinaryCaseContent">
+							<div class="table-toolbar">
+								<table id="tblDC" class="table table-striped table-bordered table-hover table-full-width">
+									<thead>
+										<tr>
+											<th>
+												Item
+											</th>
+											<th>
+												<label class="control-label">
+													Yes <span class="required">*</span>
+												</label>
+											</th>
+											<th>
+												<label class="control-label">
+													No <span class="required">*</span>
+												</label>
+											</th>
+											<th>
+												Comment
+											</th>
+										</tr>
+									</thead>
+									<tbody>
+										<tr>
+											<td>
+												Disciplinary Case <label class="control-label">
+													<span class="required">*</span>
+												</label>
+											</td>
+											<td>
+												<div class="form-horizontal">
+													<div class="form-group">
+														<div class="radio-list padding-left-20">
+															<label class="radio-inline">
+																<span><input type="radio" @Checked2_1 name="rblDisciplinaryCase" id="radio_DisciplinaryCase" value="D"></span>
+															</label>
+														</div>
+													</div>
+												</div>
+											</td>
+											<td>
+												<div class="form-horizontal">
+													<div class="form-group">
+														<div class="radio-list padding-left-20">
+															<label class="radio-inline">
+																<span><input type="radio" @Checked2_2 name="rblDisciplinaryCase" id="radio_NoDisciplinaryCase" value="ND"></span>
+															</label>
+														</div>
+													</div>
+												</div>
+											</td>
+											<td class="WrapTextColumn" style="min-width:400px;">
+												<textarea name="DisciplinaryCaseComment" style="width:100%;" rows="1" id="txtDisciplinaryCaseComment">@Html.Raw(Model.Item1.DisciplinaryCaseRemarks)</textarea>
+											</td>
+										</tr>
+									</tbody>
+								</table>
+							</div>
+						</div>
+						<div class="form-horizontal NonEdittableDisciplinaryCaseContent">
+							<div class="table-toolbar">
+								<table id="tblDC" class="table table-striped table-bordered table-hover table-full-width">
+									<thead>
+										<tr>
+											<th>
+												Item
+											</th>
+											<th>
+												<label class="control-label">
+													Yes <span class="required">*</span>
+												</label>
+											</th>
+											<th>
+												<label class="control-label">
+													No <span class="required">*</span>
+												</label>
+											</th>
+											<th>
+												Comment
+											</th>
+										</tr>
+									</thead>
+									<tbody>
+										<tr>
+											<td>
+												Disciplinary Case <label class="control-label">
+													<span class="required">*</span>
+												</label>
+											</td>
+											<td>
+												<div class="form-horizontal">
+													<div class="form-group">
+														<div class="radio-list padding-left-20">
+															<label class="radio-inline">
+																<span><input type="radio" @Checked2_1 name="rblDisciplinaryCaseReadOnly" id="radio_DisciplinaryCaseReadOnly" value="D" disabled></span>
+															</label>
+														</div>
+													</div>
+												</div>
+											</td>
+											<td>
+												<div class="form-horizontal">
+													<div class="form-group">
+														<div class="radio-list padding-left-20">
+															<label class="radio-inline">
+																<span><input type="radio" @Checked2_2 name="rblDisciplinaryCaseReadOnly" id="radio_NoDisciplinaryCaseReadOnly" value="ND" disabled></span>
+															</label>
+														</div>
+													</div>
+												</div>
+											</td>
+											<td class="WrapTextColumn" style="min-width:400px;">
+												@Html.Raw(Model.Item1.DisciplinaryCaseRemarks)
+											</td>
+										</tr>
+									</tbody>
+								</table>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+}

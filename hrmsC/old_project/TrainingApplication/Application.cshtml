@@ -1,0 +1,1421 @@
+﻿@*@model Tuple<ESS.Core.TrainingForm, List<ESS.Core.DropDownObject>, List<ESS.Core.DropDownObject>, List<ESS.Core.DropDownObject>>*@
+@model Tuple<ESS.Core.TrainingForm, List<SEP.RoutingManagement.Service.AllowAction>>
+@{
+    ViewBag.Title = "Training Request (" + ViewBag.Target + ")";
+
+    string url = HttpContext.Current.Request.Url.AbsoluteUri;
+    string[] array = url.Split('?');
+    string parameters = array[1];
+    parameters = parameters.Replace("&amp;", "&");
+
+    DateTime dtStart = DateTime.Now.AddDays(30);
+    string dtStrStart = dtStart.ToString("dd/MM/yyyy");
+    string Target = ViewBag.Target;
+    string TaskID = ViewBag.TaskID; ;
+    var TrainingType = "";
+
+    Uri myUri = new Uri(HttpContext.Current.Request.Url.AbsoluteUri);
+
+    string paramTitle = HttpUtility.ParseQueryString(myUri.Query).Get("Title");
+    string paramCategoryTypeCode = HttpUtility.ParseQueryString(myUri.Query).Get("CategoryType");
+    string _Title = "";
+
+    if(paramCategoryTypeCode == "I")
+    {
+        if (ViewBag.CategoryCode == "01")
+        {
+            _Title = "ILSAS";
+        }
+
+    }else if(paramCategoryTypeCode == "NI")
+    {
+        _Title = "Non ILSAS";
+    }
+
+    TrainingUserBlocking.TrainingUserBlockingResult TrainingUserBlocking = ViewBag.TrainingUserBlocking;
+    string PopupMessage = ViewBag.PopupMessage;
+    string PageMessage = ViewBag.TopPageMessage;
+}
+@if (!string.IsNullOrEmpty(paramTitle))
+{
+    <div class="form-section">
+        <div class="row">
+            <div class="col-md-12">
+                <h1 class="page-title">
+                    Training Request - @paramTitle (@ViewBag.Target)
+                    <span style="padding-left:20px;">
+                        <small></small>
+                    </span>
+                </h1>
+            </div>
+        </div>
+    </div>
+}
+else
+{
+    <div class="form-section">
+        <div class="row">
+            <div class="col-md-12">
+                <h1 class="page-title">
+                    Training Request - @ViewBag.CategoryDesc @_Title (@ViewBag.Target)
+                    <span style="padding-left:20px;">
+                        <small></small>
+                    </span>
+                </h1>
+            </div>
+        </div>
+    </div>
+}
+
+<div id="TrainingUserBlocking" class="row TrainingUserBlocking" style="display: none;">
+    <div class="col-md-12">
+        <div class="note note-danger">
+            <h4>
+                @PageMessage
+            </h4>
+        </div>
+    </div>
+</div>
+
+@using (Html.BeginForm("", "Training", FormMethod.Post, new { @class = "form-horizontal", @id = "MainForm" }))
+{
+    <input id="hfTrainingID" type="hidden" value="@Model.Item1.TrainingID" />
+    <input id="hfEmployeeID" type="hidden" value="@ViewBag.EmployeeID" />
+    <input id="hfCategoryCode" type="hidden" value="@ViewBag.CategoryCode" />
+    <input id="hfCategoryDesc" type="hidden" value="@ViewBag.CategoryDesc" />
+    <input id="hfTarget" type="hidden" value="@ViewBag.Target" />
+    <input id="hfTypeCode" type="hidden" value="@Model.Item1.TypeCode" />
+    <input id="hfTypeDesc" type="hidden" value="@Model.Item1.TypeDesc" />
+    <input id="hfTaskID" type="hidden" value="@ViewBag.TaskID" />
+
+    //Requestor Details
+    @Html.Action("_RequestorDetails", "Training", new { ID = Model.Item1.TrainingID })
+    //Public
+    if (ViewBag.CategoryCode == "06")
+    {
+        //Request Details
+        <div class="row">
+            <div class="col-md-12">
+                <div class="portlet box blue">
+                    <div class="mini-triangle"><img src="../Assets/img/menu-red-triangle.png" /></div>
+                    <div class="portlet-title">
+                        <div class="caption">
+                            <i class="fa fa-reorder"></i>Request Details
+                        </div>
+                    </div>
+                    <div class="portlet-body form">
+                        <div class="form-body" id="ct01_CustomFieldFormView">
+                            @if (!string.IsNullOrEmpty(Model.Item1.Status))
+                            {
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-horizontal">
+                                            <div class="form-group">
+                                                <label class="control-label col-md-4">
+                                                    Request Reference No.
+                                                </label>
+                                                <div class="col-md-8 form-control-static">
+                                                    <input class="form-control" id="ReferenceNo" value="@Model.Item1.ReferenceNo" readonly />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-horizontal">
+                                            <div class="form-group">
+                                                <label class="control-label col-md-4">
+                                                    Status
+                                                </label>
+                                                <div class="col-md-8 form-control-static">
+                                                    @{
+                                                        var color = "";
+                                                        if (Model.Item1.Status == "Declined" || Model.Item1.Status == "Withdrawn")
+                                                        {
+                                                            color = "red";
+                                                        }
+                                                        else
+                                                        {
+                                                            color = "green";
+                                                        }
+                                                    }
+                                                    <input class="form-control" id="RequestStatus" value="@Model.Item1.Status" style="color:@color;font-weight:bold;" readonly />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row hide">
+                                    <div class="col-md-6">
+                                        <div class="form-horizontal">
+                                            <div class="form-group">
+                                                <label class="control-label col-md-4">
+                                                    Training Category
+                                                </label>
+                                                <div class="col-md-8 form-control-static">
+                                                    @Html.DropDownList("TrainingCategory", new SelectList(Model.Item1.TrainingCategoryList, "Value", "Text"), new { @class = "bs-select form-control", @disabled = "disabled" })
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-horizontal">
+                                            <div class="form-group">
+                                                <label class="control-label col-md-4">
+                                                    Training Type
+                                                </label>
+                                                <div class="col-md-8 form-control-static">
+                                                    <input class="form-control" id="TrainingTypeDesc" value="@Model.Item1.TypeDesc" readonly />
+                                                    <input class="hide" id="TrainingType" value="@Model.Item1.TypeCode" readonly />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-horizontal">
+                                            <div class="form-group">
+                                                <label class="control-label col-md-4">
+                                                    Request Reference No.
+                                                </label>
+                                                <div class="col-md-8 form-control-static">
+                                                    <input class="form-control" id="ReferenceNo" value="Draft" readonly />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-horizontal">
+                                            <div class="form-group">
+                                                <label class="control-label col-md-4">
+                                                    Status
+                                                </label>
+                                                <div class="col-md-8 form-control-static">
+                                                    <input class="form-control" id="RequestStatus" value="Draft" readonly />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row hide">
+                                    <div class="col-md-6">
+                                        <div class="form-horizontal">
+                                            <div class="form-group">
+                                                <label class="control-label col-md-4">
+                                                    Training Category <span id="lvTypeMan" style="color:red;"> *</span>
+                                                </label>
+                                                <div class="col-md-8 form-control-static">
+                                                    @Html.DropDownList("TrainingCategory", new SelectList(Model.Item1.TrainingCategoryList, "Value", "Text"), new { @class = "bs-select form-control" })
+                                                    <div class="radio-list hide" style="margin-left:20px;">
+                                                        <label class="radio-inline">
+                                                            <input type="radio" class="DestroyUniform" name="optionsRadios" id="New" value="New">New
+                                                        </label>
+                                                        <label class="radio-inline">
+                                                            <input type="radio" class="DestroyUniform" name="optionsRadios" id="Existing" value="Existing" checked>Existing
+                                                        </label>
+
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-horizontal">
+                                            <div class="form-group">
+                                                <label class="control-label col-md-4 ">
+                                                    Training Type <span id="lvTypeMan" style="color:red;"> *</span>
+                                                </label>
+                                                <div class="col-md-8 form-control-static">
+                                                    @Html.DropDownListFor(model => Model.Item1.TrainingTypeList, new SelectList(Model.Item1.TrainingTypeList, "Value", "Text"), new { @class = "form-control", @id = "TrainingType", @onchange = "changeType()" })
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+                                                        //Training Details - Edit/View/New
+        <div class="row">
+            <div class="col-md-12">
+                <div class="portlet box blue">
+                    <div class="mini-triangle"><img src="../Assets/img/menu-red-triangle.png" /></div>
+                    <div class="portlet-title">
+                        <div class="caption">
+                            <i class="fa fa-reorder"></i>Training Details
+                        </div>
+                    </div>
+                    <div class="portlet-body form">
+                        <div class="form-body" id="ct00_CustomFieldFormView">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-horizontal">
+                                        <div class="form-group">
+                                            <label class="control-label col-md-4">Course Title <span id="lvTypeMan_2" style="color:red;"> *</span></label>
+                                            <div class="col-md-8 form-control-static">
+                                                @if (ViewBag.Mode == "View" || Model.Item1.Status == "Pending")
+                                                {
+                                                    <input type="text" class="form-control" id="CPCourseTitle" readonly>
+                                                }
+                                                else
+                                                {
+                                                    <input type="text" class="form-control" id="CPCourseTitle">
+                                                }
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">                                
+                                <div class="col-md-6">
+                                    <div class="form-horizontal">
+                                        <div class="form-group">
+                                            <label class="control-label col-md-4">Start Date <span id="lvTypeMan_2" style="color:red;"> *</span></label>
+                                            <div class="col-md-8 form-control-static">
+                                                @if (ViewBag.Mode == "View" || Model.Item1.Status == "Pending")
+                                                {
+                                                    <input class="form-control" type="text" id="StartDate" value="@Model.Item1.StartDate" readonly />
+                                                }
+                                                else
+                                                {
+                                                    <div class="input-group input-medium date date-picker showhidedate1" data-date-format="dd/mm/yyyy">
+                                                        <input class="form-control" type="text" id="StartDate" value="@Model.Item1.StartDate" />
+                                                        <span class="input-group-btn">
+                                                            <button class="btn default btnCalender" type="button"><i class="fa fa-calendar"></i></button>
+                                                        </span>
+                                                    </div>
+                                                    <input class="form-control hide showhidedate2" type="text" id="StartDate" value="@Model.Item1.StartDate" />
+                                                }
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-horizontal">
+                                        <div class="form-group">
+                                            <label class="control-label col-md-4">End Date <span id="lvTypeMan_2" style="color:red;"> *</span></label>
+                                            <div class="col-md-8 form-control-static">
+                                                @if (ViewBag.Mode == "View" || Model.Item1.Status == "Pending")
+                                                {
+                                                    <input class="form-control" type="text" id="EndDate" value="@Model.Item1.EndDate" readonly />
+                                                }
+                                                else
+                                                {
+                                                    <div class="input-group input-medium date date-picker showhidedate1" data-date-format="dd/mm/yyyy">
+                                                        <input class="form-control" type="text" id="EndDate" value="@Model.Item1.EndDate" />
+                                                        <span class="input-group-btn">
+                                                            <button class="btn default btnCalender" type="button"><i class="fa fa-calendar"></i></button>
+                                                        </span>
+                                                    </div>
+                                                    <input class="form-control hide showhidedate2" type="text" id="EndDate" value="@Model.Item1.EndDate" />
+                                                }
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="form-horizontal">
+                                        <div class="form-group">
+                                            <label class="control-label col-md-2 ">
+                                                Course Venue <span id="lvTypeMan_2"  style="color:red;"> *</span>
+                                            </label>
+                                            <div class="col-md-10 form-control-static">
+                                                @if (ViewBag.Mode == "View" || Model.Item1.Status == "Pending")
+                                                {
+                                                    <input class="form-control" id="CourseVenue" value="@Model.Item1.CourseVenue" readonly />
+                                                }
+                                                else
+                                                {
+                                                    <input class="form-control" id="CourseVenue" value="@Model.Item1.CourseVenue" />
+                                                }
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="form-horizontal">
+                                        <div class="form-group">
+                                            <label class="control-label col-md-2 ">
+                                                Course Provider <span id="lvTypeMan_2" style="color:red;"> *</span>
+                                            </label>
+                                            <div class="col-md-10 form-control-static">
+                                                @if (ViewBag.Mode == "View" || Model.Item1.Status == "Pending")
+                                                {
+                                                    <input class="form-control" id="CourseProvider" value="@Model.Item1.CourseProvider" readonly />
+                                                }
+                                                else
+                                                {
+                                                    <input class="form-control" id="CourseProvider" value="@Model.Item1.CourseProvider" />
+                                                }
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        //Estimated Cost
+        //if (ViewBag.CategoryCode == "01")
+        //{
+        <div class="row">
+            <div class="col-md-12">
+                <div class="portlet box blue">
+                    <div class="mini-triangle"><img src="../Assets/img/menu-red-triangle.png" /></div>
+                    <div class="portlet-title">
+                        <div class="caption">
+                            <i class="fa fa-reorder"></i>Estimated Cost
+                        </div>
+                    </div>
+                    <div class="portlet-body form">
+                        <div class="form-body" id="ct00_CustomFieldFormView">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-horizontal">
+                                        <div class="form-group">
+                                            <label class="control-label col-md-4 ">
+                                                Cost
+                                            </label>
+                                            <div class="col-md-4 form-control-static">
+                                                @if (ViewBag.Mode == "View" || Model.Item1.Status == "Pending")
+                                                {
+                                                    <input class="form-control" id="Cost" value="@Model.Item1.CostDesc" readonly />
+                                                }
+                                                else
+                                                {
+                                                    @Html.DropDownListFor(model => Model.Item1.TrainingCostList, new SelectList(Model.Item1.TrainingCostList, "Value", "Text"), new { @class = "form-control", @id = "TrainingCost", @onchange = "ChangeCurreny(this)" })
+                                                }
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row" id="costMsg">
+                                <label class="control-label col-md-12">
+                                    If Paid Course, please fill in the following details:
+                                </label>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="form-horizontal">
+                                        <div class="form-group">
+                                            <label class="control-label col-md-2">
+                                                Training Fee
+                                            </label>
+                                            <div class="col-md-2 form-control-static">
+                                                @if (ViewBag.Mode == "View")
+                                                {
+                                                    @Html.DropDownListFor(model => Model.Item1.TrainingCurrencyList, new SelectList(Model.Item1.TrainingCurrencyList, "Value", "Text"), new { @class = "form-control", @id = "TrainingCurrency", @disabled = "disabled" })
+                                                }
+                                                else
+                                                {
+                                                    @Html.DropDownListFor(model => Model.Item1.TrainingCurrencyList, new SelectList(Model.Item1.TrainingCurrencyList, "Value", "Text"), new { @class = "form-control", @id = "TrainingCurrency" })
+                                                }
+                                            </div>
+                                            <div class="col-md-4 form-control-static">
+                                                @{
+                                                    string Fee = (string.IsNullOrEmpty(Model.Item1.TrainingFee)) ? "" : (decimal.Parse(Model.Item1.TrainingFee)).ToString("###,###,##0.00") + ViewBag.CostItemDesc;
+                                                    
+                                                }
+                                                @if (ViewBag.Mode == "View" || Model.Item1.Status == "Pending")
+                                                {
+                                                    <input class="form-control" id="TrainingFee" value="@Fee" readonly />
+                                                }
+                                                else
+                                                {
+                                                    <input class="form-control" id="TrainingFee" value="@Fee" />
+                                                    @*<input class="form-control hide" id="TrainingFee" value="@Model.Item1.TrainingFee" />*@
+                                                }
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        //}
+
+        //Attendee Leave History
+        if (Model.Item1.Status != "Draft" && !string.IsNullOrEmpty(Model.Item1.Status))
+        {
+            @Html.Action("_TrainingRequestLeaveHistory", "Training", new { DateFrom = Model.Item1.StartDate, DateTo = Model.Item1.EndDate, EmployeeID = Model.Item1.AttendeeList })
+        }
+
+        //Training Attendee
+        if (ViewBag.Target == "Subordinate")
+        {
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="portlet box blue">
+                        <div class="mini-triangle"><img src="../Assets/img/menu-red-triangle.png" /></div>
+                        <div class="portlet-title">
+                            <div class="caption">
+                                <i class="fa fa-reorder"></i>Training Attendee
+                            </div>
+                        </div>
+                        <div class="portlet-body form">
+                            <div class="form-body" id="ct00_CustomFieldFormView">
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <div class="form-horizontal">
+                                            <div class="form-group">
+                                                <label class="control-label col-md-2 ">
+                                                    Selected Attendee 
+                                                </label>
+                                                <div class="col-md-8 form-control-static">
+                                                    @if (Model.Item1.Status == "Draft" || string.IsNullOrEmpty(Model.Item1.Status))
+                                                    {
+                                                        @Html.Partial("_MultiPeoplePicker", new ViewDataDictionary { { "AttendeeList", Model.Item1.AttendeeList }, { "PickMode", "Add" }, { "SearchType", "CustomWorkflow"} })
+                                                    }
+                                                    else
+                                                    {
+                                                        @Html.Partial("_MultiPeoplePicker", new ViewDataDictionary { { "AttendeeList", Model.Item1.AttendeeList }, { "PickMode", "View" }, { "SearchType", "CustomWorkflow" } })
+                                                    }
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+
+
+        //Expected Benefits of Training
+        <div class="row">
+            <div class="col-md-12">
+                <div class="portlet box blue">
+                    <div class="mini-triangle"><img src="../Assets/img/menu-red-triangle.png" /></div>
+                    <div class="portlet-title">
+                        <div class="caption">
+                            <i class="fa fa-reorder"></i>Expected Benefits of Training
+                        </div>
+                    </div>
+                    <div class="portlet-body form">
+                        <div class="form-body" id="ct00_CustomFieldFormView">
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="form-horizontal">
+                                        <div class="form-group">
+                                            <label class="control-label col-md-2">
+                                                Skills / Knowledge To be Acquired<span id="lvTypeMan" style="color:red;"> *</span>
+                                            </label>
+                                            <div class="col-md-10 form-control-static">
+                                                @if (string.IsNullOrEmpty(Model.Item1.Status) || Model.Item1.Status == "Draft")
+                                                {
+                                                    <textarea class="form-control" id="SkillKnowledge">@Model.Item1.SkillKnowledge</textarea>
+                                                }
+                                                else
+                                                {
+                                                    <textarea class="form-control" id="SkillKnowledge" readonly>@Model.Item1.SkillKnowledge</textarea>
+                                                }
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="form-horizontal">
+                                        <div class="form-group">
+                                            <label class="control-label col-md-2">
+                                                Application at Workplace <span id="lvTypeMan" style="color:red;"> *</span>
+                                            </label>
+                                            <div class="col-md-10 form-control-static">
+                                                @if (string.IsNullOrEmpty(Model.Item1.Status) || Model.Item1.Status == "Draft")
+                                                {
+                                                    <textarea class="form-control" id="ApplicationWorkplace">@Model.Item1.ApplicationWorkplace</textarea>
+                                                }
+                                                else
+                                                {
+                                                    <textarea class="form-control" id="ApplicationWorkplace" readonly>@Model.Item1.ApplicationWorkplace</textarea>
+                                                }
+
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        //Additional Info
+        <div class="row">
+            <div class="col-md-12">
+                <div class="portlet box blue">
+                    <div class="mini-triangle"><img src="../Assets/img/menu-red-triangle.png" /></div>
+                    <div class="portlet-title">
+                        <div class="caption">
+                            <i class="fa fa-reorder"></i>Additional Info
+                        </div>
+                    </div>
+                    <div class="portlet-body form">
+                        <div class="form-body" id="ct00_CustomFieldFormView">
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="form-horizontal">
+                                        <div class="form-group">
+                                            <label class="control-label col-md-2">
+                                                Remarks
+                                            </label>
+                                            <div class="col-md-10 form-control-static">
+                                                @if (string.IsNullOrEmpty(Model.Item1.Status) || Model.Item1.Status == "Draft")
+                                                {
+                                                    <textarea class="form-control" id="Remarks">@Model.Item1.Remarks</textarea>
+                                                }
+                                                else
+                                                {
+                                                    <textarea class="form-control" id="Remarks" readonly>@Model.Item1.Remarks</textarea>
+                                                }
+
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row hide">
+                                <div class="col-md-12">
+                                    <div class="form-horizontal">
+                                        <div class="form-group">
+                                            <label class="control-label col-md-2">
+                                                Course Type <span id="lvTypeMan" style="color:red;"> *</span>
+                                            </label>
+                                            <div class="col-md-10 form-control-static">
+                                                <select class="form-control" id="CourseType">
+                                                    <option value="Technical">Technical Course (Engineering / Electrical System courses only)</option>
+                                                    <option value="NonTechnical">Functional Course</option>
+                                                    <option value="Management">Management Course</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+    //Attachment
+    if (string.IsNullOrEmpty(Model.Item1.Status))
+    {
+        @Html.Action("AttachmentControl", "Attachment", new { EmployeeID = ViewBag.EmployeeID, Mode = "New", SourceType = "Training" })
+    }
+    else if(Model.Item1.Status == "Draft")
+    {
+        @Html.Action("AttachmentControl", "Attachment", new { EmployeeID = ViewBag.EmployeeID, Mode = "Add", SourceType = "Training", RequestID = Model.Item1.TrainingID })
+    }
+    else
+    {
+        //@Html.Action("AttachmentControl", "Attachment", new { EmployeeID = ViewBag.EmployeeID, Mode = "View", SourceType = "Training", RequestID = Model.Item1.TrainingID })
+    }
+
+    //Workflow History
+    if (Model.Item1.Status == "Pending" || Model.Item1.Status == "Accepted" ||Model.Item1.Status == "Agreed" || Model.Item1.Status == "Approved" || Model.Item1.Status == "Declined" || Model.Item1.Status == "Withdrawn" || Model.Item1.Status == "Recommended" || Model.Item1.Status == "Endorsed")
+    {
+        @Html.Action("_TrainingRequestWorkflowHistory", "Training", new { ID = Model.Item1.TrainingID })
+    }
+
+    if (!string.IsNullOrEmpty(ViewBag.TaskID))
+    {
+        if (Model.Item1.Status == "Pending" || Model.Item1.Status == "Recommended" || Model.Item1.Status == "Agreed")
+        {
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="portlet box blue">
+                        <div class="mini-triangle"><img src="../Assets/img/menu-red-triangle.png" /></div>
+                        <div class="portlet-title">
+                            <div class="caption">
+                                <i class="fa fa-reorder"></i>Approval Comments
+                            </div>
+                        </div>
+                        <div class="portlet-body form">
+                            <div class="form-body" id="ct00_CustomFieldFormView">
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <div class="form-horizontal">
+                                            <div class="form-group">
+                                                <label class="control-label col-md-2">
+                                                    Comments
+                                                </label>
+                                                <div class="col-md-10 form-control-static">
+                                                    <textarea class="form-control" id="Comment"></textarea>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    }
+
+    if (string.IsNullOrEmpty(Model.Item1.Status) || Model.Item1.Status == "Draft")
+    {
+        <input type="button" class="btn green" value="Save as Draft" id="btnSaveAsDraft" onclick="Validation('Draft')" />
+
+        if (ViewBag.AllowSubmit)
+        {
+            <input type="button" class="btn green" value="Submit" id="btnSubmit" onclick="Validation('Pending')" />
+        }
+        if (Model.Item1.Status == "Draft")
+        {
+            <input type="button" class="btn green" value="Delete" id="btnDelete" onclick="DeleteTrainingRequest('Delete')" />
+        }
+    }
+    else
+    {
+        if (!string.IsNullOrEmpty(ViewBag.TaskID))
+        {
+            foreach (var m in Model.Item2)
+            {
+                if(Model.Item1.Target == "Subordinate")
+                {
+                    if (m.CanAgree == "1" && Model.Item1.Status == "Pending")
+                    {
+                        <input type="button" class="btn green" value="Recommend" id="btnAgree" onclick="Validation('Agreed')" />
+                    }
+
+                    if (m.CanApprove == "1" && Model.Item1.Status == "Agreed")
+                    {
+                        <input type="button" class="btn green" value="Accept" id="btnAccept" onclick="Validation('Accepted')" />
+                    }
+
+                    if (m.CanApprove == "1" && Model.Item1.Status == "Pending")
+                    {
+                        <input type="button" class="btn green" value="Recommend" id="btnRecommend" onclick="Validation('Recommended')" />
+                    }
+                }
+                else if(Model.Item1.Target == "Self")
+                {
+                    if (m.CanAgree == "1" && Model.Item1.Status == "Pending")
+	                {
+		                <input type="button" class="btn green" value="Agree" id="btnAgree" onclick="Validation('Agreed')" />
+	                }
+
+	                if (m.CanApprove == "1" && Model.Item1.Status == "Agreed")
+	                {
+		                <input type="button" class="btn green" value="Recommend" id="btnRecommend" onclick="Validation('Recommended')" />
+	                }
+                }
+                if (m.CanEndorse == "1")
+                {
+                    <input type="button" class="btn green" value="Endorse" id="btnEndorse" onclick="Validation('Endorsed')" />
+                }
+
+
+                if (m.CanDecline == "1")
+                {
+                    <input type="button" class="btn green" value="Decline" id="btnReject" onclick="Validation('Declined')" />
+                }
+
+            }
+        }
+        else if (Model.Item1.Status == "Pending")
+        {
+            foreach (var m in Model.Item2)
+            {
+                if (m.CanWithdraw == "1")
+                {
+                    <input type="button" class="btn green" value="Withdraw" id="btnWithdraw" onclick="Validation('Withdrawn')" />
+                }
+            }
+        }
+    }
+
+    <input type="button" class="btn green" value="Back" id="btnClose" onclick="window.history.back()"/>
+
+
+    <!-- Confirmation Message -->
+    <div class="modal fade" id="ConfirmUpdate" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                    <h4 class="modal-title">Confirmation</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="well">
+                        Are you sure you want to Submit this Training Application?\n\rPress Confirm to proceed, or Close to stay on the current page.
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn default blue" id="btnSubmitSave" value="Submit" onclick="javascript: SaveForm('Pending');">
+                        <i class="fa fa-check"></i>
+                        Confirm
+                    </button>
+                    <button type="button" class="btn default blue" id="btnSubmitDraft" value="Draft" onclick="javascript: SaveForm('Draft');">
+                        <i class="fa fa-check"></i>
+                        Confirm
+                    </button>
+                    <button type="button" class="btn default" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Success Message -->
+    <div class="modal fade" id="SuccessSubmit" tabindex="-1" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header Success-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true" style="display: none;"></button>
+                    <h4 class="Success-title">Action Successfully Completed</h4>
+                </div>
+                <div class="modal-body Success-body">
+                    <div class="well">
+                        Your Training Application has been successfully submitted.
+                    </div>
+                </div>
+                <div class="modal-footer Success-footer">
+                    <button type="button" class="btn default blue" id="btnOK">
+                        <i class="fa fa-check"></i>
+                        OK
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Gif -->
+    <div id="divLoading" style="margin: 0px; padding: 0px; position: fixed; right: 0px; top: 0px; width: 100%; height: 100%; background-color: gainsboro; z-index: 30001; opacity: .8; filter: alpha(opacity=70); display: none; ">
+        <p style="position: absolute; top: 30%; left: 30%; color: black;">
+            Performing action, please wait...<img src="/_layouts/15/TNBESS/Assets/img/ajax-loading.gif">
+        </p>
+    </div>
+}
+
+<script>
+    var SubmitStatus = "";
+    var Path = '/_layouts/15/tnbess';
+    $(window).load(function () {
+        $.uniform.restore(".DestroyUniform");
+    });
+
+    jQuery(document).ready(function () {
+
+        $('.date-picker').datepicker({
+            format: 'dd/mm/yyyy',
+            autoclose: true
+        });
+        //$('.date-picker').datepicker('setStartDate', '@dtStrStart');
+
+        $("#CPCourseTitle").val('@Model.Item1.CourseTitle'.replace(/&#39;/g, "'").replace(/&amp;/g, "&"));
+        //$("#CPCourseTitle").val('@Model.Item1.CourseTitle'.replace(/&amp;/g, "&"));
+        $("#hfCourseID").val('@Model.Item1.CourseID');
+        $("#hfCourseSessionID").val('@Model.Item1.CourseSessionID');
+
+        //Course Type
+        var CT = '@Model.Item1.CourseType' + "";
+        //Training Type
+        var TT = '@Model.Item1.TypeCode' + "";
+        //Training Cost
+        var TC = '@Model.Item1.CostCode' + "";
+
+        if (CT != "") {
+            $("#CourseType").val(CT);
+        }
+
+        if (TT != "") {
+            $("#TrainingType").val(TT);
+        }
+
+        if (TC != "") {
+            $("#TrainingCost").val(TC);
+        }
+
+        if ('@Model.Item1.Status' == "Pending" || '@Model.Item1.Status' == "Approved" || '@ViewBag.Mode' == "View") {
+
+            $("#CourseType").prop("disabled", true);
+            $("#TrainingType").prop("disabled", true);
+        }
+
+        if ('@Model.Item1.CourseID' != "") {
+            GetCourseCapacity('@Model.Item1.CourseID', '@Model.Item1.CourseSessionID');
+        } else {
+            $("#DivisionGrade").addClass("hide");
+        }
+
+
+        //Radio Button
+        ChangeRabioButton();
+
+        //Get Trainig Type
+        TrainingType = $("#TrainingType").val();
+
+        if ('@Model.Item1.Status' == "" && '@ViewBag.CategoryCode' == '01') {
+            //$("#TrainingType").val("I");
+            $("#TrainingType").val('@paramCategoryTypeCode');
+            $('#CPTrainingType').val($("#TrainingType option:selected").text());
+        }
+
+        @if (!TrainingUserBlocking.IsAllowed && (Target == "Self" || !String.IsNullOrEmpty(TaskID)))
+        {
+            @Html.Raw(@"$('#TrainingUserBlocking').show();" + Environment.NewLine);
+            @Html.Raw(@"disableActionButton();" + Environment.NewLine);
+            @Html.Raw(@"alert('" + PopupMessage.Replace(@"'", @"\'").Replace(@"""", @"\""") +"');" + Environment.NewLine);
+        }
+    });
+
+    function CheckStartDate()
+    {
+        var message = "";
+        var startDateValue = $("#StartDate").val();
+        if (startDateValue != "") {
+            var startDate = moment(startDateValue, 'DD/MM/YYYY').toDate();
+            var difference = moment().diff(startDate, 'days');
+            var result = Math.abs(difference);
+            if (Number(difference) > 0)
+                message += "- Start date must be later than today \n";
+            else if (Number(result) < 13)
+                message += "- Start Date must be after 14 days \n";
+        }
+        return message;
+    }
+
+    function Validation(_Status) {
+        var ValidationMsg = '';
+
+        if ($('#CPCourseTitle').val() == '') {
+            ValidationMsg = '- Please select a course.\n';
+        }
+
+        if (_Status == "Pending") {
+            if ($('#SkillKnowledge').val() == '') {
+                ValidationMsg += '- Skills / Knowledge To be Acquired is required.\n';
+            }
+            if ($('#ApplicationWorkplace').val() == '') {
+                ValidationMsg += '- Application at Workplace is required.\n';
+            }
+            if ($('#CourseType').val == '') {
+                ValidationMsg += '- Course Type is required.\n';
+            }
+
+            if ($("#TrainingCost").val() == 'Payable' && ($("#TrainingFee").val() == '' || $("#TrainingFee").val() == '0.00')) {
+                ValidationMsg += "- Trainig Fee is required when cost type is Payable. \n";
+            }
+
+            if ($("#hfTarget").val() == 'Subordinate' && $("#hfEmpID").val() == "") {
+                ValidationMsg += '- Attendee is required.\n';
+            }
+        } else if (_Status == "Declined") {
+            if ($("#Comment").val() == '') {
+                ValidationMsg += '- Comment is required.\n';
+            }
+        }
+
+        if ('@ViewBag.CategoryCode' == '06') {
+            if ($("#StartDate").val() == "") {
+                ValidationMsg += '- Start Date is required.\n'
+            }
+            if ($("#EndDate").val() == "") {
+                ValidationMsg += '- End Date is required.\n'
+            }
+            if ($("#CourseProvider").val() == "") {
+                ValidationMsg += '- Course Provider is required.\n'
+            }
+            if ($("#CourseVenue").val() == "") {
+                ValidationMsg += '- Course Venue is required.\n'
+            }
+
+            ValidationMsg += CheckStartDate();
+        }
+
+        if (ValidationMsg != '') {
+            alert(ValidationMsg);
+        } else {
+            if (_Status == 'Draft') {
+                $('#btnSubmitSave').css("display", "none");
+                $('#btnSubmitDraft').css("display", "initial");
+                $('.modal-body .well').html('Are you sure you want to Save this Training Request Application?\n\rPress Confirm to proceed, or Close to stay on the current page.');
+                $('#btnOK').click(function () { RedirectTo('Draft'); });
+                $('#ConfirmUpdate').modal('show');
+            } else if (_Status == 'Pending') {
+                $('#btnSubmitSave').css("display", "initial");
+                $('#btnSubmitDraft').css("display", "none");
+                $('.modal-body .well').html('Are you sure you want to Submit this Training Request Application?\n\rPress Confirm to proceed, or Close to stay on the current page.');
+                $('#btnOK').click(function () { RedirectTo('Submit'); });
+                $('#ConfirmUpdate').modal('show');
+            } else if (_Status == "Approved") {
+                $('#btnSubmitSave').css("display", "initial");
+                $('#btnSubmitDraft').css("display", "none");
+                $("#btnSubmitSave").attr("onclick", "SaveForm('" + _Status + "')");
+                $('.modal-body .well').html('Are you sure you want to Approve this Training Request Application?\n\rPress Confirm to proceed, or Close to stay on the current page.');
+                $('#btnOK').click(function () { RedirectTo('Approve'); });
+                $('#ConfirmUpdate').modal('show');
+            } else if (_Status == "Declined") {
+                $('#btnSubmitSave').css("display", "initial");
+                $('#btnSubmitDraft').css("display", "none");
+                $("#btnSubmitSave").attr("onclick", "SaveForm('" + _Status + "')");
+                $('.modal-body .well').html('Are you sure you want to Decline this Training Request Application?\n\rPress Confirm to proceed, or Close to stay on the current page.');
+                $('#btnOK').click(function () { RedirectTo('Approve'); });
+                $('#ConfirmUpdate').modal('show');
+            } else if (_Status == "Withdrawn") {
+                $('#btnSubmitSave').css("display", "initial");
+                $('#btnSubmitDraft').css("display", "none");
+                $("#btnSubmitSave").attr("onclick", "SaveForm('" + _Status + "')");
+                $('.modal-body .well').html('Are you sure you want to Withdraw this Training Request Application?\n\rPress Confirm to proceed, or Close to stay on the current page.');
+                $('#btnOK').click(function () { RedirectTo('Submit'); });
+                $('#ConfirmUpdate').modal('show');
+            } else if (_Status == "Agreed") {
+                $('#btnSubmitSave').css("display", "initial");
+                $('#btnSubmitDraft').css("display", "none");
+                $("#btnSubmitSave").attr("onclick", "SaveForm('" + _Status + "')");
+                $('.modal-body .well').html('Are you sure you want to Recommend this Training Request Application?\n\rPress Confirm to proceed, or Close to stay on the current page.');
+                $('#btnOK').click(function () { RedirectTo('Approve'); });
+                $('#ConfirmUpdate').modal('show');
+            } else if (_Status == "Recommended") {
+                $('#btnSubmitSave').css("display", "initial");
+                $('#btnSubmitDraft').css("display", "none");
+                $("#btnSubmitSave").attr("onclick", "SaveForm('" + _Status + "')");
+                $('.modal-body .well').html('Are you sure you want to Recommend this Training Request Application?\n\rPress Confirm to proceed, or Close to stay on the current page.');
+                $('#btnOK').click(function () { RedirectTo('Approve'); });
+                $('#ConfirmUpdate').modal('show');
+            } else if (_Status == "Endorsed") {
+                $('#btnSubmitSave').css("display", "initial");
+                $('#btnSubmitDraft').css("display", "none");
+                $("#btnSubmitSave").attr("onclick", "SaveForm('" + _Status + "')");
+                $('.modal-body .well').html('Are you sure you want to Endorse this Training Request Application?\n\rPress Confirm to proceed, or Close to stay on the current page.');
+                $('#btnOK').click(function () { RedirectTo('Approve'); });
+                $('#ConfirmUpdate').modal('show');
+            } else if (_Status == "Accepted") {
+                $('#btnSubmitSave').css("display", "initial");
+                $('#btnSubmitDraft').css("display", "none");
+                $("#btnSubmitSave").attr("onclick", "SaveForm('" + _Status + "')");
+                $('.modal-body .well').html('Are you sure you want to Accept this Training Request Application?\n\rPress Confirm to proceed, or Close to stay on the current page.');
+                $('#btnOK').click(function () { RedirectTo('Approve'); });
+                $('#ConfirmUpdate').modal('show');
+            }
+        }
+    }
+
+    function SubmitFormAction() {
+        //$("#divLoading").css("display", "block");
+
+        if (SubmitStatus == 'Draft') {
+            $(".Success-body .well").html('Your Training Request Application has been successfully saved.');
+        }
+        else if (SubmitStatus == 'Approved') {
+            $(".Success-body .well").html('Your Training Request Application has been successfully approved.');
+        }
+        else if (SubmitStatus == 'Declined') {
+            $(".Success-body .well").html('Your Training Request Application has been successfully Declined.');
+        }
+        else if (SubmitStatus == 'Agreed') {
+            $(".Success-body .well").html('Your Training Request Application has been successfully recommended.');
+        }
+        else if (SubmitStatus == 'Withdrawn') {
+            $(".Success-body .well").html('Your Training Request Application has been successfully withdrawn.');
+        }
+        else if (SubmitStatus == 'Recommended') {
+            $(".Success-body .well").html('Your Training Request Application has been successfully recommended.');
+        }
+        else if (SubmitStatus == 'Endorsed') {
+            $(".Success-body .well").html('Your Training Request Application has been successfully endorsed.');
+        }
+        else if (SubmitStatus == 'Deleted') {
+            $(".Success-body .well").html('Your Training Request Application has been successfully deleted.');
+        }
+        else if (SubmitStatus == 'Accepted') {
+            $(".Success-body .well").html('Your Training Request Application has been successfully accepted.');
+        }
+        else {
+            $(".Success-body .well").html('Your Training Request Application has been successfully submitted.');
+        }
+
+        if (SubmitStatus == 'Draft' || SubmitStatus == 'Pending') {
+            var form = {
+                TrainingID: $("#hfTrainingID").val(),
+                EmployeeID: $("#hfEmployeeID").val(),
+                CourseID: $("#hfCourseID").val(),
+                CourseSessionID: $("#hfCourseSessionID").val(),
+                CategoryCode: $("#hfCategoryCode").val(),
+                CategoryDesc: $("#hfCategoryDesc").val(),
+                AttendeeList: $("#hfEmpID").val(),
+                Status: SubmitStatus,
+                StartDate: $("#StartDate").val(),
+                EndDate: $("#EndDate").val(),
+                SkillKnowledge: $("#SkillKnowledge").val(),
+                ApplicationWorkplace: $("#ApplicationWorkplace").val(),
+                Remarks: $("#Remarks").val(),
+                TrainingFee: $("#TrainingFee").val(),
+                Target: $("#hfTarget").val(),
+                CourseType: $("#CourseType").val(),
+                TypeCode: $("#TrainingType").val(),
+                //TypeDesc: $("#TrainingType").text(),
+                CostCode: $("#TrainingCost").val(),
+                //CostDesc: $("#TrainingCost").text(),
+                CurrencyCode: $("#TrainingCurrency").val(),
+                //CurrencyName: $("#TrainingCurrency").text(),
+                Division: $("#Division").val(),
+                CourseProvider: $("#CourseProvider").val(),
+                Grade: $("#Grade").val(),
+                CourseVenue: $("#CourseVenue").val(),
+                CourseTitle: $("#CPCourseTitle").val(),
+                MaxCapacity: $("#MaxCapacity").val(),
+                CourseTitle: $("#CPCourseTitle").val()
+            };
+
+
+            $.ajax({
+                url: '@Url.Content("~/TrainingApplication/PerformInsertTraining")',
+                type: 'POST',
+                cache: false,
+                async: false,
+                dataType: "json",
+                data: form,
+                //contentType: "application/json;charset=utf-8",
+                success: function (result) {
+                    if (result.Success) {
+                        //alert('asda');
+                        //$("#ConfirmUpdate").modal('toggle');
+                        $("#divLoading").css("display", "none");
+                        $("#SuccessSubmit").modal();
+                    } else {
+                        //$("#ConfirmUpdate").modal('toggle');
+                        $("#divLoading").css("display", "none");
+                        //btnSubmitForm.disabled = false;
+                        alert(result.ErrorMsg);
+                    }
+
+                },
+                error: function (x, y, z) {
+                    //$("#ConfirmUpdate").modal('toggle');
+                    $("#divLoading").css("display", "none");
+                    console.log(x + '\n' + y + '\n' + z);
+                }
+            });
+        }
+        else if (SubmitStatus == "Approved" || SubmitStatus == "Accepted" || SubmitStatus == "Agreed" || SubmitStatus == "Recommended" || SubmitStatus == "Endorsed" || SubmitStatus == "Declined" || SubmitStatus == "Withdrawn") {
+
+            var form = {
+                ID: $("#hfTrainingID").val(),
+                TaskID: $("#hfTaskID").val(),
+                CurrentUserID: $("#hfEmployeeID").val(),
+                Status: "",
+                ApproverComment: $("#Comment").val(),
+                ActivityName: "",
+                OptionalApprover: false
+
+            };
+
+            $.ajax({
+                url: '@Url.Content("~/TrainingApplication/PostApproverAction")',
+                type: 'POST',
+                cache: false,
+                async: false,
+                dataType: "json",
+                //data: form,
+                data: { 'info': form, 'ApproverAction': SubmitStatus, 'Target':$("#hfTarget").val() },
+                //contentType: "application/json;charset=utf-8",
+                success: function (result) {
+                    console.log(result);
+                    if (result.Success) {
+                        //alert('success');
+                        //$("#ConfirmUpdate").modal('toggle');
+                        $("#divLoading").css("display", "none");
+                        $("#SuccessSubmit").modal();
+                    } else {
+                        //alert('error');
+                        $("#ConfirmUpdate").modal('toggle');
+                        $("#divLoading").css("display", "none");
+                        //btnSubmitForm.disabled = false;
+                        alert(result.ErrorMsg);
+                    }
+
+                },
+                error: function (x, y, z) {
+                    //alert('asdas');
+                    $("#ConfirmUpdate").modal('toggle');
+                    $("#divLoading").css("display", "none");
+                    console.log(x + '\n' + y + '\n' + z);
+                }
+            });
+        }
+        else if (SubmitStatus == "Deleted") {
+            $.ajax({
+                url: '@Url.Content("~/TrainingApplication/PerformDeleteTrainingApplication")',
+                type: 'POST',
+                cache: false,
+                async: false,
+                dataType: "json",
+                data: { 'TrainingRequestID': $("#hfTrainingID").val() },
+                success: function (result) {
+                    console.log(result);
+                    if (result.Success) {
+                        //alert('success');
+                        $("#ConfirmUpdate").modal('toggle');
+                        $("#divLoading").css("display", "none");
+                        $("#SuccessSubmit").modal();
+                    } else {
+                        //alert('error');
+                        $("#ConfirmUpdate").modal('toggle');
+                        $("#divLoading").css("display", "none");
+                        //btnSubmitForm.disabled = false;
+                        alert(result.ErrorMsg);
+                    }
+
+                },
+                error: function (x, y, z) {
+                    //alert('asdas');
+                    $("#ConfirmUpdate").modal('toggle');
+                    $("#divLoading").css("display", "none");
+                    console.log(x + '\n' + y + '\n' + z);
+                }
+            });
+        }
+
+    }
+
+    function SaveForm(_Status) {
+        $("#ConfirmUpdate").modal('toggle');
+        $("#divLoading").css("display", "block");
+        SubmitStatus = _Status;
+        var myVar = setTimeout(SubmitFormAction, 1000);
+    }
+
+    function RedirectTo(_Action) {
+
+        @*var path = '@parameters'.replace(/&amp;/g, '&');*@
+
+        switch (_Action) {
+            case "Draft":
+                //window.location.href = '/_layouts/15/essv2/TrainingApplication/TrainingApplication?' + path;
+                window.location.href = '@Url.Content("~/Training/TrainingHistory")';
+                break;
+            case "Submit":
+                window.location.href = '@Url.Content("~/Training/TrainingHistory")';
+                break;
+            case "Approve":
+                window.location.href = '@Url.Content("~/MSS/TrainingRequestInTray")';
+                break;
+            default:
+                window.location.href = '/Pages/default.aspx';
+        }
+    }
+
+    function ChangeCurreny(e) {
+        if (e.value == 'Free') {
+            $("#TrainingCurrency").prop('disabled', true);
+            $("#TrainingFee").val('0.00');
+            $("#TrainingFee").prop('disabled', true);
+        } else {
+            $("#TrainingCurrency").prop('disabled', false);
+            $("#TrainingFee").prop('disabled', false);
+        }
+    }
+
+    $(document).on('blur', '#TrainingFee', function () {
+        var x = $(this);
+        if (x != undefined) {
+            var myNumeric = parseFloat($(x).val().replace(/,/g, ''));
+            if (!myNumeric) {
+                $(x).val('0.00');
+            }
+            else {
+                //$(x).val(myNumeric.toFixed(2));
+                $(this).val(ThousandSeparator(myNumeric.toFixed(2)));
+            }
+        }
+    });
+
+    function ThousandSeparator(x) {
+        x = x.replace(',', '');
+        //return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+        var sRegExp = new RegExp('(-?[0-9]+)([0-9]{3})'),
+            sValue = x + '';
+
+        while (sRegExp.test(sValue)) {
+            sValue = sValue.replace(sRegExp, '$1,$2');
+        }
+
+        return sValue;
+    }
+
+
+    function ChangeRabioButton() {
+        //default radio button to existing
+        if ('@ViewBag.CategoryCode' == '06') {
+            //$("#txtCourseSessionID").removeClass("hide");
+            //$("#btnSearch").removeClass("hide");
+            //$("#btnLookUp").removeClass("hide");
+            //$("#CPCourseTitle").prop("readonly", true);
+            ////$("#TrainingType").prop("disabled", true);
+            //$("#StartDate").prop("disabled", true);
+            //$("#EndDate").prop("disabled", true);
+            //$(".btnCalender").prop("disabled", true);
+            //$("#CourseVenue").prop("readonly", true);
+            //$("#CourseProvider").prop("readonly", true);
+            //$("#TrainingCost").prop("disabled", true);
+            //$("#TrainingCurrency").prop("disabled", true);
+            //$("#TrainingFee").prop("readonly", true);
+            //$(".showhidedate1").addClass("hide");
+            //$(".showhidedate2").removeClass("hide");
+            //$("#TrainingCurrency").prop("disabled", true);
+            //$("#Division").prop("readonly", true);
+            //$("#Grade").prop("readonly", true);
+            //$("#DivisionGrade").removeClass("hide");
+        }
+        if ($("#TrainingCost").val() == "Free") {
+            $("#TrainingCurrency").prop('disabled', true);
+            //$("#TrainingFee").val('0.00');
+            $("#TrainingFee").prop('disabled', true);
+        }
+    }
+
+    function GetCourseCapacity(CourseID, CourseSessionID) {
+        $.ajax({
+            url: '@Url.Content("~/TrainingApplication/GetCourseCapacity")',
+            type: 'POST',
+            cache: false,
+            async: false,
+            dataType: "json",
+            data: { 'CourseID': CourseID, 'CourseSessionID': CourseSessionID },
+            success: function (result) {
+                //console.log(result);
+                if (result.Success) {
+                    $("#PendingRequest").val(result.PendingRequests);
+                    $("#ApprovedRequest").val(result.ApprovedRequests);
+                } else {
+                    alert(result.ErrorMsg);
+                }
+            },
+            error: function (x, y, z) {
+                console.log(x + '\n' + y + '\n' + z);
+            }
+        });
+    }
+
+    function changeType() {
+        TrainingType = $("#TrainingType").val();
+        $('#CPTrainingType').val($("#TrainingType option:selected").text());
+
+        //Reset data if change Training Type
+        $("input[id=StartDate]").val('');
+        $("input[id=EndDate]").val('');
+        $("#CourseVenue").val('');
+        $("#CourseProvider").val('');
+        $("#Division").val('');
+        $("#Grade").val('');
+        $("#TrainingFee").val('');
+        $("#hfTypeCode").val('');
+        $("#hfTypeDesc").val('');
+        $("#TrainingCurrency").val('');
+        $("input[id=TrainingCost]").val('');
+        $('#TrainingCost').val('');
+        $("#MaxCapacity").val('');
+        $("#CPCourseTitle").val('');
+        $("#PendingRequest").val('');
+        $("#ApprovedRequest").val('');
+        $("#DisplayTrainingFee").val('');
+    }
+
+    function enableActionButton() {
+        $('#btnSaveAsDraft').prop('disabled', false);
+        //$('#btnDelete').prop('disabled', false);
+        $('#btnSubmit').prop('disabled', false);
+        $('#btnAgree').prop('disabled', false);
+        $('#btnAccept').prop('disabled', false);
+        $('#btnRecommend').prop('disabled', false);
+        //$('#btnEndorse').prop('disabled', false);
+        //$('#btnReject').prop('disabled', false);
+        //$('#btnWithdraw').prop('disabled', false);
+    }
+
+    function disableActionButton() {
+        $('#btnSaveAsDraft').prop('disabled', true);
+        //$('#btnDelete').prop('disabled', true);
+        $('#btnSubmit').prop('disabled', true);
+        $('#btnAgree').prop('disabled', true);
+        $('#btnAccept').prop('disabled', true);
+        $('#btnRecommend').prop('disabled', true);
+        //$('#btnEndorse').prop('disabled', true);
+        //$('#btnReject').prop('disabled', true);
+        //$('#btnWithdraw').prop('disabled', true);
+    }
+
+    function MultiPeoplePickerEmployeeCleared() {
+        enableActionButton();
+        $('#TrainingUserBlocking').hide();
+    }
+
+    function MultiPeoplePickerEmployeeSelected() {
+        var hfEmpID = $('#hfEmpID').val();
+        if (hfEmpID == null || hfEmpID.length < 1)
+            return;
+
+        var data = {
+            Attendees: hfEmpID.split(","),
+            Target : "@Target"
+        };
+
+        $.post('@Url.Action("CheckTrainingSubordinateBlocking", "TrainingApplication")',
+        data,
+        function (result) {
+            var validatedList = result.Results;
+            var popupMessage = result.PopupMessage;
+            var topPageMessage = result.TopPageMessage;
+            var uneligibleEmployees = "Uneligible Employees :";
+
+            var count = 1;
+            $.each(validatedList, function (i, val) {
+                if (val.IsAllowed == false) {
+                    uneligibleEmployees += "\n" + count++ + ". " + val.EmpDetails.EmployeeCode + " - " + val.EmpDetails.EmployeeName;
+                }
+            });
+
+            if (count > 1) {
+                alert(popupMessage + "\n" + uneligibleEmployees);
+                disableActionButton();
+                $('#TrainingUserBlocking').show();
+                $('#TrainingUserBlocking').find('h4').html(topPageMessage + "<br /> <br />" + uneligibleEmployees.replace(/\n/g, "<br />"));
+            }
+            else {
+                enableActionButton();
+                $('#TrainingUserBlocking').hide();
+            }
+        });
+    }
+</script>
+
+@*Delete Training Request*@
+<script>
+    function DeleteTrainingRequest() {
+        $('#btnSubmitSave').css("display", "initial");
+        $('#btnSubmitDraft').css("display", "none");
+        $("#btnSubmitSave").attr("onclick", "SaveForm('Deleted')");
+        $('.modal-body .well').html('Are you sure you want to Delete this Training Request Application?\n\rPress Confirm to proceed, or Close to stay on the current page.');
+        $('#btnOK').click(function () { RedirectTo('Submit'); });
+        $('#ConfirmUpdate').modal('show');
+    }
+
+</script>
+

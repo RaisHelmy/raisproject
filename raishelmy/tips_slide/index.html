@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>.NET Tips & Insights · Rais Helmy</title>
+  <meta name="description" content="Practical .NET, ASP.NET Core, C# and architecture tips by Rais Helmy — senior .NET developer based in Malaysia.">
+  <meta name="author" content="Rais Helmy Sapiullah">
+  <meta name="keywords" content=".NET tips, ASP.NET Core, C#, software architecture, dotnet developer malaysia">
+  <meta property="og:title" content=".NET Tips & Insights · Rais Helmy">
+  <meta property="og:description" content="Practical .NET, ASP.NET Core, C# and architecture tips by Rais Helmy.">
+  <meta property="og:url" content="https://raishelmy.uk/tips">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:image" content="https://raishelmy.uk/RaisBajuMelayu2026SageGreen.png">
+  <link rel="canonical" href="https://raishelmy.uk/tips">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --red: #dc2626;
+      --ink: #0a0a0a;
+      --bg: #f5f2ed;
+      --card-bg: #ffffff;
+      --muted: #6b7280;
+      --border: #e5e0d8;
+      --tag-bg: #f0ece4;
+    }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      color: var(--ink);
+      min-height: 100vh;
+    }
+
+    /* ── Topbar ── */
+    #topbar {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: var(--ink);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 0 24px;
+      height: 52px;
+    }
+    #topbar a.home-link {
+      color: #fff;
+      text-decoration: none;
+      font-size: 13px;
+      opacity: 0.7;
+      transition: opacity 0.2s;
+    }
+    #topbar a.home-link:hover { opacity: 1; }
+    #topbar .sep { opacity: 0.3; font-size: 13px; }
+    #topbar .page-title {
+      font-size: 14px;
+      font-weight: 600;
+      flex: 1;
+    }
+    #topbar .tip-count {
+      font-size: 13px;
+      opacity: 0.55;
+      font-family: 'DM Mono', monospace;
+    }
+
+    /* ── Hero ── */
+    .hero {
+      padding: 56px 24px 40px;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+    .hero h1 {
+      font-size: clamp(28px, 5vw, 48px);
+      font-weight: 700;
+      line-height: 1.15;
+      letter-spacing: -0.02em;
+    }
+    .hero h1 span { color: var(--red); }
+    .hero p {
+      margin-top: 12px;
+      font-size: 16px;
+      color: var(--muted);
+      max-width: 520px;
+      line-height: 1.6;
+    }
+
+    /* ── Search & Filter Bar ── */
+    .filter-bar {
+      max-width: 1100px;
+      margin: 0 auto 32px;
+      padding: 0 24px;
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    .search-wrap {
+      position: relative;
+      flex: 1;
+      min-width: 220px;
+    }
+    .search-wrap svg {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--muted);
+      pointer-events: none;
+    }
+    #search-input {
+      width: 100%;
+      padding: 10px 12px 10px 38px;
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      background: var(--card-bg);
+      color: var(--ink);
+      outline: none;
+      transition: border-color 0.15s;
+    }
+    #search-input:focus { border-color: var(--red); }
+    #search-input::placeholder { color: var(--muted); }
+
+    .category-filters {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .cat-btn {
+      padding: 8px 14px;
+      border-radius: 20px;
+      border: 1.5px solid var(--border);
+      background: var(--card-bg);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
+      cursor: pointer;
+      color: var(--muted);
+      transition: all 0.15s;
+    }
+    .cat-btn:hover, .cat-btn.active {
+      background: var(--ink);
+      border-color: var(--ink);
+      color: #fff;
+    }
+    .cat-btn.active { background: var(--red); border-color: var(--red); color: #fff; }
+
+    /* ── Result count ── */
+    .result-meta {
+      max-width: 1100px;
+      margin: 0 auto 16px;
+      padding: 0 24px;
+      font-size: 13px;
+      color: var(--muted);
+      font-family: 'DM Mono', monospace;
+    }
+
+    /* ── Grid ── */
+    .tips-grid {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0 24px 64px;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 20px;
+    }
+    .tip-card {
+      background: var(--card-bg);
+      border: 1.5px solid var(--border);
+      border-radius: 12px;
+      padding: 22px 22px 18px;
+      text-decoration: none;
+      color: inherit;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      transition: transform 0.15s, box-shadow 0.15s, border-color 0.15s;
+      cursor: pointer;
+    }
+    .tip-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+      border-color: var(--red);
+    }
+    .tip-card-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 8px;
+    }
+    .tip-category {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--red);
+      font-family: 'DM Mono', monospace;
+    }
+    .tip-date {
+      font-size: 11px;
+      color: var(--muted);
+      font-family: 'DM Mono', monospace;
+      white-space: nowrap;
+    }
+    .tip-title {
+      font-size: 16px;
+      font-weight: 700;
+      line-height: 1.35;
+      letter-spacing: -0.01em;
+    }
+    .tip-desc {
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.55;
+      flex: 1;
+    }
+    .tip-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 4px;
+    }
+    .tip-tag {
+      font-size: 11px;
+      padding: 3px 8px;
+      background: var(--tag-bg);
+      border-radius: 4px;
+      color: var(--muted);
+      font-family: 'DM Mono', monospace;
+    }
+    .tip-card-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-top: 1px solid var(--border);
+      padding-top: 12px;
+      margin-top: 4px;
+    }
+    .tip-slides-count {
+      font-size: 11px;
+      color: var(--muted);
+      font-family: 'DM Mono', monospace;
+    }
+    .tip-read-btn {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--red);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    /* ── Empty state ── */
+    .empty-state {
+      grid-column: 1/-1;
+      text-align: center;
+      padding: 64px 0;
+      color: var(--muted);
+    }
+    .empty-state h3 { font-size: 18px; margin-bottom: 8px; }
+    .empty-state p { font-size: 14px; }
+
+    /* ── Recent sidebar / section ── */
+    .recent-section {
+      background: var(--ink);
+      color: #fff;
+      padding: 40px 24px;
+      margin-top: 0;
+    }
+    .recent-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+    .recent-inner h2 {
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 20px;
+      opacity: 0.9;
+    }
+    .recent-inner h2 span {
+      color: var(--red);
+    }
+    .recent-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 10px;
+    }
+    .recent-item {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      padding: 14px 16px;
+      background: rgba(255,255,255,0.05);
+      border-radius: 8px;
+      text-decoration: none;
+      color: #fff;
+      border: 1px solid rgba(255,255,255,0.1);
+      transition: background 0.15s;
+    }
+    .recent-item:hover { background: rgba(220,38,38,0.2); border-color: rgba(220,38,38,0.4); }
+    .recent-item .r-cat { font-size: 10px; opacity: 0.5; font-family: 'DM Mono', monospace; text-transform: uppercase; letter-spacing: 0.08em; }
+    .recent-item .r-title { font-size: 13px; font-weight: 600; line-height: 1.3; }
+    .recent-item .r-date { font-size: 10px; opacity: 0.4; font-family: 'DM Mono', monospace; }
+
+    /* ── Footer ── */
+    footer {
+      background: var(--bg);
+      text-align: center;
+      padding: 24px;
+      font-size: 13px;
+      color: var(--muted);
+      border-top: 1px solid var(--border);
+    }
+    footer a { color: var(--red); text-decoration: none; }
+
+    @media (max-width: 600px) {
+      .hero { padding: 40px 16px 28px; }
+      .filter-bar { padding: 0 16px; }
+      .tips-grid { padding: 0 16px 48px; }
+      .result-meta { padding: 0 16px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Topbar -->
+<div id="topbar">
+  <a href="/" class="home-link">← raishelmy.uk</a>
+  <span class="sep">/</span>
+  <span class="page-title">Tips & Insights</span>
+  <span class="tip-count" id="topbar-count"></span>
+</div>
+
+<!-- Hero -->
+<section class="hero">
+  <h1>Practical <span>Dev</span> Tips<br>From the Trenches</h1>
+  <p>Bite-sized visual slides on software engineering, architecture, AI, React, and leadership — the patterns that actually matter in production.</p>
+</section>
+
+<!-- Recent 10 (dark strip) -->
+<section class="recent-section">
+  <div class="recent-inner">
+    <h2>10 Most <span>Recent</span> Tips</h2>
+    <div class="recent-list" id="recent-list"></div>
+  </div>
+</section>
+
+<!-- Filter Bar -->
+<div class="filter-bar">
+  <div class="search-wrap">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+    <input type="search" id="search-input" placeholder="Search tips by title, tag, or category…" autocomplete="off">
+  </div>
+  <div class="category-filters" id="cat-filters"></div>
+</div>
+
+<div class="result-meta" id="result-meta"></div>
+
+<!-- Grid -->
+<div class="tips-grid" id="tips-grid"></div>
+
+<!-- Footer -->
+<footer>
+  <p>Built by <a href="/">Rais Helmy Sapiullah</a> · Senior .NET Developer · Malaysia</p>
+</footer>
+
+<!-- Registry data -->
+<script src="/tips_slide/data/registry.js"></script>
+<script>
+(function () {
+  const registry = window.TIPS_REGISTRY || [];
+  const grid = document.getElementById('tips-grid');
+  const recentList = document.getElementById('recent-list');
+  const searchInput = document.getElementById('search-input');
+  const catFilters = document.getElementById('cat-filters');
+  const resultMeta = document.getElementById('result-meta');
+  const topbarCount = document.getElementById('topbar-count');
+
+  topbarCount.textContent = registry.length + ' tips';
+
+  // ── Recent 10 ──
+  registry.slice(0, 10).forEach(tip => {
+    const a = document.createElement('a');
+    a.className = 'recent-item';
+    a.href = '/tips/' + tip.slug;
+    a.innerHTML = `
+      <span class="r-cat">${tip.category}</span>
+      <span class="r-title">${tip.title}</span>
+      <span class="r-date">${tip.date}</span>
+    `;
+    recentList.appendChild(a);
+  });
+
+  // ── Category buttons ──
+  const cats = ['All', ...Array.from(new Set(registry.map(t => t.category))).sort()];
+  let activecat = 'All';
+  cats.forEach(cat => {
+    const btn = document.createElement('button');
+    btn.className = 'cat-btn' + (cat === 'All' ? ' active' : '');
+    btn.textContent = cat;
+    btn.addEventListener('click', () => {
+      activecat = cat;
+      catFilters.querySelectorAll('.cat-btn').forEach(b => b.classList.toggle('active', b.textContent === cat));
+      render();
+    });
+    catFilters.appendChild(btn);
+  });
+
+  // ── Render ──
+  function render() {
+    const q = searchInput.value.trim().toLowerCase();
+    const filtered = registry.filter(tip => {
+      const matchCat = activecat === 'All' || tip.category === activecat;
+      if (!q) return matchCat;
+      const haystack = (tip.title + ' ' + tip.description + ' ' + (tip.tags || []).join(' ') + ' ' + tip.category).toLowerCase();
+      return matchCat && haystack.includes(q);
+    });
+
+    resultMeta.textContent = `Showing ${filtered.length} of ${registry.length} tips`;
+
+    grid.innerHTML = '';
+    if (filtered.length === 0) {
+      grid.innerHTML = `<div class="empty-state"><h3>No tips found</h3><p>Try a different search term or category.</p></div>`;
+      return;
+    }
+    filtered.forEach(tip => {
+      const a = document.createElement('a');
+      a.className = 'tip-card';
+      a.href = '/tips/' + tip.slug;
+      const tags = (tip.tags || []).map(t => `<span class="tip-tag">${t}</span>`).join('');
+      const slides = tip.slides || 0;
+      a.innerHTML = `
+        <div class="tip-card-head">
+          <span class="tip-category">${tip.category}</span>
+          <span class="tip-date">${tip.date}</span>
+        </div>
+        <div class="tip-title">${tip.title}</div>
+        <div class="tip-desc">${tip.description}</div>
+        <div class="tip-tags">${tags}</div>
+        <div class="tip-card-footer">
+          <span class="tip-slides-count">${slides} slides</span>
+          <span class="tip-read-btn">Read tip →</span>
+        </div>
+      `;
+      grid.appendChild(a);
+    });
+  }
+
+  searchInput.addEventListener('input', render);
+  render();
+})();
+</script>
+</body>
+</html>

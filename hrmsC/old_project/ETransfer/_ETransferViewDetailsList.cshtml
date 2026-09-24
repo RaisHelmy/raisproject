@@ -1,0 +1,121 @@
+﻿@model ESS.ETransfer.Models.ETransferVM
+@{
+    Layout = null;
+    string TaskID = (string)ViewData["TaskID"];
+    string RequestID = (string)ViewData["RequestID"];
+    string ApprovalLevel = (string)ViewData["ApprovalLevel"];
+    string Source = (string)ViewData["Source"];
+    int applvl = String.IsNullOrEmpty(ApprovalLevel) ? 0 : Convert.ToInt32(ApprovalLevel);
+}
+<div class="row" style="">
+    <div class="col-md-12">
+        <div class="form-horizontal">
+            <div class="table-scrollable">
+                <table class="table table-striped table-bordered table-hover table-full-width DetialsTable" id="tblTransferDetails">
+                    <thead>
+                        <tr>
+                            @if (Source == "InTray" && (applvl == 3 || applvl == 4))
+                            { 
+                               <th scope="col" class="tdDetailID"></th>
+                            }
+                            <th scope="col">Division</th>
+                            <th scope="col">Department</th>
+                            <th scope="col">Unit/Section</th>
+                            <th scope="col">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+
+                        @foreach (var item in Model.TransferDetails)
+                        {
+                            <tr>
+                                @if (Source == "InTray" && (applvl == 3 || applvl == 4))
+                                {
+                                    if (applvl == 4)
+                                    {
+                                        if (item.DetailStatus == "Agree" || item.DetailStatus == "Approved")
+                                        {
+                                            <td class="tdDetailID">
+                                                <input checked type="radio" class="cbDetailID" style="text-align:center" name="DetailID" value="@item.DetailID" CompanyCode="@item.TransferToCompanyCode" AreaCode="@item.TransferToAreaCode" SubAreaCode="@item.TransferToSubAreaCode">
+                                            </td>
+                                        }
+                                        else
+                                        {
+                                            <td class="tdDetailID">
+                                                <input disabled type="radio" class="cbDetailID" style="text-align:center" name="DetailID" value="@item.DetailID" CompanyCode="@item.TransferToCompanyCode" AreaCode="@item.TransferToAreaCode" SubAreaCode="@item.TransferToSubAreaCode">
+                                            </td>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <td class="tdDetailID">
+                                            <input type="radio" class="cbDetailID" style="text-align:center" name="DetailID" value="@item.DetailID" CompanyCode="@item.TransferToCompanyCode" AreaCode="@item.TransferToAreaCode" SubAreaCode="@item.TransferToSubAreaCode">
+                                        </td>
+                                    }
+
+                                }
+                                
+                                <td>
+                                    <span class="TransferToCompanyCode">@item.TransferToCompanyCode</span>                                   
+                                </td>
+                                <td>
+                                    <span class="TransferToAreaCode">@item.TransferToAreaCode</span>
+                                </td>
+                                <td>
+                                    <span class="TransferToSubAreaCode">@item.TransferToSubAreaCode</span>
+                                </td>
+                                <td>
+                                    @if (Model.StatusName == "Approved")
+                                    {
+                                        if (item.DetailStatus == "Pending")
+                                        {
+                                            <span>-</span>
+                                        }
+                                        else
+                                        {
+                                            <span>@item.DetailStatus</span>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        if (applvl == 4 || applvl == 5)
+                                        {
+                                            if (item.DetailStatus == "Pending")
+                                            {
+                                                <span>-</span>
+                                            }
+                                            else
+                                            {
+                                                <span>@item.DetailStatus</span>
+                                            }
+                                        }
+                                        else
+                                        {
+                                            <span>@item.DetailStatus</span>
+                                        }
+                                    }
+                                    
+                                    
+                                </td>
+                            </tr>
+                        }
+
+                    </tbody>
+
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    $("input[name=DetailID]:radio").change(function () {
+        var DivisionCode = $(this).attr('CompanyCode').split('-')[0].trim();
+
+
+        $("#hfDivisionCode").val(DivisionCode)
+        $("#SelectedDivision").val($(this).attr('CompanyCode'));
+        $("#SelectedDepartment").val($(this).attr('AreaCode'));
+        $("#SelectedUnitSection").val($(this).attr('SubAreaCode'));
+    });
+</script>

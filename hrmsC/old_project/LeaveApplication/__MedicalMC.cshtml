@@ -1,0 +1,372 @@
+﻿@model LeaveApplication.Models.LeaveApplicationVM
+
+@{
+    List<SelectListItem> medicalCauses = (List<SelectListItem>)ViewBag.MedicalCauses;
+}
+
+<style>
+    .ulMedicalCause li {
+        cursor: pointer;
+        padding: 5px 10px;
+        min-width: 150px;
+        list-style-type: none;
+    }
+
+    .ulMedicalCause {
+        border-left: 1px solid #999999;
+        border-right: 1px solid #999999;
+        border-bottom: 1px solid #999999;
+        padding: 0;
+        position: absolute;
+        background-color: white;
+        z-index: 9;
+    }
+</style>
+
+@*Brand new form*@
+@if ((Model.LeaveStatus == "Draft" || Model.LeaveStatus == "DR")
+    && Model.LeaveID == Guid.Empty)
+{
+    <div class="row medical-mc">
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="control-label col-md-4">Medical Cause<span style="color:red;">*</span></label>
+                    <input type="hidden" name="MedicalCause" />
+                    <div class="col-md-8 form-control-static" id='ddlMedicalCauseDiv'>
+                        <select id="ddlMedicalCause" class="form-control">
+                            <option value="">- Please Select -</option>
+                        </select>
+                        <div class="ulMedicalCauseDiv" style="display:none">
+                            <ul class="ulMedicalCause">
+                                <li data-value="">- Please Select -</li>
+                                @foreach (SelectListItem medicalCause in medicalCauses)
+                                {
+                                    <li data-value="@medicalCause.Value">@medicalCause.Value</li>
+                                }
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row claim_perkeso" style="display:none">
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="control-label col-md-4">Claim Perkeso<span style="color:red;">*</span></label>
+                    <input type="hidden" name="ClaimPerkeso" />
+                    <div class="col-md-8 form-control-static">
+                        <select id="ddlClaimPerkeso" class="form-control">
+                            <option value="Yes (Membuat Tuntutan Perkeso)">Yes (Membuat Tuntutan Perkeso)</option>
+                            <option value="No (Tidak Membuat Tuntutan Perkeso)">No (Tidak Membuat Tuntutan Perkeso)</option>
+                        </select>
+                        If Yes, please attach Borang 34 and other supporting document.
+                        Kindly indicate the disease/accident suffered in the Description/Comment box.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+@*Opening a draft*@
+else if ((Model.LeaveStatus == "Draft" || Model.LeaveStatus == "DR" ||
+          Model.LeaveStatus == "Cancelled" || Model.LeaveStatus == "CA" ||
+          Model.LeaveStatus == "Withdrawn" || Model.LeaveStatus == "WD")
+          && Model.LeaveID != Guid.Empty)
+{
+    <div class="row medical-mc">
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="control-label col-md-4">Medical Cause<span style="color:red;"> *</span></label>
+                    <input type="hidden" name="MedicalCause" value="@Model.MedicalCause" />
+                    <div class="col-md-8 form-control-static" id='ddlMedicalCauseDiv'>
+                        <select id="ddlMedicalCause" class="form-control">
+                            <option value="">- Please Select -</option>
+                        </select>
+                        <div class="ulMedicalCauseDiv" style="display:none">
+                            <ul class="ulMedicalCause">
+                                <li data-value="">- Please Select -</li>
+                                @foreach (SelectListItem medicalCause in medicalCauses)
+                                {
+                                    <li data-value="@medicalCause.Value">@medicalCause.Value</li>
+                                }
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row claim_perkeso" style="display:none">
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="control-label col-md-4">Claim Perkeso<span style="color:red;">*</span></label>
+                    <input type="hidden" name="ClaimPerkeso" value="@Model.ClaimPerkeso" />
+                    <div class="col-md-8 form-control-static">
+                        <select id="ddlClaimPerkeso" class="form-control">
+                            <option value="Yes (Membuat Tuntutan Perkeso)">Yes (Membuat Tuntutan Perkeso)</option>
+                            <option value="No (Tidak Membuat Tuntutan Perkeso)">No (Tidak Membuat Tuntutan Perkeso)</option>
+                        </select>
+                        If Yes, please attach Borang 34 and other supporting document.
+                        Kindly indicate the disease/accident suffered in the Description/Comment box.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+else
+{
+    <div class="row medical-mc">
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="control-label col-md-4">Medical Cause</label>
+                    <div class="col-md-8 form-control-static">
+                        <input type="text" class="form-control" readonly
+                               name="MedicalCause" value="@Model.MedicalCause">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row claim_perkeso" style="display:none">
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="control-label col-md-4">Claim Perkeso</label>
+                    <div class="col-md-8 form-control-static">
+                        <input type="text" class="form-control" readonly
+                               name="ClaimPerkeso" value="@Model.ClaimPerkeso">
+                        If Yes, please attach Borang 34 and other supporting document.
+                        Kindly indicate the disease/accident suffered in the Description/Comment box.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<script>
+    $(function () {
+        InitializeCommonControls();
+
+        if ($('input[name="MedicalCause"]').val())
+        {
+            $("#ddlMedicalCause option:first").html($('input[name="MedicalCause"]').val());
+            $("#ddlMedicalCause option:first").val($('input[name="MedicalCause"]').val());
+        }
+
+        $('#ddlMedicalCause').val($('input[name="MedicalCause"]').val());
+
+        $('#ddlClaimPerkeso').val($('input[name="ClaimPerkeso"]').val());
+
+        if ($('input[name="ClaimPerkeso"]').val()) {
+            $(".claim_perkeso").show();
+
+            if ($("[name='ClaimPerkeso']").val() == "Yes (Membuat Tuntutan Perkeso)") {
+                $("#divDeclaration").show();
+                $("#spanComment").show();
+            }
+        }
+
+		var tempArray = [];
+
+    @foreach (SelectListItem item in medicalCauses)
+    {
+        <text>
+        tempArray.push({ 'Value': '@item.Value', 'Text': '@Html.Raw(HttpUtility.HtmlDecode(item.Text))' });
+        </text>
+    }
+
+		var listItems = $(".ulMedicalCause li");
+
+		listItems.each(function(idx, li) {
+			var listItem = $(li);
+
+			var result = tempArray.find(obj => {
+                return obj.Value === listItem.html()
+            })
+
+			if (result){
+				listItem.qtip({
+					content: result.Text,
+					position: {
+						  target: 'mouse',
+						  adjust: {
+							 mouse: true
+						  }
+					},
+					style: {
+						width: " + this.Width + ",
+						border: {
+							width: 2,
+							radius: 5,
+							color: '#CECECE'
+						},
+						padding: 5,
+						tip: true,
+						name: 'light'
+					},
+					show: {
+						event: 'mouseover'
+					},
+					hide: {
+						event: 'mouseout'
+					}
+				});
+			}
+		});
+
+        $('#ddlMedicalCause').click(function (event) {
+            var select = $(this);
+            var list = select.next().find("ul:first");
+
+            list.width(select.parent().width() - 2);
+
+            list.children().css("background-color", "white");
+
+            list.children()
+                .filter(function () { return $(this).data("value") == select.val() })
+                .css("background-color", "#ddd");
+
+            select.toggleClass('active');
+            list.parent().slideToggle(0);
+        });
+
+        $('#ddlMedicalCause').mousedown(function (e) {
+            $(this).focus();
+
+            e.preventDefault();
+        });
+
+        $('#ddlMedicalCause').keydown(function (e) {
+            if (e.keyCode == 13) {
+                $(this).focus();
+
+                e.preventDefault();
+            }
+        });
+
+        $('body').on('click', '.ulMedicalCause li', function () {
+            var select = $("#ddlMedicalCause");
+            var input = $("[name='MedicalCause']");
+
+            var listItemText = $(this).html();
+            var listItemValue = $(this).data("value");
+
+            if (!$(this).data("value")) {
+                listItemText = '- Please Select -';
+                listItemValue = '';
+            }
+
+            select.find("option:first").html(listItemText);
+            select.find("option:first").val(listItemValue);
+
+            input.val(listItemValue);
+
+            $(this).parent().children().trigger('mouseout');
+
+            ClaimPerkeso(input.val());
+        });
+
+        $('body').on('mouseenter', '.ulMedicalCause li', function () {
+            $(this).siblings().css("background-color", "white");
+            $(this).css("background-color", "#ddd");
+        });
+
+        $(document).mouseup(function (event) {
+            var target = event.target;
+            var select = $("#ddlMedicalCause");
+
+            if (!select.is(target)) {
+                if (!target.id)
+                    select.filter('.active').focus();
+                
+                select.filter('.active').click();
+            }
+        });
+
+        $(document).keydown(function (e) {
+            var target = e.target;
+            var select = $("#ddlMedicalCause");
+            var list = select.next().find("ul:first");
+
+            if (select.is(target)) {
+                if (!select.hasClass('active')) {
+                    if (e.keyCode == 40) {
+                        select.click();
+                    }
+                }
+                else {
+                    if (e.keyCode == 9) {
+                        select.toggleClass('active');
+                        list.parent().slideToggle(0);
+                    }
+
+                    if (e.keyCode == 38 || e.keyCode == 40 || e.keyCode == 13) {
+                        var listItem = list.children()
+                            .filter(function () { return $(this).css("background-color") == 'rgb(221, 221, 221)' });
+
+                        if (e.keyCode == 38) {
+                            var prev = listItem.prev();
+
+                            if (prev.length > 0) {
+                                prev.css("background-color", "#ddd");
+                                listItem.css("background-color", "white");
+                            }
+                        }
+
+                        if (e.keyCode == 40) {
+                            var next = listItem.next();
+
+                            if (next.length > 0) {
+                                next.css("background-color", "#ddd");
+                                listItem.css("background-color", "white");
+                            }
+                        }
+
+                        if (e.keyCode == 13) {
+                            listItem.click();
+                            select.click();
+                        }
+                    }
+                }
+            }
+        });
+
+        $('#ddlClaimPerkeso').on('change', function () {
+            $("[name='ClaimPerkeso']").val($(this).val());
+
+            if ($("[name='ClaimPerkeso']").val() == "Yes (Membuat Tuntutan Perkeso)") {
+                $("#divDeclaration").show();
+                $("#spanComment").show();
+            }
+            else {
+                $("#divDeclaration").hide();
+                $("#spanComment").hide();
+            }
+        });
+
+        function ClaimPerkeso(medicalCause) {
+            if (medicalCause) {
+                if ($(".claim_perkeso").is(":hidden")) {
+                    $("#ddlClaimPerkeso").val($("#ddlClaimPerkeso option:first").val());
+                    $("#ddlClaimPerkeso").trigger("change");
+                    $(".claim_perkeso").show();
+                }
+            }
+            else {
+                $("[name='ClaimPerkeso']").val('');
+                $(".claim_perkeso").hide();
+            }
+        }
+    });
+</script>

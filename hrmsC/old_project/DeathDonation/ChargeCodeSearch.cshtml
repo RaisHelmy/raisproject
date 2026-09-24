@@ -1,0 +1,288 @@
+﻿@{
+    Layout = "";
+}
+
+<div class="form-body">
+    <div class="row">
+        <div class="col-md-2">
+
+            @Html.Label("Search Type :", new { @class = "control-label" })
+        </div>
+        <div class="col-md-4">
+            <select id="chargecodesearchtype" class="form-control" onchange="toggleCCFavouriteBtn()">
+                <option selected="selected" value="ALL">All</option>
+                <option value="Favourite">Favourite</option>
+            </select>
+        </div>
+        <div class="col-md-4">
+
+
+        </div>
+    </div>
+    <div id="chargecoderow">
+        <div class="row" style="margin-top:10px">
+            <div class="col-md-2">
+
+                @Html.Label("Charge Type :", new { @class = "control-label" })
+            </div>
+            <div class="col-md-4">
+                <select id="chargecodedll" class="form-control">
+                    <option selected="selected" value="ALL">All</option>
+                    <option value="CC">Cost Center</option>
+                    <option value="PM">Order Number (Plant Maintenance)</option>
+                    <option value="JO">Order Number (Job Order)</option>
+                    <option value="WB">WBS Element</option>
+                    <option value="NT">Network Number And Operation Activity Number</option>
+                    <option value="DI">DIC</option>
+                </select>
+            </div>
+            <div class="col-md-4">
+
+
+            </div>
+        </div>
+        <div class="row" style="margin-top:10px">
+            <div class="col-md-2">
+                @Html.Label("Search :", new { @class = "control-label" })
+            </div>
+            <div class="col-md-4">
+                <input type="text" id="chargecodevalue" class="form-control" />
+            </div>
+            <div class="col-md-4">
+                <a class="btn green" href="javascript:SearchChargeCode()">
+                    Search
+                </a>
+
+            </div>
+        </div>
+    </div>
+    <div id="favoriterow" class="row" style="display:none;margin-top:10px">
+        <div class="col-md-2">
+            @Html.Label("Favorite Group :", new { @class = "control-label" })
+        </div>
+        <div class="col-md-4">
+            <select name="favGroup" id="favGroup" class="form-control"></select>
+        </div>
+        <div class="col-md-4">
+            <a class="btn green" href="javascript:SearchFavGroupChargeCode()">
+                Search
+            </a>
+        </div>
+    </div>
+
+    <hr />
+
+    <input type="hidden" name="SourceID" value="@ViewBag.SourceID" />
+    <div class="row" style="margin-top:10px;">
+        <div class="col-md-12">
+            <div id="ChargeCodeResult">
+                @Html.Action("_ChargeCodeSearchResult", "DeathDonation", new { Type = "", Value = "" })
+            </div>
+        </div>
+    </div>
+
+
+</div>
+@*</div>
+    </div>*@
+<script>
+
+
+
+    //$("#chargecodesearchtype").change(function () {
+    //    var selected = $("#chargecodesearchtype").val();
+
+    //    if (selected == "Favorite")
+    //    {
+    //        $('#favoriterow').show();
+    //        $('#chargecoderow').hide();
+    //        GetFavGroup();
+    //    }
+    //    else
+    //    {
+    //        $('#favoriterow').hide();
+    //        $('#chargecoderow').show();
+    //    }
+    //});
+
+    function SearchChargeCode(value)
+    {
+        var ChargeType = $('#chargecodedll').val();
+        var CCValue = $('#chargecodevalue').val();
+        var CurrentCC = ''; //$('#ChargeCodeList').val();
+        var SearchType = $('#chargecodesearchtype').val()
+
+        if (value == 'EMPTY') {
+            ChargeType = 'EMPTY';
+        }
+
+        $('#ChargeCodeResult').html('Loading...');
+
+        $.ajax({
+            url: '@Url.Content("~/DeathDonation/_ChargeCodeSearchResult")',
+            type: 'POST',
+            data: { Type: ChargeType, Value: CCValue, CurrentChargeCode: CurrentCC, SearchType: SearchType },
+            success: function (result) {
+
+                $('#ChargeCodeResult').html(result);
+                // ... Process the result ...
+            }
+        });
+    }
+
+    function SearchFavGroupChargeCode() {
+        var GroupID = $('#favGroup').val();
+        var CurrentCC = $('#ChargeCodeList').val();
+        $.ajax({
+            url: '@Url.Content("~/ChargeCode/FavGroupChargeCodeSearchResult")',
+            type: 'POST',
+            data: { GroupID: GroupID, CurrentChargeCode: CurrentCC },
+            success: function (result) {
+
+                $('#ChargeCodeResult').html(result);
+                // ... Process the result ...
+            }
+        });
+    }
+
+    function GetFavGroup(callback)
+    {
+        var mySelect = $('#favGroup');
+        mySelect.html('');
+        mySelect.append(
+            $('<option></option>').val('null').html('- Select One -')
+        );
+        $.ajax({
+            url: '@Url.Content("~/ChargeCode/GetFavChargeCode")',
+            type: 'POST',
+            async: false,
+            success: function (result) {
+                //console.log(result);
+
+                $.each(result, function (i, val) {
+
+                    mySelect.append(
+                        $('<option></option>').val(this.ID).html(this.GroupName)
+                    );
+                });
+                $('#favGroup option').eq(1).prop('selected', true).trigger('change');
+                if (typeof callback == "function") {
+                    callback();
+                }
+            }
+        });
+    }
+
+    function InsertFavCC() {
+        var _empCode = '';
+        $("#tblChargeCodeSearch td input[type=radio]").each(function () {
+            var row = $(this).closest('tr');
+            var _selected = $(this).prop("checked");
+            if (_selected) {
+                _empCode = row.find(".ChargeCode").text();
+                console.log(row.find(".ChargeCode").text());
+            }
+        });
+        if (_empCode != '') {
+            $.ajax({
+                url: '../DeathDonation/InsertFavChargeCode',
+                type: 'POST',
+                data: {
+                    FavouriteCode: _empCode
+                },
+                success: function (result) {
+                    if (result.Result == 'True') {
+                        alert('Successfully added to favourite.');
+                    }
+                }
+            });
+        }
+
+    }
+
+
+    function DeleteFavCC() {
+        var _empCode = '';
+        $("#tblChargeCodeSearch td input[type=radio]").each(function () {
+            var row = $(this).closest('tr');
+            var _selected = $(this).prop("checked");
+            if (_selected) {
+                _empCode = row.find(".ChargeCode").text();
+                console.log(row.find(".ChargeCode").text());
+            }
+        });
+
+        if (_empCode != '') {
+            $.ajax({
+                url: '../DeathDonation/DeleteFavChargeCode',
+                type: 'POST',
+                data: {
+                    FavouriteCode: _empCode
+                },
+                success: function (result) {
+                    if (result.Result == 'True') {
+                        alert('Successfully deleted from favourite.');
+                        SearchChargeCode();
+                    }
+                }
+            });
+        }
+
+    }
+
+    function OpenSearchChargeCode() {
+        $("#chargecodesearchtype").val('Favorite');
+        $('#SearchChargeCode').modal();
+        $('#favoriterow').show();
+        $('#chargecoderow').hide();
+        //SearchChargeCode('EMPTY');
+        GetFavGroup(SearchFavGroupChargeCode);
+    }
+    
+    var currentSelectedCC = null
+
+    function setSelectedChargeCode() {
+        $.each($('input[name="AddChargeCode"]:checked'), function (i, val) {
+            var chargeType = $(this).parent().parent().find('.ChargeType').text().trim();
+            var chargeCode = $(this).parent().parent().find('.ChargeCode').text().trim();
+            var chargeDesc = $(this).parent().parent().find('.ChargeDesc').text().trim();
+
+            console.log("Charget Type: " + chargeType);
+            console.log("Charget Code: " + chargeCode);
+
+            $(currentSelectedCC).parent().siblings('.ChargeCodePickerType').val(chargeType);
+            $(currentSelectedCC).parent().siblings('.ChargeCodePickerCC').val(chargeCode);
+            $(currentSelectedCC).parent().siblings('.ChargeCodePickerDesc').val(chargeDesc);
+            $(currentSelectedCC).parent().siblings('.ChargeCodePickerName').val(chargeCode + " - " + chargeDesc);
+            $(currentSelectedCC).parent().siblings('.ChargeCodePickerName').change();
+            $('#SearchChargeCode').modal('toggle');
+            currentSelectedCC = null;
+        });
+    }
+
+    function SetCurrentSelectedCC() {
+
+        currentSelectedCC = $(this);
+        $('#ChargeCodeResult').empty();
+        $('#chargecodesearchtype').val('Favourite');
+        $('#chargecodedll').val('ALL');
+    }
+
+    function toggleCCFavouriteBtn() {
+        var searchType = $('#chargecodesearchtype').val();
+        if (searchType == 'Favourite') {
+            $('#btnAddFavCC').attr('disabled', true);
+            $('#btnDeleteFavCC').attr('disabled', false);
+        }
+        else {
+            $('#btnAddFavCC').attr('disabled', false);
+            $('#btnDeleteFavCC').attr('disabled', true);
+        }
+    }
+    $(function () {
+        $('.TimesheetChargeCodePicker').on("click", SetCurrentSelectedCC);
+        $('#chargecodesearchtype').val('Favourite');
+        $('#chargecodesearchtype').change();
+        toggleCCFavouriteBtn();
+    })
+</script>

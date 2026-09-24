@@ -1,0 +1,46 @@
+﻿@using ESS.Core
+
+<input type="hidden" name="SelectedAttachmentCountName" value="">
+
+<div class="modal fade" id="AttachmentModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div id="AttachmentModalResult">
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function OpenAttachment(Mode, RequestID, Type, AttachmentCountName)
+    {
+        $('input[name="SelectedAttachmentCountName"]').val(AttachmentCountName);
+
+        $.ajax({
+            url: '../TimeAttendance/TSAttachmentControl',
+            type: 'GET',
+            data: {
+                EmployeeID: '@Common.GetEmployeeID()',
+                Mode: Mode,
+                SourceType: "Allowance",
+                Type: Type,
+                RequestID: RequestID,
+                ShowOptionField: "",
+                ControlType: "",
+                CustomTextLabel1: "",
+                Mandatory: ""
+            },
+            success: function (result) {
+                $("#AttachmentModalResult").html(result);
+                $('#AttachmentModal').modal({
+                    backdrop: 'static',
+                    keyboard: true
+                }, 'show');
+            },
+            error: function (e) {
+                console.log(e);
+            }
+        });
+    }
+</script>

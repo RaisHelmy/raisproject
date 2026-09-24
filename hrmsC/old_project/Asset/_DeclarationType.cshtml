@@ -1,0 +1,172 @@
+﻿@model Asset.Models.AssetVM
+@{
+    string Title = @"Jenis Perisytiharan";
+
+    bool DeclarationTypeNewEnabled = true;
+    bool DeclarationTypeUpdateEnabled = true;
+    bool DeclarationTypeNoneEnabled = true;
+
+    bool DeclarationTypeNewChecked = true;
+    bool DeclarationTypeUpdateChecked = false;
+    bool DeclarationTypeNoneChecked = false;
+
+    if (Model.AssetSubmissionStatusCode.Equals("NO") || String.IsNullOrEmpty(Model.AssetSubmissionStatusCode)) // belum pernah submit
+    {
+        DeclarationTypeUpdateEnabled = false;
+    }
+    else if (Model.AssetSubmissionStatusCode.Equals("MA")) // pernah submit secara manual, belum pernah submit dalam sistem
+    {
+        DeclarationTypeNewEnabled = false;
+    }
+    else
+    {
+        if (Model.AssetDeclarationStatusCode.Equals("PT") || Model.AssetDeclarationStatusCode.Equals("KE"))
+        {
+            if (Model.AssetSubmissionStatusCode.Equals("PE"))
+            {
+                if (Model.AssetDeclarationStatusCode.Equals("PT"))
+                {
+                    DeclarationTypeNewChecked = true;
+                    DeclarationTypeUpdateChecked = false;
+                    DeclarationTypeNoneChecked = false;
+                }
+                else if (Model.AssetDeclarationStatusCode.Equals("KE"))
+                {
+                    DeclarationTypeNewChecked = false;
+                    DeclarationTypeUpdateChecked = true;
+                    DeclarationTypeNoneChecked = false;
+                }
+            }
+            else if (Model.AssetSubmissionStatusCode.Equals("WI"))
+            {
+                if (Model.AssetDeclarationStatusCode.Equals("PT"))
+                {
+                    DeclarationTypeNewChecked = true;
+                    DeclarationTypeUpdateChecked = false;
+                    DeclarationTypeNoneChecked = false;
+                }
+                else if (Model.AssetDeclarationStatusCode.Equals("KE"))
+                {
+                    DeclarationTypeNewChecked = false;
+                    DeclarationTypeUpdateChecked = true;
+                    DeclarationTypeNoneChecked = false;
+                }
+            }
+            else
+            {
+                DeclarationTypeNewChecked = false;
+                DeclarationTypeUpdateChecked = true;
+                DeclarationTypeNoneChecked = false;
+            }
+
+            // disable the radio buttons
+            DeclarationTypeNewEnabled = false;
+            DeclarationTypeUpdateEnabled = false;
+            DeclarationTypeNoneEnabled = false;
+        }
+        else if (Model.AssetDeclarationStatusCode.Equals("TH"))
+        {
+            DeclarationTypeNewChecked = false;
+            DeclarationTypeUpdateChecked = false;
+            DeclarationTypeNoneChecked = true;
+        }
+    }
+
+    if (!Model.AllowEdit)
+    {
+        if (Model.AssetDeclarationStatusCode.Equals("PT"))
+        {
+            DeclarationTypeNewChecked = true;
+            DeclarationTypeUpdateChecked = false;
+            DeclarationTypeNoneChecked = false;
+        }
+        else if (Model.AssetDeclarationStatusCode.Equals("KE"))
+        {
+            DeclarationTypeNewChecked = false;
+            DeclarationTypeUpdateChecked = true;
+            DeclarationTypeNoneChecked = false;
+        }
+        else if (Model.AssetDeclarationStatusCode.Equals("TH"))
+        {
+            DeclarationTypeNewChecked = false;
+            DeclarationTypeUpdateChecked = false;
+            DeclarationTypeNoneChecked = true;
+        }
+
+        // disable the controls
+        DeclarationTypeNewEnabled = false;
+        DeclarationTypeUpdateEnabled = false;
+        DeclarationTypeNoneEnabled = false;
+    }
+}
+
+<div class="portlet box blue">
+    <div class="mini-triangle"><img src="/_layouts/15/TNBESS/Assets/img/menu-red-triangle.png" /></div>
+    <div class="portlet-title">
+        <div class="caption">
+            <i class="fa fa-reorder"></i>@Title
+        </div>
+        <div class="tools">
+            <a title="" data-original-title="" href="javascript:;" class="collapse"></a>
+        </div>
+    </div>
+    <div class="portlet-body form">
+        <div class="form-body">
+            <div class="row">
+                <label class="col-md-2">
+                    <input type="radio" name="Declaration" value="PT" data-no-uniform="true"
+                           @(DeclarationTypeNewChecked ? "checked" : "") @(DeclarationTypeNewEnabled ? "" : "disabled") />
+                    Kali Pertama
+                </label>
+                <label class="col-md-2">
+                    <input type="radio" name="Declaration" value="KE" data-no-uniform="true"
+                           @(DeclarationTypeUpdateChecked ? "checked" : "") @(DeclarationTypeUpdateEnabled ? "" : "disabled") />
+                    Kemaskini
+                </label>
+                <label class="col-md-2">
+                    <input type="radio" name="Declaration" value="TH" data-no-uniform="true"
+                           @(DeclarationTypeNoneChecked ? "checked" : "") @(DeclarationTypeNoneEnabled ? "" : "disabled") />
+                    Tiada Harta
+                </label>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    var hasAsset = false;
+    $(function () {
+        if ('@Model.AssetDeclarationStatusCode' == "TH") {
+            hasAsset = true;
+        }
+
+        $('input[name="Declaration"]').on('change', function () {
+            var selected = $(this).val();
+
+            if (selected == "TH") {
+                hasAsset = false;
+                $('.edit-action-bar').hide();
+            }
+            else {
+                hasAsset = true;
+                $('.edit-action-bar').show();
+            }
+
+            Property_RefreshForm(true);
+            CompanyList_RefreshForm(true);
+        });
+    });
+
+    function CheckHasAsset() {
+        var selected = $('input[name="Declaration"]:checked').val();
+
+        if (selected == "TH") {
+            hasAsset = false;
+            $('.edit-action-bar').hide();
+        }
+        else {
+            hasAsset = true;
+            $('.edit-action-bar').show();
+        }
+    }
+</script>

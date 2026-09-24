@@ -1,0 +1,163 @@
+﻿@model  TNB_ESS_MVC.Controllers.ClaimsController.OutStationDropDownListModel
+@{
+
+    Layout = null;
+
+    string FormType = ViewBag.FormType;
+    bool HidePriorApproval = FormType != "OUTSTATION_FORM" &&
+                                FormType != "OVERSEAS_FORM" &&
+                                FormType != "OTHERS_FORM";
+}
+
+@if (Model.Categories.Count() != 0 && !HidePriorApproval)
+{
+
+    <div class="portlet box blue">
+        <div class="mini-triangle"><img src="../Assets/img/menu-red-triangle.png"></div>
+        <div class="portlet-title">
+
+            <div class="caption">
+                <i class="fa fa-reorder"></i>
+                @if (ViewBag.FormType == "OUTSTATION_FORM")
+                {
+                    @*<span>Outstation Request</span>*@
+                    <span>Prior Approval Form</span>
+                }
+                else if (ViewBag.FormType == "OVERSEAS_FORM")
+                {
+                    <span>Overseas Request</span>
+                }
+                else if (ViewBag.FormType == "OTHERS_FORM")
+                {
+                    <span>Others Request</span>
+                }
+
+            </div>
+            <div class="tools">
+            </div>
+        </div>
+        <div class="portlet-body form">
+            <div class="form-body">
+
+                <div class="form-horizontal">
+                    <div class="form-group">
+                        <label class="control-label col-md-4 ">
+
+                            @if (ViewBag.FormType == "OUTSTATION_FORM")
+                            {
+                                <span>Outstation Request Form :</span>
+                            }
+                            else if (ViewBag.FormType == "OVERSEAS_FORM")
+                            {
+                                <span>Overseas Request Form :</span>
+                            }
+                            else if (ViewBag.FormType == "OTHERS_FORM")
+                            {
+                                <span>Other Request Form :</span>
+                            }
+                        </label>
+                        <div class="col-md-6 form-control-static">
+
+                            @*@foreach (var asd in Model.Categories)
+                                {
+                                    <div>@asd.Text - @asd.Value</div>
+                                }*@
+                            @*@Html.DropDownList("OutstationClaimID", new SelectList(Model, "Value", "Text"), "- All -", new { @class = "bs-select form-control" })*@
+                            @Html.DropDownListFor(
+                                     x => x.OutstationClaimID,
+                                     Model.Categories,
+                                     "",
+                                     new { @class = "bs-select form-control" }
+                                 )
+
+                        </div>
+                        <div class="col-md-2">
+                            <a class="btn green" href="javascript:OutstationFormInsert();">Update</a>
+                        </div>
+                    </div>
+
+                    @if (ViewBag.FormType == "OUTSTATION_FORM" && !string.IsNullOrEmpty(Model.Vm.AdvanceClaimNo))
+                    {
+                        <div class="form-group">
+                            <label class="control-label col-md-4 ">
+                                Advance Claim Request Form:
+                            </label>
+                            <div class="col-md-6 form-control-static">
+                                <input class="form-control valid" type="text" id="AdvanceClaimNo" name="AdvanceClaimNo" value="@Model.Vm.AdvanceClaimNo" readonly>
+                                <input type="hidden" id="AdvanceClaimID" name="AdvanceClaimID" value="@Model.Vm.AdvanceClaimId|@Model.Vm.AdvanceClaimNo">
+                            </div>
+                            <div class="col-md-2">
+                                @*<a class="btn green" href="javascript:OutstationFormInsert();">Update</a>*@
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<script>
+    function OutstationFormInsert() {
+        $("#ReselectSubtype").val("false");
+        GetOutstationDetail();
+    }
+
+    var FormStartDate;
+    function GetOutstationDetail() {
+        var outstationClaimID = $('#OutstationClaimID').val();
+
+        if (outstationClaimID == null) {
+
+        @if (Model.Vm.IsPriorApprovalMandatory)
+        {
+            <text>
+            $('#claimActionDiv').hide();
+            $('#OutstationRequired').show();
+            </text>
+        }
+            return;
+        }
+
+        var OutstationGuid = $('#OutstationClaimID').val().split('|')[0];
+
+        $.ajax({
+
+            url: '@Url.Content("~/Claims/GetOutstationDetail")',
+            type: 'POST',
+            data: { OutstationID: OutstationGuid },
+            success: function (result) {
+
+                console.log(result);
+
+                if (result == null) {
+                    alert('Invalid Pre-Approval Form');
+                    return;
+                }
+                //console.log(result.StartDate);
+
+                FormStartDate = moment(result.StartDate)._d;
+                var FormEndDate = moment(result.EndDate)._d;
+
+                //console.log(FormStartDate);
+                $('#StartDate').val(pad2(FormStartDate.getDate()) + '/' + pad2(FormStartDate.getMonth() + 1) + '/' + FormStartDate.getFullYear());
+                $('#EndDate').val(pad2(FormEndDate.getDate()) + '/' + pad2(FormEndDate.getMonth() + 1) + '/' + FormEndDate.getFullYear());
+                $('#Description').val(result.Remarks);
+                $('.timeinput').inputmask("remove");
+
+                $('#EndTime').val(pad2(FormEndDate.getHours()) + pad2(FormEndDate.getMinutes()));
+                $('#StartTime').val(pad2(FormStartDate.getHours()) + pad2(FormStartDate.getMinutes()));
+
+                // ... Process the result ...
+                $('form').submit();
+            }
+        });
+    }
+
+    function pad2(num) {
+        if (num < 10) {
+            return "0" + num;
+        }
+        return "" + num;
+    }
+</script>

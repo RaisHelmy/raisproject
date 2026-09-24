@@ -1,0 +1,70 @@
+﻿@{
+    ViewBag.Title = "Error";
+    Exception ex = null;
+    string SourcePage = "";
+    string Message = "";
+    string ErrorLogID = "";
+
+    if (ViewBag.Error != null)
+    {
+        ex = new Exception();
+        Message = ViewBag.Error;
+    }
+
+    if (ViewBag.ErrorPage != null)
+    {
+        SourcePage = ViewBag.ErrorPage;
+    }
+
+    if (SourcePage.Length < 1)
+    {
+        SourcePage = Request.Url.ToString();
+    }
+
+    if (ViewBag.ErrorLogID != null)
+    {
+        ErrorLogID = ViewBag.ErrorLogID + "";
+    }
+
+}
+<br />
+<body>
+    <div class="row">
+        <div class="col-md-12">
+            <div class="note note-danger">
+                <h4 class="block">
+                    An error had occured while performing the previous operation.
+                </h4>
+                <p>
+                    Detail Message:
+                    <div class="well" style="font-family: 'Courier New';">
+                        @Html.Raw(Message)
+                        <br /><br />
+                        <i>Page: @Html.Raw(SourcePage)</i>
+                        <br />
+                        <i>Date: @TNB_ESS_MVC.Helpers.GeneralHelper.FormatDateTime(DateTime.Now)</i>
+                    </div>
+                </p>
+                <p>
+                    <input type="button" class="btn red" title="Back to Previous" value="Back to Previous" onclick="javascript: self.history.go(-1);" />
+                </p>
+            </div>
+        </div>
+    </div>
+</body>
+<script>
+    $('body').on('keydown', function (e) {
+        if (e.which === 8) {
+            e.preventDefault();
+        }
+    });
+    function DisableBack() {
+        window.history.forward();
+    }
+    DisableBack();
+    window.onload = DisableBack;
+    window.onpageshow = function (evt) {
+        if (evt.persisted) DisableBack();
+    }
+    window.onunload = function () { void (0); }
+</script>

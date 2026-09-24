@@ -1,0 +1,134 @@
+﻿@model Tuple<List<string>, List<string>, List<string>>
+@{
+    ViewBag.Title = "LTIP CDS Account Maintenance History";
+    String EmployeeID = ViewBag.EmployeeID;
+    List<string> CompPlan = ViewBag.CompPlan;
+
+    String start = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1).AddMonths(-60).ToString("dd/MM/yyyy");
+    String today = DateTime.Today.ToString("dd/MM/yyyy");
+}
+
+<div class="row">
+    <div class="col-md-12">
+        <br />
+        <h1 class="page-title">
+            @ViewBag.Title
+            <span style="padding-left:20px;">
+                <small></small>
+            </span>
+        </h1>
+    </div>
+</div>
+
+<br />
+<div class="row">
+    <div class="col-md-6">
+        <div class="form-horizontal">
+            <div class="form-group">
+                <label class="col-md-4 control-label">Date From</label>
+                <div class="col-md-8 form-control-static">
+                    <div id="dateFrom" class="input-group date date-picker" data-date-format="dd MM yyyy">
+                        <input type="text" class="form-control" name="DateFrom" value="@start" />
+                        <span class="input-group-btn">
+                            <button type="button" class="btn default"><i class="fa fa-calendar"></i></button>
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="form-horizontal">
+            <div class="form-group">
+                <label class="col-md-4 control-label">Date To</label>
+                <div class="col-md-8 form-control-static">
+                    <div id="dateTo" class="input-group date date-picker" data-date-format="dd MM yyyy">
+                        <input type="text" class="form-control" name="DateTo" value="@today" />
+                        <span class="input-group-btn">
+                            <button type="button" class="btn default"><i class="fa fa-calendar"></i></button>
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-6">
+        <div class="form-horizontal">
+            <div class="form-group">
+                <label class="col-md-4 control-label">Status</label>
+                <div class="col-md-8 form-control-static">
+                    <select class="form-control" id="ddlStatus">
+                        <option value="">- All -</option>
+                        <option value="Successful">Successful</option>
+                        <option value="Failed">Failed</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row">&nbsp;</div>
+<div class="row">
+    <div class="col-md-12">
+        <div class="text-right">
+            <input type="button" id="btn-Search" class="btn green btn-Search" value="Search" onclick="SearchListing();">
+            <input id="btn-Clear" type="button" class="btn default " value="Clear" onclick="ClearFilter();">
+        </div>
+    </div>
+</div>
+<div class="row">&nbsp;</div>
+<div class="form-body">
+    <div class="row">
+        <div class="col-md-12">
+            <div id="SearchResult">
+            </div>
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+    function SearchListing() {
+        $("#SearchResult").html("LOADING...");
+
+        var _EmployeeID = '@EmployeeID';
+        var _DateFrom = $('#dateFrom').val();
+        var _DateTo = $('#dateTo').val();
+        var _Status = $('#ddlStatus').val();
+
+        $.ajax({
+            type: "GET",
+            url: '@Url.Action("_CDSMaintenanceHistoryResults", "LTIP")',
+            data: {
+                EmployeeID: _EmployeeID,
+                DateFrom: _DateFrom,
+                DateTo: _DateTo,
+                Status : _Status
+            },
+            success: function (content) {
+                $("#SearchResult").html(content);
+            },
+            error: function (e) {
+                console.log(e);
+            }
+        });
+    }
+
+    $(function () {
+        $('.date-picker').datepicker({
+            format: 'dd/mm/yyyy',
+            autoclose: true,
+        });
+
+        $('#dateFrom').datepicker("setDate", '@start');
+        $('#dateTo').datepicker("setDate", '@today');
+
+        SearchListing();
+    });
+
+
+    function ClearFilter() {
+        SearchListing();
+    }
+</script>
+

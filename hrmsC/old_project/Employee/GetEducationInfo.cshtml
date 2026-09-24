@@ -1,0 +1,254 @@
+﻿@model Tuple<List<ESS.Employee.Models.EducationInfo>, ESS.Employee.Models.Setting>
+@using ESS.Employee;
+@{
+    string ID = "";
+    string module = "Education";
+
+    string divMode = "";
+
+    bool runFieldVisible = false;
+    if (Model.Item2 != null)
+    {
+        runFieldVisible = true;
+    }
+}
+
+@if (Model.Item1 != null)
+{
+    <div class="form-body">
+        <div class="form-horizontal">
+            <div class="table-toolbar">
+
+                <table id="tblResultEducationInfo" class="table table-striped table-bordered table-hover table-full-width">
+                    <thead>
+                        <tr>
+                            <th class="hidden">
+                                <input id="RemoveEducationCheckboxHeader" type="checkbox" onchange="SelectAllEducation(this)" />
+                            </th>
+                            <th>Education</th>
+                            <th>Country</th>
+                            <th>School</th>
+                            <th>Certificate</th>
+                            <th>Branch Of Study 1</th>
+                            <th>Graduated Date</th>
+                            <th>CGPA</th>
+                            <th>Class</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in @Model.Item1)
+                        {
+                            <tr>
+                                <td class="hidden">
+                                    @{
+                                        ID = "RemoveEducationCheckbox_" + item.Education.Replace(" ", "");
+                                    }
+                                    <input type="checkbox" id="@ID" class="RemoveEducationCheckbox" value="@item.Education" />
+                                </td>
+                                <td><a href="#ProfileEducation" class="ViewEducation" 
+                                       data-Education="@item.Education" 
+                                       data-EducationCode="@item.EducationCode" 
+                                       data-RecordNumber="@item.RecordNumber"
+                                       data-StartDate="@Service.FormatDateInNumber(item.StartDate, "dd/MM/yyyy")"
+                                       data-EndDate="@Service.FormatDateInNumber(item.EndDate, "dd/MM/yyyy")"
+                                       >
+                                    @item.Education</a>
+                                </td>
+                                <td>
+                                    @((string.IsNullOrEmpty(item.Country)) ? "-" : item.Country)
+                                </td>
+                                <td>
+                                    @((string.IsNullOrEmpty(item.School)) ? "-" : item.School)
+                                </td>
+                                <td>
+                                    @((string.IsNullOrEmpty(item.Certificate)) ? "-" : item.Certificate)
+                                </td>
+                                <td>
+                                    @((string.IsNullOrEmpty(item.BranchOfStudy1)) ? "-" : item.BranchOfStudy1)
+                                </td>
+                                @if (!string.IsNullOrEmpty(item.GraduatedDate + ""))
+                                {
+                                    <td>
+                                        @Service.FormatDateInNumber(item.GraduatedDate, "dd/MM/yyyy")
+                                    </td>
+                                }
+                                else
+                                {
+                                    <td>-</td>
+                                }
+                                <td>
+                                    @((string.IsNullOrEmpty(item.CGPA)) ? "-" : item.CGPA) 
+                                </td>
+                                <td>
+                                    @((string.IsNullOrEmpty(item.Class)) ? "-" : item.Class)
+                                </td>
+                              
+  
+                            </tr>
+                            }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="form-horizontal">
+            <div class="table-toolbar">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="btn-group addEducationDiv hidden">
+                            <a class="btn green" id="btnAddEducation" onclick="OpenNewPanel('Add New Education Info', '@module', 'INSERT');">
+                                Add
+                                <i class="fa fa-plus"></i>
+                            </a>
+                        </div>
+                        <div class="btn-group hidden">
+                            <a class="btn red" id="btnRemoveEducation" onclick="RemoveEducation();">
+                                Delete
+                                <i class="fa fa-minus"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <input type="hidden" id="CountClick" value="0" />
+
+    <script type="text/javascript">
+        transformTable("#tblResultEducationInfo");
+        function SelectAllEducation(element) {
+            $('#tblResultEducationInfo .RemoveEducationCheckbox').attr('checked', element.checked);
+        }
+
+        $(document).ready(function () {
+
+            App.initAjax();
+
+            var divMode = "@divMode";
+            var runFieldVisible = "@runFieldVisible";
+
+            if (runFieldVisible.toUpperCase() == "TRUE") {
+                Setting_FieldVisible = JSON.parse('@Html.Raw(Json.Encode(Model.Item2.FieldVisible))');
+                Setting_FieldEnable = JSON.parse('@Html.Raw(Json.Encode(Model.Item2.FieldEnable))');
+                Setting_FieldChecked = JSON.parse('@Html.Raw(Json.Encode(Model.Item2.FieldChecked))');
+                Setting_FieldValue = JSON.parse('@Html.Raw(Json.Encode(Model.Item2.FieldValue))');
+
+                PopulateSetting(divMode, "#SearchGetEducationInfo", "#SettingSection", Setting_FieldVisible, Setting_FieldEnable, Setting_FieldChecked, Setting_FieldValue);
+                //PopulateSetting(divMode, divMain, LogDiv, Setting_FieldVisible, Setting_FieldEnable, Setting_FieldChecked, Setting_FieldValue)
+            }
+
+
+            $('#uniform-RemoveEducationCheckboxHeader').click(function (e)
+            {
+                var CountClick = $("#CountClick").val();
+                CountClick++;
+                var divBoxes = $("div[id^='uniform-RemoveEducationCheckbox_']"); //checkbox items
+
+                if (CountClick % 2 === 0)
+                {
+                    /* we are even */
+                    if ($("#uniform-RemoveEducationCheckboxHeader span").hasClass("checked")) {
+                        $("#uniform-RemoveEducationCheckboxHeader span").removeClass("checked")
+                    }
+                    for (i = 0; i < divBoxes.length; i++) {
+
+                        var A = divBoxes[i].id;
+                        if ($("#" + A + " span").hasClass("checked")) {
+                            $("#" + A + " span").removeClass("checked");
+                        }
+                    }
+                }
+                else {
+                    /* we are odd */
+
+                    if (!$("#uniform-RemoveEducationCheckboxHeader span").hasClass("checked")) {
+                        $("#uniform-RemoveEducationCheckboxHeader span").addClass("checked")
+                    }
+
+                    for (i = 0; i < divBoxes.length; i++) {
+
+                        var A = divBoxes[i].id;
+                        if (!$("#" + A + " span").hasClass("checked")) {
+                            $("#" + A + " span").addClass("checked");
+                        }
+                    }
+                }
+
+
+                $("#CountClick").val(CountClick);
+            });
+
+            $('.RemoveEducationCheckbox').click(function (e)
+            {
+                var CountClick = $("#CountClick").val();
+                var id = this.id;
+                //uniform-id
+
+                if (!$("#uniform-" + id +" span").hasClass("checked"))
+                {
+                    //uncheck "select all", if one of the listed checkbox item is unchecked
+                    if ($("#uniform-RemoveEducationCheckboxHeader span").hasClass("checked"))
+                    {
+                        CountClick++;
+                        $("#uniform-RemoveEducationCheckboxHeader span").removeClass("checked");
+                    }
+
+                }
+
+                var divBoxes = $("div[id^='uniform-RemoveEducationCheckbox_']"); //checkbox items
+                var Count = 0;
+                for (i = 0; i < divBoxes.length; i++)
+                {
+                    var A = divBoxes[i].id;
+                    if ($("#" + A + " span").hasClass("checked"))
+                    {
+                        Count++;
+                    }
+                }
+
+                if(Count == divBoxes.length)
+                {
+                    if (!$("#uniform-RemoveEducationCheckboxHeader span").hasClass("checked"))
+                    {
+                        CountClick++;
+                        $("#uniform-RemoveEducationCheckboxHeader span").addClass("checked");
+                    }
+                }
+                $("#CountClick").val(CountClick);
+            });
+        });
+
+        $('.ViewEducation').click(function (e) {
+            e.preventDefault();
+            var Education = $(this).attr('data-Education');
+            var EducationCode = $(this).attr('data-EducationCode');
+            var RecordNumber = $(this).attr('data-RecordNumber');
+            var StartDate = $(this).attr('data-StartDate');
+            var EndDate = $(this).attr('data-EndDate');
+
+            //var EmployeeCode = $(this).attr('data-EmployeeCode');
+            var EmployeeCode = $("#EmployeeCode").val();
+            var EmployeeID = $("#EmployeeID").val();
+
+            var Action = 'View';
+
+            $("#FormCategory").val("@module");
+            $("#FormAction").val(Action);
+            var url="@Url.Content("~/Employee/_EducationForm")";
+            var data = {
+                EmployeeCode: EmployeeCode,
+                EmployeeID: EmployeeID,
+                Education: EducationCode,
+                RecordNumber: RecordNumber,
+                StartDate: StartDate,
+                EndDate: EndDate,
+                Mode: Action
+            };
+            OpenEditPanel('View Education Info', Action, url, data)
+        });
+
+
+
+    </script>
+
+}
+

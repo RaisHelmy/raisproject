@@ -1,0 +1,314 @@
+﻿@model List<ESS.Core.TrainingIDP>
+@{
+    ViewBag.Title = "Training IDP Learning Journey Request";
+
+}
+
+<div class="form-section">
+    <div class="row">
+        <div class="col-md-12">
+            <h1 class="page-title">
+                Plan IDP/Learning Journey
+                <span style="padding-left:20px;">
+                    <small></small>
+                </span>
+            </h1>
+        </div>
+    </div>
+</div>
+
+@using (Html.BeginForm("", "Training", FormMethod.Post, new { @class = "form-horizontal", @id = "MainForm" }))
+{
+    <input id="hfEmployeeID" type="hidden" value="@ViewBag.EmployeeID" />
+
+    //Requestor Details
+    @Html.Action("_RequestorDetails", "Training", new { ID = "" })
+
+
+
+
+    <div class="row">
+        <div class="col-md-12">
+            <div class="portlet box blue">
+                <div class="mini-triangle"><img src="../Assets/img/menu-red-triangle.png" /></div>
+                <div class="portlet-title">
+                    <div class="caption">
+                        <i class="fa fa-reorder"></i>Subordinates Details
+                    </div>
+                </div>
+
+                @foreach (var item in Model)
+                {
+                    <div class="portlet-body form">
+                        <div class="form-body" id="ct00_CustomFieldFormView">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-horizontal">
+                                        <div class="form-group">
+                                            <label class="control-label col-md-4">
+                                                Employee Number
+                                            </label>
+                                            <div class="col-md-8 form-control-static">
+                                                <label id="EmployeeCode">@item.EmployeeCode - @item.EmployeeName</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="form-horizontal">
+                                        <div class="form-group">
+                                            <label class="control-label col-md-4">
+                                                
+                                            </label>
+                                            <div class="col-md-8 form-control-static">
+                                                <label id="EmployeeJobGrade">Job Grade - @item.EmployeeJobGrade</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-horizontal">
+                                        <div class="form-group">
+                                            <label class="control-label col-md-4">
+                                                Development Plan
+                                            </label>
+                                            <div class="col-md-8 form-control-static">
+                                                <label id="IDP">@item.IDPID (@item.IDPName)</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            @foreach (var course in item.Courses)
+                            {
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-horizontal">
+                                            <div class="form-group">
+                                                <label class="control-label col-md-4">
+                                                    Course
+                                                </label>
+                                                <div class="col-md-8 form-control-static">
+                                                    <label id="CourseName">@course.CourseName (@course.CourseID)</label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                foreach (var session in course.Sessions)
+                                {
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="form-horizontal">
+                                                <div class="form-group">
+                                                    <label class="control-label col-md-4">
+                                                        
+                                                    </label>
+                                                    <div class="col-md-8 form-control-static">
+                                                        <input class="DestroyUniform rdSessionSel" type="radio" name="@course.CourseID" value="@(item.EmployeeCode.Trim() + "," + @course.CourseID + "," + @session.CourseSessionID.Trim())" />
+                                                        <label id="Session">@session.StartDate.ToString("dd/MM/yyyy") - @session.EndDate.ToString("dd/MM/yyyy")</label>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+
+                            }
+
+                        </div>
+                    </div>
+                }
+
+            </div>
+        </div>
+    </div>
+
+    //Attachment
+    @Html.Action("AttachmentControl", "Attachment", new { EmployeeID = ViewBag.EmployeeID, Mode = "New", SourceType = "Training" })
+
+
+    if (Model.Count > 0)
+    {
+        <input type="button" class="btn green" value="Recommend" id="btnSubmit" onclick="Validation()" />
+    }
+
+
+
+        <!-- Confirmation Message -->
+    <div class="modal fade" id="ConfirmUpdate" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                    <h4 class="modal-title">Confirmation</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="well">
+                        Are you sure you want to Submit this Training Application?<br/>
+                        Press Confirm to proceed, or Close to stay on the current page.
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn default blue" id="btnSubmitSave" value="Submit" onclick="javascript: SaveForm('Pending');">
+                        <i class="fa fa-check"></i>
+                        Confirm
+                    </button>
+                    <button type="button" class="btn default" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Success Message -->
+    <div class="modal fade" id="SuccessSubmit" tabindex="-1" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header Success-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true" style="display: none;"></button>
+                    <h4 class="Success-title">Action Successfully Completed</h4>
+                </div>
+                <div class="modal-body Success-body">
+                    <div class="well">
+                        Your Training Application has been successfully submitted.
+                    </div>
+                </div>
+                <div class="modal-footer Success-footer">
+                    <button type="button" class="btn default blue" id="btnOK">
+                        <i class="fa fa-check"></i>
+                        OK
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Gif -->
+    <div id="divLoading" style="margin: 0px; padding: 0px; position: fixed; right: 0px; top: 0px; width: 100%; height: 100%; background-color: gainsboro; z-index: 30001; opacity: .8; filter: alpha(opacity=70); display: none; ">
+        <p style="position: absolute; top: 30%; left: 30%; color: black;">
+            Performing action, please wait...<img src="/_layouts/15/TNBESS/Assets/img/ajax-loading.gif">
+        </p>
+    </div>
+}
+
+<script>
+    var SubmitStatus = "";
+    var Path = '/_layouts/15/tnbess';
+
+    $(window).load(function () {
+        $.uniform.restore(".DestroyUniform");
+    });
+
+
+    function Validation() {
+
+        $('#btnSubmitSave').css("display", "initial");
+        $('#btnSubmitDraft').css("display", "none");
+        $('.modal-body .well').html('Are you sure you want to Submit this Training Request Application?\n\rPress Confirm to proceed, or Close to stay on the current page.');
+        $('#btnOK').click(function () { RedirectTo('Submit'); });
+        $('#ConfirmUpdate').modal('show');
+
+    }
+
+
+    function SubmitFormAction() {
+        //$("#divLoading").css("display", "block");
+
+        if (SubmitStatus == 'Draft') {
+            $(".Success-body .well").html('Your Training Request Application has been successfully saved.');
+        }
+        else if (SubmitStatus == 'Approved') {
+            $(".Success-body .well").html('Your Training Request Application has been successfully approved.');
+        }
+        else if (SubmitStatus == 'Declined') {
+            $(".Success-body .well").html('Your Training Request Application has been successfully Declined.');
+        }
+        else if (SubmitStatus == 'Agreed') {
+            $(".Success-body .well").html('Your Training Request Application has been successfully submitted.');
+        }
+        else if (SubmitStatus == 'Withdrawn') {
+            $(".Success-body .well").html('Your Training Request Application has been successfully withdrawn.');
+        }
+        else if (SubmitStatus == 'Recommended') {
+            $(".Success-body .well").html('Your Training Request Application has been successfully recommended.');
+        }
+        else if (SubmitStatus == 'Endorsed') {
+            $(".Success-body .well").html('Your Training Request Application has been successfully endorsed.');
+        }
+        else if (SubmitStatus == 'Deleted') {
+            $(".Success-body .well").html('Your Training Request Application has been successfully deleted.');
+        }
+        else {
+            $(".Success-body .well").html('Your Training Request Application has been successfully submitted.');
+        }
+
+        var values = "";
+
+        $(':radio:checked').each(function () {
+            values = $(this).val() + ";" + values;
+        });
+
+
+        var form = {
+            TrainingID: values
+        };
+
+
+        $.ajax({
+            url: '@Url.Content("~/Training/PerformInsertIDPTraining")',
+            type: 'POST',
+            cache: false,
+            async: false,
+            dataType: "json",
+            data: form,
+            //contentType: "application/json;charset=utf-8",
+            success: function (result) {
+                if (result.Success) {
+                    //$("#ConfirmUpdate").modal('toggle');
+                    $("#divLoading").css("display", "none");
+                    $("#SuccessSubmit").modal();
+                    //alert(result.Success);
+                } else {
+                    //$("#ConfirmUpdate").modal('toggle');
+                    $("#divLoading").css("display", "none");
+                    //btnSubmitForm.disabled = false;
+                    alert(result.ErrorMsg);
+                }
+
+            },
+            error: function (x, y, z) {
+                //$("#ConfirmUpdate").modal('toggle');
+                $("#divLoading").css("display", "none");
+                console.log(x + '\n' + y + '\n' + z);
+                //alert(x + '\n' + y + '\n' + z);
+            }
+        });
+
+    }
+
+    function SaveForm(_Status) {
+        $("#ConfirmUpdate").modal('toggle');
+        $("#divLoading").css("display", "block");
+        SubmitStatus = _Status;
+        var myVar = setTimeout(SubmitFormAction, 1000);
+    }
+
+    function RedirectTo(_Action) {
+
+    switch (_Action) {
+        case "Draft":
+        //window.location.href = '/_layouts/15/essv2/Training/TrainingApplication?' + path;
+            window.location.href = '@Url.Content("~/Training/TrainingHistory")';
+            break;
+        case "Submit":
+            window.location.href = '@Url.Content("~/Training/TrainingHistory")';
+            break;
+        case "Approve":
+            window.location.href = '@Url.Content("~/MSS/TrainingRequestInTray")';
+            break;
+        default:
+            window.location.href = '/Pages/default.aspx';
+    }
+    }
+
+</script>

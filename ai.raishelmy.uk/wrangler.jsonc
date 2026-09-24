@@ -1,0 +1,46 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "ai-raishelmy",
+  "account_id": "6af8ff18a864c2b56f1a3aa78cb24f80",
+  "main": "src/worker/index.ts",
+  "compatibility_date": "2026-08-27",
+  "compatibility_flags": ["nodejs_compat"],
+
+  "vars": {
+    // Cloudflare AI Gateway this portal fronts (AI → AI Gateway in the dashboard).
+    "AI_GATEWAY_ID": "raisai",
+    // Budget windows (daily / weekly / monthly) are computed in this timezone.
+    "BUDGET_TIMEZONE": "Asia/Kuala_Lumpur",
+    "PUBLIC_BASE_URL": "https://ai.raishelmy.uk"
+  },
+
+  // Secrets (wrangler secret put <NAME>):
+  //   ADMIN_PASSWORD        portal login
+  //   SAAS_SSO_SECRET       shared with saas.raishelmy.uk/admin (also signs the session cookie)
+  //   CLOUDFLARE_API_TOKEN  Workers AI Run + AI Gateway Read (upstream Workers AI calls + cost sync)
+  //   AI_GATEWAY_TOKEN      optional — gateway auth token if the gateway has authentication enabled / BYOK keys
+  //   ANTHROPIC_API_KEY, OPENAI_API_KEY, OPENROUTER_API_KEY, ...  optional per-provider upstream keys
+  //   <PROVIDER>_API_KEY    any other AI Gateway provider slug, upper-cased, dashes → underscores
+
+  "assets": {
+    "directory": "./dist/client",
+    "binding": "ASSETS",
+    "not_found_handling": "single-page-application",
+    "run_worker_first": ["/api/*", "/v1/*", "/healthz"]
+  },
+
+  "routes": [
+    { "pattern": "ai.raishelmy.uk", "custom_domain": true }
+  ],
+
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "ai-raishelmy",
+      "database_id": "7310d892-e061-4be9-a5fb-120d315ef4d6",
+      "migrations_dir": "migrations"
+    }
+  ],
+
+  "observability": { "enabled": true }
+}

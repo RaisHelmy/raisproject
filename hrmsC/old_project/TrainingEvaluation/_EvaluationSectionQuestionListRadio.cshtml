@@ -1,0 +1,106 @@
+﻿@*@model List<ESS.Core.EvaluationForm_2_SectionQuestion>*@
+@model Tuple<List<ESS.Core.EvaluationForm_2_SectionQuestion>, List<ESS.Core.EvaluationScaleRating>>  
+@{
+    Layout = null;
+}
+
+<input class="hfTotalQuestion" id="hfTotalQuestion" type="hidden" value="@ViewBag.TotalQuestion"/>
+
+<div class="table-toolbar">
+    <table id="@ViewBag.EvaluationSectionID" class="table table-striped table-bordered table-hover table-full-width SectionQuestionTable">
+        <thead>
+            <tr>
+                <th style="width:5%;">#</th>
+                <th>Question</th>
+                
+                @if (ViewBag.IsShowTotal == "true")
+                {
+                    <th style="width:80px;">Rating</th>
+                }
+                else
+                {
+                    <th style="width:130px;">Rating</th>
+                }
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.Item1)
+            {
+                <tr>
+                    <td>
+                        @item.QuestionNo
+                    </td>
+                    <td>@item.Question</td>
+                    
+                    @if (ViewBag.IsShowTotal == "true")
+                    {
+                    <td>
+                        @item.Answer
+                    </td>
+                    }
+                    else
+                    {
+                        <td>
+                            @foreach (var item2 in Model.Item2)
+                            {
+                                <input class="DestroyUniform" type="radio" name="@item.QuestionID,@ViewBag.EvaluationSectionID" value="@item2.Mark" /> @item2.Mark
+                            }
+                            
+                            @*<input class="DestroyUniform" type="radio" name="@item.QuestionID,@ViewBag.EvaluationSectionID" value="2" /> 2
+                            <input class="DestroyUniform" type="radio" name="@item.QuestionID,@ViewBag.EvaluationSectionID" value="3" /> 3
+                            <input class="DestroyUniform" type="radio" name="@item.QuestionID,@ViewBag.EvaluationSectionID" value="4" /> 4*@
+                        </td>
+                    }
+                </tr>
+
+            }
+        </tbody>
+        @if (ViewBag.IsShowTotal == "true")
+        {
+        <tfoot>
+            <tr>
+                <td colspan="2"><label class="text-right col-md-12"><b>Total Score for Section: @ViewBag.EvaluationCategoryDesc</b></label></td>
+                <td>@ViewBag.TotalAnswer</td>
+            </tr>
+        </tfoot>
+        }
+</table>
+</div>
+
+<script type="text/javascript">
+    $('.SectionQuestionTable').dataTable(
+      {
+          "bLengthChange": false,
+          "bFilter": false,
+          "bPaginate": false,
+          "bInfo": false,
+          "bSortable": false,
+          "bRetrieve": true,
+          "bDestroy": true
+      });
+
+    $(window).load(function () {
+        $.uniform.restore(".DestroyUniform");
+    });
+
+    function SelectheaderCheckboxes2(headerchk, ID) {
+        var gvcheck = document.getElementById(ID);
+        var i;
+        //Condition to check header checkbox selected or not if that is true checked all checkboxes
+        if (headerchk.checked) {
+            for (i = 0; i < gvcheck.rows.length; i++) {
+
+                var inputs = gvcheck.rows[i].getElementsByTagName('input');
+
+                inputs[0].checked = true;
+            }
+        }
+        //if condition fails uncheck all checkboxes in gridview
+        else {
+            for (i = 0; i < gvcheck.rows.length; i++) {
+                var inputs = gvcheck.rows[i].getElementsByTagName('input');
+                inputs[0].checked = false;
+            }
+        }
+    }
+</script>

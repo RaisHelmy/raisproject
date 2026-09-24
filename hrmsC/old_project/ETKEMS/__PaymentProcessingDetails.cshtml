@@ -1,0 +1,71 @@
+﻿@using ETKEMS.Models
+@model Tuple<ETKEMSViewModel, IEnumerable<PaymentProcessing>, bool, int>
+@{
+    Layout = "";
+    bool isReadOnly = Model.Item3;
+}
+
+<div class="portlet box blue">
+    <div class="mini-triangle"><img src="/_layouts/15/TNBESS/Assets/img/menu-red-triangle.png" /></div>
+    <div class="portlet-title">
+        <div class="caption">
+            <i class="fa fa-reorder"></i>Payment Processing Details
+        </div>
+        <div class="tools">
+            <a title="" data-original-title="" href="javascript:;" class="collapse"> </a>
+        </div>
+    </div>
+    <div class="portlet-body form">
+        <div class="form-body">
+            <div id="tblPaymentProcessingContainer">
+                @Html.Partial("__PaymentProcessingDetailsResult", Model)
+            </div>
+        </div>
+        @if (isReadOnly == false)
+        {
+            <div class="form-actions right">
+                <button type="button" id="btnCheckEligibility" class="btn green" onclick="CheckPaymentEligibility@(Model.Item4)();">Check Eligibility</button>
+            </div>
+        }
+    </div>
+</div>
+<script>
+    function CheckPaymentEligibility@(Model.Item4)() {
+        var btnCheckEligibility = $('#btnCheckEligibility');
+        btnCheckEligibility.attr('disabled', true);
+
+        var data = $('form').serializeArray();
+        $.post('@Url.Action("CheckPaymentEligibility", "ETKEMS")', data,
+        function (result) {
+            btnCheckEligibility.attr('disabled', false);
+            var paymentProcessings = result.PaymentProcessings;
+
+            if (result.ErrorMessage) {
+                alert(result.ErrorMessage);
+            }
+
+            if (paymentProcessings) {
+                $.each(tblPaymentProcessings@(Model.Item4).fnGetNodes(), function (i, value) {
+                    var row = $(value);
+                    var eligibilityInput = row.find('.Eligibility');
+                    eligibilityInput.val(paymentProcessings[i].Eligibility);
+
+                    if (paymentProcessings[i].Eligibility == "Eligible") {
+                        eligibilityInput.css('cssText', eligibilityInput.attr('style') + 'background-color: green !important;');
+                        eligibilityInput.css("color", "white");
+
+                        eligibilityInput.css('cssText', eligibilityInput.attr('style') + 'background-color: green !important;');
+                        eligibilityInput.css("color", "white");
+                    }
+                    else {
+                        eligibilityInput.css('cssText', eligibilityInput.attr('style') + 'background-color: red !important;');
+                        eligibilityInput.css("color", "white");
+
+                        eligibilityInput.css('cssText', eligibilityInput.attr('style') + 'background-color: red !important;');
+                        eligibilityInput.css("color", "white");
+                    }
+                });
+            }
+        });
+    }
+</script>

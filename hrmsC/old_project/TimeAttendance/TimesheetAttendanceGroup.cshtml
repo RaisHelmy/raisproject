@@ -1,0 +1,1455 @@
+﻿@model Tuple<List<TimeAttendance.Models.TimesheetAttendanceVM>, TimeAttendance.Models.EmployeeDetails, List<ESS.Core.DropDownObject>>
+@{
+    ViewBag.Title = "Timesheet Entry (Group)";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+    string IsSupervisorMessage = ViewBag.IsSupervisor;
+}
+
+<style>
+    .timeinput::-ms-clear {
+        width: 0;
+        height: 0;
+    }
+</style>
+
+<div class="form-section">
+    <div class="row">
+        <div class="col-md-12">
+            <h1 class="page-title">
+                @ViewBag.Title
+                <span style="padding-left:20px;">
+                    <small></small>
+                </span>
+            </h1>
+        </div>
+    </div>
+</div>
+
+@using (Html.BeginForm("TimesheetAttendanceGroup", "TimeAttendance", FormMethod.Post))
+{
+
+    <div id="tab_1" class="tab-pane active">
+        @if (!string.IsNullOrEmpty(IsSupervisorMessage))
+        {
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="note note-danger">
+                        <h4 class="block">
+                            @IsSupervisorMessage
+                        </h4>
+
+                    </div>
+                </div>
+            </div>
+        }
+        <div class="row">
+            <div class="col-md-12">
+                <div class="portlet box blue">
+                    <div class="mini-triangle">@*<img src="/_layouts/15/TNBESS/Assets/img/menu-red-triangle.png" />*@</div>
+                    <div class="portlet-title">
+                        <div class="caption">
+                            <i class="fa fa-reorder"></i>Requestor Details
+                        </div>
+                    </div>
+                    <div class="portlet-body form">
+                        <div class="form-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-horizontal">
+                                        <div class="form-group">
+                                            <label class="control-label col-md-4">Employee</label>
+                                            <div class="col-md-8 form-control-static">
+                                                @Model.Item2.EmployeeCode - @Model.Item2.EmployeeName
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-horizontal">
+                                        <div class="form-group">
+                                            <label class="control-label col-md-4">Division / Department</label>
+                                            <div class="col-md-8 form-control-static">
+                                                @Model.Item2.AreaName
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-horizontal">
+                                        <div class="form-group">
+                                            <label class="control-label col-md-4">Unit / Section</label>
+                                            <div class="col-md-8 form-control-static">
+                                                @Model.Item2.SubAreaName
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-horizontal">
+                                        <div class="form-group">
+                                            <label class="control-label col-md-4">Cost Center</label>
+                                            <div class="col-md-8 form-control-static">
+                                                @Model.Item2.CostCenterCode - @Model.Item2.CostCenterName
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-horizontal">
+                                        <div class="form-group">
+                                            <label class="control-label col-md-4">Immediate Manager</label>
+                                            <div class="col-md-8 form-control-static">
+                                                @Model.Item2.ManagerName
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <input type="hidden" name="TimesheetSubAction" id="TimesheetSubAction" value="" />
+        <input type="hidden" name="DeleteRow" value="" />
+        <input type="hidden" name="AddRow" value="" />
+        <div class="row">
+            <div class="col-md-12">
+                <div class="portlet box blue">
+                    <div class="mini-triangle">@*<img src="/_layouts/15/TNBESS/Assets/img/menu-red-triangle.png" />*@</div>
+                    <div class="portlet-title">
+                        <div class="caption">
+                            <i class="fa fa-reorder"></i>Timesheet Entry
+                        </div>
+                    </div>
+                    <div class="portlet-body form">
+                        <div class="form-body">
+                            <div class="row text-left form-body">
+                                <div class="col-md-12">
+
+                                    <div class="col-md-4">
+                                        <label class="control-label col-md-4" style="padding-left:0px;">Subtype</label>
+                                        <div class="form-control-static col-md-8" style="padding-top: 0; padding-left:0px;">
+                                            <select class="form-control AttendanceSubTypeQuery" name="wsAttendanceSubType">
+                                                <option value="">- All -</option>
+                                                <option value="Normal Hour">Normal Hour</option>
+                                                <option value="Overtime">Overtime</option>
+                                            </select>
+                                        </div>
+                                        @*<input type="button" class="btn green" value="Reload" id="btnReload" onclick="$('form').submit();" />*@
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="control-label col-md-4">Start Date</label>
+                                        <div class="input-group date date-picker col-md-8 wsDate" data-date-format="dd MM yyyy">
+                                            <input type="text" class="form-control Date" id="WorkScheduleFromDate" name="WorkScheduleFromDate" value="@ViewBag.WorkScheduleFromDate" onchange="ReloadForm()" />
+                                            <span class="input-group-btn">
+                                                <button type="button" class="btn default"><i class="fa fa-calendar"></i></button>
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="control-label col-md-4">End Date</label>
+                                        <div class="input-group date date-picker col-md-8 wsDate" data-date-format="dd MM yyyy">
+                                            <input type="text" class="form-control Date" id="WorkScheduleToDate" name="WorkScheduleToDate" value="@ViewBag.WorkScheduleToDate" onchange="ReloadForm()" />
+                                            <span class="input-group-btn">
+                                                <button type="button" class="btn default"><i class="fa fa-calendar"></i></button>
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row  text-left form-body">
+                                <div class="col-md-12">
+                                    <div class="col-md-10">
+                                        <input type="button" class="btn green" value="Bulk Overtime Entry" id="btnBulkOvertimeEntry" data-toggle="modal" href="#BulkOvertimeEntry" onclick="ClearBulkEntrySearch()" />
+                                        <input type="button" class="btn green" value="Populate Normal Hours" id="btnPopulateNormalHours" data-toggle="modal" href="#PopulateWorkingHour" onclick="ClearNHSearch()" />
+                                        <input type="button" class="btn green" value="Get Approved OT Planning" id="btnGetApprovedOTPlanning" data-toggle="modal" href="#GetApprovedOTPlanning" onclick="ClearOTPlanningSearch()" />
+                                    </div>
+                                    @*<div class="col-md-2">
+                                        </div>
+                                        <div class="col-md-2">
+                                        </div>
+                                        <div class="col-md-4">
+                                        </div>*@
+                                    <div class="col-md-2">
+                                        <a href="@Url.Action("MyCalendar", "LeaveApplication")" target="_blank" style="float:right; padding-top:16px;">Show Working Hours</a>
+                                    </div>
+                                    @*<input type="button" class="btn green col-md-3" value="Bulk Charge Code Entry" id="btnBulkCCEntry" onclick="" />
+                                        <input type="button" class="btn green col-md-3" value="Populate Normal Hours" id="btnPopulateNH" onclick="" />
+                                        <input type="button" class="btn green col-md-3" value="Get Approved OT Planning" id="btnGetAppOTPlanning" onclick="" />*@
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="portlet-body form">
+                                        <div class="form-body">
+                                            <div class="form-horizontal">
+                                                <div class="table-toolbar">
+                                                    <table class="table table-striped table-bordered table-hover table-full-width" id="tblTimesheetEntry">
+                                                        <thead>
+                                                            <tr>
+                                                                <th scope="col" width="5%"></th>
+                                                                <th scope="col" width="5%">
+                                                                    <input type="checkbox" name="SelectAll" id="SelectAll" onchange="SelectUnselectAll(this);" />
+                                                                </th>
+                                                                <th scope="col">Valid OT</th>
+                                                                <th scope="col">Subtype *</th>
+                                                                <th scope="col">Employee *</th>
+                                                                <th scope="col">Start Date *</th>
+                                                                <th scope="col">End Date *</th>
+                                                                <th scope="col">EASy</th>
+                                                                <th scope="col">Start Time *</th>
+                                                                <th scope="col">End Time *</th>
+                                                                <th scope="col">Total Hours</th>
+                                                                <th scope="col">Accumulated OT Hours</th>
+                                                                <th scope="col">No. of Meal</th>
+                                                                <th scope="col">Charge Code *</th>
+                                                                <th scope="col">Verifier / Approver *</th>
+                                                                <th scope="col">Description</th>
+                                                                <th scope="col">Booking No.</th>
+                                                                <th scope="col">TCS No.</th>
+                                                                <th scope="col">Original OT Planning</th>
+                                                                <th scope="col">Attachment</th>
+                                                                <th scope="col">Copy Row</th>
+
+
+
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            @*foreach(var Entry in Model.TimesheetID.ToString())*@
+                                                            @for (int x = 0; x < Model.Item1.Count; x++)
+                                                            {
+
+                                                                <tr>
+                                                                    <td>
+                                                                        <div>
+                                                                            <i class="fa fa-exclamation-circle ErrorMsg" name="ErrorMsg"
+                                                                               style="font-size:24px;color:red;display: none"
+                                                                               data-toggle="tooltip" title=""></i>
+                                                                        </div>
+                                                                    </td>
+                                                                    <td style="min-width:30px">
+                                                                        <input type="hidden" name="@x" value="@x">
+                                                                        <input type="hidden" class="hfAttendanceSubtype" name="Entries[@x].hfAttendanceSubType" value="@Model.Item1[x].AttendanceSubType" />
+                                                                        <input type="hidden" class="hfPremiumNo" id="hfPremiumNo" name="hfPremiumNo" value="@Model.Item1[x].PremiumNo" />
+                                                                        <input type="hidden" class="TimesheetID" name="Entries[@x].EntryID" value="@Model.Item1[x].EntryID" />
+                                                                        <input type="checkbox" class="TimesheetCheckBox" name="Entries[@x].TimesheetEntryCheckBox" value="@Model.Item1[x].EntryID" />
+                                                                    </td>
+                                                                    @{
+                                                                        string chkBoxYellow = string.Empty;
+                                                                        string chkBoxDisabled = "disabled";
+                                                                        if (Model.Item1[x].ValidOTCheckBoxRequired)
+                                                                        {
+                                                                            chkBoxYellow = "style='background-color: yellow;'";
+                                                                            chkBoxDisabled = string.Empty;
+                                                                        }
+                                                                    }
+                                                                    <td @(chkBoxYellow)>
+                                                                        <input type="checkbox" class="ValidOTCheckBox" name="Entries[@x].ValidOTCheckBox" value="true" val2="@Model.Item1[x].EntryID" @(chkBoxDisabled) />
+                                                                    </td>
+                                                                    <td>
+                                                                        @Html.DropDownList("Entries[" + @x + "].AttendanceSubType", new SelectList(Model.Item3, "Value", "Text"), null, new { @class = "bs-select form-control AttendanceSubType RowTooltipDisplay", @name = "Entries[" + @x + "].AttendanceSubType", @style = "min-width:150px", @onchange = "ToggleOvertimeEntryControl(this)" })
+                                                                        @*<select class="bs-select form-control AttendanceSubType" style="min-width:150px" name="Entries[@x].AttendanceSubType" value="@Model.Item1[x].AttendanceSubType" onchange="ToggleOvertimeEntryControl(this)"></select>*@
+                                                                    </td>
+
+                                                                    <td>
+                                                                        <div class="form-control-static" style="min-width:150px">
+                                                                            @Html.Partial("TSPeoplePicker", new Tuple<int?, TimeAttendance.Models.TimesheetAttendanceVM, string, string>(@x, @Model.Item1[x], "Employee", ""))
+                                                                        </div>
+                                                                    </td>
+                                                                    <td>
+                                                                        <div class="input-group date date-picker eDate" data-date-format="dd MM yyyy" style="min-width:150px">
+                                                                            <input type="text" class="form-control Date StartDate RowTooltipDisplay" name="Entries[@x].StartDate" value='@Model.Item1[x].sDate' onchange="CalculateDateTime(@x)" />
+                                                                            <span class="input-group-btn">
+                                                                                <button type="button" class="btn default"><i class="fa fa-calendar"></i></button>
+                                                                            </span>
+                                                                        </div>
+                                                                    </td>
+                                                                    <td>
+
+                                                                        <div class="input-group date date-picker eDate" data-date-format="dd MM yyyy" style="min-width:150px">
+                                                                            <input type="text" class="form-control Date EndDate RowTooltipDisplay" name="Entries[@x].EndDate" value='@Model.Item1[x].eDate' onchange="CalculateDateTime(@x)" />
+                                                                            <span class="input-group-btn">
+                                                                                <button type="button" class="btn default"><i class="fa fa-calendar"></i></button>
+                                                                            </span>
+                                                                        </div>
+                                                                    </td>
+
+                                                                    <td>
+                                                                        <a class="btn blue btn-sm" onclick="EASyNavigation(@x)">
+                                                                            <i class="fa fa-search"></i>
+                                                                        </a>
+                                                                    </td>
+                                                                    <td>
+                                                                        <div class="col-md-8 form-control-static" style="min-width:150px">
+                                                                            <input type="text" class="form-control timeinput StartTime RowTooltipDisplay" name="Entries[@x].StartTime" placeholder="HH:MM"
+                                                                                   value='@Model.Item1[x].sTime' onchange="CalculateDateTime(@x)" />
+                                                                        </div>
+                                                                    </td>
+                                                                    <td>
+                                                                        <div class="col-md-8 form-control-static" style="min-width:150px">
+                                                                            <input type="text" class="form-control timeinput EndTime RowTooltipDisplay" name="Entries[@x].EndTime" placeholder="HH:MM"
+                                                                                   value='@Model.Item1[x].eTime' onchange="CalculateDateTime(@x)" />
+                                                                        </div>
+                                                                    </td>
+                                                                    <td><input class="form-control TotalHour" style="min-width:50px" name="Entries[@x].TotalHours" value="@Model.Item1[x].TotalHours" readonly="readonly" /> </td>
+                                                                    @{
+                                                                        string AccOTHours = "0";
+
+                                                                        if (!string.IsNullOrEmpty(@Model.Item1[x].AccumulatedOTHours))
+                                                                        {
+                                                                            AccOTHours = @Model.Item1[x].AccumulatedOTHours;
+                                                                        }
+
+                                                                        string AccOTHoursColor = "Black";
+
+                                                                        if (Convert.ToDouble(AccOTHours) > 51)
+                                                                        {
+                                                                            AccOTHoursColor = "Orange";
+                                                                        }
+
+                                                                        if (Convert.ToDouble(AccOTHours) > 104)
+                                                                        {
+                                                                            AccOTHoursColor = "Red";
+                                                                        }
+                                                                    }
+                                                                    <td><input class="form-control AccumulatedOTHours" style="min-width:50px;color:@AccOTHoursColor" name="Entries[@x].AccumulatedOTHours" value="@AccOTHours" readonly="readonly" /></td>
+                                                                    <td>
+                                                                        <select class="form-control NoOfMeal" style="min-width:130px" name="Entries[@x].NoOfMeal" value="@Model.Item1[x].PremiumNo">
+                                                                            <option value="00">0</option>
+                                                                            <option value="91">1</option>
+                                                                            <option value="92">2</option>
+                                                                            <option value="93">3</option>
+                                                                            <option value="94">4</option>
+                                                                            <option value="95">5</option>
+                                                                        </select>
+                                                                    </td>
+                                                                    <td>
+                                                                        <div class="form-control-static" style="min-width:150px">
+                                                                            @Html.Partial("TSChargeCodePicker", new Tuple<int?, TimeAttendance.Models.TimesheetAttendanceVM, string>(@x, @Model.Item1[x], ""))
+                                                                        </div>
+                                                                    </td>
+                                                                    <td>
+                                                                        <div class="form-control-static" style="min-width:150px">
+                                                                            @Html.Partial("TSPeoplePicker", new Tuple<int?, TimeAttendance.Models.TimesheetAttendanceVM, string, string>(@x, @Model.Item1[x], "Approver", ""))
+                                                                        </div>
+                                                                    </td>
+                                                                    <td><input type="text" class="form-control Description" name="Entries[@x].Description" value="@Model.Item1[x].Description" /></td>
+                                                                    <td>
+                                                                        <div class="form-control-static" style="min-width:150px">
+                                                                            @Html.Partial("IFMSBookingNoPicker", new Tuple<int?, string, string>(@x, "", Model.Item1[x].BookingNo))
+                                                                        </div>
+                                                                    </td>
+                                                                    <td>
+                                                                        <div class="form-control-static" style="min-width:150px">
+                                                                            @Html.Partial("TCSSearchPicker", new Tuple<int?, string, string>(@x, "", Model.Item1[x].TCSNo))
+                                                                        </div>
+                                                                    </td>
+                                                                    <td>
+                                                                        <div class="form-control-static" style="min-width:150px">
+                                                                            @Html.Partial("OTPlanningCodePicker", new Tuple<int?, string, string>(@x, "", Model.Item1[x].OTPlanningCode))
+                                                                        </div>
+                                                                    </td>
+                                                                    <td>
+                                                                        @*<input type="file" class="form-control Attachment" name="" style="min-width:150px" />*@
+
+                                                                        <div class="form-control-static text-center">
+                                                                            @Html.Partial("TSAttachmentPicker", new Tuple<string, string, string, string>("Add", Model.Item1[x].EntryID.ToString(), "Multi", Model.Item1[x].AttachmentCount.ToString() + "_" + x.ToString()))
+                                                                        </div>
+                                                                    </td>
+                                                                    <td><input type="button" class="btn green" value="Copy" id="btnCopy" onclick="CopyRow(@x)" /> </td>
+                                                                </tr>
+                                                            }
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row text-right">
+                                <div class="col-md-12">
+                                    <div class="btn-group">
+                                        <a class="BtnPlus btn green" title="dTable_BusOutstationEquivalentNoGST" href="javascript:TimesheetAttendance_addRow();">
+                                            Add Row
+                                            <i class="fa fa-plus"></i>
+                                        </a>
+                                    </div>
+                                    <div class="btn-group">
+                                        <a class="BtnPlus5 btn green" title="dTable_BusOutstationEquivalentNoGST" href="javascript:TimesheetAttendance_add5Row();">
+                                            Add 5 Rows
+                                            <i class="fa fa-plus"></i>
+                                        </a>
+                                    </div>
+                                    <div class="btn-group">
+                                        <a class="deleteall btn red" title="dTable_BusOutstationEquivalentNoGST" href="javascript:TimesheetAttendance_removeRow();">
+                                            Delete Row
+                                            <i class="fa fa-minus"></i>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        @Html.Action("TSPeoplePickerIndex", "TimeAttendance", new { CurrEmpID = "CurrEmpID", SearchType = "Subordinates" })
+        @Html.Action("TSMultiPeoplePickerIndex", "TimeAttendance", new { CurrEmpID = "CurrEmpID", SearchType = "Subordinates" })
+        @Html.Action("TSChargeCodeIndex", "TimeAttendance", new { CurrEmpID = ViewBag.EmployeeID, SearchType = "" })
+        @Html.Partial("_PopulateWorkingHours", "Group")
+        @Html.Partial("_BulkOvertimeTSEntry")
+        @Html.Partial("TCSSearchIndex")
+        @Html.Partial("IFMSBookingNoSearchIndex")
+        @Html.Partial("OTPlanningCodeSearchIndex")
+        @Html.Action("_GetApprovedOTPlanning", new { Type = "Group" })
+        @Html.Partial("TSAttachmentIndex")
+        @Html.Partial("_includeDataTableScripts")
+
+        @*<div class="form-horizontal">
+                <div class="table-toolbar">
+                </div>
+            </div>*@
+    </div>
+
+    <div class="row">
+
+        @*<div class="col-md-12">
+                <div class="col-md-8" style="border-color:black; border-style:solid; border-width:thin; padding:10px; margin-bottom:5px;">
+                    <div class="row">
+                        <div class="col-md-1">
+                            <input type="checkbox" name="BatchNo" value="true" onclick="ToggleBatchRemarks();" />
+                        </div>
+                        <label class="control-label col-md-7">Batch Submission</label>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-8">
+                            <p>
+                                The selected timesheets above will be submitted as a batch.
+                            </p>
+                            <p>
+                                You may include a brief note for this batch submission below:
+                            </p>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <input class="col-md-10 form-control BatchRemarks" type="text" name="BatchRemarks" readonly />
+                        </div>
+                    </div>
+                </div>
+            </div>*@
+
+        <div class="col-md-12">
+            <p>
+                <b>
+                    Adalah menjadi tanggungjawab semua penyelia untuk memastikan OT yang dihantar bagi setiap pekerja adalah OT yang sah yang dijalankan oleh pekerja tersebut.
+                </b>
+            </p>
+            <p>
+                <b>
+                    Supervisors need to ensure OT that will be submitted is a valid OT, executed by the employee.
+                </b>
+            </p>
+        </div>
+    </div>
+
+    if (string.IsNullOrEmpty(IsSupervisorMessage))
+    {
+        <div id="TimesheetActionDiv">
+            <div class="row">
+                <div class="col-md-12">
+                    <input type="button" class="btn green" value="Save as Draft" id="btnDraft" onclick="SubmitTS('Draft'); " />
+                    <input type="button" class="btn green" value="Submit" id="btnSubmit" onclick="SubmitTS('PerformActionOnSubmit'); " />
+                </div>
+            </div>
+        </div>
+    }
+
+    <!-- Success Message -->
+    <div class="modal fade" id="SuccessSubmit" tabindex="-1" role="basic" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header Success-header">
+                    @*<button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>*@
+                    <h4 class="Success-title">Action Successfully Completed</h4>
+                </div>
+                <div class="modal-body Success-body">
+                    <div class="well" id="SuccessMessage">
+                        Claims has been successfully submitted.
+                    </div>
+                </div>
+                <div class="modal-footer Success-footer">
+                    <a class="btn default blue" id="btnOK">
+                        <i class="fa fa-check"></i>
+                        OK
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Confirmation Message -->
+    <div class="modal fade" id="ConfirmSubmit" tabindex="-1" role="basic" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                    <h4 class="modal-title">Confirmation</h4>
+                </div>
+                <div class="modal-body warning-msg">
+                    <div class="well" id="ConfirmMessage">
+                        Submit entry(s) with Warning?
+
+                        Press Confirm to proceed, or Close to stay on the current page.
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn default blue" id="btnSubmitWarning" onclick="SubmitTS('SubmitWithWarning'); ">
+                        <i class="fa fa-check"></i>
+                        Confirm
+                    </button>
+                    <button type="button" class="btn default" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Loading Gif -->
+    <div id="divLoading" style="margin: 0px; padding: 0px; position: fixed; right: 0px;
+        top: 0px; width: 100%; height: 100%; background-color:gainsboro; z-index: 30001;
+        opacity: .8; filter: alpha(opacity=70);display:none">
+        <p style="position: absolute; top: 30%; left: 30%; color: black;">
+            Loading, please wait...<img src="../Assets/img/ajax-loading.gif" />
+
+        </p>
+    </div>
+
+}
+<script>
+    var TimesheetAttendanceTable = $('#tblTimesheetEntry').dataTable({
+        "bPaginate": false,
+        "bFilter": false,
+        "bInfo": false
+    });
+
+    function TimesheetAttendance_addRow() {
+        $('input[name="AddRow"]').val('1');
+        $('form').submit();
+    }
+
+    function TimesheetAttendance_add5Row() {
+        $('input[name="AddRow"]').val('5');
+        $('form').submit();
+    }
+
+    function TimesheetAttendance_removeRow()
+    {
+
+        $('input[name="DeleteRow"]').val('true');
+        $('form').submit();
+
+        //$("#tblTimesheetEntry td input[type=checkbox]:checked").each(function (i, value) {
+        //    var row = $(this).closest("tr");
+        //    row.remove();
+        //});
+    }
+
+    function ConfirmSubmitWithWarning(WarningMsg) {
+        $('#ConfirmSubmit').modal('show');
+    }
+
+    function SubmitTS(Type) {
+        $('#ConfirmSubmit').modal('hide');
+        DisableActionButton();
+        var checkCount = 0;
+        $("#tblTimesheetEntry td input[type=checkbox].TimesheetCheckBox:checked").each(function (i, value) {
+            checkCount += 1;
+        });
+        //if (checkCount <= 0 && Type != "Draft") {
+        if (checkCount <= 0) {
+            alert('Please select entry to proceed.');
+            EnableActionButton();
+        } else {
+
+            var data = $('form').serializeArray();
+            data.push(
+                { name: 'SubmitType', value: Type },
+                { name: 'AttendanceType', value: "Attendance" }
+            );
+
+            PerformTimesheetSubmission(data, Type);
+        }
+
+    }
+
+    function PerformTimesheetSubmission(data, Type) {
+        HideErrorWarningMessage();
+        var Action = Type;
+        var SubmitWithWarning = false;
+        switch (Type) {
+            case 'PerformActionOnSubmit':
+                Action = 'Submitted';
+                break;
+            case 'SubmitWithWarning':
+                Action = 'Submitted';
+                SubmitWithWarning = true;
+                break;
+            case 'Cancel':
+                Action = 'Cancelled';
+                break;
+            case 'Submit':
+                Action = 'Submitted';
+                break;
+            case 'Draft':
+                Action = 'Saved as Draft';
+                break;
+            default:
+        }
+
+        $.ajax({
+            url: '../TimeAttendance/SubmitTimesheetAction',
+            type: 'POST',
+            data: data,
+            success: function (result) {
+
+                $('#divLoading').hide();
+
+                if (CheckEmptyKeyValueMessage(result.ValidOTEnabled)) {
+                    HandleValidOTCheckBox(result.ValidOTEnabled);
+                }
+
+                if (result.result == true) {
+
+                    if (!SubmitWithWarning && CheckEmptyKeyValueMessage(result.EntryWarningMessage)) {
+                        ShowErrorWarningMessage(result.EntryWarningMessage);
+                        ConfirmSubmitWithWarning();
+                    }
+                    else {
+                        $('#SuccessSubmit').modal();
+                        $('#SuccessMessage').html("Timesheet has been successfully " + Action);
+                        $('#btnOK').attr('href', '../TimeAttendance/TimesheetAttendanceGroup');
+                    }
+                    EnableActionButton();
+                }
+                else if (!result.result) {
+                    if (CheckEmptyKeyValueMessage(result.EntryErrorMessage)) {
+                        ShowErrorWarningMessage(result.EntryErrorMessage);
+
+                    } else if (CheckEmptyKeyValueMessage(result.EntryWarningMessage)) {
+                        ShowErrorWarningMessage(result.EntryWarningMessage);
+                        ConfirmSubmitWithWarning();
+                    }
+                    else if (result.ErrorMessage != '')
+                    {
+                        alert(result.ErrorMessage);
+                    }
+                    else {
+                        alert('Unable to perform the requested action.')
+                    }
+                    EnableActionButton();
+                }
+                // ... Process the result ...
+            }
+        });
+    }
+
+    function SubmitTSEntries(SelectedEntries, Type) {
+        var data = $('form').serializeArray();
+        data.push(
+            { name: 'SubmitType', value: Type }
+        );
+        data.push(
+            { name: 'SelectedEntries', value: SelectedEntries }
+        );
+        $.ajax({
+            url: '../TimeAttendance/SubmitTSAction',
+            type: 'POST',
+            data: data,
+            success: function (result) {
+
+                $('#divLoading').hide();
+
+                if (result.result == true) {
+                    $('#btnSubmitForm').removeClass('hidden_1');
+                    $('#btnSubmitSave').addClass('hidden_1');
+                    $('.modal-body .well').html('Are you sure you want to Submit this Timesheet Application?\n\rPress Confirm to proceed, or Close to stay on the current page.');
+                    $('#btnOK').click(function () { RedirectTo('Submit'); });
+                    $('#ConfirmUpdate').modal('show');
+                    $('#ConfirmSubmit').modal();
+                    if ($('#tblAttachment .dataTables_empty').length == 1) {
+                        alert("Submit this claim without attachment?");
+                    }
+
+                    $('#SuccessSubmit').modal();
+                    $('#SuccessMessage').html("Time has been successfully " + Type + 'ed');
+                    $('#btnOK').attr('href', '../Claims/ClaimsHistory');
+                } else {
+                    alert(result.ErrorMessage);
+
+                }
+                // ... Process the result ...
+            }
+        });
+    }
+
+    function SaveTimesheetEntries(data, Type) {
+        $.ajax({
+            url: '../TimeAttendance/SaveTSEntries',
+            type: 'POST',
+            data: data,
+            success: function (result) {
+
+                $('#divLoading').hide();
+
+                if (result.result == true) {
+                    if (Object.keys(result.EntryWarningMessage).length === 0) {
+                        ShowErrorMessage(result.EntryWarningMessage);
+                    }
+                    $('#SuccessSubmit').modal();
+                    $('#SuccessMessage').html("Claims has been successfully " + Type + 'ed');
+                    $('#btnOK').attr('href', '../Claims/ClaimsHistory');
+                } else {
+                    if (Object.keys(result.EntryErrorMessage).length === 0) {
+                        ShowErrorMessage();
+                    } else {
+                        alert(result.ErrorMessage);
+                    }
+                }
+                // ... Process the result ...
+            }
+        });
+    }
+
+    function PopulateSubtype() {
+        //follow up - get AttendanceSubType from sharepoint
+        var ddlTarget = $('.AttendanceSubType');
+        ddlTarget.append('<option value="Normal Hour">Normal Hour</option>');
+        ddlTarget.append('<option value="Overtime">Overtime</option>');
+
+    }
+
+    function CalculateDateTime(rowNumber) {
+		var row = $($("#tblTimesheetEntry td input[type=checkbox].TimesheetCheckBox").get(rowNumber)).closest("tr");
+        var EmployeeID = $(row).find(".TSPeoplePickerID").val();
+        var Subtype = $(row).find(".AttendanceSubType").val();
+        var StartDate = $(row).find(".StartDate").val();
+        var EndDate = $(row).find(".EndDate").val();
+        var StartTime = $(row).find(".StartTime").val();
+        var EndTime = $(row).find(".EndTime").val();
+        var TotalHour = $(row).find(".TotalHour").val();
+
+        if (StartDate != '' && EndDate != '' && StartTime != '' && EndTime != '') {
+            GetTotalHours(EmployeeID, StartDate, EndDate, StartTime, EndTime, Subtype, row);
+            //var StartDateTime = moment(StartDate + ' ' + StartTime, 'DD/MM/YYYY HH:mm');
+            //var EndDateTime = moment(EndDate + ' ' + EndTime, 'DD/MM/YYYY HH:mm');
+
+            //var duration = moment.duration(EndDateTime.diff(StartDateTime));
+            //var diffHours = duration.asHours();
+            //var Hour = parseFloat(Math.round(diffHours * 100) / 100).toFixed(2);
+            //$(row).find(".TotalHour").val(Hour);
+            GetAccOTHours(EmployeeID, StartDate, row);
+        }
+        else {
+            $(row).find(".TotalHour").val('0.00');
+        }
+
+    }
+
+    function CalculateAllDateTime() {
+		$("#tblTimesheetEntry td input[type=checkbox].TimesheetCheckBox").each(function (i, value) {
+            var $row = $(this).closest("tr");
+            var EmployeeID = $row.find(".TSPeoplePickerID").val();
+            var Subtype = $row.find(".AttendanceSubType").val();
+            var StartDate = $row.find(".StartDate").val();
+            var EndDate = $row.find(".EndDate").val();
+            var StartTime = $row.find(".StartTime").val();
+            var EndTime = $row.find(".EndTime").val();
+            var TotalHour = $row.find(".TotalHour").val();
+
+            if (StartDate != '' && EndDate != '' && StartTime != '' && EndTime != '') {
+
+                GetTotalHours(EmployeeID, StartDate, EndDate, StartTime, EndTime, Subtype, $row);
+                //var StartDateTime = moment(StartDate + ' ' + StartTime, 'DD/MM/YYYY HH:mm');
+                //var EndDateTime = moment(EndDate + ' ' + EndTime, 'DD/MM/YYYY HH:mm');
+
+                //var duration = moment.duration(EndDateTime.diff(StartDateTime));
+                //var diffHours = duration.asHours();
+                //var Hour = parseFloat(Math.round(diffHours * 100) / 100).toFixed(2);
+                //$row.find(".TotalHour").val(Hour);
+                GetAccOTHours(EmployeeID, StartDate, Subtype, $row);
+
+            }
+            else {
+
+                $($row).find(".TotalHour").val('0.00');
+            }
+        });
+    }
+
+    function GetAccOTHours(EmployeeID, StartDate, Subtype, row)
+    {
+        if (Subtype === 'Overtime')
+        {
+            $.ajax({
+                url: '../TimeAttendance/GetAccOTHours',
+                type: 'POST',
+                data: {
+                    EmployeeID: EmployeeID,
+                    StartDate: StartDate
+                },
+                success: function (result) {
+                    if (result != undefined && result != '') {
+                        totalHours = parseFloat(result);
+                        var Hour = parseFloat(Math.round(totalHours * 100) / 100).toFixed(2);
+                        $(row).find(".AccumulatedOTHours").val(Hour);
+                    }
+                }
+            });
+        }
+        else {
+            $(row).find(".AccumulatedOTHours").val('0.00');
+        }
+    }
+
+    function GetTotalHours(EmployeeID, StartDate, EndDate, StartTime, EndTime, Subtype, row) {
+        var totalHours = 0;
+
+        $.ajax({
+            url: '../TimeAttendance/GetTimesheetTotalHours',
+            type: 'POST',
+            data: {
+                EmployeeID: EmployeeID,
+                StartDate: StartDate,
+                EndDate: EndDate,
+                StartTime: StartTime,
+                EndTime: EndTime,
+                Subtype: Subtype
+            },
+            success: function (result) {
+                if (result != undefined && result != '') {
+                        totalHours = parseFloat(result);
+                        var Hour = parseFloat(Math.round(totalHours * 100) / 100).toFixed(2);
+                        $(row).find(".TotalHour").val(Hour);
+
+                }
+                else {
+                    var StartDateTime = moment(StartDate + ' ' + StartTime, 'DD/MM/YYYY HH:mm');
+                    var EndDateTime = moment(EndDate + ' ' + EndTime, 'DD/MM/YYYY HH:mm');
+
+                    var duration = moment.duration(EndDateTime.diff(StartDateTime));
+                    var diffHours = duration.asHours();
+                    var Hour = parseFloat(Math.round(diffHours * 100) / 100).toFixed(2);
+                    $(row).find(".TotalHour").val(Hour);
+                    //the calculation above doesnt matter, just display 0 if no result from JSON
+                    $(row).find(".TotalHour").val('0.00');
+                }
+            },
+            error: function () {
+                var StartDateTime = moment(StartDate + ' ' + StartTime, 'DD/MM/YYYY HH:mm');
+                var EndDateTime = moment(EndDate + ' ' + EndTime, 'DD/MM/YYYY HH:mm');
+
+                var duration = moment.duration(EndDateTime.diff(StartDateTime));
+                var diffHours = duration.asHours();
+                var Hour = parseFloat(Math.round(diffHours * 100) / 100).toFixed(2);
+                $(row).find(".TotalHour").val(Hour);
+            }
+        });
+
+    }
+
+    function GetApprover() {
+        var $row = $(this).closest("tr");
+        $row.find('.ErrorMsg').attr('title', '');
+        $row.find('.ErrorMsg').hide();
+        var _EmployeeID = $row.find(".TSPeoplePickerID").val();
+        var _StartDate = $row.find(".StartDate").val();
+        var _ChargeTypeCode = $row.find(".TSChargeCodePickerType").val();
+        var _Approver = $row.find(".ApproverPeoplePicker.TSPeoplePickerDisplay").val();
+        var _Subtype = $row.find(".AttendanceSubType").val();
+
+        $row.find(".ApproverPeoplePicker.TSPeoplePickerDisplay").siblings('.input-group-btn').css("pointer-events", "auto");
+        $row.find('.TSPeoplePickerDisplay.ApproverPeoplePicker').val('');
+        $row.find('.TSPeoplePickerID.ApproverPeoplePicker').val('');
+        $row.find('.TSPeoplePickerCode.ApproverPeoplePicker').val('');
+        $row.find('.TSPeoplePickerName.ApproverPeoplePicker').val('');
+
+        if ((_EmployeeID != '' && _EmployeeID != undefined &&
+            _StartDate != '' && _StartDate != undefined &&
+            _ChargeTypeCode != '' && _ChargeTypeCode != undefined)) {
+
+            $.ajax({
+                url: '../TimeAttendance/GetApprover',
+                type: 'POST',
+                data: {
+                    EmployeeID: _EmployeeID,
+                    StartDate: _StartDate,
+                    ChargeTypeCode: _ChargeTypeCode,
+                    Subtype: _Subtype,
+                    EntryType: "ACTUAL"
+                },
+                success: function (result) {
+                    if (result != undefined) {
+                        if (result != '') {
+                            if (result.ErrorMessage != '' && result.ErrorMessage != undefined) {
+
+                                $row.find('.TSPeoplePickerDisplay.ApproverPeoplePicker').val('');
+                                $row.find('.TSPeoplePickerID.ApproverPeoplePicker').val('');
+                                $row.find('.TSPeoplePickerCode.ApproverPeoplePicker').val('');
+                                $row.find('.TSPeoplePickerName.ApproverPeoplePicker').val('');
+                                $row.find(".ApproverPeoplePicker.TSPeoplePickerDisplay").siblings('.input-group-btn').css("pointer-events", "auto");
+                                alert(result.ErrorMessage);
+                                $row.find('.ErrorMsg').attr('title', result.ErrorMessage);
+                                $row.find('.ErrorMsg').show();
+                            } else {
+
+                                var ApproverID = result.ApproverID;
+                                var ApproverCode = result.ApproverCode;
+                                var ApproverName = result.ApproverName;
+                                if (ApproverID != '' && ApproverID != undefined &&
+                                    ApproverCode != '' && ApproverCode != undefined &&
+                                    ApproverName != '' && ApproverName != undefined) {
+                                    $row.find('.TSPeoplePickerDisplay.ApproverPeoplePicker').val(ApproverCode + ' - ' + ApproverName);
+                                    $row.find('.TSPeoplePickerID.ApproverPeoplePicker').val(ApproverID);
+                                    $row.find('.TSPeoplePickerCode.ApproverPeoplePicker').val(ApproverCode);
+                                    $row.find('.TSPeoplePickerName.ApproverPeoplePicker').val(ApproverName);
+                                }
+                                $row.find(".ApproverPeoplePicker.TSPeoplePickerDisplay").siblings('.input-group-btn').css("pointer-events", "none");
+                            }
+                        }
+                    }
+                    else {
+
+                    }
+                }
+            });
+        }
+
+    }
+
+    function setDatePickerRange() {
+        var fromDate = $('#WorkScheduleFromDate').val();
+        var toDate = $('#WorkScheduleToDate').val();
+
+        $('.eDate').datepicker('setStartDate', fromDate);
+        $('.eDate').datepicker('setEndDate', toDate);
+    }
+
+    function ClearBulkEntrySearch() {
+        var fromDate = $('#WorkScheduleFromDate').val();
+        var toDate = $('#WorkScheduleToDate').val();
+
+        $('input[name="BulkStartDate"]').val(fromDate);
+        $('input[name="BulkEndDate"]').val(toDate);
+        $('input[name="BulkStartTime"]').val('');
+        $('input[name="BulkEndTime"]').val('');
+        $('input[name="BulkEmployeeDisplayText"]').val('');
+        $('input[name="BulkEmployeeID"]').val('');
+        $('input[name="BulkEmployeeCode"]').val('');
+        $('input[name="BulkEmployeeName"]').val('');
+        $('input[name="BulkTCSNoDisplayText"]').val('');
+        $('input[name="BulkTCSNo"]').val('');
+        $('select[name="BulkNoOfMeal"]').val('0');
+        $('textarea[name="BulkDescription"]').val('');
+        $('.BulkChargeCodePicker').val('');
+        $('input[name="BulkChargeType"]').val('');
+        $('input[name="BulkChargeCode"]').val('');
+        $('input[name="BulkChargeCodeDesc"]').val('');
+
+
+    }
+
+    function ClearNHSearch() {
+        var fromDate = $('#WorkScheduleFromDate').val();
+        var toDate = $('#WorkScheduleToDate').val();
+
+        $('input[name="wsSearchStartDate"]').val(fromDate);
+        $('input[name="wsSearchEndDate"]').val(toDate);
+
+        $('.wsChargeCodePicker').val('');
+        $('textarea[name="wsDescription"]').val('');
+
+        $('input[name="wsEmployeeDisplayText"]').val('');
+        $('input[name="wsEmployeeID"]').val('');
+        $('input[name="wsEmployeeCode"]').val('');
+        $('input[name="wsEmployeeName"]').val('');
+
+    }
+
+    function ShowErrorWarningMessage(Message) {
+
+        for (var k in Message) {
+            if (Message.hasOwnProperty(k)) {
+                //console.log("Key is " + k + ", value is" + Message[k]);
+
+				$("#tblTimesheetEntry td input[type=checkbox].TimesheetCheckBox").each(function (i, value) {
+                    var row = $(this).closest("tr");
+                    var EntryID = row.find('.TimesheetID').val()
+                    if (k == EntryID) {
+                        row.find('.ErrorMsg').attr('title', Message[k]);
+                        row.find('.ErrorMsg').show();
+
+                        return;
+                    }
+                });
+            }
+        }
+    }
+
+    function HandleValidOTCheckBox(Message) {
+        $('#tblTimesheetEntry input[type="checkbox"].ValidOTCheckBox').each(function () {
+            var elem = $(this);
+            elem.prop('disabled', true);
+            elem.parents('div.checker').addClass('disabled')
+            elem.parents('td').removeAttr('style');
+        });
+
+        for (var k in Message) {
+            if (Message.hasOwnProperty(k)) {
+                var elem = $('#tblTimesheetEntry input[val2=' + k + '].ValidOTCheckBox')
+                elem.prop('disabled', false);
+                elem.parents('div.checker').removeClass('disabled')
+                elem.parents('td').css('background-color', 'yellow');
+            }
+        }
+    }
+
+    function HideErrorWarningMessage() {
+        $('.ErrorMsg').attr('title', '');
+        $('.ErrorMsg').hide();
+    }
+
+    function CheckEmptyKeyValueMessage(Message) {
+        var count = 0;
+        for (var key in Message) {
+            count++;
+            break;
+        }
+        if (count == 0) {
+            return false;
+        } else {
+            return true;
+        }
+    }
+
+    function CopyRow(rowNumber) {
+
+		var row = $($("#tblTimesheetEntry td input[type=checkbox].TimesheetCheckBox").get(rowNumber)).closest("tr");
+        var EmployeeID = $(row).find(".EmployeeID").val(); //need in new row
+        var AttendanceSubtype = $(row).find(".AttendanceSubType").val();
+        var StartDate = $(row).find(".StartDate").val();
+        var EndDate = $(row).find(".EndDate").val();
+        var StartTime = $(row).find(".StartTime").val();
+        var EndTime = $(row).find(".EndTime").val();
+        var TotalHour = $(row).find(".TotalHour").val();
+        var Description = $(row).find(".Description").val();
+        var AccumulatedOTHours = $(row).find(".AccumulatedOTHours").val();
+
+        var chargeCodeDisplayText = $(row).find(".TSChargeCodePickerName").val();
+        var ChargeType = $(row).find(".TSChargeCodePickerType").val();
+        var ChargeCode = $(row).find(".TSChargeCodePickerCC").val();
+        var ChargeCodeDesc = $(row).find(".TSChargeCodePickerDesc").val();
+
+        var EmployeeDisplayText = $(row).find('input[name="EmployeeDisplayText"]').val();
+        var EmployeeID = $(row).find('input[name="Entries[' + rowNumber + '].EmployeeID"]').val();
+        var EmployeeName = $(row).find('input[name="Entries[' + rowNumber + '].EmployeeName"]').val();
+        var EmployeeCode = $(row).find('input[name="Entries[' + rowNumber + '].EmployeeCode"]').val();
+
+        var ApproverDisplayText = $(row).find('input[name="ApproverDisplayText"]').val();
+        var ApproverID = $(row).find('input[name="Entries[' + rowNumber + '].ApproverID"]').val();
+        var ApproverName = $(row).find('input[name="Entries[' + rowNumber + '].ApproverName"]').val();
+        var ApproverCode = $(row).find('input[name="Entries[' + rowNumber + '].ApproverCode"]').val();
+
+        var TCSDisplayText = $(row).find(".TCSNoDisplayText").val();
+        var TCSNoPickerValue = $(row).find(".TCSNoPickerValue").val();
+
+        var OTCodeDisplayText = $(row).find(".OTCodeDisplayText").val();
+        var OTCodePickerValue = $(row).find(".OTCodePickerValue").val();
+
+        var NoOfMeal = $(row).find(".NoOfMeal").val();
+
+        if ((StartDate != "" || StartDate != null) && (EndDate != "" || EndDate != null)) {
+
+            var rowCopied = false;
+            $("#tblTimesheetEntry td input[type=checkbox].TimesheetCheckBox").each(function (i, value) {
+                var tgtRow = $($("#tblTimesheetEntry td input[type=checkbox].TimesheetCheckBox").get(i)).closest("tr");
+                var tgtStartDate = $(tgtRow).find(".StartDate");
+                var tgtEndDate = $(tgtRow).find(".EndDate");
+
+                if (rowCopied) {
+                    //skip whole iteration
+                    return false;
+                }
+                if (rowNumber == i ||
+                    (tgtStartDate.val() != "") ||
+                    (tgtEndDate.val() != "")) {
+                    //skip current iteration
+                    return true;
+                }
+                var tgtEntryID = $(tgtRow).find(".TimesheetID");
+                var tgtCheckBox = $(tgtRow).find(".TimesheetCheckBox");
+                var tgtAttendanceSubtype = $(tgtRow).find(".AttendanceSubType");
+                var tgtEmployeeID = $(tgtRow).find(".TSPeoplePickerID");
+                var tgtStartTime = $(tgtRow).find(".StartTime");
+                var tgtEndTime = $(tgtRow).find(".EndTime");
+                var tgtTotalHour = $(tgtRow).find(".TotalHour");
+                var tgtDescription = $(tgtRow).find(".Description");
+                var tgtAccumulatedOTHours = $(tgtRow).find(".AccumulatedOTHours");
+
+                var tgtchargeCodeDisplayText = $(tgtRow).find(".TSChargeCodePickerName");
+                var tgtChargeType = $(tgtRow).find(".TSChargeCodePickerType");
+                var tgtChargeCode = $(tgtRow).find(".TSChargeCodePickerCC");
+                var tgtChargeCodeDesc = $(tgtRow).find(".TSChargeCodePickerDesc");
+
+                var tgtEmployeeDisplayText = $(tgtRow).find('input[name="EmployeeDisplayText"]');
+                var tgtEmployeeID = $(tgtRow).find('input[name="Entries[' + i + '].EmployeeID"]');
+                var tgtEmployeeName = $(tgtRow).find('input[name="Entries[' + i + '].EmployeeName"]');
+                var tgtEmployeeCode = $(tgtRow).find('input[name="Entries[' + i + '].EmployeeCode"]');
+
+                var tgtApproverDisplayText = $(tgtRow).find('input[name="ApproverDisplayText"]');
+                var tgtApproverID = $(tgtRow).find('input[name="Entries[' + i + '].ApproverID"]');
+                var tgtApproverName = $(tgtRow).find('input[name="Entries[' + i + '].ApproverName"]');
+                var tgtApproverCode = $(tgtRow).find('input[name="Entries[' + i + '].ApproverCode"]');
+
+                var tgtTCSDisplayText = $(tgtRow).find(".TCSNoDisplayText");
+                var tgtTCSNoPickerValue = $(tgtRow).find(".TCSNoPickerValue");
+
+                var tgtOTCodeDisplayText = $(tgtRow).find(".OTCodeDisplayText");
+                var tgtOTCodePickerValue = $(tgtRow).find(".OTCodePickerValue");
+
+                var tgtNoOfMeal = $(tgtRow).find(".NoOfMeal");
+
+
+                tgtAttendanceSubtype.val(AttendanceSubtype);
+                //tgtStartDate.val(StartDate);
+				tgtStartDate.datepicker({
+					format: 'dd/mm/yyyy',
+					autoclose: true
+				});
+                tgtStartDate.datepicker('update', StartDate);
+				//tgtEndDate.val(EndDate);
+				tgtEndDate.datepicker({
+					format: 'dd/mm/yyyy',
+					autoclose: true
+				});
+				tgtEndDate.datepicker('update', EndDate);
+                tgtStartTime.val(StartTime);
+                tgtEndTime.val(EndTime);
+                tgtTotalHour.val(TotalHour);
+                tgtDescription.val(Description);
+                tgtchargeCodeDisplayText.val(chargeCodeDisplayText);
+                tgtChargeType.val(ChargeType);
+                tgtChargeCode.val(ChargeCode);
+                tgtChargeCodeDesc.val(ChargeCodeDesc);
+                tgtAccumulatedOTHours.val(AccumulatedOTHours);
+
+                tgtEmployeeDisplayText.val(EmployeeDisplayText);
+                tgtEmployeeID.val(EmployeeID);
+                tgtEmployeeName.val(EmployeeName);
+                tgtEmployeeCode.val(EmployeeCode);
+                tgtApproverDisplayText.val(ApproverDisplayText);
+                tgtApproverID.val(ApproverID);
+                tgtApproverName.val(ApproverName);
+                tgtApproverCode.val(ApproverCode);
+
+                tgtTCSDisplayText.val(TCSDisplayText);
+                tgtTCSNoPickerValue.val(TCSNoPickerValue);
+
+                //tgtOTCodeDisplayText.val(OTCodeDisplayText);
+                //tgtOTCodePickerValue.val(OTCodePickerValue);
+
+                tgtNoOfMeal.val(NoOfMeal);
+
+                ToggleOvertimeEntryControl(this);
+
+                rowCopied = true;
+
+                tgtEmployeeDisplayText.change();
+            });
+        }
+
+
+    }
+
+    function DisableActionButton() {
+        $('#TimesheetActionDiv').children().children().children('.btn').attr('disabled', true);
+        $('#divLoading').show();
+    }
+
+    function EnableActionButton() {
+        $('#divLoading').hide();
+        $('#TimesheetActionDiv').children().children().children('.btn').attr('disabled', false);
+    }
+    function ReloadForm() {
+        $('form').submit();
+    }
+
+    function ToggleBatchRemarks()
+    {
+        if($('input[name="BatchNo"]').is(':checked'))
+        {
+            $('input[name="BatchRemarks"]').removeAttr('readonly');
+        }
+        else
+        {
+            $('input[name="BatchRemarks"]').val('');
+            $('input[name="BatchRemarks"]').attr('readonly', 'readonly');
+        }
+    }
+
+    function SelectUnselectAll(element) {
+        $('#tblTimesheetEntry .TimesheetCheckBox').prop('checked', element.checked);
+        $.uniform.update();
+    }
+
+    function ToggleOvertimeEntryControl(x) {
+        var row = $(x).closest("tr");
+
+        var AttendanceSubtype = $(row).find(".AttendanceSubType").val();
+        if (AttendanceSubtype == "Overtime") {
+            $(row).find(".TCSNoDisplayText").siblings('.input-group-btn').css("pointer-events", "auto");
+            $(row).find(".OTCodeDisplayText").siblings('.input-group-btn').css("pointer-events", "auto");
+            $(row).find(".NoOfMeal").removeAttr('disabled');
+        }
+        else {
+            $(row).find(".TCSNoDisplayText").siblings('.input-group-btn').css("pointer-events", "none");
+            $(row).find(".TCSNoDisplayText").val('');
+            $(row).find(".TCSNoPickerValue").val('');
+            $(row).find(".OTCodeDisplayText").siblings('.input-group-btn').css("pointer-events", "none");
+            $(row).find(".OTCodeDisplayText").val('');
+            $(row).find(".OTCodePickerValue").val('');
+            $(row).find(".NoOfMeal").attr('disabled', 'disabled');
+            $(row).find(".NoOfMeal").val('');
+        }
+
+        CalculateAllDateTime();
+        //console.log(x.value);
+    }
+
+    function ToggleAllOvertimeEntryControl() {
+		$("#tblTimesheetEntry td input[type=checkbox].TimesheetCheckBox").each(function (i, value) {
+            var row = $(this).closest("tr");
+            var AttendanceSubtype = $(row).find(".AttendanceSubType").val();
+            if (AttendanceSubtype == "Overtime") {
+                $(row).find(".TCSNoDisplayText").siblings('.input-group-btn').css("pointer-events", "auto");
+                $(row).find(".OTCodeDisplayText").siblings('.input-group-btn').css("pointer-events", "auto");
+                $(row).find(".NoOfMeal").removeAttr('disabled');
+            }
+            else {
+                $(row).find(".TCSNoDisplayText").siblings('.input-group-btn').css("pointer-events", "none");
+                $(row).find(".TCSNoDisplayText").val('');
+                $(row).find(".TCSNoPickerValue").val('');
+                $(row).find(".OTCodeDisplayText").siblings('.input-group-btn').css("pointer-events", "none");
+                $(row).find(".OTCodeDisplayText").val('');
+                $(row).find(".OTCodePickerValue").val('');
+                $(row).find(".NoOfMeal").attr('disabled', 'disabled');
+                $(row).find(".NoOfMeal").val('');
+            }
+        });
+    }
+
+    function GetDDLInputValues() {
+		$("#tblTimesheetEntry td input[type=checkbox].TimesheetCheckBox").each(function (i, value) {
+            var row = $(this).closest("tr");
+            var hfAttendanceSubType = row.find('.hfAttendanceSubtype');
+            var AttendanceSubType = row.find('.AttendanceSubType');
+            if (hfAttendanceSubType.val() != '' && hfAttendanceSubType.val() != undefined) {
+                AttendanceSubType.val(hfAttendanceSubType.val());
+            }
+
+            var hfPremiumNo = row.find('.hfPremiumNo');
+            var NoOfMeal = row.find('.NoOfMeal');
+            if (hfPremiumNo.val() != '' && hfPremiumNo.val() != undefined) {
+                NoOfMeal.val(hfPremiumNo.val());
+            }
+        });
+    }
+
+    function EASyNavigation(x) {
+		var row = $($("#tblTimesheetEntry td input[type=checkbox].TimesheetCheckBox").get(x)).closest("tr");
+        var StartDate = $(row).find(".StartDate").val();
+        var EndDate = $(row).find(".EndDate").val();
+        var EmployeeCode = $(row).find(".TSPeoplePickerCode").val();
+
+        var DateTimeStartDate = moment(StartDate, "DD/MM/YYYY").add(-1, 'days');
+        var DateTimeEndDate = moment(EndDate, "DD/MM/YYYY").add(+1, 'days');
+        var newStartDate = DateTimeStartDate.format('YYYY-MM-DD');
+        var newEndDate = DateTimeEndDate.format('YYYY-MM-DD');
+
+        if ((newStartDate != '' && newStartDate != undefined) &&
+            (newEndDate != '' && newEndDate != undefined) &&
+            (EmployeeCode != '' && EmployeeCode != undefined)) {
+            var EAsyPath = '../TimeAttendance/EASyDoorAccess' + '?employeeCode=' + EmployeeCode + '&StartDate=' + newStartDate + '&EndDate=' + newEndDate;
+            window.open(EAsyPath);
+        }
+    }
+
+    function loadRowTooltip($row) {
+
+        var _Employee = $row.find(".TSPeoplePickerDisplay").val();
+        var _StartDate = $row.find(".StartDate").val();
+        var _StartTime = $row.find(".StartTime").val();
+        var _EndDate = $row.find(".EndDate").val();
+        var _EndTime = $row.find(".EndTime").val();
+        var _Subtype = $row.find(".AttendanceSubType").val();
+
+        if ((_StartDate != '' && _StartDate != undefined) &&
+            (_StartTime != '' && _StartTime != undefined) &&
+            (_EndDate != '' && _EndDate != undefined) &&
+            (_EndTime != '' && _EndTime != undefined) &&
+            (_Employee != '' && _Employee != undefined)) {
+
+            $($row).qtip({
+                content: createRowTooltips($row),
+                position: {
+                    target: 'mouse',
+                    adjust: {
+                        mouse: true
+                    }
+                },
+                style: {
+                    width: " + this.Width + ",
+                    border: {
+                        width: 2,
+                        radius: 5,
+                        color: '#CECECE'
+                    },
+                    padding: 5,
+                    tip: true,
+                    name: 'light'
+                },
+                show: {
+                    event: 'mouseover'
+                },
+                hide: {
+                    event: 'mouseout'
+                }
+            });
+
+        }
+
+    }
+
+
+    function createRowTooltips($row) {
+
+        var _ID = $row.find(".TimesheetID").val();
+        var _Employee = $row.find(".TSPeoplePickerDisplay").val();
+        var _StartDate = $row.find(".StartDate").val();
+        var _StartTime = $row.find(".StartTime").val();
+        var _EndDate = $row.find(".EndDate").val();
+        var _EndTime = $row.find(".EndTime").val();
+        var _Subtype = $row.find(".AttendanceSubType").val();
+
+        var returnContent = '<table align="center">';
+        //if (_StartDate != '' && _StartDate != undefined)
+        //    returnContent += '<tr><td>Start Date    :   </td><td align=right>' + _StartDate + '</td></tr>'
+        //if (_StartTime != '' && _StartTime != undefined)
+        //    returnContent += '<tr><td>Start Time    :   </td><td align=right>' + _StartTime + '</td></tr>'
+        //if (_EndDate != '' && _EndDate != undefined)
+        //    returnContent += '<tr><td>End Date    :   </td><td align=right>' + _EndDate + '</td></tr>'
+        //if (_EndTime != '' && _EndTime != undefined)
+        //    returnContent += '<tr><td>End Time    :   </td><td align=right>' + _EndTime + '</td></tr>'
+        //if (_Subtype != '' && _Subtype != undefined)
+        //    returnContent += '<tr><td>SubType    :   </td><td align=right>' + _Subtype + '</td></tr>'
+        returnContent += '<tr><td><input type="hidden" class="qtipID' + _ID +'"/>Employee    :   </td><td align=right>' + _Employee + '</td></tr>'
+        returnContent += '<tr><td>Start Date    :   </td><td align=right>' + _StartDate + '</td></tr>'
+        returnContent += '<tr><td>Start Time    :   </td><td align=right>' + _StartTime + '</td></tr>'
+        returnContent += '<tr><td>End Date    :   </td><td align=right>' + _EndDate + '</td></tr>'
+        returnContent += '<tr><td>End Time    :   </td><td align=right>' + _EndTime + '</td></tr>'
+        returnContent += '<tr><td>SubType    :   </td><td align=right>' + _Subtype + '</td></tr>'
+        returnContent += '</table > ';
+
+        return returnContent;
+
+    }
+
+    function RowDisplayInfo() {
+        var $row = $(this).closest("tr");
+        loadRowTooltip($row);
+    }
+
+    function TableRowDisplayInfo() {
+        $(".qtip").remove();
+		$("#tblTimesheetEntry td input[type=checkbox].TimesheetCheckBox").each(function (i, value) {
+            var $row = $(this).closest("tr");
+            loadRowTooltip($row);
+        });
+    }
+
+    function OnChangeRowDisplayInfo() {
+        var row = $(this).closest("tr");
+        var TimesheetID = row.find('.TimesheetID').val();
+        $("input[class='qtipID" + TimesheetID + "']").closest('.qtip').remove();
+        loadRowTooltip(row);
+    }
+
+    function InitiateRowDisplayInfo() {
+        TableRowDisplayInfo();
+        $('.RowTooltipDisplay').on('change', OnChangeRowDisplayInfo);
+        $('.TSPeoplePickerDisplay').on('change', OnChangeRowDisplayInfo);
+    }
+
+    $(document).ready(function () {
+
+        $('.TSChargeCodePickerName.ChargeCodePicker').on('change', GetApprover);
+		$("#tblTimesheetEntry td input[type=checkbox].TimesheetCheckBox").each(function (i, value) {
+            var row = $(this).closest("tr");
+            var approver = $(row).find(".ApproverPeoplePicker.TSPeoplePickerDisplay").val();
+            if (approver != '') {
+                $(row).find(".ApproverPeoplePicker.TSPeoplePickerDisplay").siblings('.input-group-btn').css("pointer-events", "none");
+            }
+        });
+
+
+        $('.date-picker').datepicker({
+            format: 'dd/mm/yyyy',
+            autoclose: true,
+            minDate: new Date(2017, 8, 1),
+            maxDate: new Date(2017, 9, 6)
+        });
+        $('.wsDate').datepicker('setStartDate', '@ViewBag.dtStrStart');
+        $('.wsDate').datepicker('setEndDate', '@ViewBag.dtStrEnd');
+        //$('.date-picker').datepicker();
+
+        $('.timepicker-24').timepicker({
+            autoclose: true,
+            minuteStep: 5,
+            showSeconds: false,
+            showMeridian: false,
+            defaultTime: 0000
+        });
+
+        $('.timeinput').inputmask("mask", {
+            "mask": "99:99"
+        });
+
+        //$('.timeinput').inputmask("h:s", {
+        //    "placeholder": "__/__",
+        //    onincomplete: function () {
+        //        // replace placeholder with zero
+        //        $(this).val($(this).val().replace(/_/g, '0'));
+        //    }
+        //});
+
+        setDatePickerRange();
+        //CalculateAllDateTime();
+        GetDDLInputValues();
+        ToggleAllOvertimeEntryControl();
+        InitiateRowDisplayInfo();
+    });
+
+
+
+</script>

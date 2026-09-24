@@ -1,0 +1,208 @@
+﻿@model ESS.Core.WFConfig
+
+@{
+    ViewBag.Title = "Workflow Config - Create";
+}
+
+<div class="row">
+    <div class="col-md-12">
+        <br />
+        <h1 class="page-title">
+            Create Custom Workflow Configuration<span style="padding-left:20px;"><small></small></span>
+        </h1>
+    </div>
+</div>
+<br />
+
+@using (Html.BeginForm("Create", "CustomWorkflowConfig", FormMethod.Post, new {@class ="form-body", @id = "createForm" }))
+{
+    <div class="form-body">
+        <div class="row">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-horizontal">
+                        <div class="form-group">
+                            <label class="col-md-4 control-label">Personnel Area</label>
+                            <div class="col-md-8 form-control-static">
+                                @Html.DropDownList("Company", new SelectList(ViewBag.CompanyList, "Value", "Text"), "- All -", new { @class = "bs-select form-control", @onchange = "changeCompany(this)" })
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-horizontal">
+                        <div class="form-group">
+                            <label class="col-md-4 control-label">Division / Department</label>
+                            <div class="col-md-8 form-control-static">
+                                @Html.Action("_DDLDepartment", "Training", new { })
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-horizontal">
+                        <div class="form-group">
+                            <label class="col-md-4 control-label">Unit / Section</label>
+                            <div class="col-md-8 form-control-static">
+                                @Html.Action("_DDLUnitSection", "Training", new { })
+                            </div>
+                        </div>
+                    </div>
+                </div>
+               
+            </div>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-horizontal">
+                        <div class="form-group">
+                            <label class="col-md-4 control-label">IM Staff</label>
+                            <div class="col-md-8 form-control-static">
+                                @Html.Partial("_PeoplePickerControl", new ViewDataDictionary { { "PPID", "IMStaff" }})
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-horizontal">
+                        <div class="form-group">
+                            <label class="col-md-4 control-label">IM of IM Staff</label>
+                            <div class="col-md-8 form-control-static">
+                                @Html.Partial("_PeoplePickerControl", new ViewDataDictionary { { "PPID", "IMofIMStaff" } })
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-horizontal">
+                        <div class="form-group">
+                            <label class="col-md-4 control-label">Start tDate</label>
+                            <div class="col-md-8 form-control-static">
+                                <input id="StartDate" name="StartDate" class="form-control" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-horizontal">
+                        <div class="form-group">
+                            <label class="col-md-4 control-label">End Date</label>
+                            <div class="col-md-8 form-control-static">
+                                <input id="EndDate" name="EndDate" class="form-control" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-horizontal">
+                        <div class="form-group">
+                            <label class="col-md-4 control-label"></label>
+                            <div class="col-md-8 form-control-static">
+                                <a id="btnAdd" class="btn btn-primary">
+                                    <i class="fa fa-pencil"></i>
+                                    Add
+                                </a>
+                                <a onclick="location.href=history.go(-1)" class="btn btn-primary">
+                                    Back
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+@Html.Partial("_PeoplePickerInit")
+
+<script>
+
+    $(document).ready(function () {
+        $("#StartDate, #EndDate").datepicker({
+            autoclose: true,
+            format: 'dd/mm/yyyy'
+        });
+    });
+
+    $("#btnAdd").click(function () {
+
+        if (Validate()) {
+            $("#createForm").submit();
+        }
+    });
+
+    function Validate() {
+
+        var department = $("#Department").val();
+        var IM = $("#IMStaff").val();
+        var IM2 = $("#IMofIMStaff").val();
+        var startDate = $("#StartDate").val();
+        var endDate = $("#EndDate").val();
+
+        var message = "";
+        if (department == "")
+            message += "Division/Department is required \n";
+        if (IM == "")
+            message += "IM Staff is required \n";
+        if (IM2 == "")
+            message += "IM of IM Staff is required \n";
+        if (startDate == "")
+            message += "Start Date is required \n";
+
+        if (startDate != "" && endDate != "") {
+            var firstDate = new Date(startDate);
+            var secondDate = new Date(endDate);
+            if (secondDate < firstDate)
+                message += "End Date must be later than start date \n";
+        }
+
+        if (IM == IM2)
+            message += "IM and IM of IM cannot be the same employee. \n";
+
+        if(message != "")
+        {
+            alert(message);
+            return false;
+        }
+
+        return true;
+    }
+
+    function changeCompany(e) {
+        $.ajax({
+            type: "GET",
+            url: '@Url.Content("~/Training/_DDLDepartment")',
+            cache: false,
+            dataType: "html",
+            data: { CompanyCode: e.value },
+            success: function (content) {
+                $("#DepartmentResult").html(content);
+            },
+            error: function (e) {
+                console.log(e);
+            }
+        });
+    }
+
+    function changeDepartment(e) {
+        $.ajax({
+            type: "GET",
+            url: '@Url.Content("~/Training/_DDLUnitSection")',
+            cache: false,
+            dataType: "html",
+            data: { DepartmentCode: e.value },
+            success: function (content) {
+                $("#UnitSectionResult").html(content);
+            },
+            error: function (e) {
+                console.log(e);
+            }
+        });
+    }
+</script>

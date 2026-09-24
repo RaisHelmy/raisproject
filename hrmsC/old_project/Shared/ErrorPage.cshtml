@@ -1,0 +1,76 @@
+﻿@{
+    //Layout = null;
+    ViewBag.Title = "Error";
+
+    Exception ex = null;
+    string SourcePage = "";
+    string Message = "";
+    string ErrorLogID = "";
+
+
+    if (ViewBag.Error != null)
+    {
+        ex = new Exception();
+        ex = ViewBag.Error;
+        Message = ex.Message;
+    }
+
+    if (ViewBag.ErrorPage != null)
+    {
+        SourcePage = ViewBag.ErrorPage;
+    }
+
+    if (SourcePage.Length < 1)
+    {
+        SourcePage = Request.Url.ToString();
+    }
+
+    if (ViewBag.ErrorLogID != null)
+    {
+        ErrorLogID = ViewBag.ErrorLogID + "";
+    }
+
+}
+<br />
+<body>
+    <div class="row">
+        <div class="col-md-12">
+            <div class="note note-danger">
+                <h4 class="block">
+                    An error had occured while performing the previous operation.
+                </h4>
+				<p>
+					Detail Message:
+					<div class="well" style="font-family: 'Courier New';">
+						@Html.Raw(ex.Message)
+						<br />
+						<i>Page: @Html.Raw(SourcePage)</i>
+						<br />
+						<i>Date: @TNB_ESS_MVC.Helpers.GeneralHelper.FormatDateTime(DateTime.Now)</i>
+					</div>
+
+					<div style="display: none;">
+						@ex.InnerException
+					</div>
+
+					<div style="display: none;">
+						@ex.Source
+					</div>
+
+					<div style="display: none;">
+						@ex.ToString()
+					</div>
+
+					<div>
+						@ex.StackTrace.ToString()
+					</div>
+				</p>
+                <p>
+
+                    <input type="button" class="btn red" title="Back to Previous" value="Back to Previous" onclick="javascript: self.history.go(-1);" />
+                    <input type="button" class="btn red" name="Back to Home" title="Back to Home" value="Back to Home" onclick="javascript: self.location='/';" />
+                </p>
+            </div>
+        </div>
+    </div>
+</body>

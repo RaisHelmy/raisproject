@@ -1,0 +1,46 @@
+﻿@model SEP.RoutingManagement.Service.AllowAction
+@{
+    String CurrentEmployeeID = ViewBag.CurrentEmployeeID;
+    String CurrentApproverID = ViewBag.CurrentApproverID;
+    ETKEMS.Status Status = ViewBag.Status;
+    String BackUrl = @ViewBag.BackUrl;
+}
+
+<div class="row">
+    @if (Status == ETKEMS.Status.Draft)
+    {
+        <div class="col-md-12">
+            <input type="button" class="btn green" value="Submit" id="btnSubmit" onclick="SubmitEMSForm()" />
+            <input type="button" class="btn green" value="Back" id="btnBack" onclick="BackToHistory();" />
+        </div>
+    }
+    else
+    {
+        <div class="col-md-12">
+            @*<input type="button" id="btnPayment" class="btn green" value="Payment Request" onclick="PaymentRequest()" />
+            <input type="button" id="btnExtension" class="btn green" value="Extension Request" onclick="ExtensionRequest()" />*@
+
+            @if (Model.CanAgree == "1")
+            {
+                <input type="button" id="btnAgree" class="btn green" value="Agree" onclick="ApproverAction('Agree')" />
+            }
+            
+            @if (Model.CanApprove == "1")
+            {
+                <input type="button" id="btnApprove" class="btn green" value="Approve" onclick="ApproverAction('Approve')" />
+            }
+            
+            @if (Model.CanDecline == "1")
+            {
+                <input type="button" id="btnDecline" class="btn green" value="Decline" onclick="ApproverAction('Decline')" /> <!--validate decline-->
+            }
+           
+            <input type="button" class="btn green" value="Back" id="btnBack" onclick="BackToHistory()" />
+        </div>
+    }
+</div>
+<script>
+    function BackToHistory() {
+        window.location.href = '@BackUrl';
+    }
+</script>

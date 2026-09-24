@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kementerian Malaysia — Cabinet Structure (Non-PH + GRS)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:wght@600&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0d1117;--surface:#161b22;--surface2:#1c2330;--surface3:#21262d;
+  --border:#30363d;--border2:#21262d;
+  --gold:#e3a04f;--gold-dim:#7a5520;
+  --text:#e6edf3;--text2:#8b949e;--text3:#484f58;
+  --pm:#e3a04f;--dpm:#d4906a;--senior:#7db9e8;--min:#58a6ff;
+  --dmin:#a5d6ff;--psec:#bc8cff;--secgen:#56d364;--under:#3fb950;
+}
+body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-size:14px;min-height:100vh}
+.header{background:var(--surface);border-bottom:1px solid var(--border);padding:14px 16px 12px;position:sticky;top:0;z-index:50}
+.header-top{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.header-title{font-family:'Playfair Display',serif;font-size:17px;color:var(--gold);line-height:1.2}
+.header-sub{font-size:11px;color:var(--text2);margin-top:1px}
+.header-badges{display:flex;flex-wrap:wrap;gap:5px}
+.hbadge{font-size:10px;padding:2px 8px;border-radius:100px;font-weight:600;letter-spacing:0.04em}
+.hbadge.a{background:rgba(227,160,79,0.12);color:var(--gold);border:1px solid rgba(227,160,79,0.25)}
+.hbadge.b{background:rgba(88,166,255,0.1);color:#58a6ff;border:1px solid rgba(88,166,255,0.2)}
+.hbadge.c{background:rgba(86,211,100,0.09);color:#56d364;border:1px solid rgba(86,211,100,0.18)}
+.search-wrap{padding:9px 12px;background:var(--surface);border-bottom:1px solid var(--border2)}
+.search-wrap input{
+  width:100%;background:var(--surface3);border:1px solid var(--border);border-radius:6px;
+  padding:7px 12px 7px 32px;font-size:13px;color:var(--text);
+  font-family:'Inter',sans-serif;outline:none;transition:border-color 0.2s;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%238b949e' stroke-width='2'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cpath d='m21 21-4.35-4.35'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:10px center;
+}
+.search-wrap input:focus{border-color:var(--gold-dim)}
+.search-wrap input::placeholder{color:var(--text3)}
+.controls{padding:7px 12px;display:flex;gap:5px;flex-wrap:wrap;background:var(--surface);border-bottom:1px solid var(--border2)}
+.ctrl-btn{font-size:11px;padding:4px 10px;border-radius:100px;border:1px solid var(--border);background:transparent;color:var(--text2);cursor:pointer;font-family:'Inter',sans-serif;transition:all 0.15s}
+.ctrl-btn:hover{background:var(--surface3);color:var(--text)}
+.ctrl-btn.active{background:var(--surface3);color:var(--gold);border-color:var(--gold-dim)}
+.tree{padding:4px 0 80px}
+.node-row{display:flex;align-items:center;cursor:pointer;position:relative;transition:background 0.1s;border-radius:0}
+.node-row:hover .node-inner{background:rgba(255,255,255,0.04)}
+.node-row.selected .node-inner{background:rgba(255,255,255,0.06)}
+.indent{display:flex;align-items:stretch;flex-shrink:0;height:38px}
+.iseg{width:20px;flex-shrink:0;position:relative}
+.iseg.show-line::before{content:'';position:absolute;left:9px;top:0;bottom:0;width:1px;background:var(--border2)}
+.iseg.corner::after{content:'';position:absolute;left:9px;top:50%;width:9px;height:1px;background:var(--border2)}
+.toggle{width:18px;height:38px;flex-shrink:0;display:flex;align-items:center;justify-content:center;color:var(--text3);font-size:9px;transition:transform 0.15s}
+.toggle.open{transform:rotate(90deg)}
+.node-inner{flex:1;display:flex;align-items:center;gap:7px;padding:4px 10px 4px 2px;border-radius:6px;min-width:0}
+.node-icon{width:26px;height:26px;border-radius:5px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:12px}
+.node-text{flex:1;min-width:0}
+.node-name{font-size:12px;font-weight:500;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.node-pos{font-size:11px;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px}
+.node-badges{display:flex;align-items:center;gap:3px;flex-shrink:0}
+.badge{font-size:10px;padding:1px 6px;border-radius:4px;font-weight:600;white-space:nowrap}
+.count{font-size:10px;background:var(--surface3);color:var(--text3);border:1px solid var(--border2);padding:1px 5px;border-radius:10px}
+.lvl-PM{background:rgba(227,160,79,0.18);color:#e3a04f}
+.lvl-DPM{background:rgba(212,144,106,0.15);color:#d4906a}
+.lvl-SENIOR{background:rgba(125,185,232,0.14);color:#7db9e8}
+.lvl-MIN{background:rgba(88,166,255,0.14);color:#58a6ff}
+.lvl-DMIN{background:rgba(165,214,255,0.1);color:#a5d6ff}
+.lvl-PSEC{background:rgba(188,140,255,0.1);color:#bc8cff}
+.lvl-SECGEN{background:rgba(86,211,100,0.1);color:#56d364}
+.lvl-UNDER{background:rgba(63,185,80,0.08);color:#3fb950}
+.py-PN{background:rgba(22,163,74,0.12);color:#86efac;border:1px solid rgba(22,163,74,0.28)}
+.py-BN{background:rgba(217,119,6,0.15);color:#fcd34d;border:1px solid rgba(217,119,6,0.28)}
+.py-GPS{background:rgba(124,58,237,0.14);color:#c4b5fd;border:1px solid rgba(124,58,237,0.28)}
+.py-GRS{background:rgba(147,51,234,0.12);color:#d8b4fe;border:1px solid rgba(147,51,234,0.28)}
+.py-Allies{background:rgba(45,212,191,0.1);color:#5eead4;border:1px solid rgba(45,212,191,0.2)}
+.py-Ind{background:rgba(100,116,139,0.14);color:#94a3b8;border:1px solid rgba(100,116,139,0.28)}
+.node-row.dimmed .node-name{opacity:0.28}
+.node-row.dimmed .node-pos{opacity:0.2}
+.node-row.dimmed .node-icon{opacity:0.3}
+.backdrop{position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:80;display:none}
+.backdrop.open{display:block}
+.sheet{position:fixed;bottom:0;left:0;right:0;background:var(--surface);border-top:1px solid var(--border);border-radius:14px 14px 0 0;z-index:90;transform:translateY(100%);transition:transform 0.28s cubic-bezier(0.32,0.72,0,1);max-height:78vh;overflow-y:auto}
+.sheet.open{transform:translateY(0)}
+.sheet-handle{width:34px;height:4px;background:var(--border);border-radius:2px;margin:10px auto 0}
+.sheet-body{padding:14px 18px 36px}
+.s-lv{font-size:10px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;padding:3px 10px;border-radius:100px;display:inline-block;margin-bottom:10px}
+.s-name{font-family:'Playfair Display',serif;font-size:19px;line-height:1.3;color:var(--text);margin-bottom:3px}
+.s-pos{font-size:13px;color:var(--gold);font-weight:500;margin-bottom:14px}
+.s-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:14px}
+.s-cell{background:var(--surface3);border-radius:7px;padding:9px 11px}
+.s-cell .k{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:3px}
+.s-cell .v{font-size:13px;color:var(--text);font-weight:500}
+.s-sec{margin-bottom:12px}
+.s-sec h4{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:7px;font-weight:600}
+.s-tag{display:inline-block;padding:3px 9px;border-radius:6px;font-size:11px;background:var(--surface3);color:var(--text2);border:1px solid var(--border2);margin:2px 2px 2px 0}
+.s-reports li{list-style:none;padding:6px 0;border-bottom:1px solid var(--border2);font-size:12px;color:var(--text2)}
+.s-reports li strong{color:var(--text);display:block;font-weight:500}
+.s-parent{padding:8px 10px;background:var(--surface3);border-radius:7px;font-size:12px}
+.s-parent strong{color:var(--text);display:block;font-weight:500;margin-bottom:2px}
+.legend{padding:10px 14px;background:var(--surface);border-top:1px solid var(--border2);display:flex;flex-wrap:wrap;gap:7px}
+.li{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text2)}
+.ld{width:10px;height:10px;border-radius:3px;flex-shrink:0}
+.empty{padding:40px;text-align:center;color:var(--text3);font-size:13px}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-top">
+    <span style="font-size:22px">🇲🇾</span>
+    <div>
+      <div class="header-title">Kementerian Malaysia</div>
+      <div class="header-sub">Simulated Cabinet Hierarchy · Non-PH + GRS Coalition</div>
+    </div>
+  </div>
+  <div class="header-badges">
+    <span class="hbadge a">148 positions</span>
+    <span class="hbadge b">25 ministries</span>
+    <span class="hbadge b">3 Deputy PMs</span>
+    <span class="hbadge c">Non-PH + GRS cabinet fill</span>
+  </div>
+</div>
+
+<div class="search-wrap">
+  <input type="text" id="searchInput" placeholder="Search name, position, party...">
+</div>
+
+<div class="controls">
+  <button class="ctrl-btn active" data-f="all">All</button>
+  <button class="ctrl-btn" data-f="expand">Expand all</button>
+  <button class="ctrl-btn" data-f="collapse">Collapse all</button>
+  <button class="ctrl-btn" data-f="PN">PN</button>
+  <button class="ctrl-btn" data-f="BN">BN</button>
+  <button class="ctrl-btn" data-f="GPS">GPS</button>
+  <button class="ctrl-btn" data-f="GRS">GRS</button>
+</div>
+
+<div class="tree" id="tree"></div>
+<div class="legend" id="legend"></div>
+
+<div class="backdrop" id="backdrop" onclick="closeSheet()"></div>
+<div class="sheet" id="sheet">
+  <div class="sheet-handle"></div>
+  <div class="sheet-body" id="sbody"></div>
+</div>
+
+<script>
+const LV={
+  PM:{label:'Prime Minister',color:'#e3a04f',bg:'rgba(227,160,79,0.18)',icon:'👑'},
+  DPM:{label:'Deputy Prime Minister',color:'#d4906a',bg:'rgba(212,144,106,0.15)',icon:'🏛️'},
+  SENIOR:{label:'Senior Minister',color:'#7db9e8',bg:'rgba(125,185,232,0.14)',icon:'⭐'},
+  MIN:{label:'Minister',color:'#58a6ff',bg:'rgba(88,166,255,0.14)',icon:'📋'},
+  DMIN:{label:'Deputy Minister',color:'#a5d6ff',bg:'rgba(165,214,255,0.1)',icon:'📄'},
+  PSEC:{label:'Parliamentary Secretary',color:'#bc8cff',bg:'rgba(188,140,255,0.1)',icon:'📝'},
+  SECGEN:{label:'Secretary General',color:'#56d364',bg:'rgba(86,211,100,0.1)',icon:'🗂️'},
+  UNDER:{label:'Under Secretary',color:'#3fb950',bg:'rgba(63,185,80,0.08)',icon:'📁'}
+};
+
+const COA={
+  PAS:'PN',BERSATU:'PN',GERAKAN:'PN',
+  UMNO:'BN',MCA:'BN',MIC:'BN',
+  GPS:'GPS',GRS:'GRS',
+  Warisan:'Allies',MUDA:'Allies',PBM:'Allies',UPKO:'Allies',
+  Ind:'Ind'
+};
+
+const GRADE={PM:'VU',DPM:'U',SENIOR:'JU',MIN:'J54',DMIN:'J52',PSEC:'J48',SECGEN:'VK7',UNDER:'VK6'};
+const RESP=['Policy coordination','Stakeholder engagement','Budget oversight','Programme delivery','Strategic planning','Parliamentary liaison'];
+
+const NS=['Anwar Ibrahim','Ahmad Zahid Hamidi','Fadillah Yusof','Azmin Ali','Gobind Singh Deo',
+'Hannah Yeoh','Khalid Samad','Anthony Loke','Lim Guan Eng','Teresa Kok','Nga Kor Ming','Steven Sim',
+'Teo Nie Ching','Sim Tze Tzin','Howard Lee','Saravanan Murugan','M Kulasegaran','Vigneswaran Sanasee',
+'Wee Ka Siong','Mas Ermieyati','Khaled Nordin','Amirudin Shari','Ahmad Faizal Azumu','Zambry Abd Kadir',
+'Zafrul Aziz','Annuar Musa','Reezal Merican','Rohani Abd Karim','Rina Harun','Salahuddin Ayub',
+'Siti Zailah Yusoff','Wan Rosdy Wan Ismail','Abdul Karim Rahman','Wan Junaidi Tuanku','Hajiji Noor',
+'Christina Liew','Jeffrey Kitingan','Ewon Benedick','Shafie Apdal','Asyraf Wajdi','Takiyuddin Hassan',
+'Noraini Ahmad','Noor Aza Leman','Zulkifli Hassan','Mahdzir Khalid','Noh Omar','Hishammuddin Hussein',
+'Mustapa Mohamed','Johari Abdul','Mohamad Sabu','Pua Tian Kuan','Lim Lip Eng','Kasthuri Patto',
+'Syed Saddiq','Khairy Jamaluddin','Mazlan Johari','Rahimah Abdillah','Norliza Ramly','Siti Rashidah Nawi'];
+let ni=0; function nn(){return NS[ni++%NS.length]}
+
+const NON_PH_GRS_PARTIES=['UMNO','MCA','MIC','PAS','BERSATU','GERAKAN','GPS','GRS','Warisan','MUDA','PBM','UPKO','Ind'];
+
+const MIN_DEF=[
+  {n:'Finance',p:'UMNO',dpm:1},{n:'Home Affairs',p:'PAS',dpm:1},
+  {n:'Foreign Affairs',p:'GPS',dpm:1},{n:'Defence',p:'BERSATU',dpm:1},
+  {n:'Education',p:'GRS',dpm:2},{n:'Health',p:'UMNO',dpm:2},
+  {n:'Transport',p:'GPS',dpm:2},{n:'Works',p:'MIC',dpm:2},
+  {n:'Agriculture',p:'PAS',dpm:2},{n:'Trade & Industry',p:'MCA',dpm:2},
+  {n:'Communications',p:'BERSATU',dpm:3},{n:'Environment',p:'Warisan',dpm:3},
+  {n:'Housing',p:'UMNO',dpm:3},{n:'Tourism',p:'GPS',dpm:3},
+  {n:'Youth & Sports',p:'GRS',dpm:3},{n:'Women & Family',p:'UPKO',dpm:3},
+  {n:'Plantation',p:'MIC',dpm:3},{n:'Science & Technology',p:'MUDA',dpm:3},
+  {n:'Legal Affairs',p:'PAS',dpm:1},{n:'Rural Development',p:'GRS',dpm:1},
+  {n:'Economy',p:'BERSATU',dpm:1},{n:'Entrepreneurship',p:'PBM',dpm:2},
+  {n:'Energy',p:'GPS',dpm:2},{n:'Natural Resources',p:'Warisan',dpm:3},
+  {n:'Digital',p:'GERAKAN',dpm:3}
+];
+
+const all=[];
+let uid=1;
+const nm={};
+function safeParty(p){return NON_PH_GRS_PARTIES.includes(p)?p:'GRS';}
+function mk(lv,name,pos,pf,par,party){
+  const id=uid++;
+  const fixedParty=safeParty(party);
+  const n={id,lv,name,pos,pf,par:par||null,party:fixedParty,coa:COA[fixedParty]||'Allies',kids:[]};
+  all.push(n); nm[id]=n; return n;
+}
+
+const PM = mk('PM',nn(),'Prime Minister',"Prime Minister's Department",null,'UMNO');
+const DPM=[
+  mk('DPM',nn(),'Deputy Prime Minister (Economy)','DPM Office',PM,'PAS'),
+  mk('DPM',nn(),'Deputy Prime Minister (Security)','DPM Office',PM,'GPS'),
+  mk('DPM',nn(),'Deputy Prime Minister (Social)','DPM Office',PM,'GRS')
+];
+mk('SENIOR',nn(),'Senior Minister (National Unity)','PM Dept',PM,'Warisan');
+
+MIN_DEF.forEach((m,i)=>{
+  const par=DPM[m.dpm-1]||DPM[0];
+  const party=safeParty(m.p);
+  const mn=mk('MIN',nn(),`Minister of ${m.n}`,`Ministry of ${m.n}`,par,party);
+  mk('DMIN',nn(),`Deputy Minister of ${m.n}`,`Ministry of ${m.n}`,mn,party);
+  mk('PSEC',nn(),`Parliamentary Secretary, ${m.n}`,`Ministry of ${m.n}`,mn,party);
+  const sg=mk('SECGEN',nn(),'Secretary General',`Ministry of ${m.n}`,mn,party);
+  if(i<20){
+    mk('UNDER',nn(),'Under Secretary (Policy)',`Ministry of ${m.n}`,sg,party);
+    mk('UNDER',nn(),'Under Secretary (Operations)',`Ministry of ${m.n}`,sg,party);
+  }
+});
+
+all.forEach(n=>{if(n.par) nm[n.par.id]?.kids.push(n);});
+const roots=all.filter(n=>!n.par);
+
+const open=new Set([PM.id,...DPM.map(d=>d.id)]);
+let sel=null, sq='', cf='all';
+
+function hasVis(n){if(nodeVis(n)) return true; return n.kids.some(k=>hasVis(k));}
+function nodeVis(n){
+  const cm=cf==='all'||n.coa===cf;
+  if(!sq) return cm;
+  const t=sq.toLowerCase();
+  return cm&&(n.name.toLowerCase().includes(t)||n.pos.toLowerCase().includes(t)||n.party.toLowerCase().includes(t)||n.pf.toLowerCase().includes(t));
+}
+
+function render(){
+  const t=document.getElementById('tree');
+  t.innerHTML='';
+  roots.forEach(r=>{ if(hasVis(r)) drawNode(r,t,[],true); });
+  if(!t.children.length) t.innerHTML='<div class="empty">No results found.</div>';
+}
+
+function drawNode(n,cont,indents,isLast){
+  const lv=LV[n.lv]||LV.UNDER;
+  const isOpen=open.has(n.id);
+  const visKids=n.kids.filter(k=>hasVis(k));
+  const hasK=visKids.length>0;
+  const vis=nodeVis(n);
+
+  const wrap=document.createElement('div');
+  const row=document.createElement('div');
+  row.className='node-row'+(sel===n.id?' selected':'')+(vis?'':' dimmed');
+
+  const ind=document.createElement('div');
+  ind.className='indent';
+  indents.forEach((parentIsLast,i)=>{
+    const s=document.createElement('div');
+    s.className='iseg'+(parentIsLast?'':' show-line')+(i===indents.length-1?' corner':'');
+    ind.appendChild(s);
+  });
+
+  const tog=document.createElement('div');
+  tog.className='toggle'+(hasK?(isOpen?' open':''):'');
+  tog.textContent=hasK?'▶':'';
+
+  const inner=document.createElement('div');
+  inner.className='node-inner';
+
+  const icon=document.createElement('div');
+  icon.className=`node-icon lvl-${n.lv}`;
+  icon.textContent=lv.icon;
+
+  const txt=document.createElement('div');
+  txt.className='node-text';
+  txt.innerHTML=`<div class="node-name">${n.name}</div><div class="node-pos">${n.pos}</div>`;
+
+  const bdg=document.createElement('div');
+  bdg.className='node-badges';
+  bdg.innerHTML=`<span class="badge py-${n.coa}">${n.party}</span>${hasK&&!isOpen?`<span class="count">${visKids.length}</span>`:''}`;
+
+  inner.appendChild(icon);inner.appendChild(txt);inner.appendChild(bdg);
+  row.appendChild(ind);row.appendChild(tog);row.appendChild(inner);
+  wrap.appendChild(row);
+  cont.appendChild(wrap);
+
+  const kidCont=document.createElement('div');
+  kidCont.style.display=isOpen?'block':'none';
+  wrap.appendChild(kidCont);
+
+  row.addEventListener('click',()=>{
+    if(hasK){
+      const nowOpen=!open.has(n.id);
+      nowOpen?open.add(n.id):open.delete(n.id);
+      tog.className='toggle'+(nowOpen?' open':'');
+      kidCont.style.display=nowOpen?'block':'none';
+      const cb=bdg.querySelector('.count');
+      if(cb) cb.style.display=nowOpen?'none':'inline';
+      else if(!nowOpen&&visKids.length){
+        const nc=document.createElement('span');
+        nc.className='count';nc.textContent=visKids.length;
+        bdg.appendChild(nc);
+      }
+    }
+    sel=n.id;
+    document.querySelectorAll('.node-row.selected').forEach(r=>r.classList.remove('selected'));
+    row.classList.add('selected');
+    openSheet(n);
+  });
+
+  if(isOpen){
+    const newInd=[...indents,isLast];
+    visKids.forEach((k,ki)=>drawNode(k,kidCont,newInd,ki===visKids.length-1));
+  }
+}
+
+function openSheet(n){
+  const lv=LV[n.lv]||LV.UNDER;
+  const par=n.par;
+  const resp=RESP.slice(0,2+n.id%3);
+  const agencies=n.pf?[`${n.pf} Regulatory Board`,`Agency for ${n.pf} Development`]:[];
+  document.getElementById('sbody').innerHTML=`
+    <span class="s-lv" style="background:${lv.bg};color:${lv.color}">${lv.label}</span>
+    <div class="s-name">${n.name}</div>
+    <div class="s-pos">${n.pos}</div>
+    <div class="s-grid">
+      <div class="s-cell"><div class="k">Party</div><div class="v">${n.party}</div></div>
+      <div class="s-cell"><div class="k">Coalition</div><div class="v">${n.coa}</div></div>
+      <div class="s-cell"><div class="k">Grade</div><div class="v">${GRADE[n.lv]||'J44'}</div></div>
+      <div class="s-cell"><div class="k">Portfolio</div><div class="v" style="font-size:11px">${n.pf}</div></div>
+    </div>
+    ${par?`<div class="s-sec"><h4>Reports To</h4><div class="s-parent"><strong>${par.name}</strong>${par.pos}</div></div>`:''}
+    <div class="s-sec"><h4>Responsibilities</h4>${resp.map(r=>`<span class="s-tag">${r}</span>`).join('')}</div>
+    ${agencies.length?`<div class="s-sec"><h4>Agencies</h4>${agencies.map(a=>`<span class="s-tag">${a}</span>`).join('')}</div>`:''}
+    ${n.kids.length?`<div class="s-sec"><h4>Direct Reports (${n.kids.length})</h4><ul class="s-reports">${n.kids.slice(0,5).map(k=>`<li><strong>${k.name}</strong>${k.pos}</li>`).join('')}${n.kids.length>5?`<li style="color:var(--text3)">...and ${n.kids.length-5} more</li>`:''}</ul></div>`:''}
+  `;
+  document.getElementById('backdrop').classList.add('open');
+  document.getElementById('sheet').classList.add('open');
+}
+
+function closeSheet(){
+  document.getElementById('backdrop').classList.remove('open');
+  document.getElementById('sheet').classList.remove('open');
+}
+
+document.querySelectorAll('.ctrl-btn').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    const f=btn.dataset.f;
+    if(f==='expand'){all.forEach(n=>open.add(n.id));render();return;}
+    if(f==='collapse'){open.clear();open.add(PM.id);render();return;}
+    document.querySelectorAll('.ctrl-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    cf=['PN','BN','GPS','GRS'].includes(f)?f:'all';
+    render();
+  });
+});
+
+document.getElementById('searchInput').addEventListener('input',e=>{
+  sq=e.target.value.trim();
+  if(sq) all.forEach(n=>open.add(n.id));
+  render();
+});
+
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeSheet()});
+
+const leg=document.getElementById('legend');
+Object.entries(LV).forEach(([,v])=>{
+  leg.innerHTML+=`<div class="li"><div class="ld" style="background:${v.color}"></div>${v.label}</div>`;
+});
+
+render();
+</script>
+</body>
+</html>

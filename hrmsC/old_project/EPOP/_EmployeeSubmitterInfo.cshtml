@@ -1,0 +1,317 @@
+﻿@using System.Configuration;
+@model ESS.EPop.Models.EmployeeSubmitterDetailsSummary
+@{
+    Layout = null;
+
+    string ApplicantCV = ConfigurationManager.AppSettings["ApplicantCVURL"];
+
+    ViewBag.ApplicantCV = ApplicantCV + "?EmployeeID=" + Model.EmployeeID;
+
+}
+<style>
+    .tnb_profile_imgHolder {
+        width: 120px;
+        border: 1px solid #ffffff;
+        background-size: cover;
+    }
+
+    .tnb_profile_img {
+        /*background-image: url("/_layouts/15/ESS/Assets/img/fb-profile.jpg") !important; */;
+        background-repeat: no-repeat;
+        background-position: center center;
+        background-size: cover;
+    }
+</style>
+
+<input type="hidden" value="@Model.CurrentGrade" id="CurrentGrade" />
+<input type="hidden" value="@Model.NextGrade" id="NextGrade" />
+<input type="hidden" value="@Model.CurrentGradeStartDate.ToString("dd/MM/yyyy")" id="CurrentGradeStartDate" />
+<input type="hidden" value="@Model.PromotionDate.ToString("dd/MM/yyyy")" id="PromotionDate" />
+
+<div id="EmployeeDetails" class="row">
+    <div class="col-md-12">
+        <div class="portlet box blue">
+            <div class="mini-triangle"><img src="../Assets/img/menu-red-triangle.png" /></div>
+            <div class="portlet-title">
+                <div class="caption">
+                    <i class="fa fa-reorder"></i>Employee Details
+                </div>
+            </div>
+            <div class="portlet-body form">
+                <div class="form-body" id="ct00_CustomFieldFormView">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-horizontal">
+                                <div class="form-group">
+                                    <label class="control-label col-md-4 ">
+                                        Profile Picture
+                                    </label>
+                                    <div class="col-md-8 form-control-static">
+                                        <div class="tnb_profile_imgHolder">
+                                            <div class="tnb_profile_img">
+                                                <img id="imgProfile" style="width:100px; height:auto !important" />
+                                                <br />
+
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-horizontal">
+                                <div class="form-group">
+                                    <label class="control-label col-md-4 ">
+                                        Employee Number
+                                    </label>
+                                    <div class="col-md-8 form-control-static">
+                                        @Model.EmployeeCode
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="control-label col-md-4 ">
+                                        Employee Name
+                                    </label>
+                                    <div class="col-md-8 form-control-static">
+                                        @Model.EmployeeName
+
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="control-label col-md-4">
+                                        Position
+                                    </label>
+                                    <div class="col-md-8 form-control-static">
+                                        @Model.PositionName
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="control-label col-md-4 ">
+                                        Duty
+                                    </label>
+                                    <div class="col-md-8  form-control-static">
+                                        @Model.JobKeyName
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="control-label col-md-4 ">
+                                        Department
+                                    </label>
+                                    <div class="col-md-8  form-control-static">
+                                        @Model.AreaName
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="control-label col-md-4 ">
+                                        Unit/ Section
+                                    </label>
+                                    <div class="col-md-8  form-control-static">
+                                        @Model.SubAreaName
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="control-label col-md-4 ">
+                                        Joined Date
+                                    </label>
+                                    @if (!String.IsNullOrEmpty(Model.JoinDate.ToString()))
+                                    {
+                                        <div class="col-md-8  form-control-static">
+                                            @Model.JoinDate.ToString("dd/MM/yyyy")
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <div class="col-md-8  form-control-static">
+                                            <span>-</span>
+                                        </div>
+                                    }
+                                </div>
+                                <div class="form-group NonExecutiveDiv">
+                                    <label class="control-label col-md-4 ">
+                                        Extension Start Date
+                                    </label>
+                                    @if (!(Model.ExtensionStartDate.ToString("dd/MM/yyyy") == "01/01/1900"))
+									{
+                                        <div class="col-md-8  form-control-static">
+                                            @Model.ExtensionStartDate.ToString("dd/MM/yyyy")
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <div class="col-md-8  form-control-static">
+                                            <span>-</span>
+                                        </div>
+                                    }
+                                </div>
+                                <div class="form-group NonExecutiveDiv">
+                                    <label class="control-label col-md-4 ">
+                                        No Of Extension
+                                    </label>
+                                    <div class="col-md-8  form-control-static">
+                                        -
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-horizontal">
+                                <div class="form-group">
+                                    <label class="control-label col-md-4 ">
+                                        Manager
+                                    </label>
+                                    @if (!String.IsNullOrEmpty(Model.ManagerName.ToString()))
+                                    {
+                                        <div class="col-md-8  form-control-static">
+                                            @Model.ManagerName
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <div class="col-md-8  form-control-static">
+                                            <span>-</span>
+                                        </div>
+                                    }
+                                </div>
+                                <div class="form-group">
+                                    <label class="control-label col-md-4 ">
+                                        Current Grade
+                                    </label>
+                                    <div class="col-md-8  form-control-static">
+                                        @Model.CurrentGrade
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="control-label col-md-4 ">
+                                        Next Grade
+                                    </label>
+                                    <div class="col-md-8  form-control-static">
+                                        @Model.NextGrade
+
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="control-label col-md-4 ">
+                                        Applicant's CV
+                                    </label>
+                                    <div class="col-md-8  form-control-static">
+                                        <span><a href="https://performancemanager10.successfactors.com/sf/liveprofile?selected_user=@Model.EmployeeCode" target="_blank"> <u>View</u></a></span>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="control-label col-md-4 ">
+                                        Age
+                                    </label>
+
+                                    <div class="col-md-8  form-control-static">
+                                        <span id="EmployeeAge">
+
+                                        </span>
+                                    </div>
+
+                                </div>
+                                <div class="form-group">
+                                    <label class="control-label col-md-4 ">
+                                        Current Grade Start Date
+                                    </label>
+                                    @if (!String.IsNullOrEmpty(Model.CurrentGradeStartDate.ToString()))
+                                    {
+                                        <div class="col-md-8  form-control-static">
+                                            @Model.CurrentGradeStartDate.ToString("dd/MM/yyyy")
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <div class="col-md-8  form-control-static">
+                                            <span>-</span>
+                                        </div>
+                                    }
+                                </div>
+                                <div class="form-group NonExecutiveDiv">
+                                    <label class="control-label col-md-4 ">
+                                        Extension End Date
+                                    </label>
+                                    @if (!(Model.ExtensionEndDate.ToString("dd/MM/yyyy") == "01/01/1900"))
+                                    {
+                                        <div class="col-md-8  form-control-static">
+                                            @Model.ExtensionEndDate.ToString("dd/MM/yyyy")
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <div class="col-md-8  form-control-static">
+                                            <span>-</span>
+                                        </div>
+                                    }
+                                </div>
+                                <div class="form-group NonExecutiveDiv">
+                                    <label class="control-label col-md-4 ">
+                                        Next Promotion Date
+                                    </label>
+                                    @if (!String.IsNullOrEmpty(Model.PromotionDate.ToString()))
+                                    {
+                                        <div class="col-md-8  form-control-static">
+                                            @Model.PromotionDate.ToString("dd/MM/yyyy")
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <div class="col-md-8  form-control-static">
+                                            <span>-</span>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <br />
+                    @*<div class="row">
+                            <div class="col-md-12 text-align-reverse">
+                                <div class="form-horizontal">
+
+                                    If your above details are incorrect, click here
+                                    <a href="https://ess.tnb.com.my/Lists/LatestNews/DispForm.aspx?ID=35">click here</a>
+                                </div>
+                            </div>
+                        </div>*@
+                    <div id="hdEmpInfo">
+
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    function getAge(birthday) {
+        var today = new Date();
+        var thisYear = 0;
+        if (today.getMonth() < birthday.getMonth()) {
+            thisYear = 1;
+        } else if ((today.getMonth() == birthday.getMonth()) && today.getDate() < birthday.getDate()) {
+            thisYear = 1;
+        }
+        var age = today.getFullYear() - birthday.getFullYear() - thisYear;
+        return age;
+    }
+
+    var birthdayDate = new Date(Date.parse("@Model.BirthDate.ToString("MM/dd/yyyy")"));
+    $("#EmployeeAge").text(getAge(birthdayDate));
+
+    if(@Model.ImageContent.Length > 0 )
+    {
+        @*$('#imgProfile').css('background-image','url( data:image/jpeg;base64,' + '@Model.ImageContent' +') ');*@
+        $('#imgProfile').attr('src','data:image/jpeg;base64,' + '@Model.ImageContent');
+    }
+    else
+    {
+        //$('#imgProfile').css('background-image',"url('../Assets/img/default_profile_pic.jpg')")
+        $('#imgProfile').attr('src','../Assets/img/default_profile_pic.jpg');
+    }
+
+</script>

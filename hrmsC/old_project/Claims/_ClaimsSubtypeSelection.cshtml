@@ -1,0 +1,104 @@
+﻿@model ESS.Claim.ViewModels.ClaimsSubtype
+@{
+    var subtype = Model;
+    int i = subtype.subtypeIndex;
+    int c = Convert.ToInt32(ViewData["count"]);
+
+    <div style="padding:5px; @(subtype.IsVisible ? "" : "display: none;") @(String.IsNullOrEmpty(subtype.TextColor) ? "" : String.Format("color: {0};", subtype.TextColor))">
+        @*@Html.CheckBox(subtype.FormInterface)*@
+        <input type="hidden" name="ClaimsSubtypeCategory[@c].ClaimSubtype[@i].ClaimsSubtypeName" value="@subtype.ClaimsSubtypeName" />
+        <input type="hidden" name="ClaimsSubtypeCategory[@c].ClaimSubtype[@i].FormInterface" value="@subtype.FormInterface" />
+        <input type="hidden" name="ClaimsSubtypeCategory[@c].ClaimSubtype[@i].subtypeIndex" value="@subtype.subtypeIndex" />
+        <input type="hidden" name="ClaimsSubtypeCategory[@c].ClaimSubtype[@i].categoryIndex" value="@subtype.categoryIndex" />
+        <input type="hidden" name="ClaimsSubtypeCategory[@c].ClaimSubtype[@i].ValidityStartDate" value="@subtype.ValidityStartDate" />
+        <input type="hidden" name="ClaimsSubtypeCategory[@c].ClaimSubtype[@i].ValidityEndDate" value="@subtype.ValidityEndDate" />
+        <input type="hidden" name="ClaimsSubtypeCategory[@c].ClaimSubtype[@i].SAPClaimsSubtype" value="@subtype.SAPClaimsSubtype" />
+        <input type="hidden" name="ClaimsSubtypeCategory[@c].ClaimSubtype[@i].TaxCode" value="@subtype.TaxCode" />
+        <input type="hidden" name="ClaimsSubtypeCategory[@c].ClaimSubtype[@i].ClaimSubTypeCategory" value="@subtype.ClaimSubTypeCategory" />
+        <input type="hidden" name="ClaimsSubtypeCategory[@c].ClaimSubtype[@i].IsVisible" value="@subtype.IsVisible.ToString().ToLower()" />
+        <input type="hidden" name="ClaimsSubtypeCategory[@c].ClaimSubtype[@i].IsVisibleByGrade" value="@subtype.IsVisibleByGrade.ToString().ToLower()" />
+        <input type="hidden" name="ClaimsSubtypeCategory[@c].ClaimSubtype[@i].IsExcludedVisibilityByGrade" value="@subtype.IsExcludedVisibilityByGrade.ToString().ToLower()" />
+        <input type="hidden" name="ClaimsSubtypeCategory[@c].ClaimSubtype[@i].IsAttachmentMandatory" value="@subtype.IsAttachmentMandatory.ToString().ToLower()" />
+        <input type="hidden" name="ClaimsSubtypeCategory[@c].ClaimSubtype[@i].AttachmentMandatory" value="@subtype.AttachmentMandatory" />
+
+        @*@Html.CheckBox("ClaimsSubtypeCategory[" + @c + "].ClaimSubtype[" + @i + "].IsChoosen", @subtype.IsChoosen, new { @validityStart = subtype.ValidityStartDate, @validityEnd = subtype.ValidityEndDate, @subtypename = subtype.ClaimsSubtypeName, @class = "SubTypeCheckBox" })*@
+        <input type="hidden" name="ClaimsSubtypeCategory[@c].ClaimSubtype[@i].IsAllowGST" value="@subtype.IsAllowGST.ToString().ToLower()" />
+        <input type="hidden" name="ClaimsSubtypeCategory[@c].ClaimSubtype[@i].GST" value="@subtype.GST" />
+        <input type="hidden" name="ClaimsSubtypeCategory[@c].ClaimSubtype[@i].TextColor" value="@subtype.TextColor" />
+        <input type="hidden" name="ClaimsSubtypeCategory[@c].ClaimSubtype[@i].IsManualCheckedByUser" value="@subtype.IsManualCheckedByUser.ToString().ToLower()" />
+        <input type="hidden" name="ClaimsSubtypeCategory[@c].ClaimSubtype[@i].AdditionalInformation" value="@subtype.AdditionalInformation" />
+        <input type="hidden" name="ClaimsSubtypeCategory[@c].ClaimSubtype[@i].ReferenceNoPrefix" value="@subtype.ReferenceNoPrefix" />
+
+        <div class="popovers"
+             style="display : inline-block;" ;
+             data-trigger="hover"
+             data-html="true"
+             data-container="body"
+             data-placement="right"
+             data-content="@subtype.AdditionalInformation">
+            @if (subtype.setReadOnly == true)
+            {
+                <input type="hidden" name="ClaimsSubtypeCategory[@c].ClaimSubtype[@i].setReadOnly" value="true" />
+
+                @Html.HiddenFor(x => subtype.IsChoosen,
+                                new { @Name = "ClaimsSubtypeCategory[" + subtype.categoryIndex + "].ClaimSubtype[" + subtype.subtypeIndex + "].IsChoosen",
+                                    @validityStart = subtype.ValidityStartDate,
+                                    @validityEnd = subtype.ValidityEndDate,
+                                    @subtypename = subtype.ClaimsSubtypeName})
+
+                @Html.CheckBoxFor(x => subtype.IsChoosen,
+                                new { @subtypename = subtype.ClaimsSubtypeName,
+                                    @subtypePrefix = subtype.ReferenceNoPrefix,
+                                    @class = "SubTypeCheckBox",
+                                    @disabled = "disabled",
+                                    @onchange = "ClaimSubtype_SelectionsOnChange(this);"
+                                })
+
+            }
+            else if (subtype.ClaimSubTypeCategory == "Transportation")
+            {
+
+                <input type="hidden" name="ClaimsSubtypeCategory[@c].ClaimSubtype[@i].setReadOnly" value="false" />
+                @Html.CheckBoxFor(x => subtype.IsChoosen,
+                                new { @Name = "ClaimsSubtypeCategory[" + subtype.categoryIndex + "].ClaimSubtype[" + subtype.subtypeIndex + "].IsChoosen",
+                                    @validityStart = subtype.ValidityStartDate,
+                                    @validityEnd = subtype.ValidityEndDate,
+                                    @subtypename = subtype.ClaimsSubtypeName,
+                                    @subtypePrefix = subtype.ReferenceNoPrefix,
+                                    @class = "SubTypeCheckBox",
+                                    @onchange = "TransportMultiSelect_OnChange();ClaimSubtype_SelectionsOnChange(this);"
+                                })
+            }
+            else if (subtype.ClaimSubTypeCategory == "Travelling Allowance")
+            {
+                <input type="hidden" name="ClaimsSubtypeCategory[@c].ClaimSubtype[@i].setReadOnly" value="false" />
+                @Html.CheckBoxFor(x => subtype.IsChoosen,
+                                new { @Name = "ClaimsSubtypeCategory[" + @subtype.categoryIndex + "].ClaimSubtype[" + @subtype.subtypeIndex + "].IsChoosen",
+                                    @validityStart = subtype.ValidityStartDate,
+                                    @validityEnd = subtype.ValidityEndDate,
+                                    @subtypename = subtype.ClaimsSubtypeName,
+                                    @subtypePrefix = subtype.ReferenceNoPrefix,
+                                    @class = "SubTypeCheckBox",
+                                    @onchange = "TravellingAllowanceMultiSelect_OnChange();ClaimSubtype_SelectionsOnChange(this);"
+                                })
+            }
+            else
+            {
+                <input type="hidden" name="ClaimsSubtypeCategory[@c].ClaimSubtype[@i].setReadOnly" value="false" />
+                @Html.CheckBoxFor(x => subtype.IsChoosen,
+                                new { @Name = "ClaimsSubtypeCategory[" + @subtype.categoryIndex + "].ClaimSubtype[" + @subtype.subtypeIndex + "].IsChoosen",
+                                    @validityStart = subtype.ValidityStartDate,
+                                    @validityEnd = subtype.ValidityEndDate,
+                                    @subtypename = subtype.ClaimsSubtypeName,
+                                    @subtypePrefix = subtype.ReferenceNoPrefix,
+                                    @class = "SubTypeCheckBox",
+                                    @onchange = "ClaimSubtype_SelectionsOnChange(this);"
+                                })
+            }
+            <span class="task-title-sp">
+                @subtype.ClaimsSubtypeName
+            </span>
+        </div>
+
+    </div>
+}

@@ -1,0 +1,54 @@
+﻿@model OJA.Models.SpecializationForm
+@{
+    Layout = null;
+    string SpecializationCode = ViewBag.SpecializationCode;
+    
+}
+
+<!--Specialization List-->
+@Html.Action("MySpecializations", new { Form = Model })
+
+<div class="modal fade" id="AddEducationInfoModal" role="dialog">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal"></button>
+                <h4 class="modal-title">Edit</h4>
+            </div>
+            <div class="modal-body">
+                <div class="form-horizontal">
+                    <div class="form-body" id="EducationInfoBody">
+
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+
+<script>
+    $('#@Model.DivName #tblList').dataTable({
+        "aLengthMenu": [[10, 25, 50, 100, 1000], [10, 25, 50, 100, 1000]],
+        "bPaginate": false
+    });
+
+    var tableWrapper = "#tblList_wrapper";
+
+    jQuery(tableWrapper + ' .dataTables_filter input').addClass("form-control input-medium input-inline"); // modify table search input
+    jQuery(tableWrapper + ' .dataTables_length select').addClass("form-control input-small"); // modify table per page dropdown
+    jQuery(tableWrapper + ' .dataTables_length select').select2({
+        showSearchInput: false //hide search box with special css class
+    });
+
+
+    $(document).on('change', '#EducationGrade', function () {
+        var gradeCode = $("#@Model.DivName #EducationGrade").val();
+        var gradeName = $("#@Model.DivName #EducationGrade").children('option').filter(':selected').text();
+        $("#@Model.DivName #ProficiencyCode").val(gradeCode);
+        $("#@Model.DivName #ProficiencyName").val(gradeName);
+    });
+
+     
+</script>

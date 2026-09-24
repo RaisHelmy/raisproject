@@ -1,0 +1,61 @@
+﻿@model Tuple<int?, ESS.StandbyPlanning.Models.StandbyPlanningVM, string>
+
+@{
+	Layout = null;
+
+	string entries = "";
+
+	if (Model.Item1 != null)
+	{
+		if (Model.Item1 >= 0)
+		{
+			entries = "Entries[" + Model.Item1.Value + "].";
+		}
+	}
+
+	string type = "";
+
+	if (!string.IsNullOrEmpty(Model.Item3))
+	{
+		type = Model.Item3;
+	}
+
+	string pickerType = type + "ChargeCodePicker";
+	string chargeTypeName = entries + type + "ChargeType";
+	string chargeCodeName = entries + type + "ChargeCode";
+	string chargeCodeDescName = entries + type + "ChargeCodeDesc";
+
+	string chargeType = "";
+	string chargeCode = "";
+	string chargeCodeDesc = "";
+	string chargeCodeDisplayText = "";
+
+	if (Model.Item2 != null)
+	{
+		chargeType = Model.Item2.ChargeType;
+		chargeCode = Model.Item2.ChargeCode;
+		chargeCodeDesc = Model.Item2.ChargeCodeDesc;
+
+		if (!string.IsNullOrEmpty(chargeCode) &&
+		!string.IsNullOrEmpty(chargeCodeDesc))
+		{
+			chargeCodeDisplayText = chargeCode + " - " + chargeCodeDesc;
+		}
+		else
+		{
+			chargeCodeDisplayText = chargeCode;
+		}
+	}
+}
+
+<div>
+    <div class="input-group">
+        <input type="text" class="form-control SPChargeCodePickerName @pickerType" value="@chargeCodeDisplayText" readonly />
+        <span class="input-group-btn" style="">
+            <a data-toggle="modal" href="#SearchChargeCode" class="btn default StandByChargeCodePicker" onclick="SetCurrentSelectedCC(this)"><i class="fa fa-list-alt"></i></a>
+        </span>
+        <input class="SPChargeCodePickerType @pickerType" type="hidden" name="@chargeTypeName" value="@chargeType"/>
+        <input class="SPChargeCodePickerCC @pickerType" type="hidden" name="@chargeCodeName" value="@chargeCode"/>
+        <input class="SPChargeCodePickerDesc @pickerType" type="hidden" name="@chargeCodeDescName" value="@chargeCodeDesc"/>
+    </div>
+</div>

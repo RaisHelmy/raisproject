@@ -1,0 +1,778 @@
+﻿@model Tuple<List<ESS.StandbyPlanning.Models.StandbyPlanningVM>, TimeAttendance.Models.EmployeeDetails>
+@{
+    ViewBag.Title = "Standby Planning Entry";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+    string IsSupervisorMessage = ViewBag.IsSupervisor;
+}
+
+<style>
+    .timeinput::-ms-clear {
+        width: 0;
+        height: 0;
+    }
+</style>
+
+<div class="form-section">
+    <div class="row">
+        <div class="col-md-12">
+            <h1 class="page-title">
+                @ViewBag.Title
+                <span style="padding-left:20px;">
+                    <small></small>
+                </span>
+            </h1>
+        </div>
+    </div>
+</div>
+
+@using (Html.BeginForm("StandbyPlanningGroup", "StandbyPlanning", FormMethod.Post))
+{
+
+    <div id="tab_1" class="tab-pane active">
+        @if (!string.IsNullOrEmpty(IsSupervisorMessage))
+        {
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="note note-danger">
+                        <h4 class="block">
+                            @IsSupervisorMessage
+                        </h4>
+
+                    </div>
+                </div>
+            </div>
+        }
+        <div class="row">
+            <div class="col-md-12">
+                <div class="portlet box blue">
+                    <div class="mini-triangle">@*<img src="/_layouts/15/TNBESS/Assets/img/menu-red-triangle.png" />*@</div>
+                    <div class="portlet-title">
+                        <div class="caption">
+                            <i class="fa fa-reorder"></i>Requestor Details
+                        </div>
+                    </div>
+                    <div class="portlet-body form">
+                        <div class="form-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-horizontal">
+                                        <div class="form-group">
+                                            <label class="control-label col-md-4">Employee</label>
+                                            <div class="col-md-8 form-control-static">
+                                                @Model.Item2.EmployeeCode - @Model.Item2.EmployeeName
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-horizontal">
+                                        <div class="form-group">
+                                            <label class="control-label col-md-4">Division / Department</label>
+                                            <div class="col-md-8 form-control-static">
+                                                @Model.Item2.AreaName
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-horizontal">
+                                        <div class="form-group">
+                                            <label class="control-label col-md-4">Unit / Section</label>
+                                            <div class="col-md-8 form-control-static">
+                                                @Model.Item2.SubAreaName
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-horizontal">
+                                        <div class="form-group">
+                                            <label class="control-label col-md-4">Cost Center</label>
+                                            <div class="col-md-8 form-control-static">
+                                                @Model.Item2.CostCenterCode - @Model.Item2.CostCenterName
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-horizontal">
+                                        <div class="form-group">
+                                            <label class="control-label col-md-4">Immediate Manager</label>
+                                            <div class="col-md-8 form-control-static">
+                                                @Model.Item2.ManagerName
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <input type="hidden" name="TimesheetSubAction" id="TimesheetSubAction" value="" />
+        <input type="hidden" name="DeleteRow" value="" />
+        <input type="hidden" name="AddRow" value="" />
+        <div class="row">
+            <div class="col-md-12">
+                <div class="portlet box blue">
+                    <div class="mini-triangle">@*<img src="/_layouts/15/TNBESS/Assets/img/menu-red-triangle.png" />*@</div>
+                    <div class="portlet-title">
+                        <div class="caption">
+                            <i class="fa fa-reorder"></i>Standby Planning
+                        </div>
+                    </div>
+                    <div class="portlet-body form">
+                        <div class="form-body">
+                            <div class="row  text-left form-body">
+                                <div class="col-md-12">
+                                    <div class="col-md-10">
+                                        <input type="button" class="btn green" value="Bulk Standby Entry" id="btnBulkStandbyEntry" data-toggle="modal" href="#BulkStandbyEntry" onclick="AddNewBulk()" />
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="portlet-body form">
+                                        <div class="form-body">
+                                            <div class="form-horizontal">
+                                                <div class="table-toolbar">
+                                                    <table class="table table-striped table-bordered table-hover table-full-width" id="tblStandbyEntry">
+                                                        <thead>
+                                                            <tr>
+                                                                <th scope="col" width="5%"></th>
+                                                                <th scope="col" width="5%">
+                                                                    <input type="checkbox" name="SelectAll" id="SelectAll" onchange="SelectUnselectAll(this);" />
+                                                                </th>
+                                                                <th scope="col">Employee *</th>
+                                                                <th scope="col">Standby Date *</th>
+                                                                <th scope="col">Charge Code *</th>
+                                                                <th scope="col">Description</th>
+                                                                <th scope="col">Attachment *</th>
+                                                                <th scope="col">Copy Row</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            @for (int x = 0; x < Model.Item1.Count; x++)
+                                                            {
+                                                                <tr>
+                                                                    <td>
+                                                                        <div>
+                                                                            <i class="fa fa-exclamation-circle ErrorMsg" name="ErrorMsg"
+                                                                               style="font-size:24px;color:red;display: none"
+                                                                               data-toggle="tooltip" title=""></i>
+                                                                        </div>
+                                                                    </td>
+                                                                    <td style="min-width:30px">
+                                                                        <input type="hidden" name="@x" value="@x">
+                                                                        <input type="hidden" class="StandByID" name="Entries[@x].StandByID" value="@Model.Item1[x].StandByID" />
+                                                                        <input type="hidden" class="StandByYear" name="Entries[@x].StandByYear" value="@Model.Item1[x].StandByYear" />
+                                                                        <input type="hidden" class="StatusCode" name="Entries[@x].StatusCode" value="@Model.Item1[x].StatusCode" />
+                                                                        <input type="hidden" class="StandByDate" name="Entries[@x].StandByDate" value="@Model.Item1[x].StandByDate" />
+                                                                        <input type="hidden" class="CreatedBy" name="Entries[@x].CreatedBy" value="@Model.Item1[x].CreatedBy" />
+                                                                        <input type="hidden" class="ReferenceNo" name="Entries[@x].ReferenceNo" value="@Model.Item1[x].ReferenceNo" />
+                                                                        <input type="checkbox" class="StandByCheckBox" name="Entries[@x].StandByEntryCheckBox" value="@Model.Item1[x].StandByID" />
+                                                                    </td>
+                                                                    <td>
+                                                                        <div class="form-control-static" style="min-width:150px">
+                                                                            @Html.Partial("SPPeoplePicker", new Tuple<int?, ESS.StandbyPlanning.Models.StandbyPlanningVM>(@x, @Model.Item1[x]))
+                                                                        </div>
+                                                                    </td>
+                                                                    <td><button type="button" class="btn default" value="Add New" onclick="AddNew(@x);"><i class="fa fa-calendar"></i></button></td>
+                                                                    <td>
+                                                                        <div class="form-control-static" style="min-width:150px">
+                                                                            @Html.Partial("SPChargeCodePicker", new Tuple<int?, ESS.StandbyPlanning.Models.StandbyPlanningVM, string>(@x, @Model.Item1[x], ""))
+                                                                        </div>
+                                                                    </td>
+                                                                    <td><input type="text" class="form-control Description" name="Entries[@x].Description" value="@Model.Item1[x].Description" /></td>
+                                                                    <td>
+                                                                        <div class="form-control-static text-center">
+                                                                            @Html.Partial("~/Views/TimeAttendance/TSAttachmentPicker.cshtml", new Tuple<string, string, string, string>("Add", Model.Item1[x].StandByID.ToString(), "Multi", Model.Item1[x].AttachmentCount.ToString() + "_" + x.ToString()))
+                                                                        </div>
+                                                                    </td>
+                                                                    <td><input type="button" class="btn green" value="Copy" id="btnCopy" onclick="CopyRow(@x)" /> </td>
+                                                                </tr>
+                                                            }
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row text-right">
+                                <div class="col-md-12">
+                                    <div class="btn-group">
+                                        <a class="BtnPlus btn green" title="dTable_BusOutstationEquivalentNoGST" href="javascript:StandbyPlanning_addRow();">
+                                            Add Row
+                                            <i class="fa fa-plus"></i>
+                                        </a>
+                                    </div>
+                                    <div class="btn-group">
+                                        <a class="BtnPlus5 btn green" title="dTable_BusOutstationEquivalentNoGST" href="javascript:StandbyPlanning_add5Row();">
+                                            Add 5 Rows
+                                            <i class="fa fa-plus"></i>
+                                        </a>
+                                    </div>
+                                    <div class="btn-group">
+                                        <a class="deleteall btn red" title="dTable_BusOutstationEquivalentNoGST" href="javascript:StandbyPlanning_removeRow();">
+                                            Delete Row
+                                            <i class="fa fa-minus"></i>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        @Html.Action("SPPeoplePickerIndex", "StandbyPlanning", new { CurrEmpID = "CurrEmpID", SearchType = "Subordinates" })
+        @Html.Action("SPChargeCodeIndex", "StandbyPlanning", new { CurrEmpID = ViewBag.EmployeeID, SearchType = "" })
+        @Html.Partial("~/Views/TimeAttendance/TSAttachmentIndex.cshtml")
+        @Html.Action("SPMultiPeoplePickerIndex", "StandbyPlanning", new { CurrEmpID = "CurrEmpID", SearchType = "Subordinates" })
+        @Html.Partial("_includeDataTableScripts")
+    </div>
+
+    if (string.IsNullOrEmpty(IsSupervisorMessage))
+    {
+        <div id="StandbyActionDiv">
+            <div class="row">
+                <div class="col-md-12">
+                    <input type="button" class="btn green" value="Save as Draft" id="btnDraft" onclick="SubmitTS('Draft'); " />
+                    <input type="button" class="btn green" value="Submit" id="btnSubmit" onclick="SubmitTS('PerformActionOnSubmit'); " />
+                </div>
+            </div>
+        </div>
+    }
+
+    <!-- Confirmation Message -->
+    <div class="modal fade" id="ConfirmSubmit" tabindex="-1" role="basic" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                    <h4 class="modal-title">Confirmation</h4>
+                </div>
+                <div class="modal-body warning-msg">
+                    <div class="well" id="ConfirmMessage">
+                        Are you sure you want to submit this request?
+
+                        Press Confirm to proceed, or Close to stay on the current page.
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn default blue" id="btnSubmitWarning" onclick="SubmitTS('Submit'); ">
+                        <i class="fa fa-check"></i>
+                        Confirm
+                    </button>
+                    <button type="button" class="btn default" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Success Message -->
+    <div class="modal fade" id="SuccessSubmit" tabindex="-1" role="basic" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header Success-header">
+                    <h4 class="Success-title">Action Successfully Completed</h4>
+                </div>
+                <div class="modal-body Success-body">
+                    <div class="well" id="SuccessMessage">
+                        Your application has been successfully submitted.
+                    </div>
+                </div>
+                <div class="modal-footer Success-footer">
+                    <a class="btn default blue" id="btnOK">
+                        <i class="fa fa-check"></i>
+                        OK
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Gif -->
+    <div id="divLoading" style="margin: 0px; padding: 0px; position: fixed; right: 0px;
+        top: 0px; width: 100%; height: 100%; background-color:gainsboro; z-index: 30001;
+        opacity: .8; filter: alpha(opacity=70);display:none">
+        <p style="position: absolute; top: 30%; left: 30%; color: black;">
+            Loading, please wait...<img src="../Assets/img/ajax-loading.gif" />
+        </p>
+    </div>
+
+    <div class="modal fade" id="StandByModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div id="StandByResult">
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="StandByBulkModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div id="StandByBulkResult">
+
+                </div>
+            </div>
+        </div>
+    </div>
+}
+<script>
+	var StandbyPlanningTable = $('#tblStandbyEntry').dataTable({
+        "bPaginate": false,
+        "bFilter": false,
+        "bInfo": false
+	});
+
+    $(document).ready(function () {
+		InitiateRowDisplayInfo();
+	});
+
+	function removeRowTooltip($row) {
+		$($row).children('td:first-child').each(function (column, td) {
+			if ($(td).data("qtip")) {
+				$(td).qtip('destroy');
+			}
+		});
+	}
+
+    function InitiateRowDisplayInfo() {
+        TableRowDisplayInfo();
+
+        $('.SPPeoplePickerDisplay').on('change', OnChangeRowDisplayInfo);
+    }
+
+    function TableRowDisplayInfo() {
+		$(".qtip").remove();
+
+		$("#tblStandbyEntry td input[type=checkbox]").each(function (i, value) {
+			var $row = $(this).closest("tr");
+
+			loadRowTooltip($row);
+		});
+    }
+
+    function loadRowTooltip($row) {
+        var _Employee = $row.find(".SPPeoplePickerDisplay").val();
+		var _StandByDate = $row.find(".StandByDate").val();
+
+		if ((_StandByDate != '' && _StandByDate != undefined) && (_Employee != '' && _Employee != undefined)) {
+			$($row).children('td').each(function (column, td) {
+				if ($(td).is(':first-child')) {
+					if ($(td).find('.ErrorMsg:visible').length != 0) {
+						return;
+					}
+				}
+
+				$(td).qtip({
+					content: createRowTooltips($row),
+					position: {
+						target: 'mouse',
+						adjust: {
+							mouse: true
+						}
+					},
+					style: {
+						width: " + this.Width + ",
+						border: {
+							width: 2,
+							radius: 5,
+							color: '#CECECE'
+						},
+						padding: 5,
+						tip: true,
+						name: 'light'
+					},
+					show: {
+						event: 'mouseover'
+					},
+					hide: {
+						event: 'mouseout'
+					}
+				});
+			});
+        }
+    }
+
+    function createRowTooltips($row) {
+		var _ID = $row.find(".StandByID").val();
+        var _Employee = $row.find(".SPPeoplePickerDisplay").val();
+		var _StandByDate = $row.find(".StandByDate").val();
+
+		var _StandByDateArr = _StandByDate.split(',').filter(d => d != '').sort();
+
+		_StandByDate = _StandByDateArr.join();
+
+        var returnContent = '<table align="center">';
+
+        returnContent += '<tr><td><input type="hidden" class="qtipID' + _ID +'"/>Employee    :   </td><td align=right>' + _Employee + '</td></tr>'
+		returnContent += '<tr><td>Standby Date    :   </td><td align=right>' + _StandByDate + '</td></tr>'
+        returnContent += '</table > ';
+
+        return returnContent;
+    }
+
+	function OnChangeRowDisplayInfo() {
+		var row = $(this).closest("tr");
+
+		ChangeRowDisplayInfo(row);
+
+		ChangeRowChargeCode(row);
+	}
+
+	function ChangeRowDisplayInfo(row) {
+		var StandByID = row.find('.StandByID').val();
+		$("input[class='qtipID" + StandByID + "']").closest('.qtip').remove();
+
+		loadRowTooltip(row);
+	}
+
+    function SelectUnselectAll(element) {
+		$('#tblStandbyEntry .StandByCheckBox').prop('checked', element.checked);
+        $.uniform.update();
+    }
+
+	function StandbyPlanning_addRow() {
+        $('input[name="AddRow"]').val('1');
+        $('form').submit();
+    }
+
+	function StandbyPlanning_add5Row() {
+        $('input[name="AddRow"]').val('5');
+        $('form').submit();
+    }
+
+	function StandbyPlanning_removeRow()
+    {
+        $('input[name="DeleteRow"]').val('true');
+        $('form').submit();
+    }
+
+    function CopyRow(rowNumber) {
+		var row = $($("#tblStandbyEntry td input[type=checkbox]").get(rowNumber)).closest("tr");
+
+		var EmployeeDisplayText = $(row).find('input[name="EmployeeDisplayText"]').val();
+		var EmployeeID = $(row).find('input[name="Entries[' + rowNumber + '].EmployeeID"]').val();
+		var EmployeeName = $(row).find('input[name="Entries[' + rowNumber + '].EmployeeName"]').val();
+		var EmployeeCode = $(row).find('input[name="Entries[' + rowNumber + '].EmployeeCode"]').val();
+
+		var StandByDate = $(row).find('input[name="Entries[' + rowNumber + '].StandByDate"]').val();
+
+		var chargeCodeDisplayText = $(row).find(".SPChargeCodePickerName").val();
+		var ChargeType = $(row).find('input[name="Entries[' + rowNumber + '].ChargeType"]').val();
+		var ChargeCode = $(row).find('input[name="Entries[' + rowNumber + '].ChargeCode"]').val();
+		var ChargeCodeDesc = $(row).find('input[name="Entries[' + rowNumber + '].ChargeCodeDesc"]').val();
+
+		var Description = $(row).find('input[name="Entries[' + rowNumber + '].Description"]').val();
+
+		if (StandByDate != "" || StandByDate != null) {
+            var rowCopied = false;
+            var rowIndex = 0;
+            var tgtRow = "";
+            var tgtStandByDate = "";
+
+			$("#tblStandbyEntry td input[type=checkbox]").each(function (i, value) {
+				tgtRow = $($("#tblStandbyEntry td input[type=checkbox]").get(i)).closest("tr");
+                tgtStandByDate = $(tgtRow).find('input[name="Entries[' + i + '].StandByDate"]');
+                rowIndex = i;
+
+                var employeeNameInput = $("input[name='Entries[" + i + "].EmployeeName']", $(this).closest("tr"));
+                var ChargeCodeInput = $("input[name='Entries[" + i + "].ChargeCode']", $(this).closest("tr"));
+                var DescriptionInput = $("input[name='Entries[" + i + "].Description']", $(this).closest("tr"));
+
+
+                if (rowCopied) {
+                    //skip whole iteration
+                    return false;
+                }
+
+                if (!employeeNameInput.val() || !ChargeCodeInput.val()) {
+                    return false; // Exit the loop once the desired row is found
+                }
+            });
+
+            //if (rowNumber == i ||
+            //    (tgtStandByDate.val() != "")) {
+            //    //skip current iteration
+            //    return true;
+            //}
+
+            var tgtEmployeeDisplayText = $(tgtRow).find('input[name="EmployeeDisplayText"]');
+            var tgtEmployeeID = $(tgtRow).find('input[name="Entries[' + rowIndex + '].EmployeeID"]');
+            var tgtEmployeeName = $(tgtRow).find('input[name="Entries[' + rowIndex + '].EmployeeName"]');
+            var tgtEmployeeCode = $(tgtRow).find('input[name="Entries[' + rowIndex + '].EmployeeCode"]');
+            var tgtchargeCodeDisplayText = $(tgtRow).find(".SPChargeCodePickerName");
+            var tgtChargeType = $(tgtRow).find('input[name="Entries[' + rowIndex + '].ChargeType"]');
+            var tgtChargeCode = $(tgtRow).find('input[name="Entries[' + rowIndex + '].ChargeCode"]');
+            var tgtChargeCodeDesc = $(tgtRow).find('input[name="Entries[' + rowIndex + '].ChargeCodeDesc"]');
+            var tgtDescription = $(tgtRow).find('input[name="Entries[' + rowIndex + '].Description"]');
+
+            tgtEmployeeDisplayText.val(EmployeeDisplayText);
+            tgtEmployeeID.val(EmployeeID);
+            tgtEmployeeName.val(EmployeeName);
+            tgtEmployeeCode.val(EmployeeCode);
+            tgtStandByDate.val(StandByDate);
+            tgtchargeCodeDisplayText.val(chargeCodeDisplayText);
+            tgtChargeType.val(ChargeType);
+            tgtChargeCode.val(ChargeCode);
+            tgtChargeCodeDesc.val(ChargeCodeDesc);
+            tgtDescription.val(Description);
+
+            rowCopied = true;
+
+        }
+	}
+
+	function SubmitTS(Type) {
+		$('#ConfirmSubmit').modal('hide');
+
+		DisableActionButton();
+
+		var checkCount = 0;
+
+		$("#tblStandbyEntry td input[type=checkbox]:checked").each(function (i, value) {
+            checkCount += 1;
+		});
+
+        if (checkCount <= 0) {
+            alert('Please select entry to proceed.');
+            EnableActionButton();
+        } else {
+			var data = $('form').serializeArray();
+
+            data.push(
+                { name: 'SubmitType', value: Type },
+            );
+            PerformTimesheetSubmission(data, Type);
+        }
+	}
+
+	function DisableActionButton() {
+		$('#StandbyActionDiv').children().children().children('.btn').attr('disabled', true);
+        $('#divLoading').show();
+    }
+
+    function EnableActionButton() {
+        $('#divLoading').hide();
+		$('#StandbyActionDiv').children().children().children('.btn').attr('disabled', false);
+	}
+
+    function PerformTimesheetSubmission(data, Type) {
+		HideErrorWarningMessage();
+
+		var Action = Type;
+
+        switch (Type) {
+            case 'PerformActionOnSubmit':
+                Action = 'Submitted';
+                break;
+            case 'Submit':
+                Action = 'Submitted';
+                break;
+            case 'Draft':
+                Action = 'Saved as Draft';
+                break;
+            default:
+        }
+
+        $.ajax({
+			url: '../StandbyPlanning/SubmitStandbyAction',
+            type: 'POST',
+            data: data,
+            success: function (result) {
+				$('#divLoading').hide();
+
+				if (result.result == true) {
+					if (Type == "PerformActionOnSubmit") {
+						ConfirmSubmit();
+					}
+					else if (Type == "Submit") {
+
+						$('#SuccessSubmit').modal();
+						$('#SuccessMessage').html("Your application has been successfully submitted.");
+						$('#btnOK').attr('href', '../StandbyPlanning/StandbyPlanningHistory');
+					}
+                    else {
+                        $('#SuccessSubmit').modal();
+						$('#SuccessMessage').html("Standby Planning has been successfully " + Action);
+						$('#btnOK').attr('href', '../StandbyPlanning/StandbyPlanningGroup');
+					}
+
+                    EnableActionButton();
+                }
+                else if (!result.result) {
+                    if (CheckEmptyKeyValueMessage(result.EntryErrorMessage)) {
+                        ShowErrorWarningMessage(result.EntryErrorMessage);
+                    }
+                    else if (result.ErrorMessage != '')
+                    {
+                        alert(result.ErrorMessage);
+                    }
+                    else {
+                        alert('Unable to perform the requested action.')
+					}
+
+                    EnableActionButton();
+                }
+            }
+        });
+	}
+
+	function HideErrorWarningMessage() {
+        $('.ErrorMsg').attr('title', '');
+		$('.ErrorMsg').hide();
+	}
+
+	function ShowErrorWarningMessage(Message) {
+        for (var k in Message) {
+            if (Message.hasOwnProperty(k)) {
+                //console.log("Key is " + k + ", value is" + Message[k]);
+
+				$("#tblStandbyEntry td input[type=checkbox]").each(function (i, value) {
+                    var row = $(this).closest("tr");
+					var EntryID = row.find('.StandByID').val()
+
+                    if (k == EntryID) {
+                        row.find('.ErrorMsg').attr('title', Message[k]);
+						row.find('.ErrorMsg').show();
+
+						removeRowTooltip(row);
+
+                        return;
+                    }
+                });
+            }
+        }
+	}
+
+	function CheckEmptyKeyValueMessage(Message) {
+        var count = 0;
+        for (var key in Message) {
+            count++;
+            break;
+        }
+        if (count == 0) {
+            return false;
+        } else {
+            return true;
+        }
+	}
+
+	function ConfirmSubmit() {
+        $('#ConfirmSubmit').modal('show');
+	}
+
+	function AddNew(rowNumber)
+	{
+		var row = $($("#tblStandbyEntry td input[type=checkbox]").get(rowNumber)).closest("tr");
+
+		var StandByID = $(row).find('input[name="Entries[' + rowNumber + '].StandByID"]').val();
+		var StandByYear = $(row).find('input[name="Entries[' + rowNumber + '].StandByYear"]').val();
+		var EmployeeID = $(row).find('input[name="Entries[' + rowNumber + '].EmployeeID"]').val();
+		var EmployeeName = $(row).find('input[name="Entries[' + rowNumber + '].EmployeeName"]').val();
+		var EmployeeCode = $(row).find('input[name="Entries[' + rowNumber + '].EmployeeCode"]').val();
+		var ChargeType = $(row).find(".SPChargeCodePickerType").val();
+		var ChargeCode = $(row).find(".SPChargeCodePickerCC").val();
+		var ChargeCodeDesc = $(row).find(".SPChargeCodePickerDesc").val();
+		var StatusCode = $(row).find('input[name="Entries[' + rowNumber + '].StatusCode"]').val();
+		var Description = $(row).find(".Description").val();
+		var StandByDate = $(row).find('input[name="Entries[' + rowNumber + '].StandByDate"]').val();
+
+        $.ajax({
+            type: "GET",
+            url: '@Url.Content("~/StandbyPlanning/_Standby")',
+            cache: false,
+            dataType: "html",
+            data: {
+				RowNumber: rowNumber,
+				Mode: "Edit",
+				StandByID: StandByID,
+				StandByYear: StandByYear,
+				EmployeeID: EmployeeID,
+				EmployeeName: EmployeeName,
+				EmployeeCode: EmployeeCode,
+				ChargeType: ChargeType,
+				ChargeCode: ChargeCode,
+				ChargeCodeDesc: ChargeCodeDesc,
+				StatusCode: StatusCode,
+				Description: Description,
+				StandByDate: StandByDate
+            },
+            success: function (result) {
+                $("#StandByResult").html(result);
+                $('#StandByModal').modal({
+                    backdrop: 'static',
+                    keyboard: true
+				}, 'show');
+
+				//ChangeRowDisplayInfo(row);
+            },
+            error: function (e) {
+                console.log(e);
+            }
+        });
+	}
+
+	function AddNewBulk()
+	{
+		$.ajax({
+            type: "GET",
+            url: '@Url.Content("~/StandbyPlanning/_StandbyBulk")',
+            cache: false,
+            dataType: "html",
+            success: function (result) {
+				$("#StandByBulkResult").html(result);
+				$('#StandByBulkModal').modal({
+                    backdrop: 'static',
+                    keyboard: true
+                }, 'show');
+            },
+            error: function (e) {
+                console.log(e);
+            }
+        });
+	}
+
+	function ChangeRowChargeCode($row) {
+		var employeeCode = $row.find(".SPPeoplePickerCode").val();
+
+		if (employeeCode != '') {
+			$.ajax({
+				type: "GET",
+				url: '@Url.Content("~/StandbyPlanning/_ChargeCode")',
+				cache: false,
+				data: {
+					EmployeeCode: employeeCode
+				},
+				success: function (result) {
+					$row.find('.SPChargeCodePickerName').val(result.ChargeCodes + " - " + result.ChargeCodeDesc);
+					$row.find('.SPChargeCodePickerType').val(result.ChargeType);
+					$row.find('.SPChargeCodePickerCC').val(result.ChargeCodes);
+					$row.find('.SPChargeCodePickerDesc').val(result.ChargeCodeDesc);
+					$row.find('.SPChargeCodePickerName').change();
+				},
+				error: function (e) {
+					console.log(e);
+				}
+			});
+		}
+	}
+</script>

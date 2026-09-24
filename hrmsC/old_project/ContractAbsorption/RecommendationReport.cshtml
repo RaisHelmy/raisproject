@@ -1,0 +1,359 @@
+﻿@using ESS.Core
+
+@model List<ESS.Core.DropDownObject>
+
+@{
+	Layout = "~/Views/Shared/_Layout.cshtml";
+
+	ViewBag.Title = "Report By Recommendation's Form";
+
+	DateTime d1 = DateTime.Now.AddYears(-20);
+	DateTime d2 = DateTime.Now.AddYears(20);
+	string dtStrStart = d1.ToString("dd MMM yyyy");
+	string dtStrEnd = d2.ToString("dd MMM yyyy");
+
+	if (!(ESS.ContractAbsorption.Service.isApprover(Common.GetEmployeeID(), "HRBP")
+		|| ESS.ContractAbsorption.Service.isApprover(Common.GetEmployeeID(), "PSAdmin1")
+		|| ESS.ContractAbsorption.Service.isApprover(Common.GetEmployeeID(), "PSAdmin2")
+		|| ESS.ContractAbsorption.Service.isApprover(Common.GetEmployeeID(), "HeadPS")
+		|| ESS.ContractAbsorption.Service.isApprover(Common.GetEmployeeID(), "RoleMaintenanceAdmin")))
+	{
+		Response.Redirect("~/AccessControl/ErrorPermission");
+	}
+}
+<div class="row">
+	<div class="col-md-12">
+		<br />
+		<h1 class="page-title">
+			Absorption of Contract Staff - Report By Recommendation<span style="padding-left:20px;"><small></small></span>
+		</h1>
+	</div>
+</div>
+<br />
+<input type="hidden" id="hfEmployeeID" value="@ViewBag.EmployeeID" />
+<div class="form-body">
+	<div class="row">
+		<div class="col-md-6">
+			<div class="form-horizontal">
+				<div class="form-group">
+					<label class="col-md-5 control-label">Submission Date (From)</label>
+					<div class="col-md-7 form-control-static">
+						<div class="input-group date date-picker" id="divSubmissionDateFrom" data-date-format="dd MM yyyy">
+							<input type="text" class="form-control" id="SubDateFrom" name="SubDateFrom" />
+							<span class="input-group-btn">
+								<button type="button" class="btn default"><i class="fa fa-calendar"></i></button>
+							</span>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="col-md-6">
+			<div class="form-horizontal">
+				<div class="form-group">
+					<label class="col-md-5 control-label">Submission Date (To)</label>
+					<div class="col-md-7 form-control-static">
+						<div class="input-group date date-picker" id="divSubmissionDateTo" data-date-format="dd MM yyyy">
+							<input type="text" class="form-control" id="SubDateTo" name="SubDateTo" />
+							<span class="input-group-btn">
+								<button type="button" class="btn default"><i class="fa fa-calendar"></i></button>
+							</span>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="row">
+		<div class="col-md-6">
+			<div class="form-horizontal">
+				<div class="form-group">
+					<label class="col-md-5 control-label">Company</label>
+					<div class="col-md-7 form-control-static">
+						@Html.DropDownList("Company", new SelectList(Model, "Value", "Text"), "- All -", new { @class = "bs-select form-control", @onchange = "changeCompany(this)" })
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="col-md-6">
+			<div class="form-horizontal">
+				<div class="form-group">
+					<label class="col-md-5 control-label">Division / Department</label>
+					<div class="col-md-7 form-control-static">
+						@Html.Action("_DDLDepartment", "ContractAbsorption", new { })
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="row">
+		<div class="col-md-6">
+			<div class="form-horizontal">
+				<div class="form-group">
+					<label class="col-md-5 control-label">Unit / Section</label>
+					<div class="col-md-7 form-control-static">
+						@Html.Action("_DDLUnitSection", "ContractAbsorption", new { })
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="col-md-6">
+			<div class="form-horizontal">
+				<div class="form-group">
+					<label class="col-md-5 control-label">PayScaleGroup</label>
+					<div class="col-md-7 form-control-static">
+						<input class="form-control" type="text" id="PayScaleGroup" />
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="row">
+		<div class="col-md-6">
+			<div class="form-horizontal">
+				<div class="form-group">
+					<label class="col-md-5 control-label">Category</label>
+					<div class="col-md-7 form-control-static">
+						<select name="ExecutiveCategory" class="bs-select form-control" id="ExecutiveCategory">
+							<option value="">- All -</option>
+							<option value="Non-Executive">Non-Executive</option>
+							<option value="Executive">Executive</option>
+							@*<option value="Specialist">Specialist</option>*@
+						</select>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="col-md-6">
+			<div class="form-horizontal">
+				<div class="form-group">
+					<label class="col-md-5 control-label">Status</label>
+					<div class="col-md-7 form-control-static">
+						<select class="form-control" id="Status">
+							<option value="">- All -</option>
+							<option value="PE">Pending</option>
+							<option value="IM">IM Submitted</option>
+							<option value="HOD">HOD Submitted</option>
+							<option value="HOU">HOU Submitted</option>
+							<option value="HODIV">HODiv Submitted</option>
+							<option value="RW">Rework</option>
+							<option value="HRBPR">HRBP Recommended</option>
+							<option value="NR">Not Recommended</option>
+							<option value="PF">Pending Staff</option>
+							<option value="D">Disciplinary Case Found</option>
+							<option value="SS">Staff Submitted</option>
+							<option value="SR">Staff Rejected</option>
+							<option value="PS2">PS Admin 2 Checked</option>
+							<option value="HPF">Head PS Verified Suitable</option>
+							<option value="HPNF">Head PS Verified Not Suitable</option>
+							<option value="RE">Resigned</option>
+						</select>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="row">
+		<div class="col-md-6">
+			<div class="form-horizontal">
+				<div class="form-group">
+					<label class="col-md-5 control-label">Employee</label>
+					<div class="col-md-7 form-control-static">
+						@Html.Partial("_PeoplePicker")
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="col-md-6">
+			<div class="form-horizontal">
+				<div class="form-group">
+					<label class="col-md-5 control-label">Reference No</label>
+					<div class="col-md-7 form-control-static">
+						<input class="form-control" type="text" id="ReferenceNo" />
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="row">&nbsp;</div>
+	<div class="row">
+		<div class="col-md-12">
+			<div class="text-right">
+				<input type="button" id="btn-Search" class="btn green btn-Search" value="Search" onclick="SearchListing();">
+				<input type="button" id="btn-Clear" class="btn default " value="Clear" onclick="ClearFilter();">
+			</div>
+		</div>
+	</div>
+	<div class="row">&nbsp;</div>
+	<div class="row">
+		<div class="col-md-12">
+			<div id="SearchResult">
+
+			</div>
+		</div>
+	</div>
+</div>
+
+<script type="text/javascript">
+	jQuery(document).ready(function () {
+		$('#divSubmissionDateFrom').datepicker('setStartDate', '@dtStrStart');
+        $('#divSubmissionDateFrom').datepicker('setEndDate', '@dtStrEnd');
+
+        $('#divSubmissionDateTo').datepicker('setStartDate', '@dtStrStart');
+        $('#divSubmissionDateTo').datepicker('setEndDate', '@dtStrEnd');
+
+        $("#divSubmissionDateFrom").datepicker({
+            autoclose: true,
+        }).on('changeDate', function (selected) {
+            var minDate = new Date(selected.date.valueOf());
+            minDate.setDate(minDate.getDate() + 1);
+            $('#divSubmissionDateTo').datepicker('setStartDate', minDate);
+        });
+
+        $("#divSubmissionDateTo").datepicker({
+            autoclose: true,
+        })
+        .on('changeDate', function (selected) {
+            var minDate = new Date(selected.date.valueOf());
+            minDate.setDate(minDate.getDate() - 1);
+            $('#divSubmissionDateFrom').datepicker('setEndDate', minDate);
+        });
+
+        $("#SubDateFrom").on("blur", function (e) {
+            if ($('#SubDateFrom').val() == "") {
+                $('#divSubmissionDateTo').datepicker('setStartDate', '@dtStrStart');
+            }
+        });
+
+        $("#SubDateTo").on("blur", function (e) {
+            if ($('#SubDateTo').val() == "") {
+                $('#divSubmissionDateFrom').datepicker('setEndDate', '@dtStrEnd');
+            }
+        });
+	});
+
+	function SearchListing() {
+		var _DateFrom = $('#SubDateFrom').val();
+		var _DateTo = $('#SubDateTo').val();
+		var _CompanyCode = $('#Company option:selected').val();
+		var _DepartmentCode = $('#Department option:selected').val();
+		var _UnitSectionCode = $('#UnitSection option:selected').val();
+		var _PayScaleGroup = $('#PayScaleGroup').val();
+		var _Category = $('#ExecutiveCategory option:selected').val();
+		var _Status = $('#Status').val();
+		var _EmpID = $('#hfEmpID').val();
+		var _ReferenceNo = $('#ReferenceNo').val();
+
+		$("#SearchResult").html("LOADING...");
+
+		$.ajax({
+			type: "GET",
+			url: '@Url.Content("~/ContractAbsorption/_ReportByRecommendationResult")',
+			cache: false,
+			dataType: "html",
+			data: {
+				EmployeeID: "@ViewBag.EmployeeID",
+				DateFrom: _DateFrom, DateTo: _DateTo,
+				Division: _CompanyCode, Department: _DepartmentCode,
+				UnitSection: _UnitSectionCode, PayScaleGroup: _PayScaleGroup,
+				Category: _Category, Status: _Status,
+				SearchEmpID: _EmpID, ReferenceNo: _ReferenceNo
+			},
+			success: function (content) {
+				$("#SearchResult").html(content);
+			},
+			error: function (e) {
+				console.log(e);
+			}
+		});
+	}
+
+	function changeCompany(e) {
+		$.ajax({
+			type: "GET",
+			url: '@Url.Content("~/ContractAbsorption/_DDLDepartment")',
+			cache: false,
+			dataType: "html",
+			data: { CompanyCode: e.value, RoleCode: "@ViewBag.RoleCode"},
+			success: function (content) {
+				$("#DepartmentResult").html(content);
+			},
+			error: function (e) {
+				console.log(e);
+			}
+		});
+	}
+
+	function changeDepartment(e) {
+		$.ajax({
+			type: "GET",
+			url: '@Url.Content("~/ContractAbsorption/_DDLUnitSection")',
+			cache: false,
+			dataType: "html",
+			data: { DepartmentCode: e.value , RoleCode: "@ViewBag.RoleCode"},
+			success: function (content) {
+				$("#UnitSectionResult").html(content);
+			},
+			error: function (e) {
+				console.log(e);
+			}
+		});
+	}
+
+	var host = "..";
+
+	function ExportExcel() {
+		var dt = new Date();
+		var day = dt.getDate();
+		var month = dt.getMonth() + 1;
+		var year = dt.getFullYear();
+		var hour = dt.getHours();
+		var mins = dt.getMinutes();
+		var postfix = day + "." + month + "." + year + "_" + hour + "." + mins;
+
+		var _DateFrom = $('#SubDateFrom').val();
+		var _DateTo = $('#SubDateTo').val();
+		var _CompanyCode = $('#Company option:selected').val();
+		var _DepartmentCode = $('#Department option:selected').val();
+		var _UnitSectionCode = $('#UnitSection option:selected').val();
+		var _PayScaleGroup = $('#PayScaleGroup').val();
+		var _Category = $('#ExecutiveCategory option:selected').val();
+		var _Status = $('#Status').val();
+		var _EmpID = $('#hfEmpID').val();
+		var _ReferenceNo = $('#ReferenceNo').val();
+
+		var JsonObjectFilter = {
+			EmployeeID: "@ViewBag.EmployeeID",
+			DateFrom: _DateFrom,
+			DateTo: _DateTo,
+			Division: _CompanyCode,
+			Department: _DepartmentCode,
+			UnitSection: _UnitSectionCode,
+			PayScaleGroup: _PayScaleGroup,
+			Category: _Category,
+			Status: _Status,
+			SearchEmpID: _EmpID,
+			ReferenceNo: _ReferenceNo
+		}
+
+		var Filter = JSON.stringify(JsonObjectFilter);
+
+		window.open(host +"/ContractAbsorption/_ExportToExcelGeneral?FileName=RecommendationReport_" + postfix +
+			"&ReportCategory=" + "RecommendationReport" +
+			"&Filter=" + Filter);
+	}
+
+	function ClearFilter() {
+		$('#SubDateFrom').val('');
+		$('#SubDateTo').val('');
+		$('#Company').val('');
+		$('#Department').val('');
+		$('#UnitSection').val('');
+		$('#PayScaleGroup').val('');
+		$('#ExecutiveCategory').val('');
+		$('#Status').val('');
+		$('#hfEmpID').val('');
+		$('#txtEmpName').val('');
+		$('#ReferenceNo').val('');
+	}
+</script>

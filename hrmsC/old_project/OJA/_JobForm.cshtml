@@ -1,0 +1,425 @@
+﻿@model OJA.Models.JobViewModel
+@using OJA.Models;
+@{
+    Layout = null;
+    var attachmentMode = "View";
+    if (string.IsNullOrEmpty(Model.JobID))
+    {
+        attachmentMode = "New";
+    }
+    else if (Model.Status == JobStatusType.Draft)
+    {
+        attachmentMode = "Add";
+    }
+
+    var readType = string.Empty;
+    if (Model.Status != JobStatusType.Draft)
+    {
+        readType = "readonly";
+    }
+
+    var statusColor = "#22BB22";
+    if(Model.Status == JobStatusType.Declined || Model.Status == JobStatusType.Withdrawn)
+    {
+        statusColor = "red";
+    }
+}
+
+<!-- Loading Gif -->
+<div id="divLoading" style="margin: 0px; padding: 0px; position: fixed; right: 0px; top: 0px; width: 100%; height: 100%; background-color: gainsboro; z-index: 30001; opacity: .8; filter: alpha(opacity=70); display: none; ">
+    <p style="position: absolute; top: 30%; left: 30%; color: black;">
+        Performing action, please wait...<img src="/_layouts/15/TNBESS/Assets/img/ajax-loading.gif">
+    </p>
+</div>
+
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="portlet box blue">
+            <div class="mini-triangle"><img src="~/Assets/img/menu-red-triangle.png" /></div>
+            <div class="portlet-title">
+                <div class="caption">
+                    <i class="fa fa-reorder"></i>Application Details
+                </div>
+            </div>
+            <div class="portlet-body form">
+                <div class="form-horizontal">
+                    <div class="job-form">
+                         
+                        <div class="form-body">
+                            @if (!string.IsNullOrEmpty(Model.JobID) && Model.Status != JobStatusType.Draft)
+                            {
+                                <div class="form-group">
+                                    <label class="control-label col-md-2" for="form-group-input">Reference No</label>
+                                    <div class="col-md-4">
+                                         <input class="form-control" value="@Model.ReferenceNo" style="color:#0000CC" readonly/>
+                                    </div>
+                                    <label class="control-label col-md-2" for="form-group-input">Status</label>
+                                    <div class="col-md-4">
+                                        <input class="form-control" value="@Model.Status" style="color: @statusColor; font-weight:bold" readonly />
+                                    </div>
+                                </div>
+                            }
+                            <div class="form-group">
+                                <label class="control-label col-md-2" for="form-group-input">Position</label>
+                                <div class="col-md-4">
+                                    @Html.TextBoxFor(m => m.Position, new { @class = "form-control", @readonly = true })
+                                </div>
+                                <label class="control-label col-md-2" for="form-group-input">Job Grade</label>
+                                <div class="col-md-4">
+                                    @Html.TextBoxFor(m => m.PayscaleGroup, new { @class = "form-control", @readonly = true })
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="control-label col-md-2" for="form-group-input">Company</label>
+                                <div class="col-md-4">
+                                    @Html.TextBoxFor(m => m.Division, new { @class = "form-control", @readonly = true })
+                                </div>
+                                <label class="control-label col-md-2" for="form-group-input">Division / Department</label>
+                                <div class="col-md-4">
+                                    @Html.TextBoxFor(m => m.Department, new { @class = "form-control", @readonly = true })
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="control-label col-md-2" for="form-group-input">Unit / Section</label>
+                                <div class="col-md-4">
+                                    @Html.TextBoxFor(m => m.UnitSection, new { @class = "form-control", @readonly = true })
+                                </div>
+                                <label class="control-label col-md-2" for="form-group-input">Vacancy No.</label>
+                                <div class="col-md-4">
+                                    @Html.TextBoxFor(m => m.VacancyNumber, new { @class = "form-control", @readonly = true })
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="control-label col-md-2" for="form-group-input">Advertisement Reference No.</label>
+                                <div class="col-md-4">
+                                    @Html.TextBoxFor(m => m.AdvertisementNo, new { @class = "form-control", @readonly = true })
+                                </div>
+                                <label class="control-label col-md-2" for="form-group-input">Advertisement Date</label>
+                                <div class="col-md-4">
+                                    @Html.TextBoxFor(m => m.StartingDate, new { @class = "form-control", @readonly = true })
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="control-label col-md-2" for="form-group-input">Closing Date</label>
+                                <div class="col-md-4">
+                                    @Html.TextBoxFor(m => m.ClosingDate, new { @class = "form-control", @readonly = true })
+                                </div>
+                                <label class="control-label col-md-2" for="form-group-input">Application Type</label>
+                                <div class="col-md-4">
+                                    @Html.TextBoxFor(m => m.ApplicationType, new { @class = "form-control", @readonly = true })
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="control-label col-md-2" for="form-group-input">Remarks</label>
+                                <div class="col-md-10">
+                                    <textarea class="form-control" maxlength="500" rows="5" name="Remarks" id="Remarks" @readType>@Model.Remarks</textarea>
+                                </div>
+                            </div> 
+
+                            @if (ViewBag.CanViewApplicantCV)
+                            {
+                                <div class="form-group">
+                                    <label class="control-label col-md-2">
+                                        Applicant's CV
+                                    </label>
+                                    <div class="col-md-7 form-control-static">
+                                      <a target="_blank" href="@Url.Action("Index", "MyResume")?EmployeeID=@Model.EmployeeID">View</a>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        @Html.Action("AttachmentControl", "Attachment", new { EmployeeID = Model.EmployeeID, Mode = attachmentMode, SourceType = "OJA", RequestID = Model.JobID })
+    </div>
+</div>
+
+@if ((Model.Status == JobStatusType.Draft || string.IsNullOrEmpty(Model.JobID)) && Model.IsCurrentEmployeeOwner())
+{
+    <div class="row">
+        <div class="col-md-12">
+            <label class="mt-checkbox">
+                @Html.CheckBoxFor(m => m.ConfirmCheck) I hereby confirm that the information provided in my duly completed CV is up to date and accurate to my best knowledge.
+                <span></span>
+            </label>
+        </div>
+    </div>
+    <div class="row" style="padding-top:10px;">
+        <div class="col-md-12">
+            <label class="mt-checkbox">
+                @Html.CheckBoxFor(m => m.DeclareCheck) I hereby declare that my application for this position has been discussed with my superiors (Immediate Manager / Immediate Manager of Immediate Manager / relevant personnel) and/or HR Heads (in respective stations/states/regions and all subsidiaries), and is agreed by all relevant parties. I understand that in the event that the terms and conditions are breached, TNB have the right to void my application and/or take necessary action against me.
+                <span></span>
+            </label>
+
+        </div>
+    </div>
+     
+    <div class="row" style="padding-top:20px;">
+        <div class="col-md-12">
+            <button class="btn green" value="Draft" type="button" id="btnSave">Save</button>
+
+            @if (!string.IsNullOrEmpty(Model.JobID))
+            {
+                <a class="btn red" id="btnDelete">Delete</a>
+            }
+            
+            <button class="btn green" value="Pending" type="button" id="btnSubmit">Submit</button>
+        </div>
+    </div>
+     
+} 
+
+<div class="modal fade" id="JobModal" tabindex="-1" aria-hidden="true" data-status="">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                <h4 class="modal-title">Confirmation</h4>
+            </div>
+            <div class="modal-body">
+                <div class="well">
+                    Are you sure you want to <p id="modalAction" style="display:inline">submit</p> this job application? <br />
+                    Press Confirm to proceed, or Close to stay on the current page.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn default blue" id="btnConfirm" value="Submit">
+                    <i class="fa fa-check"></i>
+                    Confirm
+                </button>
+                <button type="button" id="btnClose" class="btn default" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Success Message -->
+<div class="modal fade" id="resultModal" tabindex="-1" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header Success-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true" style="display: none;"></button>
+                <h4 class="Success-title">Action Successfully Completed</h4>
+            </div>
+            <div class="modal-body Success-body">
+                <div class="well">
+                    <p id="resultModalBody">Your job application has been successfully submitted.</p>
+                </div>
+            </div>
+            <div class="modal-footer Success-footer">
+                <button type="button" class="btn default blue" id="btnOK">
+                    <i class="fa fa-check"></i>
+                    OK
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="CVModal" tabindex="-1" aria-hidden="true" data-status="">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                <h4 class="modal-title">Applicant's CV</h4>
+            </div>
+            <div class="modal-body" id="CVModalBody">
+                 
+            </div>
+            <div class="modal-footer">
+                <button type="button" id="btnClose" class="btn default" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+
+    $('#btnDelete').click(function () {
+        $('#modalAction').text('delete');
+        var promise = displayModal(false);
+        promise.done(function () {
+            $('#btnConfirm').attr('disabled', true);
+            location.href = '@Url.Action("Delete", "OJA")?JobID=' + '@Model.JobID';
+        });
+    });
+
+    @*function ViewApplicantCV() {
+        $('#divLoading').show();
+        console.log('Getting CV');
+         $.ajax({
+            url: '@Url.Content("~/MyResume/Index")',
+            data: { EmployeeID : '@Model.EmployeeID', ViewType: 'Partial'},
+            success: function (htmlReponse) {
+                $("#CVModalBody").empty().html(htmlReponse);
+                $("#CVModal").modal();
+            },
+            error: function (err) {
+                alert('Unable to view applicant CV');
+                console.log(err);
+            }
+         }).always($('#divLoading').hide());
+    }*@
+
+    $('#btnSubmit').click(function (event) {
+        event.preventDefault();
+
+        if (!IsValid())
+            return;
+
+        $("#modalAction").text('submit');
+        $("#JobModal").data('status', 'Pending');
+        submitJobApplication($(this));
+    });
+
+    $('#btnSave').click(function (event) {
+        event.preventDefault();
+
+        $("#modalAction").text('save');
+        $("#JobModal").data('status', 'Draft');
+        submitJobApplication($(this));
+    });
+
+    function submitJobApplication(btnClicked) {
+        var promise = displayModal(true);
+        promise.done(function () { 
+            var submitType = $("#JobModal").data('status');
+
+            //add hidden input for Status type (Pending or Draft)
+            addInput('jobForm', 'Status', submitType);
+
+            $("#JobModal").modal('hide');
+
+            var form = $('#jobForm');
+            var data = form.serialize();
+            var url = form.attr('action');
+
+            $('#divLoading').show();
+            $.ajax({
+                type: "POST",
+                url: url,
+                data: data,
+                success: function (response) {
+                    if (response.Success) {
+                        btnClicked.attr('disabled', true);
+                        $("#resultModal").modal();
+                        $("#resultModalBody").html(response.Message);
+                        $("#btnOK").click(function () {
+                            location.href = '@Url.Action("RequestHistory", "OJA")';
+                        });
+                    }
+                    else {
+                        alert(response.TechnicalError);
+                    }
+                },
+                error: function (err) {
+
+                }
+            }).done(function () {
+                $('#divLoading').hide();
+            });
+        });
+    }
+
+    function addInput(formId, name, value) {
+        var input = $("<input>")
+            .attr("type", "hidden")
+            .attr("name", name).val(value);
+
+        $('#' + formId).append($(input));
+    }
+
+    function displayModal(shouldValidate) {
+        var deferred = $.Deferred();
+
+        if (IsValid == "undefined") {
+            deferred.reject();
+            alert("Validate function for form not found");
+            return deferred;
+        }
+
+        if (shouldValidate && !IsValid()) {
+            deferred.reject();
+            return deferred;
+        }
+        $('#JobModal').modal();
+
+        $('#btnConfirm').click(function () {
+            deferred.resolve();
+        });
+        $('#btnClose').click(function () {
+            deferred.reject();
+        });
+        return deferred;
+    }
+
+    function IsValid() {
+        var confirmed = $('#ConfirmCheck').is(':checked');
+        var declared = $('#DeclareCheck').is(':checked');
+
+        var saved = $('#JobModal').data('status') == "Draft";
+
+        var message = "";
+        message += confirmed  || saved? "" : "Please check the confirmation box";
+        message += declared || saved ? "" : "Please check the declaration box";
+        message += $("#ApplicationType").val() == "" ? "Application Type is required" : "";
+
+        if (message == "") {
+            return true;
+        }
+        else if (message != "") {
+            alert(message);
+            return false;
+        }
+    }
+
+    function Withdraw() {
+
+        $("#modalAction").text("withdraw");
+        displayModal(false).done(function () {
+
+            $('#JobModal').modal('hide');
+            $('#divLoading').show();
+
+            $.ajax({
+                type: "POST",
+                url: '@Url.Action("Withdraw", "OJA")',
+                data: { SourceID: '@Model.JobID' },
+                content: "application/json",
+                success: function (response) {
+                    $('#divLoading').hide();
+                    $("#resultModal").modal();
+                    $("#resultModalBody").html(response.Message);
+
+                    if (response.Success) {
+                        $("#btnOK").click(function () {
+                            location.href = '@Url.Action("RequestHistory", "OJA")';
+                        });
+                    }
+                    else {
+                        $("#btnOK").click(function () {
+                            $("#resultModal").modal('hide');
+                            console.log("Technical error: " + response.TechnicalError);
+                        });
+                    }
+                },
+                error: function (err) {
+                    console.log(err.responseText);
+                    $('#divLoading').hide();
+                }
+            });
+
+        }).fail(function () { });
+    }
+
+</script>

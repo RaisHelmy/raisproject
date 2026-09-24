@@ -1,0 +1,81 @@
+﻿<script>
+    function calculateSum(tb) {
+        var sum = 0;
+        var grandAmount = 0;
+        var grandGST = 0;
+        var grandTotal = 0;
+        var thisTable = $('#' + tb);
+        //console.log(thisTable);
+        //iterate through each textboxes and add the values
+        thisTable.find(".Amount").each(function () {
+
+            var $row = $(this).closest("tr");
+            var amount = $row.find(".Amount").val();
+            var myNumeric = parseFloat(amount.replace(/,/g, ''));
+            if (!myNumeric) {
+                amount = "0.00";
+            }
+            else {
+                amount = (myNumeric.toFixed(2));
+            }
+            //add only if the value is number
+            if (!isNaN(amount) && amount.length != 0) {
+                $row.find(".Amount").val(amount);
+                $row.find(".ApprovedAmount").val(amount);
+                grandAmount = (grandAmount + (amount * 1));
+            }
+
+        });
+
+        thisTable.find(".GrandAmount").val(grandAmount.toFixed(2));
+        thisTable.find(".GrandApprovedAmount").val(grandAmount.toFixed(2));
+        $('#' + tb + 'Sum').html(grandAmount.toFixed(2));
+        $('#' + tb + 'ApproveSum').html(grandAmount.toFixed(2));
+        CalculateSummary();
+
+    }
+
+    function CalculateSummary() {
+
+        var TotalSum = 0;
+        $('.subtypeportlet').each(function (index) {
+            var portletname = this.id;
+
+            $('#' + portletname + ' table').each(function () {
+                var tablename = this.id;
+                var totalValue = parseFloat($('#' + tablename).find('.GrandAmount').val()) || 0;
+                TotalSum = parseFloat(TotalSum) + parseFloat(totalValue);
+            });
+        });
+
+        $('#TotalSummary').html(TotalSum.toFixed(2));
+        $('#TotalSummaryInput').val(TotalSum.toFixed(2));
+        $('#TotalAppSummary').html(TotalSum.toFixed(2));
+        $('#TotalAppSummaryInput').val(TotalSum.toFixed(2));
+    }
+
+    function ThousandSeparator(x) {
+        return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    }
+
+    function NumberOnly(evt) {
+        var theEvent = evt || window.event;
+        var key = theEvent.keyCode || theEvent.which;
+        key = String.fromCharCode(key);
+        var regex = /[0-9]/;
+        if (!regex.test(key)) {
+            theEvent.returnValue = false;
+            if (theEvent.preventDefault) theEvent.preventDefault();
+        }
+    }
+
+    function CurrencyOnly(evt, allow) {
+
+        if (!(evt.keyCode == 46 || (evt.keyCode >= 48 && evt.keyCode <= 57))) return false;
+        var parts = evt.srcElement.value.split('.');
+        if (parts.length > 2) return false;
+        if (evt.keyCode == 46) return (parts.length == 1);
+        if (parts[0].length >= 14) return false;
+        if (parts.length == 2 && parts[1].length >= allow) return false;
+    }
+</script>

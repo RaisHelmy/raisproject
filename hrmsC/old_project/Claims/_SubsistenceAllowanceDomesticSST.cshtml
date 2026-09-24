@@ -1,0 +1,297 @@
+﻿@using ESS.Claim.ClaimSubtype
+@using ESS.Claim.ViewModels
+@model ClaimsSubtype
+
+@{
+    Layout = null;
+    string TableID = "tbl" + Model.FormInterface + "_" + Model.categoryIndex + "_" + Model.subtypeIndex;
+    string Status = ViewBag.ClaimStatus;
+
+    double twentyFourHourRate = 0;
+    double.TryParse(ViewBag.TwentyFourHourRate, out twentyFourHourRate);
+    Dictionary<string, double> extraHoursRate = ViewBag.ExtraHourRate;
+
+    double dblBreakfastRate = ViewBag.BreakfastRate;
+    double dblLunchRate = ViewBag.LunchRate;
+    double dblDinnerRate = ViewBag.DinnerRate;
+
+
+    Model.Template = new Template(Model);
+    Model.Template.TableID = TableID;
+    Model.Template.IsReadonly = !(Status == "Draft" || Status == "Withdrawn" || Status == "Declined" || Status == "Returned");
+    Model.Template.DefaultRowCount = 2;
+    Model.Template.MaxRowCount = 2;
+    Model.Template.AllowAddRow = true;
+
+    Model.Template.Columns.Add(ColumnTemplate.CheckboxWithLabel("", "").SetColumnClass("RemoveCheckbox"));
+    Model.Template.Columns.Add(ColumnTemplate.ChargeCodeDropdown("Charge Code", "SubTypeColumn0").SetIsMandatory(true));
+
+    Model.Template.Columns.Add(ColumnTemplate.DatePickerWithLabel("Start Date", "StartDate").SetIsMandatory(true).SetOnChange(TableID + "_subtype.onChangeDate(this);" + TableID + "_subtype.calculateAmount(this);"));
+    Model.Template.Columns.Add(ColumnTemplate.TimePickerWithLabel("Start Time", "StartTime").SetIsMandatory(true).SetOnChange(TableID + "_subtype.calculateAmount(this);"));
+    Model.Template.Columns.Add(ColumnTemplate.DatePickerWithLabel("End Date", "EndDate").SetIsMandatory(true).SetOnChange(TableID + "_subtype.onChangeDate(this);" + TableID + "_subtype.calculateAmount(this);"));
+    Model.Template.Columns.Add(ColumnTemplate.TimePickerWithLabel("End Time", "EndTime").SetIsMandatory(true).SetOnChange(TableID + "_subtype.calculateAmount(this);"));
+
+    Model.Template.Columns.Add(ColumnTemplate.TextBoxWithLabel("No. Of Days", "NoOfDays").SetReadonly(true).SetDefaultValue("0"));
+
+    Model.Template.Columns.Add(ColumnTemplate.TextBoxWithLabel("Additional Hour", "AdditionalHour").SetReadonly(true).SetDefaultValue("No"));
+
+    Model.Template.Columns.Add(ColumnTemplate.TextBoxWithLabel("24 Hour Rate", "TwentyFourHourRate").SetReadonly(true).SetDefaultValue(twentyFourHourRate.ToString("0.00")));
+
+    Model.Template.Columns.Add(ColumnTemplate.TextBoxWithLabel("Additional Hour Rate", "AdditionalHourRate").SetReadonly(true));
+
+    Model.Template.Columns.Add(ColumnTemplate.CurrencyTextBoxWithLabel("Subtotal (RM)", "Subtotal").SetReadonly(true));
+
+    Model.Template.Columns.Add(ColumnTemplate.NumberTextBoxWithLabel("B/fast Provided (Qty.)", "BreakfastProvided").SetOnChange(TableID + "_subtype.calculateAmount(this);"));
+
+    Model.Template.Columns.Add(ColumnTemplate.CurrencyTextBoxWithLabel("Subtotal B/fast (RM)", "SubtotalBreakfast").SetReadonly(true));
+
+    Model.Template.Columns.Add(ColumnTemplate.NumberTextBoxWithLabel("Lunch Provided (Qty.)", "LunchProvided").SetOnChange(TableID + "_subtype.calculateAmount(this);"));
+
+    Model.Template.Columns.Add(ColumnTemplate.CurrencyTextBoxWithLabel("Subtotal Lunch (RM)", "SubtotalLunch").SetReadonly(true));
+
+    Model.Template.Columns.Add(ColumnTemplate.NumberTextBoxWithLabel("Dinner Provided (Qty.)", "DinnerProvided").SetOnChange(TableID + "_subtype.calculateAmount(this);"));
+
+    Model.Template.Columns.Add(ColumnTemplate.CurrencyTextBoxWithLabel("Subtotal Dinner (RM)", "SubtotalDinner").SetReadonly(true));
+
+    Model.Template.Columns.Add(ColumnTemplate.CurrencyTextBoxWithLabel("Total Meals (RM)", "TotalMeals").SetReadonly(true));
+
+    Model.Template.Columns.Add(ColumnTemplate.CurrencyTextBoxWithLabel("Total Subsistence (RM)", "TotalSubsistence").SetReadonly(true));
+
+    Model.Template.Columns.Add(ColumnTemplate.TextBoxForAmount(Model.Template, "Total Claimable (RM)", "Amount").SetReadonly(true));
+    Model.Template.Columns.Add(ColumnTemplate.TextBoxForTaxAmount(Model.Template, "Tax Amount (RM)", "GSTAmount"));
+    Model.Template.Columns.Add(ColumnTemplate.TextBoxForTotalAmount(Model.Template, "Total Amount (RM)", "TotalAmount"));
+}
+
+@Html.Partial("~/Views/ClaimsSubtype/SubtypeView.cshtml", Model)
+
+<script>
+    @(TableID)_subtype.extraHourRates = @Html.Raw(Json.Encode(extraHoursRate));
+    @(TableID)_subtype.breakfastRate = @dblBreakfastRate;
+    @(TableID)_subtype.lunchRate = @dblLunchRate;
+    @(TableID)_subtype.dinnerRate = @dblDinnerRate;
+
+    @(TableID)_subtype.onChangeDate = function (row) {
+        //var $row = $(row).closest('tr');
+        //var position = this.table.fnGetPosition($row.get(0));
+
+        //var homeToAirportRow = $(this.table.fnGetNodes(0));
+        //var airportToHomeRow = $(this.table.fnGetNodes(1));
+
+        //var homeToAirportStartDate = homeToAirportRow.find(".StartDate").parent();
+        //var homeAirportEndDate = homeToAirportRow.find(".EndDate").parent();
+
+        //var airportToHomeStartDate = airportToHomeRow.find(".StartDate").parent();
+        //var airportToHomeEndDate = airportToHomeRow.find(".EndDate").parent();
+            
+        //// Home to airport
+        //if (position == 0) {
+        //    airportToHomeStartDate.datepicker('setStartDate', homeAirportEndDate.datepicker('getDate'));
+        //    airportToHomeEndDate.datepicker('setStartDate', homeAirportEndDate.datepicker('getDate'));
+        //}
+    };
+
+    @(TableID)_subtype.calculateAmount = function (row) {
+        var $row = $(row).closest('tr');
+        var position = this.table.fnGetPosition($row.get(0));
+        this.airportToHomeCalculation($row);
+    };
+
+    @(TableID)_subtype.homeToAirportCalculation = function (row) {
+        var dpkStartDate = row.find(".StartDate").parent();
+        var dpkEndDate = row.find(".EndDate").parent();
+
+        var StartTime = row.find(".StartTime").val();
+        var EndTime = row.find(".EndTime").val();
+
+        var StartDate = moment(dpkStartDate.datepicker("getDate"));
+        var EndDate = moment(dpkEndDate.datepicker("getDate"));
+
+        var _NoOfDays = row.find(".NoOfDays");
+        var _AdditionalHours = row.find(".AdditionalHour");
+        var _24HourRate = row.find(".TwentyFourHourRate");
+        var _AdditionalHourRates = row.find(".AdditionalHourRate");
+        var _Subtotal = row.find(".Subtotal");
+
+        var _BreakfastProvided = row.find(".BreakfastProvided");
+        var _SubtotalBreakfast = row.find(".SubtotalBreakfast");
+
+        var _LunchProvided = row.find(".LunchProvided");
+        var _SubtotalLunch = row.find(".SubtotalLunch");
+
+        var _DinnerProvided = row.find(".DinnerProvided");
+        var _SubtotalDinner = row.find(".SubtotalDinner");
+
+        var _TotalMeals = row.find(".TotalMeals");
+        var _TotalSubsistence = row.find(".TotalSubsistence");
+        var _Amount = row.find(".Amount");
+
+        var daysCount = 0;
+        if (!StartDate || !EndDate) {
+            _NoOfDays.val('0');
+            return;
+        }
+        else {
+            if (StartDate.isAfter(EndDate)) {
+                dpkEndDate.datepicker("setDate", StartDate._d);
+                EndDate = moment(dpkEndDate.datepicker("getDate"));
+            }
+
+            var daysCount = EndDate.diff(StartDate, 'days');
+            _NoOfDays.val(daysCount);
+        }
+    
+        var twentyFourHourRate = (parseFloat(_24HourRate.val()) || 0.00);
+        var extraHourRate = this.getExtraHourRate(row) / 100;
+        var subtotal = (daysCount * twentyFourHourRate) + (twentyFourHourRate * extraHourRate);
+
+        var totalBreakfast = (parseInt(_BreakfastProvided.val()) || 0) * twentyFourHourRate * this.breakfastRate;
+        var totalLunch = (parseInt(_LunchProvided.val()) || 0) * twentyFourHourRate * this.lunchRate;
+        var totalDinner = (parseInt(_DinnerProvided.val()) || 0) * twentyFourHourRate * this.dinnerRate;
+        var totalMeals = totalBreakfast + totalLunch + totalDinner;
+        var totalSubsistence = subtotal - totalMeals;
+
+        _Subtotal.val(subtotal.toFixed(2));
+        _SubtotalBreakfast.val(totalBreakfast.toFixed(2));
+        _SubtotalLunch.val(totalLunch.toFixed(2));
+        _SubtotalDinner.val(totalDinner.toFixed(2));
+        _TotalMeals.val(totalMeals.toFixed(2));
+        _TotalSubsistence.val(totalSubsistence.toFixed(2));
+        _Amount.val(_TotalSubsistence.val());
+
+        @(TableID)_subtype.calculateTax(row);
+        @(TableID)_subtype.calculateSubtotal(row);
+    };
+
+    @(TableID)_subtype.airportToHomeCalculation = function (row) {
+
+        var _StartDate = row.find(".StartDate");
+        var _EndDate = row.find(".EndDate");
+        var _StartTime = row.find(".StartTime");
+        var _EndTime = row.find(".EndTime");
+
+        var dpkStartDate = _StartDate.parent();
+        var dpkEndDate = _EndDate.parent();
+
+        var StartDate = moment(dpkStartDate.datepicker("getDate"));
+        var EndDate = moment(dpkEndDate.datepicker("getDate"));
+
+        var _NoOfDays = row.find(".NoOfDays");
+        var _AdditionalHours = row.find(".AdditionalHour");
+        var _24HourRate = row.find(".TwentyFourHourRate");
+        var _AdditionalHourRates = row.find(".AdditionalHourRate");
+        var _Subtotal = row.find(".Subtotal");
+
+        var _BreakfastProvided = row.find(".BreakfastProvided");
+        var _SubtotalBreakfast = row.find(".SubtotalBreakfast");
+
+        var _LunchProvided = row.find(".LunchProvided");
+        var _SubtotalLunch = row.find(".SubtotalLunch");
+
+        var _DinnerProvided = row.find(".DinnerProvided");
+        var _SubtotalDinner = row.find(".SubtotalDinner");
+
+        var _TotalMeals = row.find(".TotalMeals");
+        var _TotalSubsistence = row.find(".TotalSubsistence");
+        var _Amount = row.find(".Amount");
+
+        var daysCount = 0;
+
+        var StartDateTime = moment(_StartDate.val() + " " + _StartTime.val(), "DD/MM/YYYY HH:mm");
+        var EndDateTime = moment(_EndDate.val() + " " + _EndTime.val(), "DD/MM/YYYY HH:mm");
+
+        if (!StartDate || !EndDate) {
+            _NoOfDays.val('0');
+            return;
+        }
+        else {
+            if (StartDate.isAfter(EndDate)) {
+                dpkEndDate.datepicker("setDate", StartDate._d);
+                EndDate = moment(dpkEndDate.datepicker("getDate"));
+            }
+
+            var daysCount = EndDateTime.diff(StartDateTime, 'days');
+            _NoOfDays.val(daysCount);
+        }
+    
+        var twentyFourHourRate = (parseFloat(_24HourRate.val()) || 0.00);
+        var extraHourRate = this.getExtraHourRate(row) / 100;
+        var subtotal = (daysCount * twentyFourHourRate) + (twentyFourHourRate * extraHourRate);
+
+        var totalBreakfast = (parseInt(_BreakfastProvided.val()) || 0) * twentyFourHourRate * this.breakfastRate;
+        var totalLunch = (parseInt(_LunchProvided.val()) || 0) * twentyFourHourRate * this.lunchRate;
+        var totalDinner = (parseInt(_DinnerProvided.val()) || 0) * twentyFourHourRate * this.dinnerRate;
+        var totalMeals = totalBreakfast + totalLunch + totalDinner;
+        var totalSubsistence = subtotal - totalMeals;
+
+        if (totalSubsistence < 0)
+            totalSubsistence = 0;
+
+        _Subtotal.val(subtotal.toFixed(2));
+        _SubtotalBreakfast.val(totalBreakfast.toFixed(2));
+        _SubtotalLunch.val(totalLunch.toFixed(2));
+        _SubtotalDinner.val(totalDinner.toFixed(2));
+        _TotalMeals.val(totalMeals.toFixed(2));
+        _TotalSubsistence.val(totalSubsistence.toFixed(2));
+        _Amount.val(_TotalSubsistence.val());
+
+        @(TableID)_subtype.calculateTax(row);
+        @(TableID)_subtype.calculateSubtotal(row);
+    };
+
+    @(TableID)_subtype.getExtraHourRate = function (row) {
+
+        var _StartDate = row.find(".StartDate");
+        var _EndDate = row.find(".EndDate");
+        var _StartTime = row.find(".StartTime");
+        var _EndTime = row.find(".EndTime");
+
+        var OnePMThreshold = moment("13:00", "HH:mm");
+        var SixPMThreshold = moment("18:00", "HH:mm");
+
+        var StartDateTime = moment(_StartDate.val() + " " + _StartTime.val(), "DD/MM/YYYY HH:mm");
+        var EndDateTime = moment(_EndDate.val() + " " + _EndTime.val(), "DD/MM/YYYY HH:mm");
+
+        var _ExtraHourRate = row.find('.AdditionalHourRate');
+        var _AdditionalHour = row.find('.AdditionalHour');
+        var ehRate = 0;
+
+        if (StartDateTime == null || EndDateTime == null) {
+            _ExtraHourRate.val("0%");
+            return 0;
+        }
+
+        var additionalHours = moment.duration(EndDateTime.diff(StartDateTime)).hours();
+        var keys = Object.keys(this.extraHourRates);
+
+        if (keys.indexOf("8 - 12") < 0) {
+            if (additionalHours > 4 && additionalHours <= 9) {
+                ehRate = this.extraHourRates[Object.keys(this.extraHourRates).filter(function (x) { return x == '4 - 9'; })] || 0;
+            }
+            else if (additionalHours > 9 && additionalHours <= 16) {
+                ehRate = this.extraHourRates[Object.keys(this.extraHourRates).filter(function (x) { return x == '9 - 16'; })] || 0;
+            }
+            else if (additionalHours > 16) {
+                ehRate = this.extraHourRates[Object.keys(this.extraHourRates).filter(function (x) { return x == '16 - 24'; })] || 0;
+            }
+        }
+        else {
+            if (additionalHours > 8 && additionalHours <= 12) {
+                ehRate = this.extraHourRates[Object.keys(this.extraHourRates).filter(function (x) { return x == '8 - 12'; })] || 0;
+            }
+            else if (additionalHours > 12) {
+                ehRate = this.extraHourRates[Object.keys(this.extraHourRates).filter(function (x) { return x == '12 - 24'; })] || 0;
+            }
+        }
+
+        _ExtraHourRate.val(ehRate + "%");
+
+        if (ehRate > 0) {
+            _AdditionalHour.val("Yes");
+        }
+        else {
+            _AdditionalHour.val("No");
+        }
+
+        return ehRate;
+    }
+</script>

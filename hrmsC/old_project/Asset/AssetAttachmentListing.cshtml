@@ -1,0 +1,110 @@
+﻿@model List<ESS.Core.AttachmentObject>
+@{
+    Layout = null;
+    string Mode = ViewBag.Mode;
+    string RequestID = ViewBag.RequestID;
+    string EmployeeID = ViewBag.EmployeeID;
+    string ShowOptionField = ViewBag.ShowOptionField;
+    string CustomTextLabel1 = ViewBag.CustomTextLabel1;
+}
+
+<input type="hidden" value="@ViewBag.RequestID" />
+<div class="table-toolbar">
+    <div class="row" style="margin-left: 10px;">Senarai Lampiran Baru :</div>
+    <table id="tblAttachment" class="table table-striped table-bordered table-hover table-full-width">
+        <thead>
+            <tr>
+                <th></th>
+                <th>Lampiran</th>
+                <th>Penerangan</th>
+
+                @if (Mode != "View" && (Model != null && Model.Count > 0))
+                {
+                    <th></th>
+                }
+                @*<th>Source Type</th>*@
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in @Model)
+            {
+                <tr>
+                    @if (Mode == "Add")
+                    {
+                        if (!string.IsNullOrEmpty(item.SourceID))
+                        {
+                            <td>
+                                <a class="btn blue btn-sm" onclick="DownloadAttachment('@item.ID')"><i class="fa fa-download"></i></a>
+                            </td>
+                        }
+                        else
+                        {
+                            <td>
+                                <a class="btn blue btn-sm" onclick="DownloadTempDocument('@item.ID')"><i class="fa fa-download"></i></a>
+                            </td>
+                        }
+                    }
+                    else if (Mode == "New")
+                    {
+                        <td>
+                            <a class="btn blue btn-sm" onclick="DownloadTempDocument('@item.ID')"><i class="fa fa-download"></i></a>
+                        </td>
+                    }
+                    else if (Mode == "View")
+                    {
+                        <td>
+                            <a class="btn blue btn-sm" onclick="DownloadAttachment('@item.ID')"><i class="fa fa-download"></i></a>
+                        </td>
+                    }
+                    <td><p style="white-space: pre-wrap">@item.FileName</p></td>
+                    <td><p style="white-space: pre-wrap">@item.Description</p></td>
+                    @if (Mode == "Add")
+                    {
+                        if (item.EmployeeID.ToLower() == EmployeeID.ToLower())
+                        {
+                            if (!string.IsNullOrEmpty(item.SourceID))
+                            {
+                                <td>
+                                    <a class="btn red btn-sm" onclick="javascript: DeleteDocument('@item.ID')">Remove</a>
+                                </td>
+                            }
+                            else
+                            {
+                                <td>
+                                    <a class="btn red btn-sm" onclick="javascript: DeleteSessionDocument('@item.ID')">Remove</a>
+                                </td>
+                            }
+
+                        }
+                        else
+                        {
+                            <td></td>
+                        }
+
+                    }
+                    else if (Mode == "New")
+                    {
+                        <td>
+                            <a class="btn red btn-sm" onclick="javascript: DeleteSessionDocument('@item.ID')">Remove</a>
+                        </td>
+                    }
+
+                    @*<td>@item.SourceType</td>*@
+                </tr>
+            }
+
+        </tbody>
+    </table>
+</div>
+
+<script type="text/javascript">
+    $('#tblAttachment').dataTable(
+        {
+            "bLengthChange": false,
+            "bFilter": false,
+            "bPaginate": false,
+            "bInfo": false,
+            "bSortable": false,
+
+        });
+</script>

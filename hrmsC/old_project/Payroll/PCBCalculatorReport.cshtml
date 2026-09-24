@@ -1,0 +1,57 @@
+﻿@using ESS.Payroll.Models
+@model PCBCalculatorReport
+@{
+    ViewBag.Title = "My PCB Calculator Report";
+    string ErrorMessage = ViewBag.ErrorMessage;
+    string EmployeeID = ViewBag.CurrentEmployeeID;
+}
+
+<style type="text/css">
+    .hidden_1 {
+        display: none;
+    }
+</style>
+
+<div class="form-section">
+    <div class="row">
+        <div class="col-md-12">
+            <h1 class="page-title">
+                @ViewBag.Title
+                <span style="padding-left:20px;">
+                    <small></small>
+                </span>
+            </h1>
+        </div>
+    </div>
+</div>
+
+@if (String.IsNullOrEmpty(ErrorMessage))
+{
+    using (Html.BeginForm("TaxExemptionForm", "Payroll", FormMethod.Post))
+    {
+        <!-- Employee Details -->
+        @Html.Partial("_PayrollEmployeeDetails", Model.Submiter)
+        @Html.Partial("_IncomeTaxDetails", new Tuple<IncomeTaxDetail, string, bool>(Model.IncomeTaxDetail, EmployeeID, true))
+        @Html.Partial("_Remuneration", Model)
+        @Html.Partial("_OptionalDeductions", Model.TaxExemptionDeductions)
+        @Html.Partial("_CurrentPCBDeduction", Model)
+        <br />
+        <!-- Buttons -->
+        <div class="row">
+            <div class="col-md-12">
+                <input type="button" class="btn green" value="Back" id="btnBack" onclick="window.history.back()" />
+            </div>
+        </div>
+    }
+}
+else
+{
+    <div class="row">
+        <div class="col-md-12">
+            <p>@ErrorMessage</p>
+        </div>
+    </div>
+}
+
+<script>
+</script>

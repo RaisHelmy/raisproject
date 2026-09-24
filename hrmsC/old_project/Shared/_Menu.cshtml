@@ -1,0 +1,2692 @@
+﻿@model bool
+
+@using System.Configuration;
+@using ESS.Core;
+
+@{
+    string HomeUrl = ConfigurationManager.AppSettings["PublicSiteUrl"];
+    string NewHomeUrl = ConfigurationManager.AppSettings["PublicSiteUrl"];
+    string companyName = ConfigurationManager.AppSettings["CompanyName"];
+    List<string> SPGroupList = SP.GetUserGroupList();
+
+    string loginID = Common.GetEmployeeID();
+    string loginName = Common.GetEmployeeName(loginID);
+    string loginCode = Common.GetEmployeeCode(loginID);
+
+    bool debug = false;
+}
+
+<!-- ======= Header ======= -->
+<header id="header" class="fixed-top d-flex align-items-center" style="flex-direction: column">
+    <div class="container d-flex align-items-center justify-content-between" style="width: 100%; flex-direction: row">
+        <div class="logo">
+            <a href="@Url.Content("~/")"><img src="/Style%20Library/Images/tnb-logo.png" alt="" class="img-fluid"></a>
+        </div>
+
+        <nav id="navbar" class="navbar" style="margin-bottom: 0px; margin-left: auto;">
+            <ul>
+                <li><a class="nav-link scrollto " href="@Url.Content("~/")">Home</a></li>
+
+                <li class="dropdown megamenu">
+                    <a href="#"><span>Application</span> <i class="bi bi-chevron-down"></i></a>
+                    <ul style="left:auto;align-items:flex-start;">
+                        <li>
+                            @if (SPGroupList.Contains("Employee Profile") || debug)
+                            {
+                                <div class="dropdown">
+                                    <a href="#"><span>Employee Profile</span> <i class="bi bi-chevron-down"></i></a>
+                                    <ul>
+                                        <li>
+                                            <a href="@Url.Content("~/Employee/Index")">
+                                                My Profile
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a href="@Url.Action("History", "Employee")">
+                                                My Profile Maintenance <br />History
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <div class="dropdown">
+                                                <a href="#"><span>Retirement Letter</span> <i class="bi bi-chevron-down"></i></a>
+                                                <ul>
+                                                    <li>
+                                                        <a href="@Url.Action("RetirementLetterListing", "Employee")">
+                                                            Retirement Letter <br />Listing
+                                                        </a>
+                                                    </li>
+                                                    <li>
+                                                        <a href="@Url.Action("RetirementLetterReport", "Employee")">
+                                                            Retirement Letter <br />Report
+                                                        </a>
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                        </li>
+                                        <li>
+                                            <a href="@Url.Action("Search", "Employee")">
+                                                Employee Search
+                                            </a>
+                                        </li>
+                                        @if (SPGroupList.Contains("EPM - Report") || debug)
+                                        {
+                                            <li>
+                                                <div class="dropdown">
+                                                    <a href="#"><span>Report</span> <i class="bi bi-chevron-down"></i></a>
+                                                    <ul>
+                                                        <li>
+                                                            <a href="@Url.Action("ProfileMaintenanceTracking", "Employee")">
+                                                                Profile Maintenance <br />Report (SSRS)
+                                                            </a>
+                                                        </li>
+                                                        <li>
+                                                            <a href="@Url.Action("ProfileMaintenanceReport", "Employee")">
+                                                                Profile Maintenance <br />Report
+                                                            </a>
+                                                        </li>
+                                                    </ul>
+                                                </div>
+                                            </li>
+                                        }
+                                    </ul>
+                                </div>
+                            }
+
+                            @if (SPGroupList.Contains("EPM - Verification Letter") || debug)
+                            {
+                                <div class="dropdown">
+                                    <a href="#"><span>Verification Letter</span> <i class="bi bi-chevron-down"></i></a>
+                                    <ul>
+                                        <li>
+                                            <a href="@Url.Action("Index", "VerificationLetter")">
+                                                Verification Letter <br />Request
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a href="@Url.Action("RequestHistory", "VerificationLetter")">
+                                                Request History
+                                            </a>
+                                        </li>
+                                        @if (SPGroupList.Contains("EPM - Verification Letter Report") || debug)
+                                        {
+                                            <li>
+                                                <a href="@Url.Action("RequestReport", "VerificationLetter")">
+                                                    Request Report
+                                                </a>
+                                            </li>
+                                        }
+                                    </ul>
+                                </div>
+                            }
+
+                            <div class="dropdown">
+                                <a href="#"><span>Leave</span> <i class="bi bi-chevron-down"></i></a>
+                                <ul style="top: -100% !important">
+                                    <li>
+                                        <div class="dropdown">
+                                            <a href="#"><span>Leave</span> <i class="bi bi-chevron-down"></i></a>
+                                            <ul>
+                                                @if (SPGroupList.Contains("Leave - Leave Application") || debug)
+                                                {
+                                                    <li>
+                                                        <a href="@Url.Content("~/LeaveApplication/Index")">
+                                                            Leave Application
+                                                        </a>
+                                                    </li>
+                                                    <li>
+                                                        <a href="@Url.Action("LeaveHistory", "LeaveApplication")">
+                                                            Leave History
+                                                        </a>
+                                                    </li>
+                                                    <li>
+                                                        <a href="@Url.Action("LeaveBalance", "LeaveApplication")">
+                                                            Leave Balance
+                                                        </a>
+                                                    </li>
+                                                    <li>
+                                                        <a href="@Url.Action("MyCalendar", "LeaveApplication")">
+                                                            My Calendar
+                                                        </a>
+                                                    </li>
+                                                    <li>
+                                                        <a href="@Url.Action("UnitCalendar", "LeaveApplication")">
+                                                            Unit Calendar
+                                                        </a>
+                                                    </li>
+                                                }
+
+                                                @if (SPGroupList.Contains("Leave - Leave Reports") || debug)
+                                                {
+                                                    <li>
+                                                        <div class="dropdown">
+                                                            <a href="#"><span>Reports</span> <i class="bi bi-chevron-down"></i></a>
+                                                            <ul style="left:100% !important">
+                                                                <li>
+                                                                    <a href="@Url.Content("~/LeaveApplication/LeaveEntitlement")">
+                                                                        Leave Entitlement
+                                                                    </a>
+                                                                </li>
+                                                                <li>
+                                                                    <a href="@Url.Content("~/LeaveApplication/LeaveHistoryTracking")">
+                                                                        Leave History Tracking
+                                                                    </a>
+                                                                </li>
+                                                                <li>
+                                                                    <a href="@Url.Content("~/LeaveApplication/LeaveStatus")">
+                                                                        Leave Status
+                                                                    </a>
+                                                                </li>
+                                                                <li>
+                                                                    <a href="@Url.Content("~/LeaveApplication/LeaveTrendAnalysis")">
+                                                                        Leave Trend Analysis
+                                                                    </a>
+                                                                </li>
+                                                            </ul>
+                                                        </div>
+                                                    </li>
+                                                }
+
+                                                @if (SPGroupList.Contains("Leave - Leave Reports (Admin)") || debug)
+                                                {
+                                                    <li>
+                                                        <div class="dropdown">
+                                                            <a href="#"><span>Reports (Admin)</span> <i class="bi bi-chevron-down"></i></a>
+                                                            <ul style="left:100% !important">
+                                                                <li>
+                                                                    <a href="@Url.Content("~/LeaveApplication/LeaveEntitlementAdmin")">
+                                                                        Leave Entitlement
+                                                                    </a>
+                                                                </li>
+                                                                <li>
+                                                                    <a href="@Url.Content("~/LeaveApplication/LeaveHistoryTrackingAdmin")">
+                                                                        Leave History Tracking
+                                                                    </a>
+                                                                </li>
+                                                                <li>
+                                                                    <a href="@Url.Content("~/LeaveApplication/LeaveStatusAdmin")">
+                                                                        Leave Status
+                                                                    </a>
+                                                                </li>
+                                                                <li>
+                                                                    <a href="@Url.Content("~/LeaveApplication/LeaveTrendAnalysisAdmin")">
+                                                                        Leave Trend Analysis
+                                                                    </a>
+                                                                </li>
+                                                            </ul>
+                                                        </div>
+                                                    </li>
+                                                }
+                                            </ul>
+                                        </div>
+                                    </li>
+
+                                    @if (SPGroupList.Contains("Leave - Leave Application") || debug)
+                                    {
+                                        <li>
+                                            <div class="dropdown">
+                                                <a href="#"><span>Off In Lieu <br />Application</span> <i class="bi bi-chevron-down"></i></a>
+                                                <ul>
+                                                    <li>
+                                                        <a href="@Url.Content("~/LeaveQuota/Index?LeaveQuotaType=OIL")">
+                                                            Off In Lieu Leave
+                                                        </a>
+                                                    </li>
+                                                    <li>
+                                                        <a href="@Url.Content("~/LeaveQuota/RequestHistory")">
+                                                            Request History
+                                                        </a>
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                        </li>
+                                    }
+
+                                    @if (SPGroupList.Contains("Leave - Leave Encashment") || debug)
+                                    {
+                                        <li>
+                                            <div class="dropdown">
+                                                <a href="#"><span>Leave Encashment <br />(Retirement)</span> <i class="bi bi-chevron-down"></i></a>
+                                                <ul>
+                                                    <li>
+                                                        <a href="@Url.Content("~/LeaveEncashment")">
+                                                            Application
+                                                        </a>
+                                                    </li>
+                                                    <li>
+                                                        <a href="@Url.Content("~/LeaveEncashment/History")">
+                                                            History
+                                                        </a>
+                                                    </li>
+                                                    @if (RoleMaintenance.RoleService.IsInRole("Leave Encashment", "HR SSC BA") || debug)
+                                                    {
+                                                        <li>
+                                                            <a href="@Url.Content("~/LeaveEncashment/Report")">
+                                                                Report
+                                                            </a>
+                                                        </li>
+                                                    }
+                                                </ul>
+                                            </div>
+                                        </li>
+                                    }
+
+                                    @if (SPGroupList.Contains("Leave - Leave Calculator") || debug)
+                                    {
+                                        <li>
+                                            <a href="@Url.Action("CalculatorLandingPage", "LeaveApplication")">
+                                                Leave Calculator
+                                            </a>
+                                        </li>
+
+                                        <li>
+                                            <a href="@Url.Action("LeaveCalculatorEarlyRetirement", "LeaveApplication")">
+                                                Leave Calculator <br />(Early Retirement)
+                                            </a>
+                                        </li>
+                                    }
+
+                                    @if (SPGroupList.Contains("Leave - Leave Reports") || SPGroupList.Contains("Auditor") || debug)
+                                    {
+                                        <li>
+                                            <a href="@Url.Action("LeaveReport", "LeaveApplication")">
+                                                Leave Report
+                                            </a>
+                                        </li>
+                                    }
+
+                                    @if (SPGroupList.Contains("Leave - Leave Report (TGBS)") || debug)
+                                    {
+                                        <li>
+                                            <a href="@Url.Action("LeaveReportTGBS", "LeaveApplication")">
+                                                Leave Report (TGBS)
+                                            </a>
+                                        </li>
+                                    }
+
+                                    @if (SPGroupList.Contains("Leave - Leave Reports") || debug)
+                                    {
+                                        <li>
+                                            <a href="@Url.Action("RequestReport", "LeaveQuota")">
+                                                Leave Quota Report
+                                            </a>
+                                        </li>
+                                    }
+
+                                    @if (RoleMaintenance.RoleService.IsInRole("Leave", "HR SSC BA") || debug)
+                                    {
+                                        <li>
+                                            <div class="dropdown">
+                                                <a href="#"><span>SLA Report</span> <i class="bi bi-chevron-down"></i></a>
+                                                <ul>
+                                                    <li>
+                                                        <a href="@Url.Action("HRSSCREport", "LeaveApplication")">
+                                                            HRSSC SLA Report
+                                                        </a>
+                                                    </li>
+                                                    <li>
+                                                        <a href="@Url.Action("MedUnpdLeaveReport","LeaveApplication")">
+                                                            Medical & Unpaid Leave
+                                                        </a>
+                                                    </li>
+                                                    <li>
+                                                        <a href="@Url.Action("OthersLeaveReport","LeaveApplication")">
+                                                            Others Leave
+                                                        </a>
+                                                    </li>
+                                                    <li>
+                                                        <a href="@Url.Action("OILLeaveQuotaReport","LeaveQuota")">
+                                                            OIL Leave Quota
+                                                        </a>
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                        </li>
+                                    }
+
+                                    <li>
+                                        <a href="@HomeUrl/Leave%20%20References/Forms/AllItems.aspx">
+                                            References
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
+
+                            @if (SPGroupList.Contains("Claim - Applicant") || debug)
+                            {
+                                <div class="dropdown">
+                                    <a href="#"><span>Claims</span> <i class="bi bi-chevron-down"></i></a>
+                                    <ul style="top: -200% !important">
+                                        <li>
+                                            <a href="@Url.Content("~/LandingPage?ModuleName=Claims")">
+                                                Home
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <div class="dropdown">
+                                                <a href="#"><span>Claims Form</span> <i class="bi bi-chevron-down"></i></a>
+                                                <ul>
+                                                    <li>
+                                                        <a href="@Url.Content("~/claims/claimsapplication?Type=COS01")">
+                                                            Local/Outstation
+                                                        </a>
+                                                    </li>
+                                                    <li>
+                                                        <a href="@Url.Content("~/claims/claimsapplication?Type=COV01")">
+                                                            Oversea
+                                                        </a>
+                                                    </li>
+                                                    <li>
+                                                        <a href="@Url.Content("~/claims/claimsapplication?Type=COH01")">
+                                                            Others
+                                                        </a>
+                                                    </li>
+                                                    <li>
+                                                        <a href="@Url.Content("~/claims/claimsapplication?Type=COB01")">
+                                                            Other Benefits
+                                                        </a>
+                                                    </li>
+                                                    <li>
+                                                        <a href="@Url.Content("~/claims/claimshistory")">
+                                                            History
+                                                        </a>
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                        </li>
+                                        <li>
+                                            <div class="dropdown">
+                                                <a href="#"><span>Outstation Form</span> <i class="bi bi-chevron-down"></i></a>
+                                                <ul>
+                                                    <li>
+                                                        <a href="@Url.Content("~/Claims/OutstationFormApplication")">
+                                                            Application
+                                                        </a>
+                                                    </li>
+                                                    <li>
+                                                        <a href="@Url.Content("~/Claims/OutstationFormHistory")">
+                                                            History
+                                                        </a>
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                        </li>
+
+                                        <li>
+                                            <div class="dropdown">
+                                                <a href="#"><span>Advance Claims</span> <i class="bi bi-chevron-down"></i></a>
+                                                <ul>
+                                                    <li>
+                                                        <a href="@Url.Content("~/Claims/AdvanceClaimsHistory")">
+                                                            History
+                                                        </a>
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                        </li>
+
+                                        @if (SPGroupList.Contains("ILSAS SME Claims Users") || debug)
+                                        {
+                                            <li>
+                                                <div class="dropdown">
+                                                    <a href="#"><span>ILSAS SME Claims</span> <i class="bi bi-chevron-down"></i></a>
+                                                    <ul>
+                                                        <li>
+                                                            <a href="@Url.Content("~/claims/ILSASClaimsApplication")">
+                                                                Claims Entry Form
+                                                            </a>
+                                                        </li>
+                                                        <li>
+                                                            <a href="@Url.Content("~/Claims/claimshistory")">
+                                                                Claims History
+                                                            </a>
+                                                        </li>
+                                                    </ul>
+                                                </div>
+                                            </li>
+                                        }
+
+                                        @if (SPGroupList.Contains("ILSAS SME Claims Admin") || debug)
+                                        {
+                                            <li>
+                                                <div class="dropdown">
+                                                    <a href="#"><span>ILSAS SME Admin</span> <i class="bi bi-chevron-down"></i></a>
+                                                    <ul>
+                                                        <li>
+                                                            <a href="@Url.Content("~/Role/ILSASApprovals")">
+                                                                Approval Maintenance
+                                                            </a>
+                                                        </li>
+                                                        <li>
+                                                            <a href="@HomeUrl/_layouts/15/people.aspx?MembershipGroupId=34675">
+                                                                SME Maintenance
+                                                            </a>
+                                                        </li>
+                                                        <li>
+                                                            <a href="@Url.Content("~/ClaimsReport/ILSASReport")">
+                                                                ILSAS SME Claims <br />Search
+                                                            </a>
+                                                        </li>
+                                                        <li>
+                                                            <a href="@Url.Content("~/ClaimsReport/ILSASTeachingAllowanceReport")">
+                                                                Teaching Allowance <br />Report
+                                                            </a>
+                                                        </li>
+                                                    </ul>
+                                                </div>
+                                            </li>
+                                        }
+
+                                        @if (SPGroupList.Contains("ILSAS SME Claims Coordinators") || debug)
+                                        {
+                                            <li>
+                                                <div class="dropdown">
+                                                    <a href="#"><span>ILSAS SME <br />Coordinator</span> <i class="bi bi-chevron-down"></i></a>
+                                                    <ul>
+                                                        <li>
+                                                            <a href="@Url.Content("~/ClaimsReport/ILSASReport")">
+                                                                ILSAS SME Claims <br />Search
+                                                            </a>
+                                                        </li>
+                                                        <li>
+                                                            <a href="@Url.Content("~/ClaimsReport/ILSASTeachingAllowanceReport")">
+                                                                Teaching Allowance <br />Report
+                                                            </a>
+                                                        </li>
+                                                    </ul>
+                                                </div>
+                                            </li>
+                                        }
+
+                                        @if (SPGroupList.Contains("Flexi Benefits - Personal Assistant") || SPGroupList.Contains("Flexi Benefits - Top Management") || debug)
+                                        {
+                                            <li>
+                                                <div class="dropdown">
+                                                    <a href="#"><span>Flexi Benefits</span> <i class="bi bi-chevron-down"></i></a>
+                                                    <ul>
+                                                        <li>
+                                                            <a href="@Url.Content("~/Claims/FlexiBenefitsIndex")">
+                                                                Application
+                                                            </a>
+                                                        </li>
+                                                        <li>
+                                                            <a href="@Url.Content("~/Claims/FlexiBenefitsHistory")">
+                                                                History
+                                                            </a>
+                                                        </li>
+                                                        @if (ESS.Claim.FlexiBenefits.IsFBAdmin(Common.GetEmployeeID()) || debug)
+                                                        {
+                                                            <li>
+                                                                <a href="@Url.Content("~/Claims/FlexiBenefitsReport")">
+                                                                    Report
+                                                                </a>
+                                                            </li>
+                                                            <li>
+                                                                <a href="@Url.Content("~/Claims/FBEntitlementListing")">
+                                                                    Entitlement
+                                                                </a>
+                                                            </li>
+                                                            <li>
+                                                                <a href="@Url.Content("~/Claims/FBEntitlementConfiguration")">
+                                                                    Entitlement <br />Configuration
+                                                                </a>
+                                                            </li>
+                                                            <li>
+                                                                <a href="@Url.Content("~/Claims/TaxClassificationListing")">
+                                                                    Tax Classification
+                                                                </a>
+                                                            </li>
+                                                        }
+                                                    </ul>
+                                                </div>
+                                            </li>
+                                        }
+
+                                        @if (SPGroupList.Contains("Claim - Report") || debug)
+                                        {
+                                            <li>
+                                                <div class="dropdown">
+                                                    <a href="#"><span>Report</span> <i class="bi bi-chevron-down"></i></a>
+                                                    <ul>
+                                                        <li>
+                                                            <a href="@Url.Content("~/ClaimsReport/ClaimsReport")">
+                                                                Claim Search
+                                                            </a>
+                                                        </li>
+                                                        <li>
+                                                            <a href="@Url.Content("~/ClaimsReport/OutstationFormReport")">
+                                                                Outstation Form Search
+                                                            </a>
+                                                        </li>
+                                                        <li>
+                                                            <a href="@Url.Content("~/ClaimsReport/AdvanceClaimsReport")">
+                                                                Advance Claim Search
+                                                            </a>
+                                                        </li>
+                                                    </ul>
+                                                </div>
+                                            </li>
+                                        }
+
+                                        @if (SPGroupList.Contains("ESS Admin") || debug)
+                                        {
+                                            <li>
+                                                <div class="dropdown">
+                                                    <a href="#"><span>Maintenance</span> <i class="bi bi-chevron-down"></i></a>
+                                                    <ul>
+                                                        <li>
+                                                            <a href="@Url.Content("~/ClaimsMaintenance/CustomChargeCodeConfigurationListing")">
+                                                                Custom Charge Code <br />Configuration
+                                                            </a>
+                                                        </li>
+                                                        <li>
+                                                            <a href="@Url.Content("~/ClaimsMaintenance/EquivalentGradeConfigurationListing")">
+                                                                Equivalent Grade <br />Configuration
+                                                            </a>
+                                                        </li>
+                                                    </ul>
+                                                </div>
+                                            </li>
+                                        }
+
+                                        <li>
+                                            <a href="@HomeUrl/Claim%20%20References/Forms/AllItems.aspx">
+                                                References
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            }
+
+                            @if (SPGroupList.Contains("Timesheet & Attendance") || debug)
+                            {
+                                <div class="dropdown">
+                                    <a href="#"><span>Time & Attendance</span> <i class="bi bi-chevron-down"></i></a>
+                                    <ul style="top: -300% !important">
+                                        <li>
+                                            <a href="@Url.Content("~/LandingPage?ModuleName=Time%20%26%20Attendance")">
+                                                Home
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a href="@NewHomeUrl/Lists/Timesheet%20%20Announcement/AllItems.aspx">
+                                                Announcement
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a href="@Url.Content("~/TimeAttendance/WorkSchedule")">
+                                                Work Schedule
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a href="@Url.Content("~/TimeAttendance/OTPlanningEntry")">
+                                                Overtime Planning Entry
+                                            </a>
+                                        </li>
+
+                                        <li>
+                                            <div class="dropdown">
+                                                <a href="#"><span>OT Planning History</span> <i class="bi bi-chevron-down"></i></a>
+                                                <ul>
+                                                    <li>
+                                                        <a href="@Url.Content("~/TimeAttendance/OTPlanningHistory")">
+                                                            Self
+                                                        </a>
+                                                    </li>
+                                                    <li>
+                                                        <a href="@Url.Content("~/TimeAttendance/OTPlanningHistoryGroup")">
+                                                            Group
+                                                        </a>
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                        </li>
+                                        <li>
+                                            <div class="dropdown">
+                                                <a href="#"><span>Timesheet Entry</span> <i class="bi bi-chevron-down"></i></a>
+                                                <ul>
+                                                    <li>
+                                                        <a href="@Url.Content("~/TimeAttendance/TimesheetAttendance")">
+                                                            Self
+                                                        </a>
+                                                    </li>
+                                                    <li>
+                                                        <a href="@Url.Content("~/TimeAttendance/TimesheetAttendanceGroup")">
+                                                            Group
+                                                        </a>
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                        </li>
+                                        <li>
+                                            <div class="dropdown">
+                                                <a href="#"><span>Timesheet History</span> <i class="bi bi-chevron-down"></i></a>
+                                                <ul>
+                                                    <li>
+                                                        <a href="@Url.Content("~/TimeAttendance/TimesheetHistory")">
+                                                            Self
+                                                        </a>
+                                                    </li>
+                                                    <li>
+                                                        <a href="@Url.Content("~/TimeAttendance/TimesheetHistoryBulk")">
+                                                            Group
+                                                        </a>
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                        </li>
+
+                                        @if (SPGroupList.Contains("Standby Planning") || debug)
+                                        {
+                                            <li>
+                                                <a href="@Url.Content("~/TimeAttendance/StandbyList")">
+                                                    <span class="title">
+                                                        StandBy Planning (HR)
+                                                    </span>
+                                                </a>
+                                            </li>
+                                        }
+
+                                        @if (SPGroupList.Contains("Standby Planning - Applicant") || debug)
+                                        {
+                                            <li>
+                                                <div class="dropdown">
+                                                    <a href="#"><span>Standby Planning</span> <i class="bi bi-chevron-down"></i></a>
+                                                    <ul>
+                                                        <li>
+                                                            <a href="@Url.Content("~/StandbyPlanning/StandbyPlanningGroup")">
+                                                                Standby Planning Entry
+                                                            </a>
+                                                        </li>
+                                                        <li>
+                                                            <a href="@Url.Content("~/StandbyPlanning/StandbyPlanningHistory")">
+                                                                History
+                                                            </a>
+                                                        </li>
+                                                        @if (SPGroupList.Contains("Standby Planning - Admin") || debug)
+                                                        {
+                                                            <li>
+                                                                <a href="@Url.Content("~/StandbyPlanning/ByRequestReport")">
+                                                                    Standby Planning Report <br />(By Request)
+                                                                </a>
+                                                            </li>
+                                                            <li>
+                                                                <a href="@Url.Content("~/StandbyPlanning/ByDaysReport")">
+                                                                    Standby Planning Report <br />(By Days)
+                                                                </a>
+                                                            </li>
+                                                        }
+                                                    </ul>
+                                                </div>
+                                            </li>
+                                        }
+
+                                        <li>
+                                            <a href="@Url.Content("~/TimeAttendance/TimesheetAvailability")">
+                                                <span class="title">
+                                                    Availability
+                                                </span>
+                                            </a>
+                                        </li>
+
+                                        @if (SPGroupList.Contains("Time and Attendance - Report") || SPGroupList.Contains("Auditor") || debug)
+                                        {
+                                            <li>
+                                                <div class="dropdown">
+                                                    <a href="#"><span>Reports</span> <i class="bi bi-chevron-down"></i></a>
+                                                    <ul style="top: -900% !important">
+                                                        <li>
+                                                            <a href="@Url.Content("~/TimeAttendance/AttendanceAvailabilityList")">
+                                                                Attendance / Availability <br />List
+                                                            </a>
+                                                        </li>
+                                                        <li>
+                                                            <a href="@Url.Content("~/TimeAttendance/TimesheetTracking")">
+                                                                Timesheet Tracking
+                                                            </a>
+                                                        </li>
+                                                        <li>
+                                                            <a href="@Url.Content("~/TimeAttendance/OvertimeHoursAnalysis")">
+                                                                Overtime Hours <br />Analysis Report
+                                                            </a>
+                                                        </li>
+                                                        <li>
+                                                            <a href="@Url.Content("~/TimeAttendance/NormalHourVsOvertime")">
+                                                                Normal Hour Vs. <br />Overtime Report
+                                                            </a>
+                                                        </li>
+                                                        <li>
+                                                            <a href="@Url.Content("~/TimeAttendance/ApprovedOvertimePlanningVsActual")">
+                                                                Approved Overtime <br />Planning Vs. Actual <br />Report
+                                                            </a>
+                                                        </li>
+                                                        <li>
+                                                            <a href="@Url.Content("~/TimeAttendance/OvertimePlanningCollision")">
+                                                                Overtime Planning <br />Collision
+                                                            </a>
+                                                        </li>
+                                                        <li>
+                                                            <a href="@Url.Content("~/TimeAttendance/UnplannedOT")">
+                                                                Unplanned Overtime
+                                                            </a>
+                                                        </li>
+                                                    </ul>
+                                                </div>
+                                            </li>
+                                        }
+
+                                        @if (SPGroupList.Contains("Time and Attendance - Admin Report") || SPGroupList.Contains("Auditor") || debug)
+                                        {
+                                            <li>
+                                                <div class="dropdown">
+                                                    <a href="#"><span>Reports - Admin</span> <i class="bi bi-chevron-down"></i></a>
+                                                    <ul style="top: -100% !important">
+                                                        <li>
+                                                            <a href="@Url.Content("~/TimeAttendance/TimesheetReport")">
+                                                                Timesheet Report
+                                                            </a>
+                                                        </li>
+                                                        <li>
+                                                            <a href="@Url.Content("~/TimeAttendance/OvertimePlanningReport")">
+                                                                OT Planning Report
+                                                            </a>
+                                                        </li>
+                                                        <li>
+                                                            <a href="@Url.Content("~/TimeAttendance/TimesheetCollisionReport")">
+                                                                Timesheet VS Leave <br />Collision Report
+                                                            </a>
+                                                        </li>
+                                                    </ul>
+                                                </div>
+                                            </li>
+                                        }
+
+                                        @if (SPGroupList.Contains("ESS Admin") || debug)
+                                        {
+                                            <li>
+                                                <div class="dropdown">
+                                                    <a href="#"><span>Maintenance</span> <i class="bi bi-chevron-down"></i></a>
+                                                    <ul style="top: -200% !important">
+                                                        <li>
+                                                            <a href="@Url.Content("~/TimeAttendanceMaintenance/CustomChargeCodeConfigurationListing")">
+                                                                Custom Charge Code <br />Configuration
+                                                            </a>
+                                                        </li>
+                                                        <li>
+                                                            <a href="@NewHomeUrl/Lists/Timesheet%20Config/AllItems.aspx">
+                                                                Timesheet Config
+                                                            </a>
+                                                        </li>
+                                                    </ul>
+                                                </div>
+                                            </li>
+                                        }
+
+                                        <li>
+                                            <a href="@HomeUrl/Time%20%20Attendance%20%20References/Forms/AllItems.aspx">
+                                                References
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            }
+
+                            <div>
+                                <a href="~/EPayslip">
+                                    <span class="title">
+                                        E-Payslip
+                                    </span>
+                                </a>
+                            </div>
+
+                            @if (SPGroupList.Contains("LTIP2") || debug)
+                            {
+                                <div class="dropdown">
+                                    <a href="#"><span>LTIP</span> <i class="bi bi-chevron-down"></i></a>
+                                    <ul>
+                                        <li>
+                                            <div class="dropdown">
+                                                <a href="#"><span>LTIP Transactions</span> <i class="bi bi-chevron-down"></i></a>
+                                                <ul>
+                                                    <li>
+                                                        <a href="@Url.Content("~/LTIP/OfferAcceptance")">
+                                                            Offer/Acceptance
+                                                        </a>
+                                                    </li>
+                                                    <li>
+                                                        <a href="@Url.Content("~/LTIP/OfferAcceptanceHistory")">
+                                                            Offer/Acceptance History
+                                                        </a>
+                                                    </li>
+                                                    <li>
+                                                        <a href="@Url.Content("~/LTIP/GrantStatus")">
+                                                            Grant/Vesting Status
+                                                        </a>
+                                                    </li>
+                                                    @if (SPGroupList.Contains("LTIP - Report") || debug)
+                                                    {
+                                                        <li>
+                                                            <a href="@Url.Content("~/LTIP/OfferAcceptanceReport")">
+                                                                Offer/Acceptance Report
+                                                            </a>
+                                                        </li>
+                                                    }
+                                                </ul>
+                                            </div>
+                                        </li>
+                                        <li>
+                                            <div class="dropdown">
+                                                <a href="#"><span>CDS Transactions</span> <i class="bi bi-chevron-down"></i></a>
+                                                <ul>
+                                                    <li>
+                                                        <a href="@Url.Content("~/LTIP/CDSMaintenance")">
+                                                            Account Maintenance
+                                                        </a>
+                                                    </li>
+                                                    <li>
+                                                        <a href="@Url.Content("~/LTIP/CDSMaintenanceHistory")">
+                                                            Maintenance History
+                                                        </a>
+                                                    </li>
+                                                    @if (SPGroupList.Contains("LTIP - Report") || debug)
+                                                    {
+                                                        <li>
+                                                            <a href="@Url.Content("~/LTIP/CDSMaintenanceReport")">
+                                                                Maintenance Report
+                                                            </a>
+                                                        </li>
+                                                    }
+                                                </ul>
+                                            </div>
+                                        </li>
+                                        <li>
+                                            <div class="dropdown">
+                                                <a href="#"><span>References</span> <i class="bi bi-chevron-down"></i></a>
+                                                <ul>
+                                                    <li>
+                                                        <a href="@(NewHomeUrl)/LTIP/Forms/AllItems.aspx?RootFolder=%2FLTIP%2FBy-Laws&FolderCTID=0x0120008A6B2756025C0840B622D1638ABAF159&View=%7B0C9CF02B-6A7A-4CAC-AC47-8F4A4C74DB75%7D">
+                                                            By-Laws
+                                                        </a>
+                                                    </li>
+                                                    <li>
+                                                        <a href="@(NewHomeUrl)/LTIP/Forms/AllItems.aspx?RootFolder=%2FLTIP%2FHandbook&FolderCTID=0x0120008A6B2756025C0840B622D1638ABAF159&View=%7B0C9CF02B-6A7A-4CAC-AC47-8F4A4C74DB75%7D">
+                                                            Handbooks
+                                                        </a>
+                                                    </li>
+                                                    <li>
+                                                        <a href="@(NewHomeUrl)/LTIP/Forms/AllItems.aspx?RootFolder=%2FLTIP%2FHelp%20Guide&FolderCTID=0x0120008A6B2756025C0840B622D1638ABAF159&View=%7B0C9CF02B-6A7A-4CAC-AC47-8F4A4C74DB75%7D">
+                                                            Help Guide
+                                                        </a>
+                                                    </li>
+                                                    <li>
+                                                        <a href="@(NewHomeUrl)/LTIP/Forms/AllItems.aspx?RootFolder=%2FLTIP%2FFAQ&FolderCTID=0x0120008A6B2756025C0840B622D1638ABAF159&View=%7B0C9CF02B-6A7A-4CAC-AC47-8F4A4C74DB75%7D">
+                                                            LTIP FAQ
+                                                        </a>
+                                                    </li>
+                                                    <li>
+                                                        <a href="@(NewHomeUrl)/LTIP/Forms/AllItems.aspx?RootFolder=%2FLTIP%2FList%20of%20Investment%20Banks&FolderCTID=0x0120008A6B2756025C0840B622D1638ABAF159&View=%7B0C9CF02B-6A7A-4CAC-AC47-8F4A4C74DB75%7D">
+                                                            List of Investment Banks
+                                                        </a>
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                        </li>
+                                    </ul>
+                                </div>
+                            }
+
+                            @if (SPGroupList.Contains("Uniform") || debug)
+                            {
+                                <div class="dropdown">
+                                    <a href="#"><span>Uniform</span> <i class="bi bi-chevron-down"></i></a>
+                                    <ul style="top: -600% !important">
+                                        <li>
+                                            <a href="@(NewHomeUrl)/_layouts/15/TNBESS/LandingPage?ModuleName=Uniform%20Management">
+                                                Main Page
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <div class="dropdown">
+                                                <a href="#"><span>New Application</span> <i class="bi bi-chevron-down"></i></a>
+                                                <ul>
+                                                    <li>
+                                                        <a href="@Url.Content("~/UniformApplication/Index?Type=YearlyCycle")">
+                                                            Yearly Cycle
+                                                        </a>
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                        </li>
+
+                                        @if (UniformApplication.Services.Service.CheckIsEmployeeBSOMember() || SPGroupList.Contains("Uniform - Admin") || debug)
+                                        {
+                                            <li>
+                                                <div class="dropdown">
+                                                    <a href="#"><span>New Application <br />(BSO)</span> <i class="bi bi-chevron-down"></i></a>
+                                                    <ul>
+                                                        <li>
+                                                            <a href="@Url.Content("~/UniformApplication/Index?Type=YearlyCycle&BSOSubmit=1")">
+                                                                Yearly Cycle
+                                                            </a>
+                                                        </li>
+                                                        <li>
+                                                            <a href="@Url.Content("~/UniformApplication/Index?Type=SpecialRequirement&BSOSubmit=1")">
+                                                                Special Requirement
+                                                            </a>
+                                                        </li>
+                                                    </ul>
+                                                </div>
+                                            </li>
+                                        }
+
+                                        <li>
+                                            <a href="@Url.Content("~/UniformApplication/UniformHistory")">
+                                                Uniform History
+                                            </a>
+                                        </li>
+
+                                        @if (UniformApplication.Services.Service.CheckIsEmployeeBSOMember() || SPGroupList.Contains("Uniform - Admin") || debug)
+                                        {
+
+                                            if (UniformApplication.Services.Service.CheckIsEmployeeBSOMember() || debug)
+                                            {
+                                                <li>
+                                                    <a href="@Url.Content("~/UniformApplication/UniformMaintenance")">
+                                                        Uniform Maintenance
+                                                    </a>
+                                                </li>
+                                            }
+
+                                            if (SPGroupList.Contains("Uniform - Admin") || debug)
+                                            {
+                                                <li>
+                                                    <a href="@Url.Content("~/UniformApplication/EligibilitySetup")">
+                                                        Eligibility Setup
+                                                    </a>
+                                                </li>
+
+                                                <li>
+                                                    <a href="@Url.Content("~/UniformApplication/BSOMaintenance")">
+                                                        BSO Maintenance
+                                                    </a>
+                                                </li>
+                                            }
+
+                                            <li>
+                                                <div class="dropdown">
+                                                    <a href="#"><span>Reports</span> <i class="bi bi-chevron-down"></i></a>
+                                                    <ul>
+                                                        @if (SPGroupList.Contains("Uniform - Admin") || debug)
+                                                        {
+                                                            <li>
+                                                                <a href="@Url.Content("~/UniformApplication/EligibilityReport")">
+                                                                    Eligibility Report
+                                                                </a>
+                                                            </li>
+                                                            <li>
+                                                                <a href="@Url.Content("~/UniformApplication/FeedbackReport")">
+                                                                    Feedback and Status <br />Report
+                                                                </a>
+                                                            </li>
+                                                        }
+
+                                                        <li>
+                                                            <a href="@Url.Content("~/UniformApplication/ProcurementReport")">
+                                                                Procurement Report
+                                                            </a>
+                                                        </li>
+                                                        <li>
+                                                            <a href="@Url.Content("~/UniformApplication/SubmissionReport")">
+                                                                Submission Report
+                                                            </a>
+                                                        </li>
+                                                    </ul>
+                                                </div>
+                                            </li>
+                                        }
+                                    </ul>
+                                </div>
+                            }
+
+                            @if (SPGroupList.Contains("TemporaryPosition - HR BP") || SPGroupList.Contains("TemporaryPosition - Admin") || debug)
+                            {
+                                <div class="dropdown">
+                                    <a href="#"><span>HR Operations</span> <i class="bi bi-chevron-down"></i></a>
+                                    <ul>
+
+                                        <li>
+                                            <div class="dropdown">
+                                                <a href="#"><span>Temporary Position</span> <i class="bi bi-chevron-down"></i></a>
+                                                <ul>
+                                                    <li>
+                                                        <a href="@Url.Action("Index", "TemporaryPosition")">
+                                                            Temporary Position <br />Request
+                                                        </a>
+                                                    </li>
+                                                    <li>
+                                                        <a href="@Url.Action("RequestHistory", "TemporaryPosition")">
+                                                            Request History
+                                                        </a>
+                                                    </li>
+                                                    @if (SPGroupList.Contains("TemporaryPosition - Admin") || debug)
+                                                    {
+                                                        <li>
+                                                            <a href="@Url.Action("AdminSearch", "TemporaryPosition")">
+                                                                Admin Search
+                                                            </a>
+                                                        </li>
+                                                    }
+                                                </ul>
+                                            </div>
+                                        </li>
+                                    </ul>
+                                </div>
+                            }
+
+                            @if (SPGroupList.Contains("ETKEMS - Application") || SPGroupList.Contains("ETKEMS - Report Viewer") || debug)
+                            {
+                                <div class="dropdown">
+                                    <a href="#"><span>ETK / EMS</span> <i class="bi bi-chevron-down"></i></a>
+                                    <ul>
+                                        <li>
+                                            <a href="@Url.Content("~/ETKMS/Form?FormType=ETK")">
+                                                ETK Application
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a href="@Url.Content("~/ETKMS/Form?FormType=EMS")">
+                                                EMS Application
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a href="@Url.Content("~/ETKMS/MyHistory")">
+                                                My History
+                                            </a>
+                                        </li>
+                                        @if (SPGroupList.Contains("ETKEMS - Report Viewer") || debug)
+                                        {
+                                            <li>
+                                                <a href="@Url.Content("~/ETKMS/Report")">
+                                                    Report
+                                                </a>
+                                            </li>
+                                        }
+                                    </ul>
+                                </div>
+                            }
+                        </li>
+
+                        <li>
+                            <div class="dropdown">
+                                <a href="#"><span>Online Assessment</span> <i class="bi bi-chevron-down"></i></a>
+                                <ul>
+                                    <li>
+                                        <a href="@Url.Content("~/OnlineAssessment/MyHistory")">
+                                            My History
+                                        </a>
+                                    </li>
+                                    @if (SPGroupList.Contains("Online Assessment - SSC Admin") || debug)
+                                    {
+                                        <li>
+                                            <div class="dropdown">
+                                                <a href="#"><span>Report</span> <i class="bi bi-chevron-down"></i></a>
+                                                <ul>
+                                                    <li>
+                                                        <a href="@Url.Content("~/OnlineAssessment/COSReport")">
+                                                            Confirmation Of Service
+                                                        </a>
+                                                    </li>
+                                                    <li>
+                                                        <a href="@Url.Content("~/OnlineAssessment/EOCReport")">
+                                                            Extension Of Contract
+                                                        </a>
+                                                    </li>
+                                                    <li>
+                                                        <a href="@Url.Content("~/OnlineAssessment/UnsuccessfulSubmission")">
+                                                            Unsuccessful Submission
+                                                        </a>
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                        </li>
+                                    }
+                                    <li>
+                                        <div class="dropdown">
+                                            <a href="#"><span>Confirmation Of <br />Promotion</span> <i class="bi bi-chevron-down"></i></a>
+                                            <ul>
+                                                <li>
+                                                    <a href="@Url.Content("~/OnlineAssessment/COPImportFile")">
+                                                        Assessment Entry
+                                                    </a>
+                                                </li>
+                                                <li>
+                                                    <a href="@Url.Content("~/OnlineAssessment/COPValidationForm")">
+                                                        Assessment Form
+                                                    </a>
+                                                </li>
+                                                <li>
+                                                    <a href="@Url.Content("~/OnlineAssessment/COPBAHistory")">
+                                                        History
+                                                    </a>
+                                                </li>
+                                                <li>
+                                                    <a href="@Url.Content("~/OnlineAssessment/COPRevertAssessment")">
+                                                        Revert Assessment
+                                                    </a>
+                                                </li>
+                                                <li>
+                                                    <div class="dropdown">
+                                                        <a href="#"><span>Reports</span> <i class="bi bi-chevron-down"></i></a>
+                                                        <ul style="left:100% !important">
+                                                            <li>
+                                                                <a href="@Url.Content("~/OnlineAssessment/COPReport")">
+                                                                    COP Report
+                                                                </a>
+                                                            </li>
+                                                            <li>
+                                                                <a href="@Url.Content("~/OnlineAssessment/COPReportStatus")">
+                                                                    Report by Status
+                                                                </a>
+                                                            </li>
+                                                            <li>
+                                                                <a href="@Url.Content("~/OnlineAssessment/COPReportPendingAssessment")">
+                                                                    Pending Assessment
+                                                                </a>
+                                                            </li>
+                                                        </ul>
+                                                    </div>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </li>
+                                </ul>
+                            </div>
+
+                            @if (SPGroupList.Contains("ESPASS - Application") || SPGroupList.Contains("ESPASS - Report Viewer") || debug)
+                            {
+                                <div class="dropdown">
+                                    <a href="#"><span>ESPASS</span> <i class="bi bi-chevron-down"></i></a>
+                                    <ul>
+                                        <li>
+                                            <a href="@Url.Content("~/ESPASS/Form")">
+                                                ESPASS Application
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a href="@Url.Content("~/ESPASS/MyHistory")">
+                                                History
+                                            </a>
+                                        </li>
+                                        @if (SPGroupList.Contains("ESPASS - Report Viewer") || debug)
+                                        {
+                                            <li>
+                                                <a href="@Url.Content("~/ESPASS/Report")">
+                                                    Report
+                                                </a>
+                                            </li>
+                                        }
+                                        <li>
+                                            <a href="@HomeUrl/ESPASS%20%20References/Forms/AllItems.aspx">
+                                                References
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            }
+
+                            @if (SPGroupList.Contains("Early Retirement - Application") || SPGroupList.Contains("Early Retirement - Report Viewer") || debug)
+                            {
+                                <div class="dropdown">
+                                    <a href="#"><span>Early Retirement</span> <i class="bi bi-chevron-down"></i></a>
+                                    <ul>
+                                        <li>
+                                            <a href="@Url.Content("~/EarlyRetirement/Form")">
+                                                Early Retirement <br />Application
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a href="@Url.Content("~/EarlyRetirement/MyHistory")">
+                                                History
+                                            </a>
+                                        </li>
+                                        @if (SPGroupList.Contains("Early Retirement - Report Viewer") || debug)
+                                        {
+                                            <li>
+                                                <a href="@Url.Content("~/EarlyRetirement/Report")">
+                                                    Report
+                                                </a>
+                                            </li>
+                                        }
+                                    </ul>
+                                </div>
+                            }
+
+                            @if (SPGroupList.Contains("EResignation - Application") || SPGroupList.Contains("EResignation - Report Viewer") || debug)
+                            {
+                                <div class="dropdown">
+                                    <a href="#"><span>E-Resignation</span> <i class="bi bi-chevron-down"></i></a>
+                                    <ul>
+                                        <li>
+                                            <a href="@Url.Content("~/EResignation/Form")">
+                                                E-Resignation <br />Application
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a href="@Url.Content("~/EResignation/MyHistory")">
+                                                History
+                                            </a>
+                                        </li>
+                                        @if (SPGroupList.Contains("EResignation - Report Viewer") || debug)
+                                        {
+                                            <li>
+                                                <a href="@Url.Content("~/EResignation/Report")">
+                                                    Report
+                                                </a>
+                                            </li>
+                                        }
+                                        <li>
+                                            <a href="@HomeUrl/EResignation%20%20References/Forms/AllItems.aspx">
+                                                References
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            }
+
+                            @if (SPGroupList.Contains("Absorption of Contract Staff - View") || debug)
+                            {
+                                if (RoleMaintenance.RoleService.IsInRole("Contract Absorption", "HRBP")
+                                || RoleMaintenance.RoleService.IsInRole("Contract Absorption", "PSAdmin1")
+                                || RoleMaintenance.RoleService.IsInRole("Contract Absorption", "PSAdmin2")
+                                || RoleMaintenance.RoleService.IsInRole("Contract Absorption", "HeadPS")
+                                || RoleMaintenance.RoleService.IsInRole("Contract Absorption", "RoleMaintenanceAdmin") || debug)
+                                {
+                                    <div class="dropdown">
+                                        <a href="#"><span>Absorption of <br />Contract Staff</span> <i class="bi bi-chevron-down"></i></a>
+                                        <ul>
+                                            @if (RoleMaintenance.RoleService.IsInRole("Contract Absorption", "HRBP") || debug)
+                                            {
+                                                <li>
+                                                    <a href="@Url.Content("~/ContractAbsorption/HRValidationForm")">
+                                                        HRBP Validation Form
+                                                    </a>
+                                                </li>
+                                            }
+
+                                            @if (RoleMaintenance.RoleService.IsInRole("Contract Absorption", "RoleMaintenanceAdmin") || debug)
+                                            {
+                                                <li>
+                                                    <div class="dropdown">
+                                                        <a href="#"><span>Data Entry</span> <i class="bi bi-chevron-down"></i></a>
+                                                        <ul>
+                                                            <li>
+                                                                <a href="@Url.Action("ImportFile", "ContractAbsorption")">
+                                                                    Bulk Entry
+                                                                </a>
+                                                            </li>
+                                                            <li>
+                                                                <a href="@Url.Action("SingleEntry", "ContractAbsorption")">
+                                                                    Single Entry
+                                                                </a>
+                                                            </li>
+                                                        </ul>
+                                                    </div>
+                                                </li>
+                                            }
+
+                                            @if (RoleMaintenance.RoleService.IsInRole("Contract Absorption", "HRBP")
+                                                || RoleMaintenance.RoleService.IsInRole("Contract Absorption", "PSAdmin1")
+                                                || RoleMaintenance.RoleService.IsInRole("Contract Absorption", "PSAdmin2")
+                                                || RoleMaintenance.RoleService.IsInRole("Contract Absorption", "HeadPS") || debug
+                                            )
+                                            {
+                                                <li>
+                                                    <a href="@Url.Content("~/ContractAbsorption/AbsorptionResult")">
+                                                        Absorption Result <br />Tracking
+                                                    </a>
+                                                </li>
+                                            }
+
+                                            <li>
+                                                <div class="dropdown">
+                                                    <a href="#"><span>Report</span> <i class="bi bi-chevron-down"></i></a>
+                                                    <ul>
+                                                        <li>
+                                                            <a href="@Url.Action("StatusReport", "ContractAbsorption")">
+                                                                Report by Status
+                                                            </a>
+                                                        </li>
+                                                        <li>
+                                                            <a href="@Url.Action("RecommendationReport", "ContractAbsorption")">
+                                                                Report by <br />Recommendation
+                                                            </a>
+                                                        </li>
+                                                        <li>
+                                                            <a href="@Url.Action("OverallAssessmentReport", "ContractAbsorption")">
+                                                                Report by <br />Overall Assessment
+                                                            </a>
+                                                        </li>
+                                                        <li>
+                                                            <a href="@Url.Action("HRBPValidationReport", "ContractAbsorption")">
+                                                                HRBP Validation
+                                                            </a>
+                                                        </li>
+                                                    </ul>
+                                                </div>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                }
+                            }
+
+                            @if (SPGroupList.Contains("Death Donation - Applicant") || SPGroupList.Contains("Death Donation - Admin") || debug)
+                            {
+                                <div class="dropdown">
+                                    <a href="#"><span>Death Donation</span> <i class="bi bi-chevron-down"></i></a>
+                                    <ul>
+                                        <li>
+                                            <a href="@Url.Content("~/DeathDonation/Application")">
+                                                Death Donation <br />Application
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a href="@Url.Content("~/DeathDonation/History")">
+                                                History
+                                            </a>
+                                        </li>
+                                        @if (SPGroupList.Contains("Death Donation - Admin") || debug)
+                                        {
+                                            <li>
+                                                <a href="@Url.Content("~/DeathDonation/Report")">
+                                                    Report
+                                                </a>
+                                            </li>
+                                        }
+                                    </ul>
+                                </div>
+                            }
+
+                            @if (SPGroupList.Contains("Allowance - Applicant") || debug)
+                            {
+                                <div class="dropdown">
+                                    <a href="#"><span>Allowance</span> <i class="bi bi-chevron-down"></i></a>
+                                    <ul>
+                                        <li>
+                                            <a href="@Url.Content("~/Allowance/Index")">
+                                                Application
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a href="@Url.Content("~/Allowance/AllowanceHistory")">
+                                                History
+                                            </a>
+                                        </li>
+
+                                        @if (SPGroupList.Contains("Allowance - Report") || debug)
+                                        {
+                                            <li>
+                                                <a href="@Url.Content("~/Allowance/AllowanceReport")">
+                                                    Report
+                                                </a>
+                                            </li>
+                                        }
+
+                                        <li>
+                                            <a href="https://ess2.tnb.com.my/Allowance%20%20References/Forms/AllItems.aspx">
+                                                References
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            }
+
+                            @if (SPGroupList.Contains("Vendor - Applicant") || debug)
+                            {
+                                <div class="dropdown">
+                                    <a href="#"><span>iDispensary</span> <i class="bi bi-chevron-down"></i></a>
+                                    <ul>
+                                        <li>
+                                            <a href="@Url.Content("~/Vendor/VendorApplication")">
+                                                Application
+                                            </a>
+                                        </li>
+
+                                        <li>
+                                            <a href="@Url.Content("~/Vendor/VendorHistory")">
+                                                History
+                                            </a>
+                                        </li>
+
+                                        @if (SPGroupList.Contains("Vendor - Report") || debug)
+                                        {
+                                            <li>
+                                                <a href="@Url.Content("~/Vendor/VendorReport")">
+                                                    Report
+                                                </a>
+                                            </li>
+                                        }
+                                    </ul>
+                                </div>
+                            }
+
+                            @if (SPGroupList.Contains("Loan - Applicant") || debug)
+                            {
+                                <div class="dropdown">
+                                    <a href="#"><span>Loan</span> <i class="bi bi-chevron-down"></i></a>
+                                    <ul>
+                                        <li>
+                                            <a href="@Url.Content("~/Loan/LoanApplicationForm")">
+                                                Application
+                                            </a>
+                                        </li>
+
+                                        <li>
+                                            <a href="@Url.Content("~/Loan/LoanHistory")">
+                                                History
+                                            </a>
+                                        </li>
+
+                                        @if (SPGroupList.Contains("Loan - Report") || debug)
+                                        {
+                                            <li>
+                                                <a href="@Url.Content("~/Loan/LoanReport")">
+                                                    Report
+                                                </a>
+                                            </li>
+                                        }
+                                    </ul>
+                                </div>
+                            }
+
+                            @if (SPGroupList.Contains("Medical - Applicant") || debug)
+                            {
+                                <div class="dropdown">
+                                    <a href="#"><span>Medical Board</span> <i class="bi bi-chevron-down"></i></a>
+                                    <ul>
+                                        @if (SPGroupList.Contains("Medical Board List") || debug)
+                                        {
+                                            <li>
+                                                <a href="@Url.Content("~/MedicalBoard/MedicalBoardList")">
+                                                    Medical Board List
+                                                </a>
+                                            </li>
+                                        }
+
+                                        <li>
+                                            <a href="@Url.Content("~/MedicalBoard/Index")">
+                                                Application
+                                            </a>
+                                        </li>
+
+                                        <li>
+                                            <a href="@Url.Content("~/MedicalBoard/MedicalBoardHistory")">
+                                                History
+                                            </a>
+                                        </li>
+
+                                        @if (SPGroupList.Contains("Medical - Report") || debug)
+                                        {
+                                            <li>
+                                                <a href="@Url.Content("~/MedicalBoard/MedicalBoardReport")">
+                                                    Report
+                                                </a>
+                                            </li>
+                                        }
+                                    </ul>
+                                </div>
+                            }
+                        </li>
+
+                        <li>
+                            @if (SPGroupList.Contains("WorkSchedule - Applicant") || debug)
+                            {
+                                <div class="dropdown">
+                                    <a href="#"><span>Work Schedule</span> <i class="bi bi-chevron-down"></i></a>
+                                    <ul>
+                                        <li>
+                                            <a href="@Url.Content("~/WorkSchedule/WorkScheduleApplication")">
+                                                Application
+                                            </a>
+                                        </li>
+
+                                        <li>
+                                            <a href="@Url.Content("~/WorkSchedule/WorkScheduleHistory")">
+                                                History
+                                            </a>
+                                        </li>
+
+                                        @if (SPGroupList.Contains("WorkSchedule - Report") || debug)
+                                        {
+                                            <li>
+                                                <a href="@Url.Content("~/WorkSchedule/WorkScheduleReport")">
+                                                    Report
+                                                </a>
+                                            </li>
+                                        }
+                                    </ul>
+                                </div>
+                            }
+
+                            @if (SPGroupList.Contains("E-Transfer - Application") || debug)
+                            {
+                                <div class="dropdown">
+                                    <a href="#"><span>E-Transfer</span> <i class="bi bi-chevron-down"></i></a>
+                                    <ul>
+                                        <li>
+                                            <a href="@Url.Content("~/ETransfer/ETransferApplication?types=Inter")">
+                                                E-Transfer Inter
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a href="@Url.Content("~/ETransfer/ETransferApplication?types=Within")">
+                                                E-Transfer Within
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a href="@Url.Content("~/ETransfer/ETransferHistory")">
+                                                History
+                                            </a>
+                                        </li>
+                                        @if (SPGroupList.Contains("E-Transfer - Report") || debug)
+                                        {
+                                            <li>
+                                                <a href="@Url.Content("~/ETransfer/ETransferReport")">
+                                                    Report
+                                                </a>
+                                            </li>
+                                        }
+                                    </ul>
+                                </div>
+                            }
+
+                            @if (SPGroupList.Contains("Payroll - Applicant") || debug)
+                            {
+                                <div class="dropdown">
+                                    <a href="#"><span>Payroll</span> <i class="bi bi-chevron-down"></i></a>
+                                    <ul>
+                                        <li>
+                                            <a href="@Url.Content("~/Payroll/PayrollDeductionForm")">
+                                                Payroll Deduction
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a href="@Url.Content("~/Payroll/PayrollHistory")">
+                                                History
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a href="@Url.Content("http://livewire.tnb.com.my/sites/ghr/downloads/Borang/Forms/AllItems.aspx?RootFolder=%2fsites%2fghr%2fdownloads%2fBorang%2fGaji%20dan%20Faedah%20Pekerja%2fBorang%20Potongan%20Pihak%20Ketiga&FolderCTID=0x012000B02076980C12FE469881026B5A2687E4")">
+                                                Borang Potongan <br />Pihak Ketiga
+                                            </a>
+                                        </li>
+
+                                        @if (SPGroupList.Contains("Payroll - Report") || debug)
+                                        {
+                                            <li>
+                                                <a href="@Url.Content("~/Payroll/PayrollReport")">
+                                                    Report
+                                                </a>
+                                            </li>
+                                        }
+                                    </ul>
+                                </div>
+                            }
+
+                            <div class="dropdown">
+                                <a href="#"><span>Integrity Modules</span> <i class="bi bi-chevron-down"></i></a>
+                                <ul>
+                                    @if (SP.IsInGroup("Integrity Modules - Home") || debug)
+                                    {
+                                        <li>
+                                            <a href="@Url.Content("~/IntegrityModule")">
+                                                Home
+                                            </a>
+                                        </li>
+                                    }
+
+                                    @if (SP.IsInGroup("Integrity Modules - Harta") || debug)
+                                    {
+                                        <li>
+                                            <div class="dropdown">
+                                                <a href="#"><span>Harta</span> <i class="bi bi-chevron-down"></i></a>
+                                                <ul>
+                                                    <li>
+                                                        <a href="@Url.Content("~/Asset/AssetDeclaration")">
+                                                            Perisytiharan Harta
+                                                        </a>
+                                                    </li>
+
+                                                    @if (SP.IsInGroup("Asset Declaration Secretariat") || SP.IsInGroup("Asset Declaration GM") || SP.IsInGroup("ESS Admin") || debug)
+                                                    {
+                                                        <li>
+                                                            <a href="@Url.Content("~/Asset/AssetSearch")">
+                                                                Senarai Perisytiharan <br />Harta
+                                                            </a>
+                                                        </li>
+                                                    }
+
+                                                    @if (SP.IsInGroup("Asset Declaration HOD") || SP.IsInGroup("ESS Admin") || debug)
+                                                    {
+                                                        <li>
+                                                            <a href="@Url.Content("~/Asset/AssetSearchHOD")">
+                                                                Senarai Perisytiharan <br />Harta (HOD)
+                                                            </a>
+                                                        </li>
+                                                    }
+
+                                                    @if (SP.IsInGroup("Asset Declaration Resource Person (ICT)") || SP.IsInGroup("ESS Admin") || debug)
+                                                    {
+                                                        <li>
+                                                            <a href="@Url.Content("~/Asset/AssetSearchICT")">
+                                                                Senarai Perisytiharan <br />Harta (ICT)
+                                                            </a>
+                                                        </li>
+                                                    }
+
+                                                    @if (SP.IsInGroup("Asset Declaration Resource Person (AB00)") || debug)
+                                                    {
+                                                        <li>
+                                                            <a href="@Url.Content("~/Asset/AssetSearchAB00")">
+                                                                Senarai Perisytiharan <br />Harta
+                                                            </a>
+                                                        </li>
+                                                    }
+
+                                                    @if (SP.IsInGroup("Asset Declaration Resource Person (AF03)") || debug)
+                                                    {
+                                                        <li>
+                                                            <a href="@Url.Content("~/Asset/AssetSearchAF03")">
+                                                                Senarai Perisytiharan <br />Harta
+                                                            </a>
+                                                        </li>
+                                                    }
+
+                                                    @if (SP.IsInGroup("Asset Declaration Resource Person (AJ00)") || debug)
+                                                    {
+                                                        <li>
+                                                            <a href="@Url.Content("~/Asset/AssetSearchAJ00")">
+                                                                Senarai Perisytiharan <br />Harta
+                                                            </a>
+                                                        </li>
+                                                    }
+                                                    @if (SP.IsInGroup("Asset Declaration Resource Person (AN00)") || debug)
+                                                    {
+                                                        <li>
+                                                            <a href="@Url.Content("~/Asset/AssetSearchAN00")">
+                                                                Senarai Perisytiharan <br />Harta
+                                                            </a>
+                                                        </li>
+                                                    }
+
+                                                    @if (SP.IsInGroup("Asset Declaration Resource Person (G001)") || debug)
+                                                    {
+                                                        <li>
+                                                            <a href="@Url.Content("~/Asset/AssetSearchG001")">
+                                                                Senarai Perisytiharan <br />Harta
+                                                            </a>
+                                                        </li>
+                                                    }
+
+                                                    @if (SP.IsInGroup("Asset Declaration Resource Person (G001)") || debug)
+                                                    {
+                                                        <li>
+                                                            <a href="@Url.Content("~/Asset/AssetSearchG001a")">
+                                                                Senarai Perisytiharan <br />Harta
+                                                            </a>
+                                                        </li>
+                                                    }
+                                                    @if (SP.IsInGroup("Asset Declaration Resource Person (G002)") || debug)
+                                                    {
+                                                        <li>
+                                                            <a href="@Url.Content("~/Asset/AssetSearchG002")">
+                                                                Senarai Perisytiharan <br />Harta
+                                                            </a>
+                                                        </li>
+                                                    }
+
+                                                    @if (SP.IsInGroup("Asset Declaration Resource Person (G003)") || debug)
+                                                    {
+                                                        <li>
+                                                            <a href="@Url.Content("~/Asset/AssetSearchG003")">
+                                                                Senarai Perisytiharan <br />Harta
+                                                            </a>
+                                                        </li>
+                                                    }
+
+                                                    @if (SP.IsInGroup("Asset Declaration Resource Person (G004)") || debug)
+                                                    {
+                                                        <li>
+                                                            <a href="@Url.Content("~/Asset/AssetSearchG004")">
+                                                                Senarai Perisytiharan <br />Harta
+                                                            </a>
+                                                        </li>
+                                                    }
+
+                                                    @if (SP.IsInGroup("Asset Declaration Resource Person (G006)") || debug)
+                                                    {
+                                                        <li>
+                                                            <a href="@Url.Content("~/Asset/AssetSearchG006")">
+                                                                Senarai Perisytiharan <br />Harta
+                                                            </a>
+                                                        </li>
+                                                    }
+
+                                                    @if (SP.IsInGroup("Asset Declaration Resource Person (G007)") || debug)
+                                                    {
+                                                        <li>
+                                                            <a href="@Url.Content("~/Asset/AssetSearchG007")">
+                                                                Senarai Perisytiharan <br />Harta
+                                                            </a>
+                                                        </li>
+                                                    }
+
+
+                                                    @if (SP.IsInGroup("Asset Declaration Resource Person (G011)") || debug)
+                                                    {
+                                                        <li>
+                                                            <a href="@Url.Content("~/Asset/AssetSearchG011")">
+                                                                Senarai Perisytiharan <br />Harta
+                                                            </a>
+                                                        </li>
+                                                    }
+
+                                                    @if (SP.IsInGroup("Asset Declaration Resource Person (G012)") || debug)
+                                                    {
+                                                        <li>
+                                                            <a href="@Url.Content("~/Asset/AssetSearchG012")">
+                                                                Senarai Perisytiharan <br />Harta
+                                                            </a>
+                                                        </li>
+                                                    }
+
+                                                    @if (SP.IsInGroup("Asset Declaration Resource Person (G013)") || debug)
+                                                    {
+                                                        <li>
+                                                            <a href="@Url.Content("~/Asset/AssetSearchG013")">
+                                                                Senarai Perisytiharan <br />Harta
+                                                            </a>
+                                                        </li>
+                                                    }
+
+                                                    @if (SP.IsInGroup("Asset Declaration Resource Person (GHR)") || SP.IsInGroup("ESS Admin") || debug)
+                                                    {
+                                                        <li>
+                                                            <a href="@Url.Content("~/Asset/AssetSearchAF03")">
+                                                                Senarai Perisytiharan <br />Harta (GHR)
+                                                            </a>
+                                                        </li>
+                                                    }
+
+                                                    @if (SP.IsInGroup("Asset Declaration Resource Person (GHR_A)") || debug)
+                                                    {
+                                                        <li>
+                                                            <a href="@Url.Content("~/Asset/AssetSearchGHR_A")">
+                                                                Senarai Perisytiharan <br />Harta (GHR)
+                                                            </a>
+                                                        </li>
+                                                    }
+
+                                                    @if (SP.IsInGroup("Asset Declaration Resource Person (GHR_B)") || debug)
+                                                    {
+                                                        <li>
+                                                            <a href="@Url.Content("~/Asset/AssetSearchGHR_B")">
+                                                                Senarai Perisytiharan <br />Harta (GHR)
+                                                            </a>
+                                                        </li>
+                                                    }
+
+                                                    @if (SP.IsInGroup("Asset Declaration Resource Person (GHR_C)") || debug)
+                                                    {
+                                                        <li>
+                                                            <a href="@Url.Content("~/Asset/AssetSearchGHR_C")">
+                                                                Senarai Perisytiharan <br />Harta (GHR)
+                                                            </a>
+                                                        </li>
+                                                    }
+
+                                                    @if (SP.IsInGroup("Asset Declaration Resource Person (GHR_D)") || debug)
+                                                    {
+                                                        <li>
+                                                            <a href="@Url.Content("~/Asset/AssetSearchGHR_D")">
+                                                                Senarai Perisytiharan <br />Harta (GHR)
+                                                            </a>
+                                                        </li>
+                                                    }
+
+                                                    @if (SP.IsInGroup("Asset Declaration Resource Person (GHR_E)") || debug)
+                                                    {
+                                                        <li>
+                                                            <a href="@Url.Content("~/Asset/AssetSearchGHR_E")">
+                                                                Senarai Perisytiharan <br />Harta (GHR)
+                                                            </a>
+                                                        </li>
+                                                    }
+
+                                                    @if (SP.IsInGroup("Asset Declaration Resource Person (GHR_F)") || debug)
+                                                    {
+                                                        <li>
+                                                            <a href="@Url.Content("~/Asset/AssetSearchGHR_F")">
+                                                                Senarai Perisytiharan <br />Harta (GHR)
+                                                            </a>
+                                                        </li>
+                                                    }
+
+                                                    @if (SP.IsInGroup("Asset Declaration Resource Person (GHR_G)") || debug)
+                                                    {
+                                                        <li>
+                                                            <a href="@Url.Content("~/Asset/AssetSearchGHR_G")">
+                                                                Senarai Perisytiharan <br />Harta (GHR)
+                                                            </a>
+                                                        </li>
+                                                    }
+
+                                                    @if (SP.IsInGroup("Asset Declaration Resource Person (GHR_H)") || debug)
+                                                    {
+                                                        <li>
+                                                            <a href="@Url.Content("~/Asset/AssetSearchGHR_H")">
+                                                                Senarai Perisytiharan <br />Harta (GHR)
+                                                            </a>
+                                                        </li>
+                                                    }
+
+                                                    @if (SP.IsInGroup("Asset Declaration Resource Person (GHR_L)") || debug)
+                                                    {
+                                                        <li>
+                                                            <a href="@Url.Content("~/Asset/AssetSearchGHR_L")">
+                                                                Senarai Perisytiharan <br />Harta (GHR)
+                                                            </a>
+                                                        </li>
+                                                    }
+
+                                                    @if (SP.IsInGroup("Asset Declaration Resource Person (IM00)") || debug)
+                                                    {
+                                                        <li>
+                                                            <a href="@Url.Content("~/Asset/AssetSearchIM00")">
+                                                                Senarai Perisytiharan <br />Harta (GHR)
+                                                            </a>
+                                                        </li>
+                                                    }
+                                                </ul>
+                                            </div>
+                                        </li>
+                                    }
+
+                                    @if (SP.IsInGroup("Integrity Modules - Integrity Pledge") || debug)
+                                    {
+                                        <li>
+                                            <div class="dropdown">
+                                                <a href="#"><span>Integrity Pledge</span> <i class="bi bi-chevron-down"></i></a>
+                                                <ul>
+                                                    <li>
+                                                        <a href="@Url.Content("~/IntegrityPledge")">
+                                                            Integrity Pledge <br />Declaration
+                                                        </a>
+                                                    </li>
+                                                    <li>
+                                                        <a href="@Url.Content("~/IntegrityPledge/History")">
+                                                            History
+                                                        </a>
+                                                    </li>
+
+                                                    @if (SP.IsInGroup("Integrity Pledge - Report") || SP.IsInGroup("ESS Admin") || debug)
+                                                    {
+                                                        <li>
+                                                            <a href="@Url.Content("~/IntegrityPledge/Report")">
+                                                                Report
+                                                            </a>
+                                                        </li>
+                                                        <li>
+                                                            <a href="@Url.Content("~/IntegrityPledge/HeadCountReport")">
+                                                                Head Count Report
+                                                            </a>
+                                                        </li>
+                                                    }
+                                                </ul>
+                                            </div>
+                                        </li>
+                                    }
+
+                                    @if (SP.IsInGroup("Integrity Modules - Conflict of Interest") || debug)
+                                    {
+                                        <li>
+                                            <div class="dropdown">
+                                                <a href="#"><span>Conflict of Interest</span> <i class="bi bi-chevron-down"></i></a>
+                                                <ul>
+                                                    <li>
+                                                        <a href="@Url.Content("~/COI")">
+                                                            Conflict of Interest <br />Declaration
+                                                        </a>
+                                                    </li>
+                                                    <li>
+                                                        <a href="@Url.Content("~/COI/History")">
+                                                            History
+                                                        </a>
+                                                    </li>
+
+                                                    @if (SP.IsInGroup("Conflict of Interest - Report") || SP.IsInGroup("ESS Admin") || debug)
+                                                    {
+                                                        <li>
+                                                            <a href="@Url.Content("~/COI/Report")">
+                                                                Report
+                                                            </a>
+                                                        </li>
+                                                        <li>
+                                                            <a href="@Url.Content("~/COI/HeadCountReport")">
+                                                                Head Count Report
+                                                            </a>
+                                                        </li>
+                                                    }
+                                                </ul>
+                                            </div>
+                                        </li>
+                                    }
+                                </ul>
+                            </div>
+
+                            @if (SPGroupList.Contains("EPOP - Applicant") || debug)
+                            {
+                                if (ESS.EPop.Service.isApprover(Common.GetEmployeeID(), "SSC") || ESS.EPop.Service.isApprover(Common.GetEmployeeID(), "HRBP") || debug)
+                                {
+                                    <div class="dropdown">
+                                        <a href="#"><span>E-Pop</span> <i class="bi bi-chevron-down"></i></a>
+                                        <ul>
+                                            @if (ESS.EPop.Service.isBAApprover(Common.GetEmployeeID()) || debug)
+                                            {
+                                                <li>
+                                                    <a href="@Url.Content("~/EPOP/BAForm")">
+                                                        Business Partner Form
+                                                    </a>
+                                                </li>
+                                            }
+
+                                            <li>
+                                                <a href="@Url.Content("~/EPOP/OnlineAssessmentInTray")">
+                                                    Pending Assessment (HR)
+                                                </a>
+                                            </li>
+                                            <li>
+                                                <a href="@Url.Content("~/EPOP/BAHistory")">
+                                                    History
+                                                </a>
+                                            </li>
+                                            <li>
+                                                <div class="dropdown">
+                                                    <a href="#"><span>Report</span> <i class="bi bi-chevron-down"></i></a>
+                                                    <ul>
+                                                        <li>
+                                                            <a href="@Url.Content("~/EPOP/ReportMemo")">
+                                                                Memo
+                                                            </a>
+                                                        </li>
+                                                        <li>
+                                                            <a href="@Url.Content("~/EPOP/ReportStatus")">
+                                                                Report by Status
+                                                            </a>
+                                                        </li>
+                                                        <li>
+                                                            <a href="@Url.Content("~/EPOP/ReportDivision")">
+                                                                Report by Status <br />(Division)
+                                                            </a>
+                                                        </li>
+                                                        <li>
+                                                            <a href="@Url.Content("~/EPOP/ReportStatistic")">
+                                                                Report Statistic
+                                                            </a>
+                                                        </li>
+                                                    </ul>
+                                                </div>
+                                            </li>
+
+                                            @if (ESS.EPop.Service.isApprover(Common.GetEmployeeID(), "HRBP") || ESS.EPop.Service.isApprover(Common.GetEmployeeID(), "SSC") || debug)
+                                            {
+                                                <li>
+                                                    <a href="@Url.Content("~/EPOP/EPOPAssessmentEntry")">
+                                                        Assessment Entry
+                                                    </a>
+                                                </li>
+                                                <li>
+                                                    <a href="@Url.Content("~/EPOP/RevertAssessment")">
+                                                        Revert Assessment
+                                                    </a>
+                                                </li>
+                                            }
+                                        </ul>
+                                    </div>
+                                }
+                            }
+
+                            @if (SPGroupList.Contains("Mobility - Applicant") || debug)
+                            {
+                                <div class="dropdown">
+                                    <a href="#"><span>Mobility</span> <i class="bi bi-chevron-down"></i></a>
+                                    <ul>
+                                        @if (ESS.Mobility.MobilityManager.isApprover(Common.GetEmployeeID(), "ICT") || debug)
+                                        {
+                                            <li>
+                                                <a href="@Url.Content("~/Mobility/ImportExcel")">
+                                                    Mobility Letter Import
+                                                </a>
+                                            </li>
+                                        }
+                                        <li>
+                                            <a href="@Url.Content("~/Mobility/MobilityLetterList")">
+                                                Mobility List
+                                            </a>
+                                        </li>
+                                        @if (ESS.Mobility.MobilityManager.isApprover(Common.GetEmployeeID(), "HR") || debug)
+                                        {
+                                            <li>
+                                                <a href="@Url.Content("~/Mobility/MobilityLetterReport")">
+                                                    Mobility Report
+                                                </a>
+                                            </li>
+                                        }
+                                    </ul>
+                                </div>
+                            }
+
+                            <div class="dropdown">
+                                <a href="#"><span>Offer Letter</span> <i class="bi bi-chevron-down"></i></a>
+                                <ul>
+                                    <li>
+                                        <a href="@Url.Content("~/GenCoLetter/GenCoLetterList")">
+                                            Offer Letter
+                                        </a>
+                                    </li>
+
+                                    @if (ESS.GenCoLetter.GenCoLetterManager.isApprover(Common.GetEmployeeID(), "HR") || debug)
+                                    {
+                                        <li>
+                                            <a href="@Url.Content("~/GenCoLetter/GenCoLetterReport")">
+                                                Report
+                                            </a>
+                                        </li>
+                                    }
+
+                                    @if (ESS.GenCoLetter.GenCoLetterManager.isApprover(Common.GetEmployeeID(), "Admin") || debug)
+                                    {
+                                        <li>
+                                            <a href="@Url.Content("~/GenCoLetter/ImportFile")">
+                                                Import Offer Letter
+                                            </a>
+                                        </li>
+                                    }
+                                </ul>
+                            </div>
+
+                            @if (SPGroupList.Contains("Shift Coverage Allowance - Applicant") || SPGroupList.Contains("Shift Coverage Allowance - Admin") || debug)
+                            {
+                                <div class="dropdown">
+                                    <a href="#"><span>Shift Coverage <br />Allowance</span> <i class="bi bi-chevron-down"></i></a>
+                                    <ul>
+                                        <li>
+                                            <a href="@Url.Content("~/ShiftCoverageAllowance/Form")">
+                                                Application
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a href="@Url.Content("~/ShiftCoverageAllowance/MyHistory")">
+                                                History
+                                            </a>
+                                        </li>
+                                        @if (SPGroupList.Contains("Shift Coverage Allowance - Admin") || debug)
+                                        {
+                                            <li>
+                                                <a href="@Url.Content("~/ShiftCoverageAllowance/Report")">
+                                                    Report
+                                                </a>
+                                            </li>
+                                        }
+                                        <li>
+                                            <a href="@HomeUrl/Shift%20Coverage%20Allowance%20%20References/Forms/AllItems.aspx">
+                                                References
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            }
+                        </li>
+                    </ul>
+                </li>
+
+                <li class="dropdown megamenu">
+                    <a href="#"><span>MSS</span> <i class="bi bi-chevron-down"></i></a>
+                    <ul style="left:auto;align-items:flex-start;">
+                        <li>
+                            <div>
+                                <a href="@Url.Content("~/MSS/MySubordinateInTray")">
+                                    My Subordinate
+                                </a>
+                            </div>
+                            <div>
+                                <a href="@Url.Content("~/MSS/MSSSummary")">
+                                    My In-tray Summary
+                                </a>
+                            </div>
+
+                            <div class="dropdown megamenu">
+                                <a href="#"><span>My In-Tray</span> <i class="bi bi-chevron-down"></i></a>
+                                <ul>
+                                    <li>
+                                        <div>
+                                            <a href="@Url.Content("~/MSS/EmployeeInTray")">
+                                                Employee Profile
+                                            </a>
+                                        </div>
+                                        <div>
+                                            <a href="@Url.Content("~/MSS/AllowanceInTray")">
+                                                Allowance
+                                            </a>
+                                        </div>
+                                        <div>
+                                            <a href="@Url.Content("~/MSS/ClaimsInTray")">
+                                                Claims
+                                            </a>
+                                        </div>
+                                        <div>
+                                            <a href="@Url.Content("~/MSS/AdvanceClaimsInTray")">
+                                                Advance Claims
+                                            </a>
+                                        </div>
+                                        <div>
+                                            <a href="@Url.Content("~/LeaveApplication/InTray")">
+                                                Leave Application
+                                            </a>
+                                        </div>
+                                        <div>
+                                            <a href="@Url.Content("~/LeaveEncashment/Intray")">
+                                                Leave Encashment <br />(Retirement)
+                                            </a>
+                                        </div>
+                                        <div>
+                                            <a href="@Url.Content("~/LeaveQuota/RequestIntray")">
+                                                Off In Lieu Application
+                                            </a>
+                                        </div>
+                                        <div>
+                                            <a href="@Url.Content("~/MSS/EPOPInTray")">
+                                                E-Pop
+                                            </a>
+                                        </div>
+                                        <div>
+                                            <a href="@Url.Content("~/MSS/FlexiBenefitsInTray")">
+                                                Flexi Benefits
+                                            </a>
+                                        </div>
+                                        <div>
+                                            <a href="@Url.Content("~/MSS/ETransferInTray")">
+                                                E-Transfer
+                                            </a>
+                                        </div>
+                                        <div>
+                                            <a href="@Url.Content("~/MSS/VendorInTray")">
+                                                iDispensary
+                                            </a>
+                                        </div>
+                                        <div>
+                                            <a href="@Url.Content("~/MSS/LoanInTray")">
+                                                Loan
+                                            </a>
+                                        </div>
+                                        <div>
+                                            <a href="@Url.Content("~/MSS/MedicalBoardInTray")">
+                                                Medical Board
+                                            </a>
+                                        </div>
+                                    </li>
+                                    <li>
+                                        <div>
+                                            <a href="@Url.Content("~/MSS/OutstationFormInTray")">
+                                                Outstation Form
+                                            </a>
+                                        </div>
+                                        <div>
+                                            <a href="@Url.Content("~/Payroll/InTray")">
+                                                Payroll
+                                            </a>
+                                        </div>
+                                        <div>
+                                            <a href="@Url.Content("~/MSS/WorkScheduleInTray")">
+                                                Work Schedule
+                                            </a>
+                                        </div>
+                                        <div>
+                                            <a href="@Url.Content("~/TemporaryPosition/RequestIntray")">
+                                                Temporary Position
+                                            </a>
+                                        </div>
+                                        <div>
+                                            <a href="@Url.Content("~/TimeAttendance/TimeAttendanceInTray")">
+                                                Time & Attendance
+                                            </a>
+                                        </div>
+                                        <div>
+                                            <a href="@Url.Content("~/TimeAttendance/OvertimePlanningInTray")">
+                                                Overtime Planning
+                                            </a>
+                                        </div>
+                                        <div>
+                                            <a href="@Url.Content("~/ServiceAcceptance/InTray")">
+                                                Service Acceptance
+                                            </a>
+                                        </div>
+
+                                        <div>
+                                            <a href="@Url.Content("~/Asset/InTray")">
+                                                Harta
+                                            </a>
+                                        </div>
+
+                                        <div>
+                                            <a href="@Url.Content("~/COI/InTray")">
+                                                Conflict of Interest
+                                            </a>
+                                        </div>
+                                        <div>
+                                            <a href="@Url.Content("~/IntegrityPledge/InTray")">
+                                                Integrity Pledge
+                                            </a>
+                                        </div>
+
+                                        <div>
+                                            <a href="@Url.Content("~/VerificationLetter/RequestIntray")">
+                                                Verification Letter
+                                            </a>
+                                        </div>
+                                        <div>
+                                            <a href="@Url.Content("~/UniformApplication/Intray")">
+                                                Uniform Application
+                                            </a>
+                                        </div>
+                                    </li>
+                                    <li>
+                                        <div>
+                                            <a href="@Url.Content("~/ETKMS/MyIntray")">
+                                                ETK & EMS
+                                            </a>
+                                        </div>
+                                        <div>
+                                            <a href="@Url.Content("~/OnlineAssessment/MyIntray")">
+                                                Online Assessment
+                                            </a>
+                                        </div>
+                                        <div>
+                                            <a href="@Url.Content("~/ESPASS/MyIntray")">
+                                                ESPASS
+                                            </a>
+                                        </div>
+                                        <div>
+                                            <a href="@Url.Content("~/EarlyRetirement/MyIntray")">
+                                                Early Retirement
+                                            </a>
+                                        </div>
+                                        <div>
+                                            <a href="@Url.Content("~/EResignation/MyIntray")">
+                                                E-Resignation
+                                            </a>
+                                        </div>
+                                        <div>
+                                            <a href="@Url.Content("~/MSS/ContractAbsorptionInTray")">
+                                                Absorption of <br />Contract Staff
+                                            </a>
+                                        </div>
+                                        <div>
+                                            <a href="@Url.Content("~/DeathDonation/DeathDonationIntray")">
+                                                Death Donation
+                                            </a>
+                                        </div>
+                                        <div>
+                                            <a href="@Url.Content("~/MSS/StandbyPlanningInTray")">
+                                                Standby Planning
+                                            </a>
+                                        </div>
+                                        <div>
+                                            <a href="@Url.Content("~/ShiftCoverageAllowance/ShiftCoverageAllowanceIntray")">
+                                                Shift Coverage Allowance
+                                            </a>
+                                        </div>
+                                    </li>
+                                </ul>
+                            </div>
+
+                            <div class="dropdown megamenu">
+                                <a href="#"><span>Approval History</span> <i class="bi bi-chevron-down"></i></a>
+                                <ul>
+                                    <li>
+                                        <div>
+                                            <a href="@Url.Content("~/MSS/AllowanceAppHistory")">
+                                                Allowance
+                                            </a>
+                                        </div>
+                                        <div>
+                                            <a href="@Url.Content("~/MSS/EmployeeAppHistory")">
+                                                Employee Profile
+                                            </a>
+                                        </div>
+                                        <div>
+                                            <a href="@Url.Content("~/MSS/ClaimsAppHistory")">
+                                                Claims
+                                            </a>
+                                        </div>
+                                        <div>
+                                            <a href="@Url.Content("~/MSS/AdvanceClaimsAppHistory")">
+                                                Advance Claims
+                                            </a>
+                                        </div>
+                                        <div>
+                                            <a href="@Url.Content("~/LeaveApplication/AppHistory")">
+                                                Leave Application
+                                            </a>
+                                        </div>
+                                        <div>
+                                            <a href="@Url.Content("~/LeaveEncashment/AppHistory")">
+                                                Leave Encashment <br />(Retirement)
+                                            </a>
+                                        </div>
+                                        <div>
+                                            <a href="@Url.Content("~/LeaveQuota/ApprovalHistory")">
+                                                Off In Lieu Application
+                                            </a>
+                                        </div>
+                                        <div>
+                                            <a href="@Url.Content("~/MSS/EPOPAppHistory")">
+                                                E-Pop
+                                            </a>
+                                        </div>
+                                        <div>
+                                            <a href="@Url.Content("~/MSS/FlexiBenefitsAppHistory")">
+                                                Flexi Benefits
+                                            </a>
+                                        </div>
+                                        <div>
+                                            <a href="@Url.Content("~/MSS/VendorAppHistory")">
+                                                iDispensary
+                                            </a>
+                                        </div>
+                                        <div>
+                                            <a href="@Url.Content("~/MSS/LoanAppHistory")">
+                                                Loan
+                                            </a>
+                                        </div>
+                                        <div>
+                                            <a href="@Url.Content("~/MSS/MedicalBoardAppHistory")">
+                                                Medical Board
+                                            </a>
+                                        </div>
+                                        <div>
+                                            <a href="@Url.Content("~/MSS/OutstationFormAppHistory")">
+                                                Outstation Form
+                                            </a>
+                                        </div>
+                                    </li>
+                                    <li>
+                                        <div>
+                                            <a href="@Url.Content("~/Payroll/AppHistory")">
+                                                Payroll
+                                            </a>
+                                        </div>
+                                        <div>
+                                            <a href="@Url.Content("~/MSS/ETransferAppHistory")">
+                                                E-Transfer
+                                            </a>
+                                        </div>
+                                        <div>
+                                            <a href="@Url.Content("~/MSS/WorkScheduleAppHistory")">
+                                                Work Schedule
+                                            </a>
+                                        </div>
+                                        <div>
+                                            <a href="@Url.Content("~/TemporaryPosition/ApprovalHistory")">
+                                                Temporary Position
+                                            </a>
+                                        </div>
+                                        <div>
+                                            <a href="@Url.Content("~/TimeAttendance/TimeAttendanceAppHistory")">
+                                                Time & Attendance
+                                            </a>
+                                        </div>
+                                        <div>
+                                            <a href="@Url.Content("~/TimeAttendance/OvertimePlanningAppHistory")">
+                                                Overtime Planning
+                                            </a>
+                                        </div>
+                                        <div>
+                                            <a href="@Url.Content("~/ServiceAcceptance/AppHistory")">
+                                                Service Acceptance
+                                            </a>
+                                        </div>
+                                        <div>
+                                            <a href="@Url.Content("~/Asset/AppHistory")">
+                                                Harta
+                                            </a>
+                                        </div>
+                                        <div>
+                                            <a href="@Url.Content("~/COI/AppHistory")">
+                                                Conflict of Interest
+                                            </a>
+                                        </div>
+                                        <div>
+                                            <a href="@Url.Content("~/IntegrityPledge/AppHistory")">
+                                                Integrity Pledge
+                                            </a>
+                                        </div>
+                                        <div>
+                                            <a href="@Url.Content("~/VerificationLetter/ApprovalHistory")">
+                                                Verification Letter
+                                            </a>
+                                        </div>
+                                        <div>
+                                            <a href="@Url.Content("~/UniformApplication/AppHistory")">
+                                                Uniform Application
+                                            </a>
+                                        </div>
+                                        <div>
+                                            <a href="@Url.Content("~/OnlineAssessment/MyApprovalHistory")">
+                                                Online Assessment
+                                            </a>
+                                        </div>
+                                    </li>
+                                    <li>
+                                        <div>
+                                            <a href="@Url.Content("~/ETKMS/MyApprovalHistory")">
+                                                ETK & EMS
+                                            </a>
+                                        </div>
+                                        <div>
+                                            <a href="@Url.Content("~/ESPASS/MyApprovalHistory")">
+                                                ESPASS
+                                            </a>
+                                        </div>
+                                        <div>
+                                            <a href="@Url.Content("~/EarlyRetirement/MyApprovalHistory")">
+                                                Early Retirement
+                                            </a>
+                                        </div>
+                                        <div>
+                                            <a href="@Url.Content("~/EResignation/MyApprovalHistory")">
+                                                E-Resignation
+                                            </a>
+                                        </div>
+                                        <div>
+                                            <a href="@Url.Content("~/MSS/ContractAbsorptionAppHistory")">
+                                                Absorption of <br />Contract Staff
+                                            </a>
+                                        </div>
+                                        <div>
+                                            <a href="@Url.Content("~/DeathDonation/MyApprovalHistory")">
+                                                Death Donation
+                                            </a>
+                                        </div>
+                                        <div>
+                                            <a href="@Url.Content("~/MSS/StandbyPlanningAppHistory")">
+                                                Standby Planning
+                                            </a>
+                                        </div>
+                                        <div>
+                                            <a href="@Url.Content("~/ShiftCoverageAllowance/ShiftCoverageAllowanceAppHistory")">
+                                                Shift Coverage Allowance
+                                            </a>
+                                        </div>
+                                    </li>
+                                </ul>
+                            </div>
+
+                            <div>
+                                <a href="@Url.Content("~/FavoriteChargeCode/ChargeCodeFavouriteGroup")">
+                                    Favorite Charge Code
+                                </a>
+                            </div>
+                        </li>
+                    </ul>
+                </li>
+
+                @if (SPGroupList.Contains("ESS Admin") ||
+                     SPGroupList.Contains("Support Team - Employee Search") || 
+                     SPGroupList.Contains("Support Team - Integration Scheduler") ||
+                     SPGroupList.Contains("Support Team - Routing or Workflow Retrigger") || 
+                     SPGroupList.Contains("Support Team - Account Simulator"))
+                {
+                <li class="dropdown megamenu">
+                    <a href="#"><span>Maintenance</span> <i class="bi bi-chevron-down"></i></a>
+                    <ul style="left: auto; align-items: flex-start">
+                        @if (SPGroupList.Contains("ESS Admin"))
+                        {
+                            <li>
+                                <div>
+                                    <a href="@Url.Content("~/Role/RoleMaintenance")">
+                                        Role Maintenance
+                                    </a>
+                                </div>
+                                <div>
+                                    <a href="@Url.Content("~/RoleMaintenance")">
+                                        Role Maintenance (Multiple)
+                                    </a>
+                                </div>
+                                <div>
+                                    <a href="@Url.Content("~/Routing/IndexRules")">
+                                        Approval Maintenance
+                                    </a>
+                                </div>
+                                <div>
+                                    <a href="@Url.Content("~/Routing/IndexEmail")">
+                                        Notification Maintenance
+                                    </a>
+                                </div>
+                                <div>
+                                    <a href="@Url.Content("~/Process/Processes")">
+                                        Task Re-Assign Groups
+                                    </a>
+                                </div>
+                                <div>
+                                    <a href="@Url.Content("~/ReAssignTask/Index")">
+                                        Task Re-Assignment
+                                    </a>
+                                </div>
+                                <div>
+                                    <a href="@Url.Content("~/CustomWorkflowConfig/Index")">
+                                        Configuration Table (Training)
+                                    </a>
+                                </div>
+                            </li>
+                        }
+
+                        @if (SPGroupList.Contains("Support Team - Employee Search") || SPGroupList.Contains("Support Team - Integration Scheduler") ||
+                             SPGroupList.Contains("Support Team - Routing or Workflow Retrigger") || SPGroupList.Contains("Support Team - Account Simulator"))
+                        {
+                            <li>
+                                @if (SPGroupList.Contains("Support Team - Employee Search"))
+                                {
+                                    <div>
+                                        <a href="@Url.Content("~/Admin/EmployeeSearch")">
+                                            Employee Search
+                                        </a>
+                                    </div>
+                                }
+
+                                @if (SPGroupList.Contains("Support Team - Employee Search"))
+                                {
+                                    <div>
+                                        <a href="@Url.Content("~/Admin/EmployeeScheduleSearch")">
+                                            Employee Schedule
+                                        </a>
+                                    </div>
+                                }
+
+                                @if (SPGroupList.Contains("Support Team - Employee Search"))
+                                {
+                                    <div>
+                                        <a href="@Url.Content("~/Admin/EmployeeWorkingScheduleSearch")">
+                                            Employee Working Schedule
+                                        </a>
+                                    </div>
+                                }
+
+                                @if (SPGroupList.Contains("Support Team - Integration Scheduler"))
+                                {
+                                    <div>
+                                        <a href="@Url.Content("~/Admin/CommonSchedulerListing")">
+                                            Integration Scheduler
+                                        </a>
+                                    </div>
+                                }
+
+                                @if (SPGroupList.Contains("Support Team - Routing or Workflow Retrigger"))
+                                {
+                                    <div>
+                                        <a href="@Url.Content("~/RoutingLogs")">
+                                            Routing Logs
+                                        </a>
+                                    </div>
+                                }
+
+                                @if (SPGroupList.Contains("Support Team - Account Simulator"))
+                                {
+                                    <div>
+                                        <a href="@Url.Content("~/AccountSimulator")">
+                                            Account Simulator
+                                        </a>
+                                    </div>
+                                }
+
+                                @if (SPGroupList.Contains("ESS Admin"))
+                                {
+                                    <div>
+                                        <a href="@Url.Action("Index", "IntegrationStatus")">
+                                            Integration Status Maintenance
+                                        </a>
+                                    </div>
+                                    <div>
+                                        <a href="@Url.Action("_IntegrationStatusSetting", "IntegrationStatus")">
+                                            Integration Failure Notification Setting
+                                        </a>
+                                    </div>
+                                    <div>
+                                        <a href="/_layouts/15/viewlsts.aspx">
+                                            SharePoint
+                                        </a>
+                                    </div>
+                                }
+                            </li>
+                        }
+                    </ul>
+                </li>
+                }
+            </ul>
+            <i class="bi bi-list mobile-nav-toggle"></i>
+        </nav>
+
+
+        <div style="margin-left:20px">
+            <a class="signout" data-toggle="modal" href="/_layouts/15/SignOut.aspx">
+                Sign Out
+            </a>
+        </div>
+    </div>
+</header>
+<!-- End Header -->
+
+@if (Model)
+{
+    <div class="fixed-top" style="width: 100%; top: 70px;">
+        <span style="font-size: 12px; color: white; position: absolute; right: 0; bottom: 0; padding-right: 15px;">@loginName (@loginCode)</span>
+    </div>
+}

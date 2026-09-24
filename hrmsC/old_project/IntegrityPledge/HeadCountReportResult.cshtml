@@ -1,0 +1,162 @@
+﻿@using Integrity.Models
+@model IEnumerable<EmployeeModel>
+
+<style>
+    .table-centered {
+        width: 50% !important;
+        display: table;
+        margin-right: auto;
+        margin-left: auto;
+    }
+
+    .table-header {
+        font-weight: bold;
+        text-align: center;
+    }
+
+    .table-left {
+        text-align: left;
+    }
+
+    .table-right {
+        text-align: right;
+    }
+</style>
+
+<div class="form-horizontal">
+    <div class="table-toolbar">
+        <table id="tblResultSummary" class="table table-bordered table-centered">
+            <thead>
+                <tr class="table-header">
+                    <th>Status</th>
+                    <th>No. of Records</th>
+                </tr>
+            </thead>
+            <tbody class="table-body">
+                <tr>
+                    <td class="table-left">Completed</td>
+                    <td class="table-right">
+                        @(Model.Count(x => x.Status == "Completed"))
+                    </td>
+                </tr>
+                <tr>
+                    <td class="table-left">Incomplete</td>
+                    <td class="table-right" style="color: red;">
+                        @(Model.Count(x => x.Status == "Incomplete"))
+                    </td>
+                </tr>
+            </tbody>
+            <tfoot class="table-footer">
+                <tr>
+                    <td style="text-align: center; font-weight: bold;">Total</td>
+                    <td class="table-right">
+                        @(Model.Count())
+                    </td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+</div>
+
+<div class="portlet box blue">
+    <div class="mini-triangle"><img src="../Assets/img/menu-red-triangle.png" /></div>
+    <div class="portlet-title">
+        <div class="caption">
+            <i class="fa fa-reorder"></i>Report
+        </div>
+        <input type="button" id="btn-Export" class="btn btn-xs green pull-right" value="Export To Excel">
+        <div class="tools">
+        </div>
+    </div>
+    <div class="portlet-body form">
+        <div class="form-body">
+            <div class="form-horizontal">
+                <div class="table-toolbar">
+                    <table id="tblResult" class="table table-striped table-bordered table-hover table-full-width">
+                        <thead>
+                            <tr>
+                                <th>Employee Code</th>
+                                <th>Employee Name</th>
+                                <th>Company Code</th>
+                                <th>Division</th>
+                                <th>Personnel Area</th>
+                                <th>Personnel SubArea</th>
+                                <th>Grade</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @{
+                                int rowLimit = ViewBag.RowLimit;
+                                var modelLimit = rowLimit != 0 ? Model.Take(rowLimit) : Model;
+                            }
+                            @foreach (var item in modelLimit)
+                            {
+                                <tr>
+                                    <td>@item.EmployeeCode</td>
+                                    <td>@item.EmployeeName</td>
+                                    <td>@item.Company</td>
+                                    <td>@item.Division</td>
+                                    <td>@item.Area</td>
+                                    <td>@item.SubArea</td>
+                                    <td>@item.PayScaleGroup</td>
+                                    <td>
+                                        @if (item.Status == "Incomplete")
+                                        {
+                                            <span style="color : red; font-weight: bold;">
+                                                @item.Status
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span style="color : green; font-weight: bold;">
+                                                @item.Status
+                                            </span>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<table id="tblExport" border="1" style="display: none;">
+    <thead>
+        <tr>
+            <th>Employee Code</th>
+            <th>Employee Name</th>
+            <th>Company</th>
+            <th>Division</th>
+            <th>Personnel Area</th>
+            <th>Personnel SubArea</th>
+            <th>Grade</th>
+            <th>Status</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@item.EmployeeCode</td>
+                <td>@item.EmployeeName</td>
+                <td>@item.Company</td>
+                <td>@item.Division</td>
+                <td>@item.Area</td>
+                <td>@item.SubArea</td>
+                <td>@item.PayScaleGroup</td>
+                <td>@item.Status</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<script>
+    transformTable("#tblResult");
+    $(function () {
+        BindExport();
+    });
+</script>

@@ -1,0 +1,129 @@
+﻿@model OJA.Models.Specialization
+@{
+    Layout = null;
+
+    string hiddenSpecialization = Model.SpecializationName;
+    if (Model.SpecializationName != null)
+    {
+        var delimited = Model.SpecializationName.Split('-');
+        string subject = "│├";
+        if (delimited.Length > 1)
+        {
+            subject = delimited[1].Trim();
+        }
+        Model.SpecializationName = subject;
+    }
+    var treeView = (List<OJA.Models.EducationTree>)ViewBag.TreeView;
+} 
+
+@using (Html.BeginForm("UpdateSpecialization", "MyResume", FormMethod.Post, new { @id = "updateEducationForm" }))
+{
+    <div class="portlet box blue">
+        <div class="mini-triangle"><img src="../Assets/img/menu-red-triangle.png" /></div>
+        <div class="portlet-title">
+            <div class="caption">
+                <i class="fa fa-reorder"></i>Edit Additional Education Info
+            </div>
+        </div>
+
+        @Html.HiddenFor(m => m.SpecializationID)
+        @Html.HiddenFor(m => m.SpecializationCode)
+        @Html.HiddenFor(m => m.ProficiencyCode)
+        @Html.HiddenFor(m => m.ProficiencyName)
+        @Html.Hidden("SpecializationName", hiddenSpecialization)
+        <div class="portlet-body form">
+            <div class="form-body">
+                <div class="form-horizontal">
+                    <div class="form-group hidden EducationTree">
+                        <label class="control-label col-md-2">
+                            Education <span style="color:red">*</span>
+                        </label>
+                        <div class="col-md-4" id="EducationTree">
+
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label col-md-2">Education</label>
+                        <div class="col-md-8 form-control-static">
+                            <input class="form-control" value="@Model.SpecializationName" id="SpecializationName2" name="SpecializationName2" readonly />
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="control-label col-md-2">
+                            Start Date
+                            <span style="color: red">*</span>
+                        </label>
+                        <div class="col-md-8 form-control-static">
+                            <div class="input-group date date-picker" data-date-format="dd MM yyyy">
+                                <input type="text" class="form-control editable" id="StartDate" name="StartDate" value="@Model.StartDate" readonly />
+                                <span class="input-group-btn">
+                                    <button type="button" class="btn default"><i class="fa fa-calendar"></i></button>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label col-md-2">
+                            End Date
+                        </label>
+                        <div class="col-md-8 form-control-static">
+                            <div class="input-group date date-picker" data-date-format="dd MM yyyy">
+                                <input type="text" class="form-control editable" id="EndDate" name="EndDate" value="@Model.EndDate" readonly />
+                                <span class="input-group-btn">
+                                    <button type="button" class="btn default"><i class="fa fa-calendar"></i></button>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label col-md-2">
+                            Grade <span style="color:red">*</span>
+                        </label>
+                        <div class="col-md-8 form-control-static" id="EducationGradeResult">
+                            @Html.DropDownListFor(m => m.ProficiencyCode, Model.Grades, "- Please Select -", new { @class = "form-control ddlEditable", @disabled = "disabled", @id = "EducationGrade", @name = "EducationGrade" })
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-footer">
+
+        @if (ViewBag.CanEdit)
+        {
+            <button type="button" class="btn blue" id="btnEditEducation">Edit</button>
+            <button type="button" class="btn blue" onclick="DeleteSpecialization('@Model.SpecializationID')">Delete</button>
+            <button type="button" class="btn blue hidden" id="btnUpdateEducation">Update</button>
+        }
+       
+        <button type="button" class="btn default" data-dismiss="modal">Close</button>
+    </div>
+
+}
+
+<script>
+
+    var tree = null;
+    $(document).ready(function () {
+        $('.date-picker').datepicker({
+            format: 'dd/mm/yyyy',
+            autoclose: true
+        });
+
+        //pass the current model's tree view data to avoid querying for tree view again.
+        PopulateTreeView('#educationInfoDiv #EducationTree', 'EDUCATION', nodeSelectedEducation, @Html.Raw(Json.Encode(treeView))); 
+    });
+     
+
+    function nodeSelectedEducation(data) {
+        $("#educationInfoDiv #SpecializationCode").val(data.node.id);
+
+        var parentName = $('#educationInfoDiv #EducationTree').jstree(true).get_node('' + data.node.parent + ', true').text;
+        $("#educationInfoDiv #SpecializationName").val(parentName + ' - ' + data.node.text);
+        $("#educationInfoDiv #SpecializationName2").val(data.node.text);
+
+        GradeChanged(data.node.parent, '#educationInfoDiv');
+    }
+</script>

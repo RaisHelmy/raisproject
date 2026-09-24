@@ -1,0 +1,321 @@
+﻿
+@model TimeAttendance.Models.OTPlanningEntryVM
+
+@{
+    ViewBag.Title = "";
+    Layout = null;
+}
+
+<input type="hidden" class="EntryID" id="EntryID" name="EntryID" value="@Model.EntryID"/>
+<input type="hidden" class="OTPlanningCheckBox" name="OTPlanningCheckBox" value="@Model.EntryID" />
+<input type="hidden" class="TaskID" id="TaskID" name="TaskID" value="@Model.TaskID" />
+<input type="hidden" class="EmployeeID" id="EmployeeID" name="EmployeeID" value="@Model.EmployeeID" />
+<input type="hidden" class="SupervisorID" id="SupervisorID" name="SupervisorID" value="@Model.SupervisorID" />
+
+@if (Model.EditMode)
+{
+    <div id="tab_1" class="tab-pane active">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="portlet box blue">
+                    <div class="mini-triangle">@*<img src="/_layouts/15/TNBESS/Assets/img/menu-red-triangle.png" />*@</div>
+                    <div class="portlet-title">
+                        <div class="caption">
+                            <i class="fa fa-reorder"></i>Overtime Planning Details
+                        </div>
+                    </div>
+                    <div class="portlet-body form">
+                        <div class="form-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-horizontal">
+                                        <div class="form-group">
+                                            <label class="control-label col-md-4">Start Date *</label>
+                                            <div class="col-md-8 form-control-static">
+                                                <div class="input-group date date-picker eDate" data-date-format="dd MM yyyy" style="min-width:150px">
+                                                    <input type="text" class="form-control Date StartDate" name="StartDate" value='@Model.sDate' onchange="CalculateDateTime()" disabled/>
+                                                    <span class="input-group-btn">
+                                                        <button type="button" class="btn default"><i class="fa fa-calendar"></i></button>
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-horizontal">
+                                        <div class="form-group">
+                                            <label class="control-label col-md-4">Start Time</label>
+                                            <div class="col-md-8 form-control-static">
+                                                <input type="text" class="form-control timeinput StartTime" name="StartTime" placeholder="HH:MM"
+                                                       value='@Model.sTime' onchange="CalculateDateTime()" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-horizontal">
+                                        <div class="form-group">
+                                            <label class="control-label col-md-4">End Date *</label>
+                                            <div class="col-md-8 form-control-static">
+                                                <div class="input-group date date-picker eDate" data-date-format="dd MM yyyy" style="min-width:150px">
+                                                    <input type="text" class="form-control Date EndDate" name="EndDate" value='@Model.eDate' onchange="CalculateDateTime()" disabled/>
+                                                    <span class="input-group-btn">
+                                                        <button type="button" class="btn default"><i class="fa fa-calendar"></i></button>
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-horizontal">
+                                        <div class="form-group">
+                                            <label class="control-label col-md-4">End Time</label>
+                                            <div class="col-md-8 form-control-static">
+                                                <input type="text" class="form-control timeinput EndTime" name="EndTime" placeholder="HH:MM"
+                                                       value='@Model.eTime' onchange="CalculateDateTime()" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-horizontal">
+                                        <div class="form-group">
+                                            <label class="control-label col-md-4">Charge Code</label>
+                                            <div class="col-md-8 form-control-static">
+                                                @Html.Partial("OTChargeCodePicker", new Tuple<int?, TimeAttendance.Models.OTPlanningEntryVM, string>(null, @Model, ""))
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-horizontal">
+                                        <div class="form-group">
+                                            <label class="control-label col-md-4">Total Hours</label>
+                                            <div class="col-md-8 form-control-static">
+                                                <input type="text" class="form-control TotalHour" style="min-width:50px" name="TotalHours" value="@Model.TotalHours" readonly="readonly" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-horizontal">
+                                        <div class="form-group">
+                                            @if(Model.StatusCode == "DR")
+                                            {
+                                                <label class="control-label col-md-4">Verifier / Approver</label>
+                                                <div class="col-md-8 form-control-static">
+                                                    @Html.Partial("OTPeoplePicker", new Tuple<int?, TimeAttendance.Models.OTPlanningEntryVM, string, string>(null, @Model, "Approver", ""))
+                                                </div>
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-horizontal">
+                                        <div class="form-group">
+                                            <label class="control-label col-md-4">Accumulated OT Hours</label>
+                                            <div class="col-md-8 form-control-static">
+                                                <input type="text" class="form-control AccumulatedOTHours" name="ValidAccumulatedOTHours" value="@Model.ValidAccumulatedOTHours" readonly="readonly" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="form-horizontal">
+                                        <div class="form-group">
+                                            <label class="control-label col-md-2">Description</label>
+                                            <div class="col-md-10 form-control-static">
+                                                @Html.TextAreaFor(m => m.Description, new { @class = "form-control Description", @name = "Description", rows = "5", @maxlength = "1000"  })
+                                                @*<textarea class="form-control" style="width:100%;" name="Description" value="@Model.Description"></textarea>*@
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                @*<div class="col-md-6">
+                                    <div class="form-horizontal">
+                                        <div class="form-group">
+                                            <label class="control-label col-md-4">Attachment</label>
+                                            <div class="col-md-8 form-control-static">
+                                                
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>*@
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+else
+{
+    <div id="tab_1" class="tab-pane active">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="portlet box blue">
+                    <div class="mini-triangle">@*<img src="/_layouts/15/TNBESS/Assets/img/menu-red-triangle.png" />*@</div>
+                    <div class="portlet-title">
+                        <div class="caption">
+                            <i class="fa fa-reorder"></i>Overtime Planning Details
+                        </div>
+                    </div>
+                    <div class="portlet-body form">
+                        <div class="form-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-horizontal">
+                                        <div class="form-group">
+                                            <label class="control-label col-md-4">Start Date *</label>
+                                            <div class="col-md-8 form-control-static">
+                                                @Model.sDate
+                                                @*<div class="input-group date date-picker eDate" data-date-format="dd MM yyyy" style="min-width:150px">
+                                                    <input type="text" class="form-control Date StartDate" name="StartDate" value='@Model.sDate' onchange="CalculateDateTime()" />
+                                                    <span class="input-group-btn">
+                                                        <button type="button" class="btn default"><i class="fa fa-calendar"></i></button>
+                                                    </span>
+                                                </div>*@
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-horizontal">
+                                        <div class="form-group">
+                                            <label class="control-label col-md-4">Start Time</label>
+                                            <div class="col-md-8 form-control-static">
+                                                @Model.sTime
+                                                @*<input type="text" class="form-control timeinput StartTime" name="StartTime" placeholder="HH:MM (e.g 12:30)"
+                                                       value='@Model.sTime' onchange="CalculateDateTime()" />*@
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-horizontal">
+                                        <div class="form-group">
+                                            <label class="control-label col-md-4">End Date *</label>
+                                            <div class="col-md-8 form-control-static">
+                                                @Model.eDate
+                                                @*<div class="input-group date date-picker eDate" data-date-format="dd MM yyyy" style="min-width:150px">
+                                                    <input type="text" class="form-control Date EndDate" name="EndDate" value='@Model.eDate' onchange="CalculateDateTime()" />
+                                                    <span class="input-group-btn">
+                                                        <button type="button" class="btn default"><i class="fa fa-calendar"></i></button>
+                                                    </span>
+                                                </div>*@
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-horizontal">
+                                        <div class="form-group">
+                                            <label class="control-label col-md-4">End Time</label>
+                                            <div class="col-md-8 form-control-static">
+                                                @Model.eTime
+                                                @*<input type="text" class="form-control timeinput EndTime" name="EndTime" placeholder="HH:MM (e.g 12:30)"
+                                                       value='@Model.eTime' onchange="CalculateDateTime()" />*@
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-horizontal">
+                                        <div class="form-group">
+                                            <label class="control-label col-md-4">Charge Code</label>
+                                            @if (!string.IsNullOrEmpty(Model.ChargeCode))
+                                            {
+                                                <div class="col-md-8 form-control-static">
+                                                    @Model.ChargeCode - @Model.ChargeCodeDesc
+                                                </div>
+                                            }
+                                            @*<div class="col-md-8 form-control-static">
+                                                @Html.Partial("OTChargeCodePicker", new Tuple<int?, TimeAttendance.Models.OTPlanningEntryVM, string>(null, @Model, ""))
+                                            </div>*@
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-horizontal">
+                                        <div class="form-group">
+                                            <label class="control-label col-md-4">Total Hours</label>
+                                            <div class="col-md-8 form-control-static">
+                                                @Model.TotalHours
+                                                @*<input type="text" class="form-control TotalHour" style="min-width:50px" name="TotalHours" value="@Model.TotalHours" readonly="readonly" />*@
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-horizontal">
+                                        <div class="form-group">
+                                            @*<label class="control-label col-md-4">Verifier / Approver</label>
+                                            <div class="col-md-8 form-control-static" readonly>
+                                                @Model.ApproverCode - @Model.ApproverName
+                                            </div>*@
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-horizontal">
+                                        <div class="form-group">
+                                            <label class="control-label col-md-4">Accumulated OT Hours</label>
+                                            <div class="col-md-8 form-control-static">
+                                                @Model.ValidAccumulatedOTHours
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="form-horizontal">
+                                        <div class="form-group">
+                                            <label class="control-label col-md-2">Description</label>
+                                            <div class="col-md-10 form-control-static">
+                                                @Model.Description
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                @*<div class="col-md-6">
+                                    <div class="form-horizontal">
+                                        <div class="form-group">
+                                            <label class="control-label col-md-4">Attachment</label>
+                                            <div class="col-md-8 form-control-static">
+
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>*@
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}

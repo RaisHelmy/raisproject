@@ -1,0 +1,1009 @@
+﻿@model Vendor.Models.VendorVM
+
+<style type="text/css">
+    .hidden_1 {
+        display: none;
+    }
+</style>
+<div class="portlet box blue">
+    <div class="mini-triangle"><img src="/_layouts/15/TNBESS/Assets/img/menu-red-triangle.png" /></div>
+    <div class="portlet-title">
+        <div class="caption">
+            <i class="fa fa-reorder"></i>Order Form
+        </div>
+    </div>
+    <div class="portlet-body form">
+        <div class="form-body" id="ct01_CustomFieldFormView">
+            <input type="hidden" name="VendorID" value="@Model.VendorID" />
+            <input type="hidden" id="ct_CurrEmpID" />
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-horizontal">
+                        <div class="form-group">
+                            <label class="control-label col-md-4">
+                                Reference No.
+                            </label>
+                            <div class="col-md-8 form-control-static">
+                                <input class="form-control" type="text" id="ct_ReferenceNo"
+                                       name="ReferenceNo" value="@Model.ReferenceNo" readonly />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-horizontal">
+                        <div class="form-group">
+                            <label class="control-label col-md-4">Status</label>
+                            <div class="col-md-8 form-control-static">
+                                <input class="form-control" type="text" id="ct_Status"
+                                       name="Status" value="@Model.Status" readonly />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-horizontal">
+                        <div class="form-group">
+                            <label class="control-label col-md-4">Dispensary<span class="mandatory"> *</span></label>
+                            <div class="col-md-8 form-control-static">
+                                @if (Model.Editable)
+                                {
+                                    <select class="form-control" id="ct_Dispensary" name="Dispensary">
+                                        <option value="">Select One</option>
+                                    </select>
+                                }
+                                else
+                                {
+                                    <input type="text" class="form-control" name="Dispensary" value="@Model.Dispensary" readonly />
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-horizontal">
+                        <div class="form-group">
+                            <label class="control-label col-md-4">Vendor<span class="mandatory"> *</span></label>
+                            <div class="col-md-8 form-control-static">
+                                @if (Model.Editable)
+                                {
+                                    <select class="form-control" id="ct_Vendor" name="Vendor"
+                                            onchange="VendorChange();">
+                                        <option value="">Select One</option>
+                                    </select>
+                                }
+                                else
+                                {
+                                    <input type="text" class="form-control" name="Vendor" value="@Model.Vendor" readonly />
+                                }
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                &nbsp;
+            </div>
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="form-horizontal">
+                        <div id="tblProductListContainer" class="table-toolbar">
+                            @Html.Partial("_OrderFormTable", Model.Products)
+                        </div>
+                    </div>
+                </div>
+            </div>
+            @*<div class="row">
+                <div class="col-md-12" id="trAttach">
+                    <div class="form-horizontal">
+                        <div class="form-group">
+                            <label class="control-label col-md-2">Attachment</label>
+                            <div class="col-md-10 form-control-static">
+                                <input type="file" id="ct_Attachment" onchange="AttachmentChange();" />
+                                <input type="hidden" id="FileContent" />
+                                <input type="hidden" id="ct_DocumentName" />
+                                <input type="hidden" id="ct_DocumentSize" />
+                                <input type="hidden" id="ct_DocumentContentType" />
+                                <input type="hidden" id="ct_DocumentDescription" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-12" id="trAttachView" style="display: none;">
+                    <div class="form-horizontal">
+                        <div class="form-group">
+                            <label class="control-label col-md-2">Attachment</label>
+                            <div class="col-md-10 form-control-static" id="divAttachment">
+                                <input type="hidden" id="ct_AttachmentID" />
+                                <a id="ct_AttachmentDownload" onclick="DownloadAttachment();"></a>
+                                <a id="ct_AttachmentRemove" onclick="RemoveAttachment();" style="display:none;">[Remove]</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>*@
+            
+        </div>
+    </div>
+</div>
+<!-- Scripts -->
+<script type="text/javascript">
+    function SetDisclaimer() {
+        $('#ct_Disclaimer').parent().click(function () {
+            if ($(this).hasClass('checked')) {
+                $(this).removeClass('checked');
+            }
+            else {
+                $(this).addClass('checked');
+            }
+        });
+    }
+
+    function EnableVerifierModifyQuantity(_Status) {
+        var _TaskID = GetParameterByName('TaskID');
+
+        if (_Status == 'Pending' && _TaskID != '') {
+            $('#tblProductList tbody tr').each(function () {
+                var _QuantityRequired = $(this).children('td:eq(5)').children('input[type=text]');
+                var _QuantityApproved = $(this).children('td:eq(6)').children('input[type=text]');
+
+                _QuantityRequired.prop('readonly', true);
+                _QuantityApproved.prop('readonly', false);
+            });
+        }
+        else if (_Status != 'Draft') {
+            $('#tblProductList tbody tr').each(function () {
+                var _QuantityRequired = $(this).children('td:eq(5)').children('input[type=text]');
+                var _QuantityApproved = $(this).children('td:eq(6)').children('input[type=text]');
+
+                _QuantityRequired.prop('readonly', true);
+                _QuantityApproved.prop('readonly', true);
+            });
+        }
+    }
+
+    var EmployeeID = '';
+    var _Path = '/_layouts/15/TNBESS';
+    //var _Path = 'http://localhost:49773';
+
+    /*** On Change event ***/
+    function VendorChange() {
+        GetProductList();
+    }
+
+    function AttachmentChange() {
+        var _AllowedMaxSize = parseFloat(document.getElementById('hfFileSize').value) || 0;
+        var _AllowedExtensions = document.getElementById('hfFileExtension').value;
+
+        var _selectedFile = document.getElementById('ct_Attachment').files;
+
+        if (_selectedFile.length > 0) {
+            var _fileToLoad = _selectedFile[0];
+
+            var _fileReader = new FileReader();
+
+            _fileReader.onload = function (fileLoadedEvent) {
+                var _ValidFile = false;
+
+                var _documentName = $('#ct_Attachment')[0].files[0].name;
+                var _documentSize = $('#ct_Attachment')[0].files[0].size;
+
+                var _fileExtension = _documentName.substring(_documentName.lastIndexOf('.') + 1);
+
+                if (_AllowedExtensions.indexOf(_fileExtension) > -1) {
+                    var _docSize = parseFloat(_documentSize) || 0;
+                    if (_docSize > _AllowedMaxSize) {
+                        document.getElementById('ct_Attachment').value = '';
+                        alert('- File size has exceeded the allowed limit of ' + _AllowedMaxSize + ' bit');
+                    }
+                    else {
+                        _ValidFile = true;
+                    }
+                }
+                else {
+                    document.getElementById('ct_Attachment').value = '';
+                    alert('- Invalid file type. Only files of the following extensions are allowed (' + _AllowedExtensions + ')');
+                }
+
+                if (_ValidFile) {
+                    var _fileContents = document.getElementById("FileContent");
+                    _fileContents.value = fileLoadedEvent.target.result;
+
+                    var _documentContentType = _fileContents.value.split(",")[0].split(":")[1].split(";")[0];
+
+                    document.getElementById('ct_DocumentName').value = _documentName;
+                    document.getElementById('ct_DocumentSize').value = _documentSize;
+                    document.getElementById('ct_DocumentContentType').value = _documentContentType;
+                }
+            };
+
+            _fileReader.readAsDataURL(_fileToLoad);
+        }
+    }
+
+    /*** Logical Function / Web Service ***/
+    function GetEmployeeDetails(EmployeeID) {
+        jQuery.support.cors = true;
+
+        $.ajax({
+            url: _Path + '/API/EmployeeWebApi/GetEmployeeDetailsSummary?EmployeeID=' + EmployeeID,
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            success: function (result) {
+                document.getElementById('ct00_EmployeeCode').innerHTML = result.EmployeeCode;
+                document.getElementById('ct00_Company').innerHTML = result.CompanyCode + ' - ' + result.Company;
+                document.getElementById('ct00_EmployeeName').innerHTML = result.EmployeeName;
+                document.getElementById('ct00_Department').innerHTML = result.Department;
+                document.getElementById('ct00_Position').innerHTML = result.Position;
+                document.getElementById('ct00_UnitSection').innerHTML = result.UnitSection;
+                document.getElementById('ct00_ImmediateManager').innerHTML = result.ImmediateManager;
+            },
+            error: function (x, y, z) {
+                console.log(x + '\n' + y + '\n' + z);
+            }
+        });
+    }
+
+    function GetDispensary() {
+        jQuery.support.cors = true;
+
+        $.ajax({
+            url: _Path + '/API/VendorWebApi/GetDispensary',
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            success: function (result) {
+                if (result != null) {
+                    var _Dispensary = document.getElementById('ct_Dispensary');
+
+                    for (var i = 0; i < result.length; i++) {
+                        _Dispensary.options[_Dispensary.options.length] = new Option(result[i].Value, result[i].Value);
+                    }
+
+                    $(_Dispensary).val('@Model.Dispensary');
+                }
+            },
+            error: function (x, y, z) {
+                console.log(x + '\n' + y + '\n' + z);
+            }
+        });
+    }
+
+    function GetVendor() {
+        jQuery.support.cors = true;
+
+        $.ajax({
+            url: _Path + '/API/VendorWebApi/GetVendor',
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            success: function (result) {
+                if (result != null) {
+                    var _Vendor = document.getElementById('ct_Vendor');
+
+                    for (var i = 0; i < result.length; i++) {
+                        _Vendor.options[_Vendor.options.length] = new Option(result[i].Value, result[i].Value);
+                    }
+
+                    $(_Vendor).val('@Model.Vendor');
+                }
+            },
+            error: function (x, y, z) {
+                console.log(x + '\n' + y + '\n' + z);
+            }
+        });
+    }
+
+    function GetProductList() {
+        var _Vendor = document.getElementById('ct_Vendor').value;
+
+        jQuery.support.cors = true;
+
+        $.ajax({
+            url: '@Url.Action("_OrderFormTable", "Vendor")?Vendor=' + _Vendor,
+            type: 'GET',
+            success: function (result) {
+                $('#tblProductListContainer').html(result);
+            },
+            error: function (x, y, z) {
+                console.log(x + '\n' + y + '\n' + z);
+            }
+        });
+    }
+
+    function DownloadAttachment() {
+        var AttachmentID = document.getElementById('ct_AttachmentID').value;
+        //window.open(_Path + '/API/FileWebApi/' + AttachmentID);
+
+        var jqxhr = $.ajax(_Path + '/ETKMS')
+            .done(function () {
+                window.open(_Path + '/Attachment/DownloadFile/' + AttachmentID);
+            });
+    }
+
+    function RemoveAttachment() {
+        document.getElementById('trAttach').style.display = '';
+        document.getElementById('trAttachView').style.display = 'none';
+
+        var _fileContents = document.getElementById("FileContent");
+        _fileContents.value = '';
+    }
+
+    function FormValidation() {
+        var _Dispensary = document.getElementById('ct_Dispensary');
+        var _Vendor = document.getElementById('ct_Vendor');
+        var _Disclaimer = document.getElementById('ct_Disclaimer');
+        var _Disclaimer2 = $('#ct_Disclaimer').parent().hasClass('checked');
+
+        var _ValidationMsg = '';
+
+        if (_Dispensary.value == '')
+            _ValidationMsg += '- Dispensary field is required.\n';
+
+        if (_Vendor.value == '')
+            _ValidationMsg += '- Vendor field is required.\n';
+
+        if (!_Disclaimer.checked && !_Disclaimer2)
+            _ValidationMsg += '- Please read and check the Disclaimer section before proceeding to submit.\n';
+
+        if (_ValidationMsg != null && _ValidationMsg != '') {
+            alert(_ValidationMsg);
+        }
+        else {
+            ConfirmAction('Submit');
+        }
+    }
+
+    function SaveForm(x, _IsSubmit, _Action) {
+        x.disabled = true;
+
+        if (_IsSubmit) {
+            $(".Success-body .well").html('Your Order Form has been successfully submitted.');
+        }
+        else {
+            $(".Success-body .well").html('Your Order Form has been successfully saved.');
+        }
+
+        var data = $('form').serializeArray();
+
+        $("#divLoading").show();
+
+        var requestPath = _Path;
+        if (_IsSubmit) {
+            requestPath += "/Vendor/Submit";
+        }
+        else if (_Action == "Verified") {
+            requestPath += "/Vendor/UpdateQuantity";
+        }
+        else {
+            requestPath += "/Vendor/Save";
+        }
+
+        $.ajax({
+            url: requestPath,
+            type: 'POST',
+            data: data,
+            success: function (result) {
+                if (result.success) {
+                    if (_Action == 'Verified') {
+                        ApproverAction(x, _Action);
+                    }
+                    else {
+                        $("#ConfirmUpdate").modal('toggle');
+                        $("#divLoading").hide();
+                        $("#SuccessSubmit").modal();
+                    }
+                }
+                else {
+                    alert(result.errorMessage);
+                }
+            },
+            error: function (x, y, z) {
+                $("#ConfirmUpdate").modal('toggle');
+                $("#divLoading").hide();
+                console.log(x + '\n' + y + '\n' + z);
+                //alert('Unsuccessful: Check console for more details.');
+            }
+        });
+    }
+
+    function GetFormDetails(_ID) {
+        jQuery.support.cors = true;
+
+        $.ajax({
+            url: _Path + '/API/VendorWebApi/GetVendorDetails?ID=' + _ID,
+            type: 'GET',
+            contentType: "application/json;charset=utf-8",
+            success: function (result) {
+                if (result !== null) {
+                    SetFormDetails(result, _ID);
+                }
+                else {
+                    alert('Unsuccessful: Unable to retrieve form details.');
+                }
+            },
+            error: function (x, y, z) {
+                console.log(x + '\n' + y + '\n' + z);
+            }
+        });
+    }
+
+    function SetFormDetails(result, _ID) {
+        var _Status = result.Status;
+
+        // Bind the information onto the form
+        document.getElementById('ct_ReferenceNo').value = result.ReferenceNo;
+        document.getElementById('ct_Status').value = result.Status;
+        document.getElementById('ct_Dispensary').value = result.Dispensary;
+        document.getElementById('ct_Vendor').value = result.Vendor;
+
+        // These 3 fields are dynamically created, so might not exist
+        try {
+            document.getElementById('ct_TotalQuaReq').value = result.TotalQuantityRequired;
+            document.getElementById('ct_TotalQuaApp').value = result.TotalQuantityApproved;
+            document.getElementById('ct_GrandTotalCost').value = ThousandSeparator(result.GrandTotalCost);
+        }
+        catch (err) {
+            //console.log(err.message);
+        }
+
+        ValueCalculation();
+        GetProductListInputValues();
+        EnableVerifierModifyQuantity(_Status);
+
+        if (result.AttachmentID != null && result.AttachmentID != '') {
+            document.getElementById('trAttach').style.display = 'none';
+            document.getElementById('trAttachView').style.display = 'block';
+
+            document.getElementById('ct_AttachmentID').value = result.AttachmentID;
+            document.getElementById('ct_AttachmentDownload').innerHTML = result.AttachmentName;
+
+            if (_Status == 'Draft') {
+                document.getElementById('ct_AttachmentRemove').style.display = 'block';
+            }
+            else {
+                document.getElementById('ct_AttachmentRemove').style.display = 'none';
+            }
+        }
+        else { // no attachment
+            if (_Status != 'Draft') {
+                document.getElementById('trAttach').style.display = 'none';
+                document.getElementById('trAttachView').style.display = 'block';
+
+                document.getElementById('divAttachment').innerHTML = '-';
+            }
+        }
+
+        // Show/Hide according to form status
+        if (_Status == 'Draft') {
+            document.getElementById('tr_Disclaimer').style.display = 'block';
+            $('#ct_Disclaimer').parent().removeClass('checked');
+            SetDisclaimer();
+
+            document.getElementById('btnDelete').style.display = '';
+        }
+        else {
+            document.getElementById('tr_Disclaimer').style.display = 'none';
+            document.getElementById('ct_Dispensary').disabled = true;
+            document.getElementById('ct_Vendor').disabled = true;
+
+            document.getElementById('btnSave').style.display = 'none';
+            document.getElementById('btnSubmit').style.display = 'none';
+            document.getElementById('btnDelete').style.display = 'none';
+            document.getElementById('DivAuditLog').style.display = 'block';
+
+            GetButtonConfiguration(_ID);
+            GetAuditLog(_ID);
+        }
+
+        var _Source = GetParameterByName('Source');
+
+        if (_Source == 'InTray') {
+            document.getElementById('DivApproval').style.display = 'block';
+            document.getElementById('txtAppComment').value = '';
+        }
+        else {
+            document.getElementById('DivApproval').style.display = 'none';
+        }
+    }
+
+    function GetProductListInputValues() {
+        $('#tblProductList tbody tr').not(':last').each(function () {
+            var _PricePerUnit = $(this).children('td:eq(4)');
+            var _QuantityRequired = $(this).children('td:eq(5)').children('input[type=text]');
+            var _QuantityRequiredHidden = $(this).children('td:eq(5)').children('input[type=hidden]');
+            var _QuantityApproved = $(this).children('td:eq(6)').children('input[type=text]');
+            var _QuantityApprovedHidden = $(this).children('td:eq(6)').children('input[type=hidden]');
+            var _TotalCost = $(this).children('td:eq(7)').children('input[type=text]');
+            var _TotalCostHidden = $(this).children('td:eq(7)').children('input[type=hidden]');
+
+            _QuantityRequired.val(_QuantityRequiredHidden.val());
+            _QuantityApproved.val(_QuantityApprovedHidden.val());
+            _TotalCost.val(ThousandSeparator(_TotalCostHidden.val()));
+        });
+    }
+
+    function GetButtonConfiguration(_ID) {
+        jQuery.support.cors = true;
+
+        $.ajax({
+            url: _Path + '/API/VendorWebApi/GetVendorActions?ID=' + _ID + '&CurrEmpID=' + EmployeeID,
+            type: 'GET',
+            contentType: "application/json;charset=utf-8",
+            success: function (result) {
+                if (result != null) {
+                    SetButtonConfiguration(result);
+                }
+                else
+                    console.log('failed!');
+            },
+            error: function (x, y, z) {
+                alert(x + '\n' + y + '\n' + z);
+            }
+        });
+    }
+
+    function SetButtonConfiguration(result) {
+        var _Source = GetParameterByName('Source');
+
+        var ButtonWithdraw = document.getElementById('btnWithdraw');
+        var ButtonVerify = document.getElementById('btnVerify');
+        var ButtonPRCreated = document.getElementById('btnPRCreated');
+        var ButtonProcess = document.getElementById('btnProcess');
+        var ButtonDecline = document.getElementById('btnDecline');
+
+        if (result.CanWithdraw == '1' && _Source == 'History') {
+            ButtonWithdraw.style.display = '';
+        }
+        else {
+            ButtonWithdraw.style.display = 'none';
+        }
+
+        if (result.CanVerify == '1' && _Source == 'InTray') {
+            ButtonVerify.style.display = '';
+            AllowEditApproved();
+        }
+        else {
+            ButtonVerify.style.display = 'none';
+        }
+
+        if (result.CanPRCreated == '1' && _Source == 'InTray') {
+            ButtonPRCreated.style.display = '';
+        }
+        else {
+            ButtonPRCreated.style.display = 'none';
+        }
+
+        if (result.CanProcess == '1' && _Source == 'InTray') {
+            ButtonProcess.style.display = '';
+        }
+        else {
+            ButtonProcess.style.display = 'none';
+        }
+
+        if (result.CanDecline == '1' && _Source == 'InTray') {
+            ButtonDecline.style.display = '';
+        }
+        else {
+            ButtonDecline.style.display = 'none';
+        }
+
+        if (result.CanVerify == '1' || result.CanPRCreated == '1' || result.CanProcess == '1' || result.CanDecline == '1') {
+            document.getElementById('DivApproval').style.display = 'block';
+            document.getElementById('txtAppComment').value = '';
+        }
+        else {
+            document.getElementById('DivApproval').style.display = 'none';
+        }
+    }
+
+    function EnableButtons() {
+        document.getElementById('btnSubmitForm').disabled = false;
+        document.getElementById('btnSubmitSave').disabled = false;
+        document.getElementById('btnSubmitDelete').disabled = false;
+        document.getElementById('btnSubmitWithdraw').disabled = false;
+        document.getElementById('btnSubmitVerify').disabled = false;
+        document.getElementById('btnSubmitPRCreated').disabled = false;
+        document.getElementById('btnSubmitProcess').disabled = false;
+        document.getElementById('btnSubmitDecline').disabled = false;
+    }
+
+    function GetAuditLog(_ID) {
+        jQuery.support.cors = true;
+
+        $.ajax({
+            url: _Path + '/API/VendorWebApi/GetAuditLog?ID=' + _ID,
+            type: 'GET',
+            contentType: "application/json;charset=utf-8",
+            success: function (result) {
+                if (result != null) {
+                    SetAuditLog(result);
+                }
+                else
+                    console.log('failed!');
+            },
+            error: function (x, y, z) {
+                alert(x + '\n' + y + '\n' + z);
+            }
+        });
+    }
+
+    function SetAuditLog(result) {
+        var _AuditTrailBody = '';
+
+        for (var i = 0; i < result.length; i++) {
+            var _AuditTrail = "<tr><td>" + result[i].EmployeeName + "</td><td>" +
+                result[i].FormattedDate + "</td><td>" + result[i].ActivityName + "</td><td>" +
+                result[i].ActivityAction + "</td><td>" + result[i].Comment + "</td></tr>";
+            _AuditTrailBody += _AuditTrail;
+        }
+
+        $('#tblAuditLog').find('tbody').html(_AuditTrailBody);
+    }
+
+    function GetCurrentApprover(_ID) {
+        jQuery.support.cors = true;
+
+        $.ajax({
+            url: _Path + '/API/VendorWebApi/GetCurrentApprover?ID=' + _ID,
+            type: 'GET',
+            contentType: "application/json;charset=utf-8",
+            success: function (result) {
+                if (result != null) {
+                    document.getElementById('ct00_CurrentApprover').innerHTML = result;
+                }
+                else
+                    console.log('failed!');
+            },
+            error: function (x, y, z) {
+                alert(x + '\n' + y + '\n' + z);
+            }
+        });
+    }
+
+    function DeleteForm(x) {
+        x.disabled = true;
+
+        var ItemID = GetParameterByName('ID');
+
+        jQuery.support.cors = true;
+
+        $(".Success-body .well").html('Your Order Form has been deleted successfully' + '(' + $('#ct_ReferenceNo').val() + ')' + '.');
+        $("#divLoading").show();
+
+        $.ajax({
+            url: _Path + '/API/VendorWebApi/GetVendorDelete?ID=' + ItemID,
+            type: 'GET',
+            contentType: "application/json;charset=utf-8",
+            success: function (result) {
+                if (result) {
+                    $("#ConfirmUpdate").modal('toggle');
+                    $("#divLoading").hide();
+                    $("#SuccessSubmit").modal();
+                }
+                else {
+                    $("#ConfirmUpdate").modal('toggle');
+                    $("#divLoading").hide();
+                    alert('Deletion has failed! Please reload and try again.');
+                }
+            },
+            error: function (x, y, z) {
+                console.log(x + '\n' + y + '\n' + z);
+            }
+        });
+    }
+
+    function ApproverAction(x, _Action) {
+        x.disabled = true;
+
+        var _TaskID = GetParameterByName('TaskID');
+        var _ApproverComment = document.getElementById('txtAppComment').value;
+        var _ActivityName = '';
+        var _OptionalApprover = false;
+
+        jQuery.support.cors = true;
+
+        $("#divLoading").show();
+
+        var form = {
+            ID: '@Model.VendorID',
+            CurrentUserID: EmployeeID,
+            Status: _Action,
+            ApproverComment: _ApproverComment,
+            TaskID: _TaskID,
+            ActivityName: _ActivityName,
+            OptionalApprover: _OptionalApprover
+        };
+
+        $.ajax({
+            url: _Path + '/API/VendorWebApi/PostApproverAction',
+            type: 'POST',
+            data: JSON.stringify(form),
+            contentType: "application/json;charset=utf-8",
+            success: function (result) {
+                if (result) {
+                    $("#ConfirmUpdate").modal('toggle');
+                    $("#divLoading").hide();
+
+                    if (_Action == "Withdrawn") {
+                        $(".Success-body .well").html('Your Order Form has been successfully Withdrawn' + ' (' + $('#ct_ReferenceNo').val() + ')' + '.');
+                    }
+                    else if (_Action == "Verified") {
+                        $(".Success-body .well").html('The Order Form has been successfully Verified' + ' (' + $('#ct_ReferenceNo').val() + ')' + '.');
+                    }
+                    else if (_Action == "PRCreated") {
+                        $(".Success-body .well").html('The Order Form has been successfully escalated' + ' (' + $('#ct_ReferenceNo').val() + ')' + '.');
+                    }
+                    else if (_Action == "Processed") {
+                        $(".Success-body .well").html('The Order Form has been successfully Processed' + ' (' + $('#ct_ReferenceNo').val() + ')' + '.');
+                    }
+                    else if (_Action == "Declined") {
+                        $(".Success-body .well").html('The Order Form has been successfully Declined' + ' (' + $('#ct_ReferenceNo').val() + ')' + '.');
+                    }
+
+                    $("#SuccessSubmit").modal();
+                }
+                else {
+                    $("#ConfirmUpdate").modal('toggle');
+                    $("#divLoading").hide();
+                    console.log('Your action on this vendor application has failed. Please reload and try again.');
+                    alert('Your action on this vendor application has failed. Please reload and try again.');
+                }
+            },
+            error: function (x, y, z) {
+                $("#ConfirmUpdate").modal('toggle');
+                $("#divLoading").hide();
+                console.log(x + '\n' + y + '\n' + z);
+            }
+        });
+    }
+
+    function Decline_CommentMandatory() {
+        var _ApproverComment = document.getElementById('txtAppComment').value;
+
+        if (_ApproverComment == '') {
+            alert('- Comment is required.');
+            return false;
+        }
+        else {
+            ConfirmAction('Decline');
+        }
+    }
+
+    function ConfirmAction(_Action) {
+        if (_Action == 'SaveAsDraft') {
+            $('#btnSubmitForm').addClass('hidden_1');
+            $('#btnSubmitSave').removeClass('hidden_1');
+            $('#btnSubmitDelete').addClass('hidden_1');
+            $('#btnSubmitWithdraw').addClass('hidden_1');
+            $('#btnSubmitVerify').addClass('hidden_1');
+            $('#btnSubmitPRCreated').addClass('hidden_1');
+            $('#btnSubmitProcess').addClass('hidden_1');
+            $('#btnSubmitDecline').addClass('hidden_1');
+            $('.modal-body .well').html('Are you sure you want to Save this Order Form?\n\rPress Confirm to proceed, or Close to stay on the current page.');
+            $('#btnOK').click(function () { RedirectTo('Draft'); });
+            $('#ConfirmUpdate').modal('show');
+        }
+        else if (_Action == 'Submit') {
+            $('#btnSubmitForm').removeClass('hidden_1');
+            $('#btnSubmitSave').addClass('hidden_1');
+            $('#btnSubmitDelete').addClass('hidden_1');
+            $('#btnSubmitWithdraw').addClass('hidden_1');
+            $('#btnSubmitVerify').addClass('hidden_1');
+            $('#btnSubmitPRCreated').addClass('hidden_1');
+            $('#btnSubmitProcess').addClass('hidden_1');
+            $('#btnSubmitDecline').addClass('hidden_1');
+            $('.modal-body .well').html('Are you sure you want to Submit this Order Form?\n\rPress Confirm to proceed, or Close to stay on the current page.');
+            $('#btnOK').click(function () { RedirectTo('Submit'); });
+            $('#ConfirmUpdate').modal('show');
+        }
+        else if (_Action == 'Delete') {
+            $('#btnSubmitForm').addClass('hidden_1');
+            $('#btnSubmitSave').addClass('hidden_1');
+            $('#btnSubmitDelete').removeClass('hidden_1');
+            $('#btnSubmitWithdraw').addClass('hidden_1');
+            $('#btnSubmitVerify').addClass('hidden_1');
+            $('#btnSubmitPRCreated').addClass('hidden_1');
+            $('#btnSubmitProcess').addClass('hidden_1');
+            $('#btnSubmitDecline').addClass('hidden_1');
+            $('.modal-body .well').html('Are you sure you want to Delete this Order Form?\n\rPress Confirm to proceed, or Close to stay on the current page.');
+            $('#btnOK').click(function () { RedirectTo('Delete'); });
+            $('#ConfirmUpdate').modal('show');
+        }
+        else if (_Action == "Withdraw") {
+            $('#btnSubmitForm').addClass('hidden_1');
+            $('#btnSubmitSave').addClass('hidden_1');
+            $('#btnSubmitDelete').addClass('hidden_1');
+            $('#btnSubmitWithdraw').removeClass('hidden_1');
+            $('#btnSubmitVerify').addClass('hidden_1');
+            $('#btnSubmitPRCreated').addClass('hidden_1');
+            $('#btnSubmitProcess').addClass('hidden_1');
+            $('#btnSubmitDecline').addClass('hidden_1');
+            $('.modal-body .well').html('Are you sure you want to Withdraw this Order Form?\n\rPress Confirm to proceed, or Close to stay on the current page.');
+            $('#btnOK').click(function () { RedirectTo('Withdraw'); });
+            $('#ConfirmUpdate').modal('show');
+        }
+        else if (_Action == "Verify") {
+            $('#btnSubmitForm').addClass('hidden_1');
+            $('#btnSubmitSave').addClass('hidden_1');
+            $('#btnSubmitDelete').addClass('hidden_1');
+            $('#btnSubmitWithdraw').addClass('hidden_1');
+            $('#btnSubmitVerify').removeClass('hidden_1');
+            $('#btnSubmitPRCreated').addClass('hidden_1');
+            $('#btnSubmitProcess').addClass('hidden_1');
+            $('#btnSubmitDecline').addClass('hidden_1');
+            $('.modal-body .well').html('Confirm Verification of this Order Form?\n\rPress Confirm to proceed, or Close to stay on the current page.');
+            $('#btnOK').click(function () { RedirectTo('Verify'); });
+            $('#ConfirmUpdate').modal('show');
+        }
+        else if (_Action == "PRCreated") {
+            $('#btnSubmitForm').addClass('hidden_1');
+            $('#btnSubmitSave').addClass('hidden_1');
+            $('#btnSubmitDelete').addClass('hidden_1');
+            $('#btnSubmitWithdraw').addClass('hidden_1');
+            $('#btnSubmitVerify').addClass('hidden_1');
+            $('#btnSubmitPRCreated').removeClass('hidden_1');
+            $('#btnSubmitProcess').addClass('hidden_1');
+            $('#btnSubmitDecline').addClass('hidden_1');
+            $('.modal-body .well').html('Confirm PR has been Created for this Order Form?\n\rPress Confirm to proceed, or Close to stay on the current page.');
+            $('#btnOK').click(function () { RedirectTo('PRCreated'); });
+            $('#ConfirmUpdate').modal('show');
+        }
+        else if (_Action == 'Process') {
+            $('#btnSubmitForm').addClass('hidden_1');
+            $('#btnSubmitSave').addClass('hidden_1');
+            $('#btnSubmitDelete').addClass('hidden_1');
+            $('#btnSubmitWithdraw').addClass('hidden_1');
+            $('#btnSubmitVerify').addClass('hidden_1');
+            $('#btnSubmitPRCreated').addClass('hidden_1');
+            $('#btnSubmitProcess').removeClass('hidden_1');
+            $('#btnSubmitDecline').addClass('hidden_1');
+            $('.modal-body .well').html('Confirm PO has been Created for this Order Form?\n\rPress Confirm to proceed, or Close to stay on the current page.');
+            $('#btnOK').click(function () { RedirectTo('Process'); });
+            $('#ConfirmUpdate').modal('show');
+        }
+        else if (_Action == "Decline") {
+            $('#btnSubmitForm').addClass('hidden_1');
+            $('#btnSubmitSave').addClass('hidden_1');
+            $('#btnSubmitDelete').addClass('hidden_1');
+            $('#btnSubmitWithdraw').addClass('hidden_1');
+            $('#btnSubmitVerify').addClass('hidden_1');
+            $('#btnSubmitPRCreated').addClass('hidden_1');
+            $('#btnSubmitProcess').addClass('hidden_1');
+            $('#btnSubmitDecline').removeClass('hidden_1');
+            $('.modal-body .well').html('Confirm to Decline this Order Form?\n\rPress Confirm to proceed, or Close to stay on the current page.');
+            $('#btnOK').click(function () { RedirectTo('Decline'); });
+            $('#ConfirmUpdate').modal('show');
+        }
+    }
+
+    function RedirectTo(_Action) {
+        switch (_Action) {
+            case "Verify":
+            case "PRCreated":
+            case "Process":
+            case "Decline":
+                window.location.href = '/_layouts/15/TNBESS/MSS/VendorInTray'; // '/_layouts/15/ESSV2/MSS/VendorInTray';
+                break;
+            case "Draft":
+            case "Submit":
+            case "Delete":
+            case "Withdraw":
+                window.location.href = '/_layouts/15/TNBESS/Vendor/VendorHistory'; // '/_layouts/15/ESSV2/Vendor/VendorHistory';
+                break;
+            default:
+                window.location.href = '/Pages/default.aspx';
+        }
+    }
+
+    function InitializeForm() {
+        EmployeeID = document.getElementById('hfEmployeeID').value;
+        var TaskID = GetParameterByName("TaskID");
+
+        @if (Model.Editable)
+        {
+            <text>
+            GetDispensary();
+            GetVendor();
+            AllowEditRequired();
+            document.getElementById('tr_Disclaimer').style.display = 'block';
+            </text>
+        }
+        else
+        {
+            <text>
+            GetCurrentApprover('@Model.VendorID');
+            DisallowEdit()
+            EnableButtons();
+            </text>
+        }
+
+        @if (!String.IsNullOrEmpty(Model.CreatedBy))
+        {
+            <text>
+            GetEmployeeDetails('@Model.CreatedBy');
+            </text>
+        }
+        else
+        {
+            <text>
+            GetEmployeeDetails(EmployeeID);
+            </text>
+        }
+
+        @if (Model.Status != "Draft")
+        {
+            <text>
+            GetButtonConfiguration('@Model.VendorID');
+            GetAuditLog('@Model.VendorID')
+            </text>
+        }
+    }
+
+    function AllowEditRequired() {
+        $('#tblProductList tbody tr').each(function () {
+            var _QuantityRequired = $(this).children('td:eq(5)').children('input[type=text]');
+            var _QuantityApproved = $(this).children('td:eq(6)').children('input[type=text]');
+
+            _QuantityRequired.prop('readonly', false);
+            _QuantityApproved.prop('readonly', true);
+        });
+    }
+
+    function AllowEditApproved() {
+        $('#tblProductList tbody tr').each(function () {
+            var _QuantityRequired = $(this).children('td:eq(5)').children('input[type=text]');
+            var _QuantityApproved = $(this).children('td:eq(6)').children('input[type=text]');
+
+            _QuantityRequired.prop('readonly', true);
+            _QuantityApproved.prop('readonly', false);
+        });
+    }
+
+    function DisallowEdit() {
+        $('#tblProductList tbody tr').each(function () {
+            var _QuantityRequired = $(this).children('td:eq(5)').children('input[type=text]');
+            var _QuantityApproved = $(this).children('td:eq(6)').children('input[type=text]');
+
+            _QuantityRequired.prop('readonly', true);
+            _QuantityApproved.prop('readonly', true);
+        });
+    }
+
+    $(document).ready(function () {
+        InitializeForm();
+    });
+
+    /*** Helper Function ***/
+    function GetParameterByName(name) {
+        name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
+        var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
+            results = regex.exec(location.search);
+        return results === null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
+    }
+
+    function NumberOnly(evt) {
+        var theEvent = evt || window.event;
+        var key = theEvent.keyCode || theEvent.which;
+        key = String.fromCharCode(key);
+        var regex = /[0-9]/;
+        if (!regex.test(key)) {
+            theEvent.returnValue = false;
+            if (theEvent.preventDefault) theEvent.preventDefault();
+        }
+    }
+
+    function ThousandSeparator(x) {
+        return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    }
+
+    function ConvertDate(_date) {
+        var mnth = ("0" + (_date.getMonth() + 1)).slice(-2),
+            day = ("0" + _date.getDate()).slice(-2);
+
+        return [day, mnth, _date.getFullYear()].join("-");
+    }
+</script>

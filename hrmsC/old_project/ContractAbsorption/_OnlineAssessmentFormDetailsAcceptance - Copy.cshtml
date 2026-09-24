@@ -1,0 +1,134 @@
+﻿@model Tuple<ESS.ContractAbsorption.Models.EContractAbsorptionVM, SEP.RoutingManagement.Models.RoutingRule>
+
+@{
+	Layout = null;
+
+	string TaskID = (string)ViewData["TaskID"];
+	string RequestID = (string)ViewData["RequestID"];
+	string ApprovalLevel = (string)ViewData["ApprovalLevel"];
+	string Source = (string)ViewData["Source"];
+	string EmployeeID = (string)ViewData["EmployeeID"];
+
+	int applvl = String.IsNullOrEmpty(ApprovalLevel) ? 0 : Convert.ToInt32(ApprovalLevel);
+
+	string Checked2_1 = "";
+	string Checked2_2 = "";
+
+	switch (Model.Item1.Acceptance)
+	{
+		case "A":
+			Checked2_1 = "checked";
+			break;
+		case "NA":
+			Checked2_2 = "checked";
+			break;
+	}
+
+	if (Model.Item1.btnSubmit == true && applvl == 6)
+	{
+		<style>
+			.EdittableAcceptanceContent {
+				display: block;
+			}
+
+			.NonEdittableAcceptanceContent {
+				display: none;
+			}
+		</style>
+	}
+	else
+	{
+		<style>
+			.EdittableAcceptanceContent {
+				display: none;
+			}
+
+			.NonEdittableAcceptanceContent {
+				display: block;
+			}
+		</style>
+	}
+}
+
+@if (applvl > 5)
+{
+<div class="row">
+	<div class="col-md-12">
+		<div class="portlet box blue">
+			<div class="mini-triangle"><img src="../Assets/img/menu-red-triangle.png" /></div>
+			<div class="portlet-title">
+				<div class="caption">
+					<i class="fa fa-reorder"></i>Employee Acceptance
+				</div>
+			</div>
+			<div class="portlet-body form">
+				<div class="form-body" id="ct01_CustomFieldFormView">
+					<div class="EdittableAcceptanceContent">
+						<div class="row">
+							<div class="col-md-12">
+								<div class="form-horizontal">
+									<div class="form-group">
+										<label class="control-label col-md-12 ">
+											<b>Employee Acceptance <span class="required">*</span></b>
+										</label>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="row" id="radio_RecommendedDiv">
+							<div class="col-md-12">
+								<div class="form-horizontal">
+									<div class="form-group">
+										<div class="radio-list padding-left-20">
+											<label class="radio-inline">
+												<span class="Divradio_Recommended"><input type="radio"  @Checked2_1 class="reqAcceptance" name="rblAcceptance" id="radio_Acceptance" value="A"></span> Accept
+											</label>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="row" id="radio_NotRecommendedDiv">
+							<div class="col-md-12">
+								<div class="form-horizontal">
+									<div class="form-group">
+										<div class="radio-list padding-left-20">
+											<label class="radio-inline">
+												<span class="radio_NotRecommended"><input type="radio" @Checked2_2 class="reqAcceptance" name="rblAcceptance" id="radio_Acceptance" value="NA"></span> Reject
+											</label>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="NonEdittableAcceptanceContent">
+						<div class="row">
+							<div class="col-md-12">
+								<div class="form-horizontal">
+									<div class="form-group">
+										<label class="control-label col-md-12 ">
+											Employee Acceptance <span class="required">*</span>
+										</label>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="row">
+							<div class="col-md-12">
+								<div class="form-horizontal">
+									<div class="form-group">
+										<label class="col-md-12 ">
+											@(Model.Item1.Acceptance == "A" ? "Accept" : (Model.Item1.Acceptance == "NA" ? "Reject" : ""))
+										</label>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+}

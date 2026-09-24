@@ -1,0 +1,1050 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lead Profile — MudahLG Admin</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root { --red: #A50034; --dark: #1A1A1A; --gray: #6B6B6B; --light: #F4F4F6; --border: #E2E2E6; }
+    body { font-family: 'Inter', -apple-system, sans-serif; background: var(--light); color: var(--dark); min-height: 100vh; }
+
+    /* Flatpickr brand overrides */
+    .flatpickr-day.selected, .flatpickr-day.selected:hover, .flatpickr-day.selected:focus,
+    .flatpickr-day.startRange, .flatpickr-day.endRange { background: var(--red) !important; border-color: var(--red) !important; }
+    .flatpickr-day.today { border-color: var(--red) !important; color: var(--red); }
+    .flatpickr-day.today.selected { color: white; }
+    .flatpickr-months .flatpickr-prev-month:hover svg,
+    .flatpickr-months .flatpickr-next-month:hover svg { fill: var(--red); }
+    .numInputWrapper:hover { background: #f9f0f3; }
+    .flatpickr-calendar { border-radius: 12px !important; box-shadow: 0 8px 40px rgba(0,0,0,0.18) !important; border: none !important; font-family: 'Inter', sans-serif; }
+    .flatpickr-input { cursor: pointer; }
+    .flatpickr-input[readonly] { background: white; }
+
+    /* HEADER */
+    header { background: var(--dark); color: white; display: flex; align-items: center; justify-content: space-between; padding: 0 24px; height: 58px; position: sticky; top: 0; z-index: 10; box-shadow: 0 2px 12px rgba(0,0,0,0.18); }
+    .header-left { display: flex; align-items: center; gap: 12px; }
+    .back-btn { display: inline-flex; align-items: center; gap: 6px; color: rgba(255,255,255,0.7); text-decoration: none; font-size: 13px; font-weight: 500; padding: 6px 12px; border-radius: 7px; background: rgba(255,255,255,0.08); }
+    .back-btn:hover { background: rgba(255,255,255,0.14); color: white; }
+    .header-divider { width: 1px; height: 28px; background: rgba(255,255,255,0.15); }
+    .header-title { font-weight: 700; font-size: 15px; max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .header-sub { font-size: 11px; color: rgba(255,255,255,0.5); }
+    .logout-btn { display: inline-flex; align-items: center; gap: 6px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.18); color: rgba(255,255,255,0.85); padding: 7px 14px; border-radius: 7px; font-size: 13px; font-family: inherit; cursor: pointer; }
+    .logout-btn:hover { background: rgba(255,255,255,0.14); }
+    .icon-xs { width: 14px; height: 14px; display: inline-block; vertical-align: -2px; flex-shrink: 0; }
+    .icon-sm { width: 16px; height: 16px; display: inline-block; vertical-align: -3px; flex-shrink: 0; }
+
+    /* LAYOUT */
+    .container { padding: 24px; max-width: 1200px; margin: 0 auto; }
+    .layout { display: flex; gap: 20px; align-items: flex-start; }
+
+    /* SIDEBAR */
+    .sidebar { width: 300px; flex-shrink: 0; }
+    .profile-card { background: white; border-radius: 14px; padding: 22px; box-shadow: 0 1px 8px rgba(0,0,0,0.07); position: sticky; top: 78px; }
+    .avatar { width: 60px; height: 60px; border-radius: 50%; background: linear-gradient(135deg, var(--red), #8a002c); color: white; font-size: 20px; font-weight: 700; display: flex; align-items: center; justify-content: center; margin: 0 auto 10px; }
+    .profile-card h2 { text-align: center; font-size: 17px; font-weight: 700; margin-bottom: 3px; }
+    .profile-id { text-align: center; font-size: 12px; color: #bbb; margin-bottom: 12px; }
+    .status-wrap { display: flex; justify-content: center; margin-bottom: 14px; }
+    #status-select { padding: 6px 20px; border-radius: 20px; border: none; font-size: 13px; font-weight: 600; font-family: inherit; cursor: pointer; outline: none; -webkit-appearance: none; }
+    .info-rows { border-top: 1px solid #f0f0f0; }
+    .info-row { padding: 9px 0; border-bottom: 1px solid #f0f0f0; }
+    .info-row:last-child { border-bottom: none; }
+    .info-label { font-size: 10px; font-weight: 700; color: var(--gray); text-transform: uppercase; letter-spacing: 0.7px; margin-bottom: 2px; }
+    .info-val { font-size: 13px; color: var(--dark); word-break: break-word; }
+    .info-val.empty { color: #ccc; }
+    .wa-pill { font-size: 13px; color: #16a34a; text-decoration: none; font-weight: 600; }
+    .wa-pill:hover { text-decoration: underline; }
+    .edit-field { width: 100%; padding: 7px 10px; border: 1.5px solid var(--border); border-radius: 8px; font-size: 13px; font-family: inherit; outline: none; margin-top: 2px; }
+    .edit-field:focus { border-color: var(--red); }
+    .sidebar-actions { display: flex; gap: 8px; margin-top: 14px; padding-top: 14px; border-top: 1px solid #f0f0f0; flex-wrap: wrap; }
+    .btn-edit { flex: 1; display: inline-flex; align-items: center; justify-content: center; gap: 5px; padding: 8px; background: #f0f4ff; color: #3b82f6; border: none; border-radius: 8px; font-size: 12px; font-weight: 700; font-family: inherit; cursor: pointer; }
+    .btn-edit:hover { background: #dbeafe; }
+    .btn-save { flex: 1; display: inline-flex; align-items: center; justify-content: center; gap: 5px; padding: 8px; background: #16a34a; color: white; border: none; border-radius: 8px; font-size: 12px; font-weight: 700; font-family: inherit; cursor: pointer; }
+    .btn-save:hover { background: #15803d; }
+    .btn-cancel-edit { display: inline-flex; align-items: center; justify-content: center; gap: 5px; padding: 8px 12px; background: #f0f0f4; color: var(--gray); border: none; border-radius: 8px; font-size: 12px; font-weight: 600; font-family: inherit; cursor: pointer; }
+    .btn-delete-lead { width: 100%; margin-top: 8px; display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 9px; background: #fee2e2; color: #b91c1c; border: none; border-radius: 8px; font-size: 12px; font-weight: 700; font-family: inherit; cursor: pointer; }
+    .btn-delete-lead:hover { background: #fecaca; }
+
+    /* SECTIONS */
+    .main-sections { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 16px; }
+    .section-card { background: white; border-radius: 14px; box-shadow: 0 1px 8px rgba(0,0,0,0.07); overflow: hidden; }
+    .section-header { display: flex; align-items: center; justify-content: space-between; padding: 14px 20px; border-bottom: 1px solid var(--border); }
+    .section-title { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 700; }
+    .badge-auto { font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 10px; background: #eff6ff; color: #3b82f6; text-transform: uppercase; }
+
+    /* Buttons */
+    .btn-add { display: inline-flex; align-items: center; gap: 6px; background: var(--red); color: white; border: none; border-radius: 7px; padding: 6px 14px; font-size: 12px; font-weight: 600; font-family: inherit; cursor: pointer; }
+    .btn-add:hover { background: #8a002c; }
+    .btn-primary { display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 10px 22px; background: var(--red); color: white; border: none; border-radius: 9px; font-size: 14px; font-weight: 600; font-family: inherit; cursor: pointer; transition: background 0.15s; }
+    .btn-primary:hover:not(:disabled) { background: #8a002c; }
+    .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
+    .btn-ghost { display: inline-flex; align-items: center; gap: 6px; padding: 10px 18px; background: #f0f0f4; color: var(--gray); border: none; border-radius: 9px; font-size: 14px; font-weight: 600; font-family: inherit; cursor: pointer; }
+    .btn-ghost:hover { background: #e0e0e8; color: var(--dark); }
+    .btn-del { display: inline-flex; align-items: center; gap: 4px; background: none; border: none; color: #dc2626; font-size: 11px; cursor: pointer; padding: 3px 8px; border-radius: 5px; font-family: inherit; font-weight: 600; }
+    .btn-del:hover { background: #fee2e2; }
+    .btn-done { display: inline-flex; align-items: center; gap: 5px; background: #dcfce7; color: #16a34a; border: none; padding: 5px 12px; border-radius: 6px; font-size: 11px; font-weight: 700; cursor: pointer; font-family: inherit; }
+    .btn-done:hover { background: #bbf7d0; }
+    .btn-action { display: inline-flex; align-items: center; gap: 5px; background: #f3f4f6; color: #374151; border: none; padding: 5px 10px; border-radius: 6px; font-size: 11px; font-weight: 600; cursor: pointer; font-family: inherit; }
+    .btn-action:hover { background: #e5e7eb; }
+    .btn-action.red { background: #fee2e2; color: #b91c1c; }
+    .btn-action.red:hover { background: #fecaca; }
+
+    /* Note form */
+    .add-note-form { padding: 14px 20px; border-bottom: 1px solid var(--border); display: flex; gap: 10px; align-items: flex-start; }
+    .add-note-form textarea { flex: 1; padding: 9px 12px; border: 1.5px solid var(--border); border-radius: 9px; font-size: 14px; font-family: inherit; resize: vertical; outline: none; min-height: 68px; }
+    .add-note-form textarea:focus { border-color: var(--red); }
+
+    /* Inline form (followup only) */
+    .inline-form { padding: 14px 20px; border-bottom: 1px solid var(--border); background: #fafafe; display: none; }
+    .inline-form.open { display: block; }
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+    .form-field { display: flex; flex-direction: column; gap: 4px; }
+    .form-field.full { grid-column: 1 / -1; }
+    .form-field label { font-size: 11px; font-weight: 700; color: var(--gray); text-transform: uppercase; letter-spacing: 0.5px; }
+    .form-field select, .form-field input, .form-field textarea { padding: 8px 12px; border: 1.5px solid var(--border); border-radius: 8px; font-size: 14px; font-family: inherit; outline: none; background: white; }
+    .form-field select:focus, .form-field input:focus, .form-field textarea:focus { border-color: var(--red); }
+    .form-actions { display: flex; gap: 8px; }
+    .form-btn { display: inline-flex; align-items: center; gap: 6px; padding: 8px 18px; background: var(--red); color: white; border: none; border-radius: 8px; font-size: 13px; font-weight: 600; font-family: inherit; cursor: pointer; }
+    .form-btn:hover:not(:disabled) { background: #8a002c; }
+    .form-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+    .form-btn-ghost { display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; background: #f0f0f4; color: var(--gray); border: none; border-radius: 8px; font-size: 13px; font-weight: 600; font-family: inherit; cursor: pointer; }
+
+    /* Timeline */
+    .timeline { padding: 4px 0; }
+    .tl-item { display: flex; gap: 12px; padding: 12px 20px; border-bottom: 1px solid #f5f5f7; }
+    .tl-item:last-child { border-bottom: none; }
+    .tl-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; margin-top: 4px; }
+    .tl-dot.blue { background: #3b82f6; } .tl-dot.purple { background: #8b5cf6; }
+    .tl-dot.green { background: #16a34a; } .tl-dot.amber { background: #f59e0b; }
+    .tl-dot.red { background: #ef4444; } .tl-dot.gray { background: #9ca3af; }
+    .tl-body { flex: 1; min-width: 0; }
+    .tl-head { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; margin-bottom: 4px; }
+    .tl-label { font-size: 12px; font-weight: 600; color: #3b82f6; }
+    .tl-date { font-size: 11px; color: #aaa; margin-left: auto; white-space: nowrap; }
+    .tl-text { font-size: 14px; line-height: 1.6; color: #333; white-space: pre-wrap; word-break: break-word; }
+    .tl-actions { display: flex; align-items: center; gap: 8px; margin-top: 6px; flex-wrap: wrap; }
+    .tl-date-sm { font-size: 11px; color: #ccc; }
+    .meta-chip { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; padding: 3px 8px; background: #eff6ff; border-radius: 10px; color: #3b82f6; font-weight: 500; }
+
+    /* Pills */
+    .pill { font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 10px; text-transform: uppercase; letter-spacing: 0.4px; }
+    .pill.done      { background: #dcfce7; color: #15803d; }
+    .pill.scheduled { background: #fef9c3; color: #a16207; }
+    .pill.missed    { background: #fee2e2; color: #dc2626; }
+    .pill.postponed { background: #fff7ed; color: #c2410c; }
+    .pill.cancelled { background: #f1f5f9; color: #475569; }
+    .pill.completed { background: #dcfce7; color: #15803d; }
+    .pill.overdue   { background: #fee2e2; color: #b91c1c; }
+    .pill.type      { background: #f3f4f6; color: #374151; }
+
+    /* ── APPOINTMENT CARDS ── */
+    .appt-section-body { padding: 8px 0; }
+    .appt-group-label { padding: 8px 20px 4px; font-size: 11px; font-weight: 700; color: var(--gray); text-transform: uppercase; letter-spacing: 0.6px; }
+    .appt-card { margin: 6px 16px; border-radius: 12px; border: 1.5px solid var(--border); overflow: hidden; transition: box-shadow 0.15s; }
+    .appt-card:hover { box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
+    .appt-card.upcoming { border-color: #f59e0b; background: #fffdf5; }
+    .appt-card.completed { border-color: #16a34a; opacity: 0.8; }
+    .appt-card.cancelled, .appt-card.postponed { opacity: 0.55; }
+    .appt-card.overdue { border-color: #ef4444; background: #fff8f8; }
+
+    .appt-main { display: flex; align-items: center; gap: 12px; padding: 12px 14px; }
+    .appt-icon { width: 38px; height: 38px; border-radius: 9px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .appt-icon.upcoming { background: #fff7ed; color: #c2410c; }
+    .appt-icon.overdue  { background: #fee2e2; color: #b91c1c; }
+    .appt-icon.default  { background: #f3f4f6; color: #6b7280; }
+    .appt-icon.completed{ background: #dcfce7; color: #15803d; }
+    .appt-icon.cancelled{ background: #f1f5f9; color: #94a3b8; }
+    .appt-icon.postponed{ background: #fff7ed; color: #c2410c; }
+
+    .appt-info { flex: 1; min-width: 0; }
+    .appt-title { font-size: 14px; font-weight: 700; margin-bottom: 2px; }
+    .appt-meta { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .appt-when { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; color: #555; }
+    .appt-notes-text { font-size: 12px; color: #888; margin-top: 3px; }
+
+    .appt-actions { display: flex; gap: 6px; padding: 0 14px 10px; flex-wrap: wrap; }
+
+    .appt-log { border-top: 1px solid #f0f0f0; }
+    .appt-log-toggle { width: 100%; padding: 8px 14px; background: none; border: none; font-family: inherit; font-size: 11px; font-weight: 700; color: var(--gray); text-transform: uppercase; letter-spacing: 0.5px; cursor: pointer; text-align: left; display: flex; align-items: center; gap: 6px; }
+    .appt-log-toggle:hover { background: #f9fafb; color: var(--dark); }
+    .appt-log-body { padding: 0 14px 10px; display: none; }
+    .appt-log-body.open { display: block; }
+    .log-entry { display: flex; gap: 8px; padding: 5px 0; border-bottom: 1px solid #f5f5f5; font-size: 12px; }
+    .log-entry:last-child { border-bottom: none; }
+    .log-dot { width: 6px; height: 6px; border-radius: 50%; background: #d1d5db; margin-top: 4px; flex-shrink: 0; }
+    .log-action { font-weight: 700; min-width: 76px; color: #374151; }
+    .log-detail { color: #555; flex: 1; }
+    .log-time { color: #bbb; white-space: nowrap; font-size: 11px; }
+
+    /* ── MODAL ── */
+    #appt-modal {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.45); backdrop-filter: blur(3px);
+      align-items: center; justify-content: center; z-index: 200; padding: 16px;
+    }
+    .modal-card {
+      background: white; border-radius: 18px; width: 100%; max-width: 480px;
+      box-shadow: 0 24px 64px rgba(0,0,0,0.28);
+      animation: modalIn 0.2s cubic-bezier(0.34,1.56,0.64,1);
+    }
+    @keyframes modalIn { from { opacity: 0; transform: scale(0.94) translateY(16px); } to { opacity: 1; transform: none; } }
+    .modal-head { display: flex; align-items: center; justify-content: space-between; padding: 20px 22px 0; }
+    .modal-head h3 { font-size: 17px; font-weight: 700; }
+    .modal-close { width: 32px; height: 32px; border: none; background: #f0f0f4; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--gray); }
+    .modal-close:hover { background: #e0e0e8; color: var(--dark); }
+    .modal-body { padding: 18px 22px; display: flex; flex-direction: column; gap: 14px; }
+    .modal-field { display: flex; flex-direction: column; gap: 5px; }
+    .modal-field label { font-size: 12px; font-weight: 700; color: var(--gray); text-transform: uppercase; letter-spacing: 0.5px; }
+    .modal-field input[type=text],
+    .modal-field textarea { padding: 10px 14px; border: 1.5px solid var(--border); border-radius: 10px; font-size: 15px; font-family: inherit; outline: none; width: 100%; }
+    .modal-field input:focus, .modal-field textarea:focus { border-color: var(--red); }
+    .modal-field .fp-wrap { position: relative; }
+    .modal-field .fp-wrap input { padding-left: 40px; }
+    .modal-field .fp-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--gray); pointer-events: none; }
+    .modal-hint { font-size: 12px; color: #aaa; margin-top: 2px; }
+    .modal-foot { padding: 0 22px 20px; display: flex; gap: 10px; justify-content: flex-end; }
+    .modal-sub { font-size: 13px; color: var(--gray); padding: 0 22px 12px; }
+
+    /* Quick ref */
+    .quick-row { padding: 14px 20px; display: flex; flex-wrap: wrap; gap: 10px; align-items: center; border-bottom: 1px solid #f0f0f0; }
+    .quick-row:last-child { border-bottom: none; }
+    .source-grid { padding: 14px 20px; display: grid; grid-template-columns: auto 1fr; gap: 5px 16px; font-size: 13px; align-items: center; }
+    .source-lbl { font-weight: 600; color: var(--gray); font-size: 12px; display: flex; align-items: center; gap: 6px; }
+    .quick-action-btn { display: inline-flex; align-items: center; gap: 8px; padding: 9px 16px; border-radius: 9px; font-size: 13px; font-weight: 600; text-decoration: none; cursor: pointer; border: none; font-family: inherit; }
+
+    .empty-msg { padding: 36px 20px; text-align: center; color: var(--gray); font-size: 14px; }
+    #loading-view { text-align: center; padding: 80px 20px; color: var(--gray); font-size: 15px; }
+
+    .phone-edit-wrap { display: flex; margin-top: 2px; }
+    .phone-edit-prefix { flex-shrink: 0; display: flex; align-items: center; gap: 4px; padding: 0 9px; border: 1.5px solid var(--border); border-right: none; border-radius: 8px 0 0 8px; font-size: 12px; font-weight: 700; color: #555; background: #f6f6f8; white-space: nowrap; }
+    .phone-edit-wrap .edit-field { border-radius: 0 8px 8px 0; }
+    .addr-grid { display: grid; grid-template-columns: 90px 1fr; gap: 5px; margin-top: 5px; }
+    .addr-grid .edit-field { margin-top: 0; }
+    .edit-field + .edit-field, .edit-field + .addr-grid, .addr-grid + .edit-field { margin-top: 5px; }
+
+    @media (max-width: 740px) {
+      .layout { flex-direction: column; }
+      .sidebar { width: 100%; }
+      .profile-card { position: static; }
+      .container { padding: 14px; }
+      header { padding: 0 14px; }
+      .form-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<div id="loading-view">Loading profile…</div>
+
+<header id="page-header" style="display:none">
+  <div class="header-left">
+    <a href="/admin/" class="back-btn">
+      <svg class="icon-xs" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18"/></svg>
+      All Leads
+    </a>
+    <div class="header-divider"></div>
+    <svg width="60" height="26" viewBox="0 0 225 99" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M134.874 68.7831H165.274V81.2487H120.202V17.2373H134.874V68.7831Z" fill="white"/>
+      <path d="M197.534 56.8451H209.482V68.0462C207.288 68.8892 202.987 69.7323 198.905 69.7323C185.694 69.7323 181.301 62.9711 181.301 49.241C181.301 36.1374 185.483 28.4265 198.682 28.4265C206.039 28.4265 210.213 30.7533 213.675 35.1904L222.802 26.7376C217.227 18.726 207.5 16.2981 198.365 16.2981C177.83 16.2897 167.033 27.5807 167.033 49.1314C167.033 70.5753 176.79 82.2007 198.256 82.2007C208.113 82.2007 217.748 79.6716 222.992 75.9651V44.9078H197.534V56.8451Z" fill="white"/>
+      <path d="M83.831 84.5045C103.008 65.1736 103.007 33.831 83.829 14.499C64.6508 -4.83307 33.5576 -4.83396 14.3805 14.497C-4.79664 33.8279 -4.79576 65.1705 14.3825 84.5025C33.5607 103.835 64.6538 103.835 83.831 84.5045Z" fill="#A50034"/>
+      <path d="M61.1184 66.6079H51.0826V28.5984H47.3721V70.3594H51.0909V70.3341H61.1268L61.1184 66.6079Z" fill="white"/>
+      <path d="M86.1485 51.0737H61.1759V47.3447H89.8088C89.8479 48.0669 89.8674 48.7891 89.8674 49.5198C89.8674 71.9725 71.7136 90.1707 49.3252 90.1707C26.9368 90.1707 8.78027 71.9809 8.78027 49.5169C8.78027 27.053 26.9313 8.86597 49.3224 8.86597C49.9134 8.86597 50.5016 8.87814 51.0871 8.9025V12.6034C50.5016 12.5772 49.9153 12.5641 49.328 12.5641C28.9775 12.5641 12.474 29.11 12.474 49.5169C12.474 69.9239 28.9747 86.4726 49.328 86.4726C69.121 86.4726 85.2899 70.8175 86.1457 51.1777L86.1485 51.0737Z" fill="white"/>
+      <path d="M34.2066 39.8496C35.3263 39.8441 36.4193 39.5043 37.3476 38.8732C38.276 38.2421 38.9981 37.3479 39.4227 36.3036C39.8474 35.2592 39.9557 34.1114 39.7339 33.005C39.5121 31.8987 38.9701 30.8834 38.1764 30.0872C37.3827 29.2911 36.3728 28.7497 35.2742 28.5316C34.1756 28.3134 33.0374 28.4282 32.0035 28.8614C30.9695 29.2946 30.086 30.0268 29.4645 30.9657C28.8429 31.9046 28.5112 33.008 28.5112 34.1367C28.5131 34.8888 28.6618 35.6331 28.949 36.3273C29.2362 37.0214 29.6563 37.6517 30.1851 38.1822C30.714 38.7127 31.3413 39.133 32.0313 39.4191C32.7213 39.7052 33.4605 39.8515 34.2066 39.8496Z" fill="white"/>
+    </svg>
+    <div>
+      <div class="header-title" id="hdr-name">Profile</div>
+      <div class="header-sub">MudahLG Admin</div>
+    </div>
+  </div>
+  <button class="logout-btn" onclick="logout()">
+    <svg class="icon-xs" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15m3 0 3-3m0 0-3-3m3 3H9"/></svg>
+    Logout
+  </button>
+</header>
+
+<!-- ── APPOINTMENT MODAL ── -->
+<div id="appt-modal" style="display:none" onclick="handleModalOverlayClick(event)">
+  <div class="modal-card" id="modal-inner">
+    <div class="modal-head">
+      <h3 id="modal-heading">Schedule Appointment</h3>
+      <button class="modal-close" onclick="closeModal()">
+        <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <p class="modal-sub" id="modal-sub" style="display:none"></p>
+    <div class="modal-body">
+      <div class="modal-field" id="modal-title-row">
+        <label>Title</label>
+        <input type="text" id="modal-appt-title" placeholder="e.g. Showroom visit, Delivery, Site survey…">
+      </div>
+      <div class="modal-field">
+        <label id="modal-date-label">Date &amp; Time <span style="color:var(--red)">*</span></label>
+        <div class="fp-wrap">
+          <svg class="fp-icon icon-xs" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0v-7.5A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 11.25v7.5"/></svg>
+          <input type="text" id="modal-appt-date" placeholder="Click to pick date &amp; time…" readonly>
+        </div>
+        <span class="modal-hint" id="modal-date-hint"></span>
+      </div>
+      <div class="modal-field">
+        <label id="modal-note-label">Notes (optional)</label>
+        <textarea id="modal-appt-note" rows="2" placeholder="Any details…" style="resize:vertical"></textarea>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn-ghost" onclick="closeModal()">Cancel</button>
+      <button class="btn-primary" id="modal-save-btn" onclick="saveModal()">Save</button>
+    </div>
+  </div>
+</div>
+
+<div id="main-content" style="display:none">
+<div class="container">
+<div class="layout">
+
+<!-- ── SIDEBAR ── -->
+<aside class="sidebar">
+  <div class="profile-card">
+    <div class="avatar" id="prof-avatar">?</div>
+    <h2 id="prof-name">—</h2>
+    <div class="profile-id" id="prof-id"></div>
+    <div class="status-wrap">
+      <select id="status-select" onchange="updateStatus(this.value)">
+        <option value="new">New</option>
+        <option value="hot">Hot</option>
+        <option value="warm">Warm</option>
+        <option value="cold">Cold</option>
+        <option value="won">Won</option>
+        <option value="lost">Lost</option>
+      </select>
+    </div>
+    <div id="info-view" class="info-rows">
+      <div class="info-row"><div class="info-label">IC / Passport</div><div class="info-val" id="v-ic">—</div></div>
+      <div class="info-row"><div class="info-label">WhatsApp</div><div class="info-val"><a class="wa-pill" id="v-wa" href="#">—</a></div></div>
+      <div class="info-row"><div class="info-label">Email</div><div class="info-val" id="v-email">—</div></div>
+      <div class="info-row"><div class="info-label">Address</div><div class="info-val" id="v-address">—</div></div>
+      <div class="info-row"><div class="info-label">Products</div><div class="info-val" id="v-products">—</div></div>
+      <div class="info-row"><div class="info-label">Est. Total</div><div class="info-val" id="v-total">—</div></div>
+      <div class="info-row"><div class="info-label">Lead Received</div><div class="info-val" id="v-date">—</div></div>
+    </div>
+    <div id="info-edit" style="display:none" class="info-rows">
+      <div class="info-row"><div class="info-label">Name</div><input class="edit-field" id="e-name" type="text"></div>
+      <div class="info-row"><div class="info-label">IC / Passport</div><input class="edit-field" id="e-ic" type="text"></div>
+      <div class="info-row">
+        <div class="info-label">WhatsApp</div>
+        <div class="phone-edit-wrap">
+          <span class="phone-edit-prefix">🇲🇾 +60</span>
+          <input class="edit-field" id="e-wa" type="tel" placeholder="cth. 121234567" inputmode="numeric">
+        </div>
+      </div>
+      <div class="info-row"><div class="info-label">Email</div><input class="edit-field" id="e-email" type="email"></div>
+      <div class="info-row">
+        <div class="info-label">Alamat Pemasangan</div>
+        <input class="edit-field" id="e-addr1" type="text" placeholder="Alamat 1 (No., Jalan…)">
+        <input class="edit-field" id="e-addr2" type="text" placeholder="Alamat 2 (Taman, Flat… pilihan)">
+        <div class="addr-grid">
+          <input class="edit-field" id="e-poskod" type="text" placeholder="Poskod" maxlength="5" oninput="onPoskodInput(this.value)">
+          <input class="edit-field" id="e-daerah" type="text" placeholder="Daerah / Bandar">
+        </div>
+        <select class="edit-field" id="e-negeri">
+          <option value="">— Pilih Negeri —</option>
+          <option>Johor</option><option>Kedah</option><option>Kelantan</option>
+          <option>Melaka</option><option>Negeri Sembilan</option><option>Pahang</option>
+          <option>Perak</option><option>Perlis</option><option>Pulau Pinang</option>
+          <option>Sabah</option><option>Sarawak</option><option>Selangor</option>
+          <option>Terengganu</option><option>W.P. Kuala Lumpur</option>
+          <option>W.P. Labuan</option><option>W.P. Putrajaya</option>
+        </select>
+      </div>
+      <div class="info-row"><div class="info-label">Products (comma-sep)</div><input class="edit-field" id="e-products" type="text"></div>
+      <div class="info-row"><div class="info-label">Est. Total</div><input class="edit-field" id="e-total" type="text"></div>
+    </div>
+    <div class="sidebar-actions">
+      <button class="btn-edit" id="btn-edit" onclick="startEdit()">
+        <svg class="icon-xs" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10"/></svg>
+        Edit Info
+      </button>
+      <button class="btn-save" id="btn-save" style="display:none" onclick="saveInfo()">
+        <svg class="icon-xs" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5"/></svg>
+        Save
+      </button>
+      <button class="btn-cancel-edit" id="btn-cancel" style="display:none" onclick="cancelEdit()">
+        <svg class="icon-xs" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/></svg>
+        Cancel
+      </button>
+    </div>
+    <button class="btn-delete-lead" onclick="deleteLead()">
+      <svg class="icon-xs" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0"/></svg>
+      Delete This Lead
+    </button>
+  </div>
+</aside>
+
+<!-- ── MAIN ── -->
+<main class="main-sections">
+
+  <!-- 1. Website Visit Log -->
+  <section class="section-card">
+    <div class="section-header">
+      <div class="section-title">
+        <svg class="icon-sm" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9.004 9.004 0 0 0 8.716-6.747M12 21a9.004 9.004 0 0 1-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 0 1 7.843 4.582M12 3a8.997 8.997 0 0 0-7.843 4.582m15.686 0A11.953 11.953 0 0 1 12 10.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 0 1 21 12c0 .778-.099 1.533-.284 2.253m0 0A17.919 17.919 0 0 1 12 16.5a17.919 17.919 0 0 1-8.716-2.247"/></svg>
+        Website Visit Log
+      </div>
+      <span class="badge-auto">Auto</span>
+    </div>
+    <div id="visit-log"></div>
+  </section>
+
+  <!-- 2. Conversation Notes -->
+  <section class="section-card">
+    <div class="section-header">
+      <div class="section-title">
+        <svg class="icon-sm" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 0 1 .865-.501 48.172 48.172 0 0 0 3.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0 0 12 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018Z"/></svg>
+        Conversation Notes
+      </div>
+    </div>
+    <div class="add-note-form">
+      <textarea id="note-input" placeholder="e.g. Customer called – comparing LG vs Samsung. Will decide by weekend." rows="3"></textarea>
+      <button class="form-btn" onclick="addNote(this)">
+        <svg class="icon-xs" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
+        Add
+      </button>
+    </div>
+    <div id="notes-list"></div>
+  </section>
+
+  <!-- 3. Followup Log -->
+  <section class="section-card">
+    <div class="section-header">
+      <div class="section-title">
+        <svg class="icon-sm" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/></svg>
+        Followup Log
+      </div>
+      <button class="btn-add" onclick="toggleForm('fu-form')">
+        <svg class="icon-xs" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
+        Add
+      </button>
+    </div>
+    <div class="inline-form" id="fu-form">
+      <div class="form-grid">
+        <div class="form-field"><label>Type</label>
+          <select id="fu-type">
+            <option value="whatsapp">WhatsApp</option>
+            <option value="call">Call</option>
+            <option value="email">Email</option>
+            <option value="visit">Visit</option>
+            <option value="manual">Note</option>
+          </select></div>
+        <div class="form-field"><label>Status</label>
+          <select id="fu-status" onchange="toggleDateField('fu-date-row', this.value === 'scheduled')">
+            <option value="done">Done (past action)</option>
+            <option value="scheduled">Scheduled (future)</option>
+          </select></div>
+        <div class="form-field" id="fu-date-row" style="display:none"><label>Date &amp; Time</label><input type="text" id="fu-date" placeholder="Pick date &amp; time…" readonly></div>
+        <div class="form-field full"><label>Note</label><textarea id="fu-note" rows="2" placeholder="What happened or what to do…"></textarea></div>
+      </div>
+      <div class="form-actions">
+        <button class="form-btn" onclick="addFollowup(this)">
+          <svg class="icon-xs" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5"/></svg>
+          Save
+        </button>
+        <button class="form-btn-ghost" onclick="toggleForm('fu-form')">Cancel</button>
+      </div>
+    </div>
+    <div id="followup-next"></div>
+    <div id="followup-list"></div>
+  </section>
+
+  <!-- 4. Appointments -->
+  <section class="section-card">
+    <div class="section-header">
+      <div class="section-title">
+        <svg class="icon-sm" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0v-7.5A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 11.25v7.5"/></svg>
+        Appointments
+      </div>
+      <button class="btn-add" onclick="openModal('add')">
+        <svg class="icon-xs" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
+        Schedule
+      </button>
+    </div>
+    <div id="appt-list" class="appt-section-body"></div>
+  </section>
+
+  <!-- 5. Quick Actions -->
+  <section class="section-card">
+    <div class="section-header">
+      <div class="section-title">
+        <svg class="icon-sm" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m3.75 13.5 10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75Z"/></svg>
+        Quick Actions
+      </div>
+    </div>
+    <div class="quick-row">
+      <a id="wa-quick" href="#" target="_blank" rel="noopener" class="quick-action-btn" style="background:#f0fdf4;color:#16a34a">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="#16a34a" style="flex-shrink:0"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+        Open WhatsApp
+      </a>
+      <button onclick="copyIC()" class="quick-action-btn" style="background:#f0f4ff;color:#3b82f6">
+        <svg class="icon-sm" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.666 3.888A2.25 2.25 0 0 0 13.5 2.25h-3c-1.03 0-1.9.693-2.166 1.638m7.332 0c.055.194.084.4.084.612v0a.75.75 0 0 1-.75.75H9a.75.75 0 0 1-.75-.75v0c0-.212.03-.418.084-.612m7.332 0c.646.049 1.288.11 1.927.184 1.1.128 1.907 1.077 1.907 2.185V19.5a2.25 2.25 0 0 1-2.25 2.25H6.75A2.25 2.25 0 0 1 4.5 19.5V6.257c0-1.108.806-2.057 1.907-2.185a48.208 48.208 0 0 1 1.927-.184"/></svg>
+        Copy IC
+      </button>
+    </div>
+    <div class="source-grid" id="source-grid"></div>
+  </section>
+
+</main>
+</div>
+</div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script>
+var PASSWORD = 'P@ssw0rd123';
+var leadId = null, lead = null;
+
+/* ── Flatpickr instances ── */
+var fpModal = null;   // modal date picker
+var fpFu = null;      // followup date picker
+
+/* ── Modal state ── */
+var modalMode = null; // 'add' | 'reschedule' | 'postpone'
+var modalApptId = null;
+
+/* ── Icon helper ── */
+function icon(path, w, sw) {
+  w = w || 13; sw = sw || '1.5';
+  return '<svg style="width:' + w + 'px;height:' + w + 'px;display:inline-block;vertical-align:-2px;flex-shrink:0" fill="none" viewBox="0 0 24 24" stroke-width="' + sw + '" stroke="currentColor">' + path + '</svg>';
+}
+var P = {
+  check:    '<path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5"/>',
+  clock:    '<path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/>',
+  trash:    '<path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0"/>',
+  x:        '<path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/>',
+  calendar: '<path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0v-7.5A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 11.25v7.5"/>',
+  phone:    '<path stroke-linecap="round" stroke-linejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 0 0 2.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 0 1-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 0 0-1.091-.852H4.5A2.25 2.25 0 0 0 2.25 4.5v2.25Z"/>',
+  envelope: '<path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75"/>',
+  home:     '<path stroke-linecap="round" stroke-linejoin="round" d="m2.25 12 8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25"/>',
+  doc:      '<path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z"/>',
+  chat:     '<path stroke-linecap="round" stroke-linejoin="round" d="M12 20.25c4.97 0 9-3.694 9-8.25s-4.03-8.25-9-8.25S3 7.444 3 12c0 2.104.859 4.023 2.273 5.48.432.447.74 1.04.586 1.641a4.483 4.483 0 0 1-.923 1.785A5.969 5.969 0 0 0 6 21c1.282 0 2.47-.402 3.445-1.087.81.22 1.668.337 2.555.337Z"/>',
+  globe:    '<path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9.004 9.004 0 0 0 8.716-6.747M12 21a9.004 9.004 0 0 1-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 0 1 7.843 4.582M12 3a8.997 8.997 0 0 0-7.843 4.582m15.686 0A11.953 11.953 0 0 1 12 10.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 0 1 21 12c0 .778-.099 1.533-.284 2.253m0 0A17.919 17.919 0 0 1 12 16.5a17.919 17.919 0 0 1-8.716-2.247"/>',
+  link:     '<path stroke-linecap="round" stroke-linejoin="round" d="M13.19 8.688a4.5 4.5 0 0 1 1.242 7.244l-4.5 4.5a4.5 4.5 0 0 1-6.364-6.364l1.757-1.757m13.35-.622 1.757-1.757a4.5 4.5 0 0 0-6.364-6.364l-4.5 4.5a4.5 4.5 0 0 0 1.242 7.244"/>',
+  desktop:  '<path stroke-linecap="round" stroke-linejoin="round" d="M9 17.25v1.007a3 3 0 0 1-.879 2.122L7.5 21h9l-.621-.621A3 3 0 0 1 15 18.257V17.25m6-12V15a2.25 2.25 0 0 1-2.25 2.25H5.25A2.25 2.25 0 0 1 3 15V5.25m18 0A2.25 2.25 0 0 0 18.75 3H5.25A2.25 2.25 0 0 0 3 5.25m18 0H3"/>',
+  mobile:   '<path stroke-linecap="round" stroke-linejoin="round" d="M10.5 1.5H8.25A2.25 2.25 0 0 0 6 3.75v16.5a2.25 2.25 0 0 0 2.25 2.25h7.5A2.25 2.25 0 0 0 18 20.25V3.75a2.25 2.25 0 0 0-2.25-2.25H13.5m-3 0V3h3V1.5m-3 0h3m-3 8.25h3"/>',
+  chevronD: '<path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5"/>',
+  chevronU: '<path stroke-linecap="round" stroke-linejoin="round" d="m4.5 15.75 7.5-7.5 7.5 7.5"/>',
+};
+function ico(name, w, sw) { return icon(P[name], w, sw); }
+
+/* ── INIT ── */
+function init() {
+  if (sessionStorage.getItem('adminAuth') !== PASSWORD) { window.location.href = '/admin/'; return; }
+  leadId = parseInt(new URLSearchParams(window.location.search).get('id'));
+  if (!leadId) { document.getElementById('loading-view').textContent = 'No lead ID.'; return; }
+  document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeModal(); });
+
+  fpModal = flatpickr('#modal-appt-date', {
+    enableTime: true, dateFormat: 'Y-m-d H:i', time_24hr: true, disableMobile: true,
+    onReady: function(_, __, fp) { fp.calendarContainer.classList.add('flatpickr-brand'); },
+  });
+  fpFu = flatpickr('#fu-date', {
+    enableTime: true, dateFormat: 'Y-m-d H:i', time_24hr: true, disableMobile: true,
+  });
+  loadAll();
+}
+
+function logout() { sessionStorage.removeItem('adminAuth'); window.location.href = '/admin/'; }
+function authHead() { return { 'Authorization': 'Bearer ' + PASSWORD }; }
+function jsonHead() { return { 'Authorization': 'Bearer ' + PASSWORD, 'Content-Type': 'application/json' }; }
+
+function loadAll() {
+  Promise.all([
+    fetch('/api/admin/leads/' + leadId, { headers: authHead() }).then(function(r){return r.json();}),
+    fetch('/api/admin/leads/' + leadId + '/notes', { headers: authHead() }).then(function(r){return r.json();}),
+    fetch('/api/admin/leads/' + leadId + '/followups', { headers: authHead() }).then(function(r){return r.json();}),
+    fetch('/api/admin/leads/' + leadId + '/appointments', { headers: authHead() }).then(function(r){return r.json();}),
+  ]).then(function(res) {
+    lead = res[0];
+    if (lead.error) { document.getElementById('loading-view').textContent = 'Lead not found.'; return; }
+    renderProfile(lead); renderVisitLog(lead); renderNotes(res[1]); renderFollowups(res[2]); renderAppointments(res[3]);
+    document.getElementById('loading-view').style.display = 'none';
+    document.getElementById('page-header').style.display = 'flex';
+    document.getElementById('main-content').style.display = 'block';
+  }).catch(function(e) { document.getElementById('loading-view').textContent = 'Error: ' + e.message; });
+}
+
+/* ── MODAL ── */
+function openModal(mode, apptId, currentDate) {
+  modalMode = mode; modalApptId = apptId || null;
+  var heading = document.getElementById('modal-heading');
+  var saveBtn = document.getElementById('modal-save-btn');
+  var titleRow = document.getElementById('modal-title-row');
+  var noteLbl = document.getElementById('modal-note-label');
+  var sub = document.getElementById('modal-sub');
+  var dateLabel = document.getElementById('modal-date-label');
+  var dateHint = document.getElementById('modal-date-hint');
+
+  document.getElementById('modal-appt-title').value = '';
+  document.getElementById('modal-appt-note').value = '';
+  fpModal.clear();
+  fpModal.set('minDate', '');
+
+  if (mode === 'add') {
+    heading.textContent = 'Schedule Appointment';
+    saveBtn.textContent = 'Save Appointment';
+    titleRow.style.display = 'flex';
+    noteLbl.textContent = 'Notes (optional)';
+    dateLabel.innerHTML = 'Date &amp; Time <span style="color:var(--red)">*</span>';
+    dateHint.textContent = '';
+    sub.style.display = 'none';
+    fpModal.set('minDate', 'today');
+    setTimeout(function() { document.getElementById('modal-appt-title').focus(); }, 80);
+  } else if (mode === 'reschedule') {
+    heading.textContent = 'Reschedule';
+    saveBtn.textContent = 'Confirm Reschedule';
+    titleRow.style.display = 'none';
+    noteLbl.textContent = 'Reason (optional)';
+    dateLabel.innerHTML = 'New Date &amp; Time <span style="color:var(--red)">*</span>';
+    dateHint.textContent = currentDate ? 'Current: ' + formatDate(currentDate) : '';
+    sub.style.display = 'none';
+    fpModal.set('minDate', 'today');
+    setTimeout(function() { fpModal.open(); }, 80);
+  } else if (mode === 'postpone') {
+    heading.textContent = 'Postpone';
+    saveBtn.textContent = 'Confirm Postpone';
+    titleRow.style.display = 'none';
+    noteLbl.textContent = 'Reason (optional)';
+    dateLabel.innerHTML = 'New Date &amp; Time <span style="color:#aaa;font-weight:400;text-transform:none">(optional)</span>';
+    dateHint.textContent = currentDate ? 'Current: ' + formatDate(currentDate) : '';
+    sub.style.display = 'none';
+    fpModal.set('minDate', 'today');
+    setTimeout(function() { fpModal.open(); }, 80);
+  }
+
+  document.getElementById('appt-modal').style.display = 'flex';
+}
+
+function closeModal() {
+  document.getElementById('appt-modal').style.display = 'none';
+  fpModal.clear();
+}
+
+function handleModalOverlayClick(e) {
+  if (e.target === document.getElementById('appt-modal')) closeModal();
+}
+
+function saveModal() {
+  var btn = document.getElementById('modal-save-btn');
+  var dateVal = document.getElementById('modal-appt-date').value;
+  var note = document.getElementById('modal-appt-note').value.trim();
+
+  if (modalMode === 'add') {
+    if (!dateVal) { shakeField('modal-appt-date'); return; }
+    btn.disabled = true; btn.textContent = 'Saving…';
+    fetch('/api/admin/leads/' + leadId + '/appointments', {
+      method: 'POST', headers: jsonHead(),
+      body: JSON.stringify({ title: document.getElementById('modal-appt-title').value.trim(), appointment_at: dateVal, notes: note })
+    }).then(function(r){return r.json();})
+      .then(function(d){ if(d.success){ closeModal(); reloadAppointments(); } resetModalBtn('Save Appointment'); btn.disabled=false; })
+      .catch(function(){ resetModalBtn('Save Appointment'); btn.disabled=false; });
+
+  } else if (modalMode === 'reschedule') {
+    if (!dateVal) { shakeField('modal-appt-date'); return; }
+    btn.disabled = true; btn.textContent = 'Saving…';
+    fetch('/api/admin/leads/' + leadId + '/appointments/' + modalApptId, {
+      method: 'PATCH', headers: jsonHead(),
+      body: JSON.stringify({ appointment_at: dateVal, status: 'scheduled', log_note: note || 'Rescheduled' })
+    }).then(function(){ closeModal(); reloadAppointments(); btn.disabled=false; resetModalBtn('Confirm Reschedule'); })
+      .catch(function(){ btn.disabled=false; resetModalBtn('Confirm Reschedule'); });
+
+  } else if (modalMode === 'postpone') {
+    btn.disabled = true; btn.textContent = 'Saving…';
+    var payload = { status: 'postponed', log_note: note || 'Postponed' };
+    if (dateVal) payload.appointment_at = dateVal;
+    fetch('/api/admin/leads/' + leadId + '/appointments/' + modalApptId, {
+      method: 'PATCH', headers: jsonHead(), body: JSON.stringify(payload)
+    }).then(function(){ closeModal(); reloadAppointments(); btn.disabled=false; resetModalBtn('Confirm Postpone'); })
+      .catch(function(){ btn.disabled=false; resetModalBtn('Confirm Postpone'); });
+  }
+}
+
+function resetModalBtn(label) { var b = document.getElementById('modal-save-btn'); b.textContent = label; b.disabled = false; }
+function shakeField(id) {
+  var el = document.getElementById(id);
+  el.style.borderColor = 'var(--red)';
+  el.parentElement.style.animation = 'none';
+  el.parentElement.offsetHeight;
+  el.parentElement.style.animation = 'shake 0.3s ease';
+}
+
+/* ── PROFILE ── */
+function renderProfile(l) {
+  var initials = l.name ? l.name.trim().split(/\s+/).map(function(w){return w[0];}).slice(0,2).join('').toUpperCase() : '?';
+  document.getElementById('prof-avatar').textContent = initials;
+  document.getElementById('hdr-name').textContent = l.name || 'Lead #' + l.id;
+  document.getElementById('prof-name').textContent = l.name || '—';
+  document.getElementById('prof-id').textContent = 'Lead #' + l.id;
+  document.title = (l.name || 'Lead #' + l.id) + ' — MudahLG Admin';
+  function setVal(id, val) { var el=document.getElementById(id); if(val){el.textContent=val;el.className='info-val';}else{el.textContent='—';el.className='info-val empty';} }
+  setVal('v-ic',l.ic); setVal('v-email',l.email); setVal('v-address', l.address ? l.address.replace(/\n/g,' · ') : ''); setVal('v-total',l.total_estimate);
+  document.getElementById('v-date').textContent = formatDate(l.created_at);
+  var waEl = document.getElementById('v-wa'); waEl.textContent = l.whatsapp || '—';
+  if (l.whatsapp) { var wn = formatWA(l.whatsapp); waEl.href='https://wa.me/'+wn; document.getElementById('wa-quick').href='https://wa.me/'+wn; }
+  try { var prods=JSON.parse(l.products||'[]'); setVal('v-products',Array.isArray(prods)&&prods.length?prods.map(function(p){return typeof p==='object'?(p.name||p.title||p.model||''):String(p);}).join(', '):''); } catch(e){setVal('v-products',l.products);}
+  var sel=document.getElementById('status-select'); sel.value=l.status||'new'; applyStatusColor(l.status||'new');
+  var sg=document.getElementById('source-grid'), parts=[];
+  if(l.domain)  parts.push('<span class="source-lbl">'+ico('globe',12)+' Page</span><span>'+esc(l.domain)+'</span>');
+  if(l.referrer==='direct') parts.push('<span class="source-lbl">'+ico('link',12)+' Traffic</span><span>Direct</span>');
+  else if(l.referrer) parts.push('<span class="source-lbl">'+ico('link',12)+' Referrer</span><span>'+esc(l.referrer)+'</span>');
+  if(l.browser) parts.push('<span class="source-lbl">'+ico('desktop',12)+' Browser</span><span>'+esc(l.browser)+'</span>');
+  if(l.device)  parts.push('<span class="source-lbl">'+ico('mobile',12)+' Device</span><span>'+esc(l.device)+'</span>');
+  sg.innerHTML = parts.length ? parts.join('') : '<span style="color:#ccc;grid-column:1/-1">No tracking data.</span>';
+}
+
+function applyStatusColor(s) {
+  var c={new:'#3b82f6',hot:'#ef4444',warm:'#f97316',cold:'#9ca3af',won:'#16a34a',lost:'#374151'}[s]||'#3b82f6';
+  var sel=document.getElementById('status-select'); sel.style.background=c; sel.style.color='white'; sel.style.borderColor=c;
+}
+function updateStatus(s) { applyStatusColor(s); fetch('/api/admin/leads/'+leadId+'/status',{method:'PATCH',headers:jsonHead(),body:JSON.stringify({status:s})}); }
+
+function startEdit() {
+  document.getElementById('info-view').style.display='none'; document.getElementById('info-edit').style.display='block';
+  document.getElementById('btn-edit').style.display='none'; document.getElementById('btn-save').style.display='flex'; document.getElementById('btn-cancel').style.display='flex';
+  document.getElementById('e-name').value=lead.name||''; document.getElementById('e-ic').value=lead.ic||''; document.getElementById('e-wa').value=lead.whatsapp||'';
+  document.getElementById('e-email').value=lead.email||''; document.getElementById('e-total').value=lead.total_estimate||'';
+  var ap=parseAddressToFields(lead.address||'');
+  document.getElementById('e-addr1').value=ap.addr1; document.getElementById('e-addr2').value=ap.addr2;
+  document.getElementById('e-poskod').value=ap.poskod; document.getElementById('e-daerah').value=ap.daerah; document.getElementById('e-negeri').value=ap.negeri;
+  try{var prods=JSON.parse(lead.products||'[]');document.getElementById('e-products').value=Array.isArray(prods)?prods.map(function(p){return typeof p==='object'?(p.name||p.title||p.model||''):String(p);}).join(', '):lead.products||'';}catch(e){document.getElementById('e-products').value=lead.products||'';}
+}
+function cancelEdit() {
+  document.getElementById('info-view').style.display='block'; document.getElementById('info-edit').style.display='none';
+  document.getElementById('btn-edit').style.display='flex'; document.getElementById('btn-save').style.display='none'; document.getElementById('btn-cancel').style.display='none';
+}
+function saveInfo() {
+  var btn=document.getElementById('btn-save'); btn.disabled=true;
+  var p=document.getElementById('e-products').value.trim();
+  var products=p?p.split(',').map(function(s){return s.trim();}).filter(Boolean):[];
+  var a1=document.getElementById('e-addr1').value.trim(),a2=document.getElementById('e-addr2').value.trim();
+  var pc=document.getElementById('e-poskod').value.trim(),dr=document.getElementById('e-daerah').value.trim(),ng=document.getElementById('e-negeri').value.trim();
+  var address=[a1,a2,[pc,dr].filter(Boolean).join(' '),ng].filter(Boolean).join('\n');
+  var payload={name:document.getElementById('e-name').value.trim(),ic:document.getElementById('e-ic').value.trim(),whatsapp:document.getElementById('e-wa').value.trim(),email:document.getElementById('e-email').value.trim(),address:address,total_estimate:document.getElementById('e-total').value.trim(),products:products};
+  fetch('/api/admin/leads/'+leadId+'/info',{method:'PATCH',headers:jsonHead(),body:JSON.stringify(payload)})
+    .then(function(r){return r.json();}).then(function(d){if(d.success){Object.assign(lead,payload);lead.products=JSON.stringify(products);renderProfile(lead);cancelEdit();}else{alert('Save failed.');}btn.disabled=false;})
+    .catch(function(){btn.disabled=false;alert('Error saving.');});
+}
+function deleteLead() {
+  if(!confirm('Permanently delete this lead and ALL their data?\n\nThis cannot be undone.')) return;
+  fetch('/api/admin/leads/'+leadId,{method:'DELETE',headers:authHead()}).then(function(r){return r.json();}).then(function(d){if(d.success){alert('Lead deleted.');window.location.href='/admin/';}else alert('Delete failed.');}).catch(function(){alert('Error deleting.');});
+}
+
+/* ── VISIT LOG ── */
+function renderVisitLog(l) {
+  var html='<div class="timeline"><div class="tl-item"><div class="tl-dot blue"></div><div class="tl-body">';
+  html+='<div class="tl-head"><span class="tl-label">Form Submitted</span><span class="tl-date">'+formatDate(l.created_at)+'</span></div>';
+  html+='<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:4px">';
+  if(l.domain)  html+='<span class="meta-chip">'+ico('globe',11)+' '+esc(l.domain)+'</span>';
+  if(l.referrer==='direct') html+='<span class="meta-chip">'+ico('link',11)+' Direct</span>';
+  else if(l.referrer) html+='<span class="meta-chip">'+ico('link',11)+' '+esc(l.referrer)+'</span>';
+  if(l.browser) html+='<span class="meta-chip">'+ico('desktop',11)+' '+esc(l.browser)+'</span>';
+  if(l.device)  html+='<span class="meta-chip">'+ico('mobile',11)+' '+esc(l.device)+'</span>';
+  html+='</div></div></div></div>';
+  document.getElementById('visit-log').innerHTML=html;
+}
+
+/* ── NOTES ── */
+function renderNotes(notes) {
+  var el=document.getElementById('notes-list');
+  if(!Array.isArray(notes)||!notes.length){el.innerHTML='<div class="empty-msg">No notes yet. Add one above.</div>';return;}
+  var html='<div class="timeline">';
+  notes.forEach(function(n){
+    html+='<div class="tl-item"><div class="tl-dot purple"></div><div class="tl-body">';
+    html+='<div class="tl-head"><span class="tl-date" style="margin-left:0">'+formatDate(n.created_at)+'</span>';
+    html+='<button class="btn-del" style="margin-left:auto" onclick="deleteNote('+n.id+')">'+ico('trash',12)+' Delete</button></div>';
+    html+='<div class="tl-text">'+esc(n.note)+'</div></div></div>';
+  });
+  el.innerHTML=html+'</div>';
+}
+function addNote(btn) {
+  var note=document.getElementById('note-input').value.trim(); if(!note)return;
+  btn.disabled=true;
+  fetch('/api/admin/leads/'+leadId+'/notes',{method:'POST',headers:jsonHead(),body:JSON.stringify({note:note})})
+    .then(function(r){return r.json();}).then(function(d){if(d.success){document.getElementById('note-input').value='';reloadNotes();}btn.disabled=false;}).catch(function(){btn.disabled=false;});
+}
+function deleteNote(id){if(!confirm('Delete note?'))return;fetch('/api/admin/leads/'+leadId+'/notes/'+id,{method:'DELETE',headers:authHead()}).then(function(){reloadNotes();});}
+function reloadNotes(){fetch('/api/admin/leads/'+leadId+'/notes',{headers:authHead()}).then(function(r){return r.json();}).then(renderNotes);}
+
+/* ── FOLLOWUPS ── */
+function renderFollowups(followups) {
+  var listEl=document.getElementById('followup-list'),nextEl=document.getElementById('followup-next');
+  if(!Array.isArray(followups)||!followups.length){listEl.innerHTML='<div class="empty-msg">No followup entries yet.</div>';nextEl.innerHTML='';return;}
+  var now=new Date();
+  var upcoming=followups.filter(function(f){return f.status==='scheduled'&&f.scheduled_at&&new Date(f.scheduled_at.replace(' ','T'))>=now;});
+  var rest=followups.filter(function(f){return!(f.status==='scheduled'&&f.scheduled_at&&new Date(f.scheduled_at.replace(' ','T'))>=now);});
+  upcoming.sort(function(a,b){return new Date(a.scheduled_at)-new Date(b.scheduled_at);});
+  rest.sort(function(a,b){return new Date(b.created_at)-new Date(a.created_at);});
+  if(upcoming.length){var nxt=upcoming[0];nextEl.innerHTML='<div style="padding:12px 20px;border-bottom:1px solid var(--border);background:#fffbeb;display:flex;align-items:center;gap:10px"><div style="color:#a16207;flex-shrink:0">'+ico('clock',18)+'</div><div><div style="font-size:11px;font-weight:700;color:#a16207;text-transform:uppercase;letter-spacing:.5px">Next Scheduled Followup</div><div style="font-size:14px;font-weight:600">'+formatDate(nxt.scheduled_at)+' — '+fuTypeLabel(nxt.type)+'</div>'+(nxt.note?'<div style="font-size:13px;color:#555">'+esc(nxt.note)+'</div>':'')+'</div><button class="btn-done" style="margin-left:auto" onclick="markFuDone('+nxt.id+')">'+ico('check',12,'2.5')+' Mark Done</button></div>';}else{nextEl.innerHTML='';}
+  var all=upcoming.concat(rest),html='<div class="timeline">';
+  all.forEach(function(f){
+    var isMissed=f.status==='scheduled'&&f.scheduled_at&&new Date(f.scheduled_at.replace(' ','T'))<now;
+    var ds=isMissed?'missed':f.status;
+    var dotColor={done:'green',scheduled:'amber',missed:'red',auto:'gray'}[ds]||'gray';
+    html+='<div class="tl-item"><div class="tl-dot '+dotColor+'"></div><div class="tl-body">';
+    html+='<div class="tl-head"><span class="pill '+ds+'">'+fuStatusLabel(ds)+'</span><span class="pill type">'+fuTypeLabel(f.type)+'</span>';
+    if(f.scheduled_at) html+='<span class="tl-date">'+formatDate(f.scheduled_at)+'</span>';
+    html+='</div>';
+    if(f.note) html+='<div class="tl-text">'+esc(f.note)+'</div>';
+    html+='<div class="tl-actions"><span class="tl-date-sm">Added '+formatDate(f.created_at)+'</span>';
+    if(f.status==='scheduled') html+='<button class="btn-done" onclick="markFuDone('+f.id+')">'+ico('check',12,'2.5')+' Done</button>';
+    html+='<button class="btn-del" onclick="deleteFu('+f.id+')">'+ico('trash',12)+' Delete</button></div></div></div>';
+  });
+  listEl.innerHTML=html+'</div>';
+}
+function addFollowup(btn) {
+  var status=document.getElementById('fu-status').value;
+  var scheduledAt=status==='scheduled'?document.getElementById('fu-date').value:null;
+  if(status==='scheduled'&&!scheduledAt){alert('Select a date/time.');return;}
+  btn.disabled=true;
+  fetch('/api/admin/leads/'+leadId+'/followups',{method:'POST',headers:jsonHead(),body:JSON.stringify({type:document.getElementById('fu-type').value,status:status,note:document.getElementById('fu-note').value.trim(),scheduled_at:scheduledAt})})
+    .then(function(r){return r.json();}).then(function(d){if(d.success){document.getElementById('fu-note').value='';fpFu.clear();document.getElementById('fu-form').classList.remove('open');reloadFollowups();}btn.disabled=false;}).catch(function(){btn.disabled=false;});
+}
+function markFuDone(id){fetch('/api/admin/leads/'+leadId+'/followups/'+id,{method:'PATCH',headers:jsonHead(),body:JSON.stringify({status:'done',completed_at:new Date().toISOString()})}).then(function(){reloadFollowups();});}
+function deleteFu(id){if(!confirm('Delete followup entry?'))return;fetch('/api/admin/leads/'+leadId+'/followups/'+id,{method:'DELETE',headers:authHead()}).then(function(){reloadFollowups();});}
+function reloadFollowups(){fetch('/api/admin/leads/'+leadId+'/followups',{headers:authHead()}).then(function(r){return r.json();}).then(renderFollowups);}
+
+/* ── APPOINTMENTS ── */
+function renderAppointments(appts) {
+  var el=document.getElementById('appt-list');
+  if(!Array.isArray(appts)||!appts.length){el.innerHTML='<div class="empty-msg">No appointments yet. Click "Schedule" to add one.</div>';return;}
+  var now=new Date();
+  var upcoming=appts.filter(function(a){return a.status==='scheduled'&&new Date(a.appointment_at.replace(' ','T'))>=now;});
+  var overdue=appts.filter(function(a){return a.status==='scheduled'&&new Date(a.appointment_at.replace(' ','T'))<now;});
+  var past=appts.filter(function(a){return a.status!=='scheduled';});
+  upcoming.sort(function(a,b){return new Date(a.appointment_at)-new Date(b.appointment_at);});
+  overdue.sort(function(a,b){return new Date(a.appointment_at)-new Date(b.appointment_at);});
+  past.sort(function(a,b){return new Date(b.appointment_at)-new Date(a.appointment_at);});
+  var html='';
+  if(overdue.length){html+='<div class="appt-group-label" style="color:#b91c1c">Overdue</div>';overdue.forEach(function(a){html+=buildApptCard(a,'overdue');});}
+  if(upcoming.length){html+='<div class="appt-group-label">Upcoming</div>';upcoming.forEach(function(a){html+=buildApptCard(a,'upcoming');});}
+  if(past.length){html+='<div class="appt-group-label">Past / Closed</div>';past.forEach(function(a){html+=buildApptCard(a,a.status);});}
+  html+='<div style="height:8px"></div>';
+  el.innerHTML=html;
+}
+
+function buildApptCard(a, cardType) {
+  var iconMap={upcoming:'orange',overdue:'red',completed:'completed',cancelled:'cancelled',postponed:'postponed',default:'default'};
+  var iconClass=iconMap[cardType]||'default';
+  var calIcon='<svg style="width:16px;height:16px" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">'+P.calendar+'</svg>';
+  var statusPill={scheduled:'<span class="pill scheduled">Scheduled</span>',completed:'<span class="pill completed">Completed</span>',cancelled:'<span class="pill cancelled">Cancelled</span>',postponed:'<span class="pill postponed">Postponed</span>'}[a.status]||'';
+  if(cardType==='overdue') statusPill='<span class="pill overdue">Overdue</span>';
+
+  var html='<div class="appt-card '+cardType+'" id="appt-'+a.id+'">';
+  html+='<div class="appt-main">';
+  html+='<div class="appt-icon '+iconClass+'">'+calIcon+'</div>';
+  html+='<div class="appt-info">';
+  html+='<div class="appt-title">'+esc(a.title||'Appointment')+'</div>';
+  html+='<div class="appt-meta">'+statusPill+'<span class="appt-when">'+ico('clock',12)+' '+formatDate(a.appointment_at)+'</span></div>';
+  if(a.notes) html+='<div class="appt-notes-text">'+esc(a.notes)+'</div>';
+  html+='</div></div>';
+
+  if(a.status==='scheduled'){
+    html+='<div class="appt-actions">';
+    html+='<button class="btn-done" onclick="apptComplete('+a.id+')">'+ico('check',12,'2.5')+' Mark Done</button>';
+    html+='<button class="btn-action" onclick="openModal(\'reschedule\','+a.id+',\''+a.appointment_at+'\')">'+ico('calendar',12)+' Reschedule</button>';
+    html+='<button class="btn-action" onclick="openModal(\'postpone\','+a.id+',\''+a.appointment_at+'\')">'+ico('clock',12)+' Postpone</button>';
+    html+='<button class="btn-action red" onclick="apptCancel('+a.id+')">'+ico('x',12)+' Cancel</button>';
+    html+='<button class="btn-del" onclick="deleteAppt('+a.id+')">'+ico('trash',12)+'</button>';
+    html+='</div>';
+  } else {
+    html+='<div class="appt-actions"><button class="btn-del" onclick="deleteAppt('+a.id+')">'+ico('trash',12)+' Delete</button></div>';
+  }
+
+  if(a.logs&&a.logs.length){
+    html+='<div class="appt-log">';
+    html+='<button class="appt-log-toggle" onclick="toggleLog(this)">'+ico('chevronD',12)+' '+a.logs.length+' change'+(a.logs.length>1?'s':'')+'</button>';
+    html+='<div class="appt-log-body">';
+    a.logs.forEach(function(lg){
+      html+='<div class="log-entry"><div class="log-dot"></div><span class="log-action">'+logActionLabel(lg.action)+'</span>';
+      var detail='';
+      if(lg.action==='created') detail='Scheduled for '+formatDate(lg.new_date);
+      else if(lg.action==='rescheduled') detail=formatDate(lg.old_date)+' → '+formatDate(lg.new_date);
+      else if(lg.action==='postponed') detail='From '+formatDate(lg.old_date);
+      else if(lg.action==='cancelled') detail='Was on '+formatDate(lg.old_date);
+      else if(lg.action==='completed') detail=formatDate(lg.created_at);
+      else detail=formatDate(lg.old_date);
+      if(lg.note) detail+=' — '+esc(lg.note);
+      html+='<span class="log-detail">'+detail+'</span><span class="log-time">'+formatDate(lg.created_at)+'</span></div>';
+    });
+    html+='</div></div>';
+  }
+  html+='</div>';
+  return html;
+}
+
+function toggleLog(btn) {
+  var body=btn.nextElementSibling; body.classList.toggle('open');
+  var open=body.classList.contains('open');
+  btn.innerHTML=ico(open?'chevronU':'chevronD',12)+' '+btn.textContent.trim().replace(/^[▾▴]\s*/,'');
+}
+
+function apptComplete(id){fetch('/api/admin/leads/'+leadId+'/appointments/'+id,{method:'PATCH',headers:jsonHead(),body:JSON.stringify({status:'completed',log_note:'Marked as completed'})}).then(function(){reloadAppointments();});}
+function apptCancel(id){if(!confirm('Cancel this appointment?'))return;fetch('/api/admin/leads/'+leadId+'/appointments/'+id,{method:'PATCH',headers:jsonHead(),body:JSON.stringify({status:'cancelled',log_note:'Cancelled'})}).then(function(){reloadAppointments();});}
+function deleteAppt(id){if(!confirm('Delete appointment?'))return;fetch('/api/admin/leads/'+leadId+'/appointments/'+id,{method:'DELETE',headers:authHead()}).then(function(){reloadAppointments();});}
+function reloadAppointments(){fetch('/api/admin/leads/'+leadId+'/appointments',{headers:authHead()}).then(function(r){return r.json();}).then(renderAppointments);}
+
+/* ── MISC ── */
+function toggleForm(id){document.getElementById(id).classList.toggle('open');}
+function toggleDateField(id,show){document.getElementById(id).style.display=show?'flex':'none';}
+function copyIC(){var ic=lead&&lead.ic?lead.ic:'';if(!ic){alert('No IC on file.');return;}navigator.clipboard.writeText(ic).then(function(){alert('IC copied: '+ic);}).catch(function(){alert('IC: '+ic);});}
+
+function apptStatusLabel(s,isPast){if(s==='scheduled'&&isPast)return'Overdue';return{scheduled:'Scheduled',completed:'Completed',cancelled:'Cancelled',postponed:'Postponed'}[s]||s;}
+function logActionLabel(a){return{created:'Created',rescheduled:'Rescheduled',postponed:'Postponed',cancelled:'Cancelled',completed:'Completed',updated:'Updated'}[a]||a;}
+function fuStatusLabel(s){return{done:'Done',scheduled:'Scheduled',missed:'Missed'}[s]||s;}
+function fuTypeLabel(t){var icons={whatsapp:ico('chat',11),call:ico('phone',11),email:ico('envelope',11),visit:ico('home',11),manual:ico('doc',11),auto:ico('clock',11)};var labels={whatsapp:'WhatsApp',call:'Call',email:'Email',visit:'Visit',manual:'Note',auto:'Auto'};return(icons[t]||'')+' '+(labels[t]||t);}
+
+function formatWA(n){if(!n)return'';var d=n.replace(/\D/g,'');if(!d)return'';if(d.substring(0,2)==='60')return d;if(d[0]==='0')return'60'+d.slice(1);if(d.length>=9&&d.length<=10)return'60'+d;return d;}
+function formatDate(dt){
+  if(!dt)return'—';var s=String(dt),d=new Date(s.includes('T')?s:s.replace(' ','T'));
+  if(isNaN(d.getTime()))return dt;
+  return d.toLocaleDateString('en-MY',{day:'2-digit',month:'short',year:'numeric'})+' '+d.toLocaleTimeString('en-MY',{hour:'2-digit',minute:'2-digit',hour12:false});
+}
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+
+/* ── POSTCODE LOOKUP ── */
+var NEGERI_PREFIXES=[
+  [1,2,'Perlis'],[3,9,'Kedah'],[10,14,'Pulau Pinang'],[15,18,'Kelantan'],
+  [20,24,'Terengganu'],[25,29,'Pahang'],[30,36,'Perak'],[40,48,'Selangor'],
+  [50,60,'W.P. Kuala Lumpur'],[62,63,'W.P. Putrajaya'],[70,73,'Negeri Sembilan'],
+  [75,78,'Melaka'],[79,86,'Johor'],[88,91,'Sabah'],[93,98,'Sarawak']
+];
+var DAERAH_MAP={
+  // KL
+  '50000':'Kuala Lumpur','50100':'Kuala Lumpur','50200':'Kuala Lumpur','50300':'Kuala Lumpur',
+  '50400':'Kuala Lumpur','50450':'Kuala Lumpur','50470':'Bukit Bintang','50480':'Bukit Bintang',
+  '50490':'Chow Kit','50600':'Kuala Lumpur','50700':'Kuala Lumpur',
+  '51000':'Kepong','51200':'Kepong','52000':'Kepong','52100':'Kepong',
+  '53000':'Setapak','53100':'Setapak','54000':'Sentul','54200':'Sentul',
+  '55000':'Chow Kit','55100':'Chow Kit','56000':'Cheras','56100':'Cheras',
+  '57000':'Cheras','57100':'Cheras','58000':'Bangsar','58100':'Bangsar',
+  '59000':'Bangsar','59100':'Bangsar','60000':'Kepong',
+  // Selangor
+  '40000':'Shah Alam','40100':'Shah Alam','40150':'Shah Alam','40400':'Shah Alam',
+  '40450':'Shah Alam','40460':'Shah Alam','40470':'Shah Alam','40150':'Shah Alam',
+  '41000':'Klang','41100':'Klang','41200':'Klang','41300':'Klang','41400':'Klang',
+  '42000':'Port Klang','42100':'Klang','42200':'Klang',
+  '43000':'Kajang','43200':'Kajang','43300':'Kajang','43400':'Kajang','43500':'Semenyih',
+  '44000':'Kuala Selangor','44100':'Kuala Selangor','45000':'Kuala Selangor',
+  '45300':'Sungai Besar','45400':'Tanjong Karang',
+  '46000':'Petaling Jaya','46050':'Petaling Jaya','46100':'Petaling Jaya',
+  '46200':'Petaling Jaya','46300':'Petaling Jaya','46350':'Petaling Jaya',
+  '46400':'Petaling Jaya','46450':'Petaling Jaya','46500':'Petaling Jaya',
+  '47300':'Subang Jaya','47400':'Subang Jaya','47500':'Subang Jaya','47600':'Subang Jaya',
+  '47810':'Petaling Jaya','47820':'Petaling Jaya',
+  '48000':'Rawang','48020':'Rawang','48050':'Rawang',
+  // Putrajaya
+  '62000':'Putrajaya','62100':'Putrajaya','62200':'Putrajaya','62300':'Putrajaya',
+  '62500':'Putrajaya','62988':'Putrajaya',
+  // Johor
+  '79100':'Iskandar Puteri','79150':'Iskandar Puteri','79200':'Iskandar Puteri',
+  '80000':'Johor Bahru','80050':'Johor Bahru','80100':'Johor Bahru','80150':'Johor Bahru',
+  '80200':'Johor Bahru','80300':'Johor Bahru','80400':'Johor Bahru','80500':'Johor Bahru',
+  '81000':'Kulai','81100':'Kulai','81300':'Skudai','81310':'Skudai','81400':'Senai',
+  '82000':'Pontian','83000':'Batu Pahat','84000':'Muar','85000':'Segamat',
+  '86000':'Kluang','86600':'Mersing',
+  // Perak
+  '30000':'Ipoh','30100':'Ipoh','30200':'Ipoh','30300':'Ipoh','30400':'Ipoh',
+  '30450':'Ipoh','30500':'Ipoh','31000':'Ipoh',
+  '31400':'Taiping','31450':'Taiping','31500':'Lahat','31600':'Kampar',
+  '32000':'Sitiawan','32400':'Lumut','33000':'Kuala Kangsar','34000':'Taiping',
+  '35000':'Teluk Intan','36000':'Teluk Intan',
+  // Pulau Pinang
+  '10000':'Georgetown','10050':'Georgetown','10100':'Georgetown','10200':'Georgetown',
+  '10300':'Georgetown','10400':'Georgetown','10460':'Georgetown','10470':'Georgetown',
+  '10500':'Georgetown','10700':'Gelugor','11000':'Balik Pulau','11200':'Tanjung Bungah',
+  '11500':'Air Itam','11700':'Gelugor','11900':'Bayan Lepas',
+  '12000':'Butterworth','12100':'Butterworth','12200':'Butterworth',
+  '13000':'Kepala Batas','13500':'Permatang Pauh',
+  '14000':'Bukit Mertajam','14100':'Bukit Mertajam','14300':'Nibong Tebal',
+  // Kedah
+  '05000':'Alor Setar','05100':'Alor Setar','05400':'Alor Setar','05500':'Alor Setar',
+  '06000':'Jitra','07000':'Langkawi','07100':'Langkawi',
+  '08000':'Sungai Petani','08100':'Sungai Petani','08600':'Kulim',
+  '09000':'Kubang Pasu',
+  // Perlis
+  '01000':'Kangar','01500':'Arau','01600':'Padang Besar',
+  // Kelantan
+  '15000':'Kota Bharu','15100':'Kota Bharu','15200':'Kota Bharu','15600':'Tumpat',
+  '15800':'Pasir Mas','16000':'Kota Bharu','16100':'Tumpat','16200':'Bachok',
+  '16500':'Pasir Puteh','17000':'Pasir Mas','17100':'Tanah Merah','17500':'Machang',
+  '18000':'Gua Musang','18500':'Kuala Krai',
+  // Terengganu
+  '20000':'Kuala Terengganu','20100':'Kuala Terengganu','20200':'Kuala Terengganu',
+  '21000':'Kuala Terengganu','21200':'Marang','21700':'Besut',
+  '22000':'Besut','23000':'Hulu Terengganu','24000':'Kemaman','24100':'Kemaman',
+  // Pahang
+  '25000':'Kuantan','25100':'Kuantan','25200':'Kuantan','25300':'Kuantan',
+  '26000':'Temerloh','26200':'Pekan','26500':'Maran','26800':'Jerantut',
+  '27000':'Jerantut','27600':'Raub','27800':'Bentong','28000':'Temerloh',
+  '29000':'Cameron Highlands','29100':'Cameron Highlands',
+  // Negeri Sembilan
+  '70000':'Seremban','70100':'Seremban','70200':'Seremban','70300':'Seremban',
+  '71000':'Port Dickson','71500':'Nilai','71700':'Mantin','71800':'Nilai',
+  '72000':'Kuala Pilah','72400':'Bahau','73000':'Tampin',
+  // Melaka
+  '75000':'Melaka','75050':'Melaka','75100':'Melaka','75200':'Melaka',
+  '75400':'Melaka','75500':'Melaka','76000':'Alor Gajah','77000':'Jasin',
+  '78000':'Alor Gajah',
+  // Sabah
+  '87000':'W.P. Labuan','87010':'W.P. Labuan','87028':'W.P. Labuan',
+  '88000':'Kota Kinabalu','88100':'Kota Kinabalu','88200':'Kota Kinabalu',
+  '88300':'Kota Kinabalu','88400':'Kota Kinabalu','88450':'Kota Kinabalu',
+  '89000':'Keningau','90000':'Sandakan','90100':'Sandakan','91000':'Tawau',
+  // Sarawak
+  '93000':'Kuching','93050':'Kuching','93100':'Kuching','93200':'Kuching',
+  '93300':'Kuching','93400':'Kuching','94000':'Serian','95000':'Sri Aman',
+  '96000':'Sibu','96100':'Sibu','97000':'Bintulu','97100':'Bintulu',
+  '98000':'Miri','98100':'Miri','98200':'Miri'
+};
+function lookupPostcode(code) {
+  if (!code||code.length<2) return {negeri:'',daerah:''};
+  var prefix=parseInt(code.substring(0,2)), negeri='';
+  if (code.length===5) {
+    var n=parseInt(code);
+    if (n>=87000&&n<=87033) return {negeri:'W.P. Labuan',daerah:'Labuan'};
+  }
+  for (var i=0;i<NEGERI_PREFIXES.length;i++) {
+    if (prefix>=NEGERI_PREFIXES[i][0]&&prefix<=NEGERI_PREFIXES[i][1]) { negeri=NEGERI_PREFIXES[i][2]; break; }
+  }
+  if (prefix===87&&!negeri) negeri='Sabah';
+  return {negeri:negeri, daerah:code.length===5?(DAERAH_MAP[code]||''):''};
+}
+function onPoskodInput(val) {
+  val=val.replace(/\D/g,'');
+  document.getElementById('e-poskod').value=val;
+  if (val.length===5) {
+    var r=lookupPostcode(val);
+    if (r.negeri) document.getElementById('e-negeri').value=r.negeri;
+    if (r.daerah) document.getElementById('e-daerah').value=r.daerah;
+  }
+}
+var NEGERI_LIST=['Johor','Kedah','Kelantan','Melaka','Negeri Sembilan','Pahang','Perak','Perlis','Pulau Pinang','Sabah','Sarawak','Selangor','Terengganu','W.P. Kuala Lumpur','W.P. Labuan','W.P. Putrajaya'];
+function parseAddressToFields(address) {
+  var r={addr1:'',addr2:'',poskod:'',daerah:'',negeri:''};
+  if (!address) return r;
+  var lines=address.split('\n').map(function(l){return l.trim();}).filter(Boolean);
+  if (!lines.length) return r;
+  // Detect negeri on last line
+  if (NEGERI_LIST.indexOf(lines[lines.length-1])!==-1) { r.negeri=lines.pop(); }
+  // Detect poskod line: 5 digits + optional text
+  if (lines.length) {
+    var m=lines[lines.length-1].match(/^(\d{5})\s*(.*)/);
+    if (m) { r.poskod=m[1]; r.daerah=m[2].trim(); lines.pop(); }
+  }
+  if (lines.length>=1) r.addr1=lines[0];
+  if (lines.length>=2) r.addr2=lines.slice(1).join(', ');
+  if (!r.addr1&&!r.addr2&&!r.poskod&&!r.daerah&&!r.negeri) r.addr1=address;
+  return r;
+}
+
+init();
+</script>
+</body>
+</html>

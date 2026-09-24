@@ -1,0 +1,81 @@
+﻿@model List<SEP.RoutingManagement.Models.GetMyApprovalHistory>
+
+@{
+    Layout = null;
+}
+
+<div class="portlet box blue">
+    <div class="mini-triangle"><img src="/_layouts/15/TNBESS/Assets/img/menu-red-triangle.png" /></div>
+    <div class="portlet-title">
+        <div class="caption">
+            <i class="fa fa-reorder"></i>My Approval History
+        </div>
+        <div class="tools">
+        </div>
+    </div>
+    <div class="portlet-body form">
+        <div class="form-body">
+            <div class="form-horizontal">
+                <div class="table-toolbar">
+                    <table id="tblResult" class="table table-striped table-bordered table-hover table-full-width">
+                        <thead>
+                            <tr>
+                                <th></th>
+                                <th>Employee</th>
+                                <th>Start Date</th>
+                                <th>End Date</th>
+                                <th>Start Time</th>
+                                <th>End Time</th>
+                                <th>Total Hour</th>
+                                <th>Accumulated OT Hour</th>
+                                <th>Charge Type</th>
+                                <th>Charge Code</th>
+                                <th>Action</th>
+                                <th>Status</th>
+                                <th>Action Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in @Model)
+                            {
+                                <tr>
+                                    <td>
+                                        <a class="btn blue btn-sm" href="@Url.Content("~/TimeAttendance/OTDetails")?ID=@item.SourceID&TaskID=@item.ID&Source=InTray">
+                                            <i class="fa fa-search"></i>
+                                        </a>
+                                    </td>
+                                    <td>@item.DisplayText9 - @item.DisplayText8</td>
+                                    <td>@item.DisplayText2</td>
+                                    <td>@item.DisplayText3</td>
+                                    <td>@item.DisplayText4</td>
+                                    <td>@item.DisplayText5</td>
+                                    <td>@item.DisplayText10</td>
+                                    <td>@item.DisplayText11</td>
+                                    <td>@item.DisplayText13</td>
+                                    <td>@item.DisplayText12</td>
+                                    <td>@item.ApproverAction</td>
+                                    <td>@item.DisplayText6</td>
+                                    @if (!String.IsNullOrEmpty(item.ActionDate.ToString()))
+                                    {
+                                        <td>@Convert.ToDateTime(item.ActionDate).ToString("dd-MM-yyyy")</td>
+                                    }
+                                    else
+                                    {
+                                        <td>-</td>
+                                    }
+
+
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+    transformTable("#tblResult");
+
+    console.log('Count = ' + '@ViewBag.Count');
+</script>

@@ -1,0 +1,565 @@
+﻿@model ESS.ETransfer.Models.ETransferVM
+@{
+    ViewBag.Title = "ETransferViewForm";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+    string TaskID = ViewBag.TaskID + "";
+    string RequestID = ViewBag.RequestID + "";
+    string ApprovalLevel = ViewBag.ApprovalLevel + "";
+    string Source = ViewBag.Source + "";
+    string PositionName = ViewBag.PositionName + "";
+
+    var data = new ViewDataDictionary
+    {
+        new KeyValuePair<string, object>("TaskID", TaskID),
+        new KeyValuePair<string, object>("RequestID", RequestID),
+        new KeyValuePair<string, object>("ApprovalLevel",ApprovalLevel),
+        new KeyValuePair<string, object>("Source",Source),
+        new KeyValuePair<string, object>("PositionName",PositionName)
+    };
+    int applvl = String.IsNullOrEmpty(ApprovalLevel) ? 0 : Convert.ToInt32(ApprovalLevel);
+}
+
+<style type="text/css">
+    .hidden_1 {
+        display: none;
+    }
+
+    .LabelDisplay {
+        border: 1px #e5e5e5 solid;
+        padding: 6px;
+        width: 100%;
+        background-color: #F9F9F9;
+    }
+</style>
+
+<div class="form-section">
+    <div class="row">
+        <div class="col-md-12">
+            <h1 class="page-title">
+                Online Transfer Details Page
+                <span style="padding-left:20px;">
+                    <small></small>
+                </span>
+            </h1>
+        </div>
+    </div>
+</div>
+
+<!-- Hidden -->
+<input type="hidden" value="@ViewBag.CurrEmpID" id="hfCurrEmpID" />
+@*<input type="hidden" value="82C16BD5-02D3-469C-80D3-0139986E0BBC" id="hfCurrEmpID" />*@
+<input type="hidden" value="@ViewBag.TaskID" id="hfTaskID" />
+<input type="hidden" value="@ViewBag.RequestID" id="hfRequestID" />
+<input type="hidden" value="@ViewBag.ApprovalLevel" id="hfApprovalLevel" />
+
+<!-- Employee Details -->
+@Html.Partial("_EmployeeInfo", Model.Submiter)
+
+ <!-- ETransfer Details -->
+@Html.Partial("_ETransferViewDetails", Model, data)
+
+<!-- Attachment -->
+@Html.Action("AttachmentControl", "Attachment", new { EmployeeID = Model.ApplicantID, Mode ="View", SourceType = "MedicalBoard", RequestID = Model.RequestID })
+
+<!-- Applicant History-->
+@if (Source != "History")
+{ 
+    @Html.Action("_ApplicantHistory", "ETransfer", new {ApplicantID=Model.ApplicantID, RequestID = Model.RequestID })
+
+}
+
+<!-- Audit Log -->
+@Html.Action("_AuditLog", "ETransfer", new {RequestID = Model.RequestID })
+
+<!-- Approval -->
+@if (Source == "InTray")
+{ 
+    @Html.Partial("_ETransferApproval", Model, data)
+}
+
+
+<!-- Buttons -->
+<div class="row">
+    <input type="hidden" name="ctl00$ContentPlaceHolder1$hfDownloadSource" id="ContentPlaceHolder1_hfDownloadSource">
+    <div class="col-md-12">
+
+    @if (Source == "InTray")
+    {
+        <input type="button" class="btn green" value="Agree" id="btnAgree" style="display:none;" onclick="AgreeValidation('Agreed');" />
+        <input type="button" class="btn green" value="Approve" id="btnApprove" style="display:none;" onclick="ApproveValidation('Approved');" />
+        <input type="button" class="btn green" value="Decline" id="btnDecline" style="display:none;" onclick="DeclineValidation('Declined');" />
+    }
+    @if (Model.StatusCode != "WD")
+    {
+        <input type="button" class="btn green" value="Withdraw" id="btnWithdraw" style="display:none;" onclick="ConfirmAction('Withdrawn');" />
+    }
+
+        
+        <input type="button" class="btn green" value="Back" id="btnBack" style="" onclick="window.history.back()" />
+    </div>
+</div>
+
+<!-- Success Message -->
+<div class="modal fade" id="SuccessSubmit" tabindex="-1" role="basic" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header Success-header">
+                @*<button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>*@
+                <h4 class="Success-title">Action Successfully Completed</h4>
+            </div>
+            <div class="modal-body Success-body">
+                <div class="well">
+                    Your application has been successfully submitted.
+                </div>
+            </div>
+            <div class="modal-footer Success-footer">
+                <button type="button" class="btn default blue" id="btnOK">
+                    <i class="fa fa-check"></i>
+                    OK
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Confirmation Message -->
+<div class="modal fade" id="ConfirmUpdate" tabindex="-1" role="basic" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                <h4 class="modal-title">Confirmation</h4>
+            </div>
+            <div class="modal-body">
+                <div class="well">
+                    Are you sure you want to Submit this application?\n\rPress Confirm to proceed, or Close to stay on the current page.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn default blue" id="btnSubmitAgreed" onclick="javascript: ApproverAction(this, 'Agreed')">
+                    <i class="fa fa-check"></i>
+                    Confirm
+                </button>
+                <button type="button" class="btn default blue" id="btnSubmitDeclined" onclick="javascript: ApproverAction(this,'Declined')">
+                    <i class="fa fa-check"></i>
+                    Confirm
+                </button>
+                <button type="button" class="btn default blue" id="btnSubmitWithdrawn" onclick="javascript: ApproverAction(this,'Withdrawn')">
+                    <i class="fa fa-check"></i>
+                    Confirm
+                </button>
+                <button type="button" class="btn default blue" id="btnSubmitApproved" onclick="javascript: ApproverAction(this, 'Approved')">
+                    <i class="fa fa-check"></i>
+                    Confirm
+                </button>
+                <button type="button" class="btn default" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Loading Gif -->
+<div id="divLoading" style="margin: 0px; padding: 0px; position: fixed; right: 0px;
+    top: 0px; width: 100%; height: 100%; background-color:gainsboro; z-index: 30001;
+    opacity: .8; filter: alpha(opacity=70);display:none">
+    <p style="position: absolute; top: 30%; left: 30%; color: black;">
+        Loading, please wait...<img src="../Assets/img/ajax-loading.gif" />
+
+    </p>
+</div>
+
+<script>
+    var Path = '/_layouts/15/tnbess';
+    //var Path = '/_layouts/15/essv2';
+    //var Path = 'http://localhost:49773';
+    var RequestID = '';
+    var EmployeeID = '';
+    var TaskID = '';
+    var Source = '';
+
+    jQuery(document).ready(function () {
+        $('.date-picker').datepicker({
+            format: 'dd/mm/yyyy',
+            autoclose: true,
+        });
+
+        FormConfiguration();
+    });
+
+    $(window).load(function () {
+        $.uniform.restore(".cbDetailID");
+        $.uniform.restore(".DestroyUniform");
+    });
+
+    // Helper function
+    function getParameterByName(name) {
+        name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
+        var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
+        results = regex.exec(location.search);
+        return results === null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
+    }
+
+    // Page Load
+    function FormConfiguration() {
+        EmployeeID = document.getElementById('hfCurrEmpID').value;
+        RequestID = document.getElementById('hfRequestID').value;
+        TaskID = document.getElementById('hfTaskID').value;
+        Source = getParameterByName('Source');
+        ShowHideSection(RequestID, TaskID, Source);
+    }
+
+    function ShowHideSection(RequestID, TaskID, Source) {
+        GetButtonConfiguration(RequestID);
+        //var _approvallvl = document.getElementById('hfApprovalLevel').value;
+
+        //if (Source == "History") {
+        //    $('.tdDetailID').hide();
+        //    $('#trReplacement').hide();
+        //    $('#trSuggestedPosition').hide();
+        //    $('#trEffectiveDate').hide();
+        //    $('#divApplicantHist').hide();
+        //    $('#divApproval').hide();
+        //}
+
+        //if (TaskID != "")
+        //{
+        //    if (_approvallvl == "1")
+        //    {
+        //        $('.tdDetailID').hide();
+        //        $('#trReplacement').hide();
+        //        $('#trSuggestedPosition').hide();
+        //        $('#trEffectiveDate').hide();
+        //        $('#divAppReplacement').hide();
+        //        $('#divAppSuggestPosition').hide();
+        //        $('#divAppEffectiveDate').hide();
+        //    }
+
+        //    if (_approvallvl == "2") {
+        //        $('.tdDetailID').hide();
+        //        $('#trReplacement').hide();
+        //        $('#trSuggestedPosition').hide();
+        //        $('#trEffectiveDate').hide();
+        //        $('#divAppSuggestPosition').hide();
+        //        $('#divAppEffectiveDate').hide();
+        //    }
+        //}
+    }
+
+    function ConfirmAction(_Status) {
+        if (_Status == "Withdrawn") {
+            $("#btnSubmitAgreed").addClass("hidden_1");
+            $("#btnSubmitDeclined").addClass("hidden_1");
+            $("#btnSubmitApproved").addClass("hidden_1");
+            $("#btnSubmitWithdrawn").removeClass("hidden_1");
+            $(".modal-body .well").html('Are you sure you want to Withdraw this application?\n\rPress Confirm to proceed, or Close to stay on the current page.');
+            $("#btnOK").click(function () { RedirectTo('Withdrawn'); });
+            $("#ConfirmUpdate").modal('show');
+        }
+
+        if (_Status == "Agreed") {
+            $("#btnSubmitAgreed").removeClass("hidden_1");
+            $("#btnSubmitDeclined").addClass("hidden_1");
+            $("#btnSubmitApproved").addClass("hidden_1");
+            $("#btnSubmitWithdrawn").addClass("hidden_1");
+            $(".modal-body .well").html('Are you sure you want to Agree this application?\n\rPress Confirm to proceed, or Close to stay on the current page.');
+            $("#btnOK").click(function () { RedirectTo('Agreed'); });
+            $("#ConfirmUpdate").modal('show');
+        }
+
+        if (_Status == "Approved") {
+            $("#btnSubmitAgreed").addClass("hidden_1");
+            $("#btnSubmitDeclined").addClass("hidden_1");
+            $("#btnSubmitApproved").removeClass("hidden_1");
+            $("#btnSubmitWithdrawn").addClass("hidden_1");
+            $(".modal-body .well").html('Are you sure you want to Approve this application?\n\rPress Confirm to proceed, or Close to stay on the current page.');
+            $("#btnOK").click(function () { RedirectTo('Approved'); });
+            $("#ConfirmUpdate").modal('show');
+        }
+
+        if (_Status == "Declined") {
+            $("#btnSubmitAgreed").addClass("hidden_1");
+            $("#btnSubmitDeclined").removeClass("hidden_1");
+            $("#btnSubmitApproved").addClass("hidden_1");
+            $("#btnSubmitWithdrawn").addClass("hidden_1");
+            $(".modal-body .well").html('Are you sure you want to Decline this application?\n\rPress Confirm to proceed, or Close to stay on the current page.');
+            $("#btnOK").click(function () { RedirectTo('Declined'); });
+            $("#ConfirmUpdate").modal('show');
+        }
+    }
+
+    function RedirectTo(_Action) {
+        switch (_Action) {
+            case "Agreed":
+            case "Declined":
+            case "Approved":
+                window.location.href = Path + '/MSS/ETransferInTray';
+                break;
+            case "Withdrawn":
+                window.location.href = Path + '/ETransfer/ETransferHistory';
+                break;
+            default:
+                window.location.href = '/Pages/default.aspx';
+        }
+    }
+
+    function ApproverAction(btn, _Action) {
+        btn.disabled = true;
+        $("#divLoading").show();
+        $(".Success-body .well").html('The application has been successfully ' + _Action + '.');
+        var myVar = setTimeout(function () { ApproverActionFunction(btn, _Action); }, 3000);
+    }
+
+    function ApproveValidation(_Status) {
+        var ValidationMsg = '';
+
+         if ('@applvl' > 3) {
+            var txtAppSuggestPositionName = $("#txtAppSuggestPositionName").val();
+            var txtAppEffectiveDate = $("#txtAppEffectiveDate").val();
+
+            //if (txtAppSuggestPositionName == "") {
+            //    ValidationMsg += "Please enter a Suggested Position.";
+            //}
+            if (txtAppEffectiveDate == "") {
+                ValidationMsg += "\nPlease select a Effective Date.";
+            }
+         }
+        
+
+        if (ValidationMsg != null && ValidationMsg != '') {
+            alert(ValidationMsg);
+        }
+        else {
+            ConfirmAction(_Status);
+        }
+
+    }
+
+    function DeclineValidation(_Status) {
+        var ValidationMsg = '';
+
+        var Comments = $("#txtApprovalComment").val();
+
+        if (Comments == "") {
+            ValidationMsg = "Comments is required.";
+        }
+        if (ValidationMsg != null && ValidationMsg != '') {
+            alert(ValidationMsg);
+        }
+        else {
+            ConfirmAction(_Status);
+        }
+
+    }
+
+    function AgreeValidation(_Status) {
+        var ValidationMsg = '';
+        var _KIV = $("#KIV").is(":checked") ? "true" : "false";
+
+        if ('@applvl' == 3) {
+            var TotalSelectedCheckboxes = $("input[name=chkSelect]:checkbox:checked").length;
+
+            if (TotalSelectedCheckboxes > 5) {
+                ValidationMsg += "Not allow select more than 5 Accepting Head.";
+            } else if (TotalSelectedCheckboxes == 0) {
+                ValidationMsg += "Please select at least 1 Accepting Head.";
+            }
+
+            if ($("#SelectedDivision").val() == "") {
+                ValidationMsg += "\nPlease select a Division.";
+            }
+        }
+
+        @*if ('@applvl' > 3) {
+            var txtAppSuggestPositionName = $("#txtAppSuggestPositionName").val();
+
+            if (txtAppSuggestPositionName == "") {
+                ValidationMsg += "Please enter a Suggested Position.";
+            }
+        }*@
+
+        if (ValidationMsg != null && ValidationMsg != '') {
+            alert(ValidationMsg);
+        }
+        else {
+            ConfirmAction(_Status);
+        }
+
+    }
+
+    function GetButtonConfiguration(_RequestID) {
+        jQuery.support.cors = true;
+        var form = {
+            RequestID: _RequestID,
+        };
+
+        $.ajax({
+            type: "POST",
+            url: '@Url.Content("~/ETransfer/GetUserAllowAction")',
+            cache: false,
+            async: false,
+            dataType: "json",
+            data: form,
+            success: function (result) {
+                if (result.Success) {
+                    SetButtonConfiguration(result.AllowActions);
+                }
+                else {
+                    alert(result.ErrorMsg);
+                }
+            },
+            error: function (e) {
+
+            }
+        });
+    }
+
+    function SetButtonConfiguration(result) {
+
+        var ButtonAgree = document.getElementById('btnAgree');
+        var ButtonDecline = document.getElementById('btnDecline');
+        var ButtonWithdraw = document.getElementById('btnWithdraw');
+        var ButtonApprove = document.getElementById('btnApprove');
+
+        if (result[0].CanDecline == '1') {
+            $("#btnDecline").css("display", "");
+            //ButtonDecline.style.display = '';
+        }
+        else {
+            $("#btnDecline").css("display", "none");
+            //ButtonDecline.style.display = 'none';
+        }
+
+        console.log(result[0]);
+        if (result[0].CanWithdraw == '1') {
+            $("#btnWithdraw").css("display", "");
+            //ButtonWithdraw.style.display = '';
+        }
+        else {
+            $("#btnWithdraw").css("display", "none");
+            //ButtonWithdraw.style.display = 'none';
+        }
+
+        if (result[0].CanAgree == '1') {
+            $("#btnAgree").css("display", "");
+            //ButtonAgree.style.display = '';
+        }
+        else {
+            $("#btnAgree").css("display", "none");
+            //ButtonAgree.style.display = 'none';
+        }
+
+        if (result[0].CanApprove == '1') {
+            $("#btnApprove").css("display", "");
+            //ButtonApprove.style.display = '';
+        }
+        else {
+            $("#btnApprove").css("display", "none");
+            //ButtonApprove.style.display = 'none';
+        }
+
+    }
+
+    //Logical function (AJAX)
+    function ApproverActionFunction(btn, _Action) {
+
+        var _RequestID = '@RequestID';
+        var _TaskID = '@TaskID';
+        var _CurrentUserID = EmployeeID;
+        var _ApproverComment = "";
+        var _ApprovalLevel = '@ApprovalLevel';
+        var _SelectedDetailsID = "";
+        var _AcceptingHeadID = "";
+        var _Status = _Action;
+        var _Replacement = "";
+        var _PositionNo = "";
+        var _PositionStartDate = "";
+        var _approvallvl = document.getElementById('hfApprovalLevel').value;
+        var _Source = '@Source';
+        var _KIV = $("#KIV").is(":checked") ? "true" : "false";
+        var _TransferID = "";
+
+        if (_ApprovalLevel == "3") {
+            _AcceptingHeadID = document.getElementById('hfEmpID').value;
+            _TransferID = $("input[name=DetailID]:radio:checked").val();
+        }
+
+        if (_ApprovalLevel =="4") {
+            _PositionNo = $("#txtAppSuggestPosition").val();
+        }
+
+        if (_ApprovalLevel == "5") {
+            
+            _PositionNo = $("#txtAppSuggestPosition").val();
+            _PositionStartDate = $("#txtAppEffectiveDate").val();            
+        }
+
+        if (_Source=="InTray")
+        {
+            _ApproverComment = document.getElementById('txtApprovalComment').value;
+        }
+
+
+        if (_TaskID != "")
+        {
+            if (_ApprovalLevel == "2") {
+                var _chkReplacement = document.getElementById("cbAppReplacement_Perlu").checked;
+                if (_chkReplacement) {
+                    _Replacement = "Perlu";
+                }
+                else {
+                    _Replacement = "Tak Perlu";
+                }
+            }
+        }
+
+        var form = {
+            RequestID: _RequestID,
+            TaskID: _TaskID,
+            CurrentUserID: _CurrentUserID,
+            Status: _Status,
+            ApproverComment: _ApproverComment,
+            ApprovalLevel: _ApprovalLevel,
+            SelectedDetailsID: _SelectedDetailsID,
+            AcceptingHeadID: _AcceptingHeadID,
+            Replacement: _Replacement,
+            PositionNo: _PositionNo,
+            PositionStartDate: _PositionStartDate,
+            KIV: _KIV,
+            TransferID: _TransferID
+        };
+
+
+        $.ajax({
+            type: "POST",
+            url: '@Url.Content("~/ETransfer/PostApproverAction")',
+            cache: false,
+            async: false,
+            dataType: "json",
+            data: form,
+            success: function (result) {
+                if (result.Success) {
+                    $("#ConfirmUpdate").modal('toggle');
+                    $("#divLoading").hide();
+                    $("#SuccessSubmit").modal();
+                }
+                else {
+                    $("#ConfirmUpdate").modal('toggle');
+                    $("#divLoading").hide();
+                    alert('PostApproverAction   ' + result.errorMsg);
+                    btn.disabled = false;
+                }
+            },
+            error: function (e) {
+
+            }
+        });
+
+    }
+</script>
+
+
+
+
+
+

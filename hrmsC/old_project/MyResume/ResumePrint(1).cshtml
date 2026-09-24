@@ -1,0 +1,616 @@
+﻿@using ESS.Employee.Models;
+@using OJA.Models;
+@{
+    Layout = null;
+    bool canEdit = ViewBag.CanEdit;
+
+    var PersonalInfo = (PersonalInfo)ViewBag.PersonalInfo;
+    var familyInfoList = (List<FamilyInfo>)ViewBag.FamilyInfo;
+    var emergencyList = (List<EmergencyContactInfo>)ViewBag.EmergencyContact;
+    var addressList = (List<AddressInfo>)ViewBag.AddressInfo;
+    var pmsList = (List<PMS>)ViewBag.PMSInfo;
+    var CE = (CurrentEmploymentInfo)ViewBag.CurrentEmployment;
+    var workExperiences = (List<WorkExperience>)ViewBag.WorkExperiences;
+    var previousEmployerList = (List<EmploymentHistoryInfo>)ViewBag.PreviousEmployer;
+    var educationList = (List<EducationInfo>)ViewBag.EducationInfo;
+
+    var specializationsList = (List<Tuple<SpecializationForm, List<Specialization>>>)ViewBag.Specializations;
+    var geographyList = specializationsList.Where(m => m.Item1.Category == "Geographical Preferences & Mobility").FirstOrDefault();
+
+    var additionalInfoList = (List<AdditionalInfo>)ViewBag.AdditionalInfoTypes;
+    var additionalInfo_First = additionalInfoList.Where(m => m.FieldName == "Additional Information").FirstOrDefault();
+    var awardList = (List<Award>)ViewBag.Awards;
+    var referenceList = (List<Reference>)ViewBag.References;
+
+    //profile photo
+    bool hasProfileImg = false;
+    //Obtain from Index
+    if (String.IsNullOrEmpty(ViewBag.Base64String + ""))
+    {
+        hasProfileImg = true;
+        //< img src = "http://localhost:49773/Assets/img/fb-profile.jpg" />
+        ViewBag.Base64String = Url.Action("../Assets/img/fb-profile.jpg");
+    }
+}
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
+<head>
+    <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=UTF-8">
+    <meta name=ProgId content=Word.Document>
+    <meta name=Generator content="Microsoft Word 9">
+    <meta name=Originator content="Microsoft Word 9">
+    <title>Resume</title> 
+    <style>
+        @@page Section1 {
+            size: 595.45pt 841.7pt;
+            margin: 1.0in 1.25in 1.0in 1.25in;
+            mso-header-margin: .5in;
+            mso-footer-margin: .5in;
+            mso-paper-source: 0;
+        }
+
+        div.Section1 {
+            page: Section1;
+        }
+
+        @@page Section2 {
+            size: 841.7pt 595.45pt;
+            mso-page-orientation: landscape;
+            margin: 1.25in 1.0in 1.25in 1.0in;
+            mso-header-margin: .5in;
+            mso-footer-margin: .5in;
+            mso-paper-source: 0;
+        }
+
+        div.Section2 {
+            page: Section2;
+        }
+
+        .section-header {
+            text-decoration: underline;
+            font-weight: bold;
+            font-size: 20px;
+        }
+
+        .section-table-header {
+            font-weight: bold;
+            color: darkblue;
+            font-size: 16px;
+            background-color: lightgrey;
+        }
+
+        .table-list td {
+            border: 1px solid black;
+            font-size: 16px;
+            padding: 7px;
+        }
+
+        .table-list {
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        body {
+            font-size: 16px;
+            font-family: 'Times New Roman';
+        } 
+    </style>
+</head>
+<body>
+    <div class=Section2>
+        <h2 style="text-decoration:underline; font-weight:bold; font-size:20px">Resume - @PersonalInfo.EmployeeName</h2>
+        <br />
+        <h4 class="section-header">Personal Info</h4>
+        <table width="100%">
+            @*<col width="20%" />
+            <col width="20%" />*@
+             <tr>
+                 <td>
+                     <table width="100%">
+                         <tr>
+                             <td>Employee No.</td>
+                             <td>@PersonalInfo.EmployeeCode</td>
+                         </tr>
+                         <tr>
+                             <td>Employee Name</td>
+                             <td>@PersonalInfo.EmployeeName</td>
+                         </tr>
+                         <tr>
+                             <td>Title</td>
+                             <td>@PersonalInfo.Title</td>
+                         </tr>
+                         <tr>
+                             <td>Date of Birth</td>
+                             <td>@(PersonalInfo.DateOfBirth != null ? PersonalInfo.DateOfBirth.Value.ToString("dd/MM/yyyy") : "")</td>
+                            
+                         </tr>
+                         <tr>
+                             <td>New IC No.</td>
+                             <td>@PersonalInfo.NewICNo</td>
+                         </tr>
+                         <tr>
+                             <td>Old IC No.</td>
+                             <td>@PersonalInfo.OldICNo</td>
+                         </tr>
+                         <tr>
+                             <td>Passport No.</td>
+                             <td>@PersonalInfo.PassportNo</td>
+                         </tr>
+                         <tr>
+                             <td>Gender</td>
+                             <td>@PersonalInfo.Gender</td>
+                         </tr>
+                         <tr>
+                             <td>Nationality</td>
+                             <td>@PersonalInfo.Nationality</td>
+                         </tr>
+                         <tr>
+                             <td>Race</td>
+                             <td>@PersonalInfo.Race</td>
+                         </tr>
+                         <tr>
+                             <td>Marital Status</td>
+                             <td>@PersonalInfo.MaritalStatus</td>
+                         </tr>
+                         <tr>
+                             <td>Marital Status Date</td>
+                             <td>@(PersonalInfo.MaritalStatusDate != null ? PersonalInfo.MaritalStatusDate.Value.ToString("dd/MM/yyyy") : "")</td>
+                         </tr>
+                     </table>
+                 </td>
+                 <td>
+                     <table width="100%">
+                         <col width="40%" />
+                         <col width="60%"/>
+
+                         <tr>
+                             <td>
+                                 <img style="background-image:url('@ViewBag.Base64String')" width="100" height="100" />
+                             </td>
+                         </tr>
+                         <tr>
+                             <td colspan="2" align="center"></td>
+                         </tr>
+                         <tr>
+                             <td>Bumiputera</td>
+                             <td>@PersonalInfo.Bumiputera</td>
+                         </tr>
+                         <tr>
+                             <td>Religion</td>
+                             <td>@PersonalInfo.Religion</td>
+                         </tr>
+                     </table>
+                 </td>
+             </tr>
+        </table>
+        <br />
+
+       
+        <h3 class="section-header">Family Info</h3>
+        <table class="table-list"> 
+            <thead>
+                <tr class="section-table-header">
+                  
+                    <td>Relationship Type</td>
+                    <td>Name</td>
+                    <td>Employer Name</td>
+                    <td>Job Title</td>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in familyInfoList)
+            {
+                    <tr>
+                        <td>@item.RelationshipType</td>
+                        <td>@item.Name</td>
+                        <td>@item.EmployerName</td>
+                        <td>@item.JobTitle</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+
+        <h3 class="section-header">Emergency Contact Info</h3>
+
+        <table class="table-list">
+            <thead>
+                <tr class="section-table-header">
+                    <td>Name</td>
+                    <td>Phone No. 1</td>
+                    <td>Phone No. 2</td>
+                    <td>Relationship</td>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in emergencyList)
+            {
+                    <tr>
+                        <td>@item.Name</td>
+                        <td>@item.Phone1</td>
+                        <td>@item.Phone2</td>
+                        <td>@item.Relationship</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+
+        <h3 class="section-header">Address</h3>
+
+        <table class="table-list">
+            <thead>
+                <tr class="section-table-header">
+                    <td>Address Type</td>
+                    <td>Address 1</td>
+                    <td>Postcode</td>
+                    <td>City</td>
+                    <td>State</td>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in addressList)
+            {
+                    <tr>
+                        <td>@item.AddressType</td>
+                        <td>@item.AddressLine1</td>
+                        <td>@item.Postcode</td>
+                        <td>@item.City</td>
+                        <td>@item.State</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+
+        <h3 class="section-header">PMS Info</h3>
+
+        <table class="table-list">
+            <thead>
+                <tr style="background-color:lightgrey; font-weight:bold">
+                    @foreach (var item in pmsList)
+            {
+                        <td>@item.Year</td>
+                    }
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    @foreach (var item in pmsList)
+            {
+                        <td>
+
+                            @if (string.IsNullOrEmpty(item.PMSRating))
+                            {
+                                @: N/A
+                                            }
+                            else
+                            {
+                                var PMSRating = item.PMSRating;
+                                var kpi_index = PMSRating.IndexOf("Competency");
+
+                                var kpi = string.Empty;
+                                var competency = string.Empty;
+
+                                if (PMSRating.Contains("KPI"))
+                                {
+                                    kpi = PMSRating.Substring(0, PMSRating.IndexOf("Competency"));
+                                }
+
+                                if (PMSRating.Contains("Competency"))
+                                {
+                                    competency = PMSRating.Substring(PMSRating.IndexOf("Competency"), PMSRating.Length - PMSRating.IndexOf("Competency"));
+                                }
+
+                                @kpi <br />
+                                    @competency
+                            }
+                        </td>
+                    }
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 class="section-header">Current Employment Info</h3>
+
+        <table width="100%">
+            @*<col width="50%" />
+            <col width="50%" />*@
+
+            <tr>
+                <td>Company</td>
+                <td>@CE.Division</td>
+                <td>Joined Date (Contact)</td>
+                <td>@(CE.ContractJoinedDate != null ? CE.ContractJoinedDate.Value.ToString("dd/MM/yyyy") : CE.ContractJoinedDate.ToString())</td>
+            </tr>
+            <tr>
+                <td>Division / Department</td>
+                <td>@CE.Department</td>
+                <td>Joined Date (Permanent)</td>
+                <td>@(CE.PermanentJoinedDate != null ? CE.PermanentJoinedDate.Value.ToString("dd/MM/yyyy") : CE.PermanentJoinedDate.ToString())</td>
+            </tr>
+            <tr>
+                <td>Unit Section</td>
+                <td>@CE.UnitSection</td>
+                <td>First Confirmation Date</td>
+                <td>@(CE.FirstConfirmationDate != null ? CE.FirstConfirmationDate.Value.ToString("dd/MM/yyyy") : CE.FirstConfirmationDate.ToString())</td>
+            </tr>
+            <tr>
+                <td>Employee Group</td>
+                <td>@CE.EmployeeGroup</td>
+                <td>Last Promotion Date</td>
+                <td>@(CE.LastPromotionDate != null ? CE.LastPromotionDate.Value.ToString("dd/MM/yyyy") : CE.LastPromotionDate.ToString())</td>
+            </tr>
+            <tr>
+                <td>Employee Subgroup</td>
+                <td>@CE.EmployeeSubGroup</td>
+                <td>Retirement Age</td>
+                <td>@CE.ContractRetirementAge</td>
+            </tr>
+            <tr>
+                <td>Position</td>
+                <td>
+                    @if (canEdit)
+            {
+                        @CE.PositionGrade @CE.Position
+                    }
+                    else
+                    {
+                        @CE.Position
+                    }
+
+                </td>
+                <td>Office No.</td>
+                <td>@CE.OfficeNo</td>
+            </tr>
+            <tr>
+                <td>Duty</td>
+                <td>@CE.Duty</td>
+                <td>Office Extension</td>
+                <td>@CE.OfficeExtension</td>
+            </tr>
+            <tr>
+                <td>Pay Scale Group</td>
+                <td>@CE.PayScaleGroup</td>
+                <td>Office HP No.</td>
+                <td>@CE.OfficeHPNo</td>
+            </tr>
+            <tr>
+                <td>Immediate Manager</td>
+                <td>@CE.ImmediateManagerName</td>
+                <td>Office Fax No</td>
+                <td>@CE.OfficeFaxNo</td>
+            </tr>
+            @if (canEdit)
+            {
+                <tr>
+                    <td>Email</td>
+                    <td>@CE.Email</td>
+                </tr>
+            }
+        </table>
+
+        <h3 class="section-header">Work Experience</h3>
+
+        <table class="table-list">
+            <thead>
+                <tr class="section-table-header">
+                    <td>Position</td>
+                    <td>Pay Scale Group</td>
+                    <td>Company</td>
+                    <td>Division / Department</td>
+                    <td>Section</td>
+                    <td>Duration - Start</td>
+                    <td>Duration - End</td>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in workExperiences)
+            {
+                    <tr>
+                        <td>@item.PositionName</td>
+                        <td>@item.PayscaleGroup</td>
+                        <td>@item.CompanyName</td>
+                        <td>@item.AreaName</td>
+                        <td>@item.SubAreaName</td>
+                        <td>@(string.IsNullOrEmpty(item.StartDate) ? item.StartDate : DateTime.ParseExact(item.StartDate, "dd/MM/yyyy", null).ToString("yyyy/MM/dd"))</td>
+                        <td>@(string.IsNullOrEmpty(item.EndDate) ? item.EndDate : DateTime.ParseExact(item.EndDate, "dd/MM/yyyy", null).ToString("yyyy/MM/dd"))</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+
+        <h3 class="section-header">Previous Employer</h3>
+
+        <table class="table-list">
+            <thead>
+                <tr class="section-table-header">
+                    <td>Previous Employer</td>
+                    <td>Position</td>
+                    <td>Start Date</td>
+                    <td>End Date</td>
+
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in previousEmployerList)
+            {
+                    <tr>
+                        <td>@item.PreviousEmployer</td>
+                        <td>@item.Position</td>
+                        <td>@(item.StartDate != null ? item.StartDate.Value.ToString("dd/MM/yyyy") : item.StartDate.ToString())</td>
+                        <td>@(item.EndDate != null ? item.EndDate.Value.ToString("dd/MM/yyyy") : item.EndDate.ToString())</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+
+        <h3 class="section-header">Education Info</h3>
+
+        <table class="table-list">
+            <thead>
+                <tr class="section-table-header">
+                    <td>Education</td>
+                    <td>Country</td>
+                    <td>School</td>
+                    <td>Certificate</td>
+                    <td>Graduated Date</td>
+                    <td>CGPA</td>
+                    <td>Class</td>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in educationList)
+            {
+                    <tr>
+                        <td>@item.Education</td>
+                        <td>@item.Country</td>
+                        <td>@item.School</td>
+                        <td>@item.Certificate</td>
+                        <td>@(item.GraduatedDate != null ? item.GraduatedDate.Value.ToString("dd/MM/yyyy") : item.GraduatedDate.ToString())</td>
+                        <td>@item.CGPA</td>
+                        <td>@item.Class</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+
+
+        @foreach (var tuple in specializationsList.Where(m => m.Item1.Category != geographyList.Item1.Category).ToList())
+            {
+                var formType = tuple.Item1;
+                var listData = tuple.Item2;
+
+            <h3 class="section-header">@formType.Category</h3>
+                <table class="table-list">
+                    <thead>
+                        <tr class="section-table-header">
+                            <td>@formType.CategoryFirstColumn</td>
+                            <td>Start Date</td>
+                            <td>End Date</td>
+                            <td>@formType.ProficiencyName</td>
+
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in listData)
+                {
+                            <tr>
+                                <td>@item.SpecializationName</td>
+                                <td>@item.StartDate</td>
+                                <td>@item.EndDate</td>
+
+                                <td>@item.ProficiencyName</td>
+
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+        }
+
+        
+
+        <h3 class="section-header">Additional Information</h3>
+        @if (additionalInfo_First != null)
+        {
+            @: @additionalInfo_First.FieldValue;
+        }
+
+        <h3 class="section-header">Individual Honours and Awards Received </h3>
+        <table class="table-list">
+            <thead>
+                <tr class="section-table-header">
+                    <td>Honours and Award</td>
+                    <td>Grantor</td>
+                    <td>Year Earned</td>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in awardList)
+            {
+                    <tr>
+                        <td>@item.AwardName</td>
+                        <td>@item.Grantor</td>
+                        <td>@item.YearEarned</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+
+
+        @foreach (var item in additionalInfoList.Where(m => m.FieldName != additionalInfo_First.FieldName).ToList())
+            {
+            <h3 class="section-header">@item.FieldName</h3>
+                @: @item.FieldValue
+}
+        @{
+            var geoType = geographyList.Item1;
+            var geoList = geographyList.Item2;
+            <h3 class="section-header">@geoType.Category</h3>
+            <table class="table-list">
+                <thead>
+                    <tr class="section-table-header">
+                        <td>@geoType.CategoryFirstColumn</td>
+                        <td>Start Date</td>
+                        <td>End Date</td>
+                        <td>@geoType.ProficiencyName</td>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in geoList)
+            {
+                        <tr>
+                            <td>@item.SpecializationName</td>
+                            <td>@item.StartDate</td>
+                            <td>@item.EndDate</td>
+                            <td>@item.ProficiencyName</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+        
+
+        <h3 class="section-header">References</h3>
+        <table class="table-list">
+            <thead>
+                <tr class="section-table-header">
+                    <td>No</td>
+                    <td>Employee Name</td>
+                    <td>Relationship</td>
+                    <td>Position</td>
+                    <td>Pay Scale Group</td>
+                    <td>Email</td>
+                    <td>Phone No.</td>
+                    <td>HP No.</td>
+                </tr>
+            </thead>
+            <tbody>
+
+                @for (int i = 0; i < referenceList.Count; i++)
+            {
+                var item = referenceList[i];
+                if (string.IsNullOrEmpty(item.EmployeeName))
+                {
+                    continue;
+                }
+                <tr>
+
+                    <td>@(i + 1)</td>
+                    <td>@item.EmployeeName</td>
+                    <td>@item.Relationship</td>
+                    <td>@item.Position</td>
+                    <td>@item.PayScaleGroup</td>
+                    <td>@item.Email</td>
+                    <td>@item.PhoneNo</td>
+                    <td>@item.HPNo</td>
+                </tr>
+                }
+            </tbody>
+        </table>
+
+    </div>
+</body> 
+</html>
+
+
+

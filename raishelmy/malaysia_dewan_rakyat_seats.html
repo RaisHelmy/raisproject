@@ -1,0 +1,316 @@
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font-sans)}
+.wrap{padding:1rem 0.5rem}
+h2.title{font-size:16px;font-weight:500;color:var(--color-text-primary);text-align:center;margin-bottom:4px}
+.subtitle{font-size:12px;color:var(--color-text-secondary);text-align:center;margin-bottom:1rem}
+.chamber{display:flex;flex-direction:column;align-items:center;gap:2px;margin-bottom:1rem}
+.row{display:flex;gap:2px;justify-content:center}
+.seat{width:16px;height:16px;border-radius:3px;cursor:pointer;transition:transform 0.1s,opacity 0.1s;position:relative;flex-shrink:0}
+.seat:hover{transform:scale(1.4);z-index:10}
+.seat.leader{border:2px solid #fff;box-shadow:0 0 0 1.5px #222}
+.seat.dimmed{opacity:0.15}
+.tooltip{position:fixed;background:var(--color-background-primary);border:0.5px solid var(--color-border-secondary);border-radius:8px;padding:8px 12px;font-size:12px;pointer-events:none;z-index:100;max-width:200px;display:none;box-shadow:0 4px 12px rgba(0,0,0,0.12)}
+.tooltip strong{font-weight:500;font-size:13px;color:var(--color-text-primary)}
+.tooltip .tparty{color:var(--color-text-secondary);font-size:11px;margin-top:2px}
+.tooltip .tcoa{font-size:11px;margin-top:1px}
+.legend{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-bottom:1rem}
+.legend-group{display:flex;flex-direction:column;gap:4px;align-items:flex-start;background:var(--color-background-secondary);border-radius:8px;padding:8px 10px;min-width:130px}
+.legend-group-title{font-size:10px;font-weight:500;color:var(--color-text-secondary);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:2px}
+.legend-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--color-text-primary)}
+.legend-swatch{width:12px;height:12px;border-radius:2px;flex-shrink:0}
+.legend-swatch.leader-swatch{border:2px solid #fff;box-shadow:0 0 0 1.5px #555}
+.stats{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-bottom:0.5rem}
+.stat-card{background:var(--color-background-secondary);border-radius:8px;padding:8px 14px;text-align:center;min-width:90px}
+.stat-n{font-size:20px;font-weight:500;color:var(--color-text-primary)}
+.stat-l{font-size:11px;color:var(--color-text-secondary)}
+.filter-row{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-bottom:0.75rem}
+.filter-btn{font-size:11px;padding:4px 10px;border:0.5px solid var(--color-border-secondary);border-radius:20px;cursor:pointer;background:var(--color-background-primary);color:var(--color-text-primary);transition:background 0.15s}
+.filter-btn:hover{background:var(--color-background-secondary)}
+.filter-btn.active{background:var(--color-text-primary);color:var(--color-background-primary)}
+.leader-strip{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-bottom:0.75rem}
+.leader-badge{display:flex;align-items:center;gap:5px;background:var(--color-background-secondary);border-radius:20px;padding:4px 10px 4px 5px;font-size:11px;cursor:pointer}
+.leader-dot{width:18px;height:18px;border-radius:50%;border:2px solid #fff;box-shadow:0 0 0 1.5px #555;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:500;color:#fff}
+.leader-name{color:var(--color-text-primary);font-weight:500}
+.leader-role{color:var(--color-text-secondary);font-size:10px}
+.divider-label{font-size:10px;color:var(--color-text-tertiary);text-align:center;margin:2px 0;letter-spacing:0.03em}
+</style>
+
+<div class="wrap">
+<h2 class="sr-only" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)">Malaysia Dewan Rakyat 15th Parliament – 222 seat block assignment by party</h2>
+<h2 class="title">Dewan Rakyat — 15th Parliament of Malaysia</h2>
+<p class="subtitle">222 seats · GE15 (Nov 2022) · Click any seat or filter by coalition</p>
+
+<div class="filter-row" id="filterRow"></div>
+
+<div class="stats" id="statsRow"></div>
+
+<div class="chamber" id="chamber"></div>
+
+<div class="divider-label" id="divLabel"></div>
+
+<div class="leader-strip" id="leaderStrip"></div>
+
+<div class="legend" id="legend"></div>
+
+<div class="tooltip" id="tip"></div>
+</div>
+
+<script>
+const PARTIES = [
+  // === GOVERNMENT (Pakatan Harapan) ===
+  {id:'PKR', name:'PKR', full:'Parti Keadilan Rakyat', coalition:'PH', coaFull:'Pakatan Harapan', side:'gov', seats:31, color:'#2563eb',
+   leader:{name:'Anwar Ibrahim', role:'Prime Minister / PKR President', initial:'AI'}},
+  {id:'DAP', name:'DAP', full:'Democratic Action Party', coalition:'PH', coaFull:'Pakatan Harapan', side:'gov', seats:40, color:'#dc2626',
+   leader:{name:'Lim Guan Eng', role:'DAP Secretary-General', initial:'LGE'}},
+  {id:'AMANAH', name:'Amanah', full:'Parti Amanah Negara', coalition:'PH', coaFull:'Pakatan Harapan', side:'gov', seats:11, color:'#0891b2',
+   leader:{name:'Mohamad Sabu', role:'Amanah President', initial:'MS'}},
+  // === GOVERNMENT (Barisan Nasional) ===
+  {id:'UMNO', name:'UMNO', full:'United Malays National Organisation', coalition:'BN', coaFull:'Barisan Nasional', side:'gov', seats:26, color:'#d97706',
+   leader:{name:'Ahmad Zahid Hamidi', role:'UMNO President / DPM', initial:'AZ'}},
+  {id:'MCA', name:'MCA', full:'Malaysian Chinese Association', coalition:'BN', coaFull:'Barisan Nasional', side:'gov', seats:2, color:'#f59e0b'},
+  {id:'MIC', name:'MIC', full:'Malaysian Indian Congress', coalition:'BN', coaFull:'Barisan Nasional', side:'gov', seats:2, color:'#fbbf24'},
+  // === GOVERNMENT (GPS) ===
+  {id:'GPS', name:'GPS', full:'Gabungan Parti Sarawak', coalition:'GPS', coaFull:'Gabungan Parti Sarawak', side:'gov', seats:23, color:'#7c3aed',
+   leader:{name:'Abang Johari', role:'GPS Chairman / Sarawak CM', initial:'AJ'}},
+  // === GOVERNMENT (GRS) ===
+  {id:'GRS', name:'GRS', full:'Gabungan Rakyat Sabah', coalition:'GRS', coaFull:'Gabungan Rakyat Sabah', side:'gov', seats:6, color:'#9333ea'},
+  // === GOVERNMENT (Others) ===
+  {id:'WARISAN', name:'Warisan', full:'Parti Warisan Sabah', coalition:'Others', coaFull:'Unity Gov (Others)', side:'gov', seats:3, color:'#059669'},
+  {id:'UPKO', name:'UPKO', full:'United Pasokmomogun Kadazandusun Murut Org', coalition:'Others', coaFull:'Unity Gov (Others)', side:'gov', seats:2, color:'#34d399'},
+  {id:'MUDA', name:'MUDA', full:'Malaysian United Democratic Alliance', coalition:'Others', coaFull:'Unity Gov (Others)', side:'gov', seats:1, color:'#6ee7b7'},
+  {id:'IND_GOV', name:'Ind (Gov)', full:'Independents (Gov-aligned)', coalition:'Others', coaFull:'Unity Gov (Others)', side:'gov', seats:2, color:'#9ca3af'},
+  // === OPPOSITION (Perikatan Nasional) ===
+  {id:'PAS', name:'PAS', full:'Parti Islam Se-Malaysia', coalition:'PN', coaFull:'Perikatan Nasional', side:'opp', seats:43, color:'#16a34a',
+   leader:{name:'Abdul Hadi Awang', role:'PAS President', initial:'AH'}},
+  {id:'BERSATU', name:'Bersatu', full:'Parti Pribumi Bersatu Malaysia', coalition:'PN', coaFull:'Perikatan Nasional', side:'opp', seats:26, color:'#15803d',
+   leader:{name:'Muhyiddin Yassin', role:'PN Chairman / Bersatu President', initial:'MY'}},
+  {id:'GERAKAN', name:'Gerakan', full:'Parti Gerakan Rakyat Malaysia', coalition:'PN', coaFull:'Perikatan Nasional', side:'opp', seats:1, color:'#4ade80'},
+  // === OPPOSITION (Others) ===
+  {id:'KDM', name:'KDM', full:'Parti Kesejahteraan Demokratik Masyarakat', coalition:'Opp-Other', coaFull:'Opposition (Others)', side:'opp', seats:1, color:'#f43f5e'},
+  {id:'IND_OPP', name:'Ind (Opp)', full:'Independents (Opposition/Neutral)', coalition:'Opp-Other', coaFull:'Opposition (Others)', side:'opp', seats:3, color:'#d1d5db'},
+];
+
+const COALITIONS = [
+  {id:'PH', label:'Pakatan Harapan', color:'#2563eb'},
+  {id:'BN', label:'Barisan Nasional', color:'#d97706'},
+  {id:'GPS', label:'Gabungan Parti Sarawak', color:'#7c3aed'},
+  {id:'GRS', label:'Gabungan Rakyat Sabah', color:'#9333ea'},
+  {id:'Others', label:'Other Gov allies', color:'#059669'},
+  {id:'PN', label:'Perikatan Nasional', color:'#16a34a'},
+  {id:'Opp-Other', label:'Other Opposition', color:'#f43f5e'},
+];
+
+// Build seat list
+const seats = [];
+for(const p of PARTIES){
+  for(let i=0;i<p.seats;i++){
+    seats.push({party:p.id, partyObj:p, isLeader: i===0 && !!p.leader});
+  }
+}
+
+// Row layout: hemicycle-style rows from front
+const ROW_SIZES = [16,18,20,22,24,26,28,28,24,16];
+// Actually lay out as rows of varying width for a parliamentary look
+// Gov side left, Opp side right, with a divider
+const govSeats = seats.filter(s=>s.partyObj.side==='gov');
+const oppSeats = seats.filter(s=>s.partyObj.side==='opp');
+
+// Sort gov: PH first, then BN, GPS, GRS, others
+const govOrder = ['PKR','DAP','AMANAH','UMNO','MCA','MIC','GPS','GRS','WARISAN','UPKO','MUDA','IND_GOV'];
+const oppOrder = ['PAS','BERSATU','GERAKAN','KDM','IND_OPP'];
+govSeats.sort((a,b)=>govOrder.indexOf(a.party)-govOrder.indexOf(b.party));
+oppSeats.sort((a,b)=>oppOrder.indexOf(a.party)-oppOrder.indexOf(b.party));
+
+// Row configuration for 222 seats (gov=148, opp=74) in hemicycle rows
+// Rows: 8 rows, each row split gov/opp with center aisle
+const ROWS = [
+  {gov:20,opp:10}, // front row closest to Speaker
+  {gov:21,opp:10},
+  {gov:21,opp:10},
+  {gov:21,opp:10},
+  {gov:21,opp:10},
+  {gov:22,opp:12},
+  {gov:1, opp:1}, // spacer (Speaker row)
+  {gov:1,opp:11}, // overflow
+];
+
+// Simpler: just distribute into equal rows
+function buildRows(govSeats, oppSeats){
+  const rows = [];
+  let gi=0, oi=0;
+  const rowDefs=[
+    {g:20,o:10},{g:21,o:10},{g:21,o:10},{g:21,o:10},
+    {g:21,o:10},{g:22,o:12},{g:22,o:11}
+  ];
+  for(const rd of rowDefs){
+    const gRow = govSeats.slice(gi,gi+rd.g);
+    const oRow = oppSeats.slice(oi,oi+rd.o);
+    gi+=rd.g; oi+=rd.o;
+    if(gRow.length||oRow.length) rows.push({gov:gRow,opp:oRow});
+  }
+  return rows;
+}
+
+const rows = buildRows(govSeats, oppSeats);
+
+// Render
+const chamber = document.getElementById('chamber');
+const tip = document.getElementById('tip');
+let activeFilter = 'all';
+
+function renderChamber(filter){
+  chamber.innerHTML='';
+  // Speaker row
+  const speakerRow = document.createElement('div');
+  speakerRow.className='row';
+  speakerRow.style.cssText='background:var(--color-background-secondary);border-radius:4px;padding:3px 20px;margin-bottom:4px;font-size:10px;color:var(--color-text-secondary);letter-spacing:0.05em';
+  speakerRow.textContent='⚖ SPEAKER / DEWAN RAKYAT';
+  chamber.appendChild(speakerRow);
+
+  for(const row of rows){
+    const rowEl = document.createElement('div');
+    rowEl.className='row';
+    
+    // Gov seats
+    for(const s of row.gov){
+      rowEl.appendChild(makeSeat(s, filter));
+    }
+    // Aisle
+    const aisle = document.createElement('div');
+    aisle.style.cssText='width:12px;flex-shrink:0';
+    rowEl.appendChild(aisle);
+    // Opp seats
+    for(const s of row.opp){
+      rowEl.appendChild(makeSeat(s, filter));
+    }
+    
+    chamber.appendChild(rowEl);
+  }
+}
+
+function makeSeat(s, filter){
+  const el = document.createElement('div');
+  el.className='seat'+(s.isLeader?' leader':'');
+  el.style.background=s.partyObj.color;
+  
+  const active = filter==='all' || s.partyObj.coalition===filter || s.party===filter;
+  if(!active) el.classList.add('dimmed');
+
+  el.addEventListener('mouseenter', (e)=>{
+    tip.style.display='block';
+    tip.innerHTML=`<strong>${s.partyObj.full}</strong><div class="tparty">${s.partyObj.name} · ${s.partyObj.coaFull}</div>${s.isLeader&&s.partyObj.leader?`<div style="margin-top:5px;padding-top:5px;border-top:0.5px solid var(--color-border-tertiary)"><span style="font-size:11px;font-weight:500;color:var(--color-text-primary)">★ ${s.partyObj.leader.name}</span><div class="tparty">${s.partyObj.leader.role}</div></div>`:''}`;
+  });
+  el.addEventListener('mousemove',(e)=>{
+    tip.style.left=(e.clientX+12)+'px';
+    tip.style.top=(e.clientY-10)+'px';
+    // flip if near right edge
+    if(e.clientX>window.innerWidth-220) tip.style.left=(e.clientX-tip.offsetWidth-12)+'px';
+  });
+  el.addEventListener('mouseleave',()=>{tip.style.display='none'});
+  return el;
+}
+
+function renderStats(filter){
+  const stats = document.getElementById('statsRow');
+  stats.innerHTML='';
+  const relevant = PARTIES.filter(p=>filter==='all'||p.coalition===filter||p.id===filter);
+  const total = relevant.reduce((s,p)=>s+p.seats,0);
+  const govTotal = PARTIES.filter(p=>p.side==='gov'&&(filter==='all'||p.coalition===filter||p.id===filter)).reduce((s,p)=>s+p.seats,0);
+  const oppTotal = PARTIES.filter(p=>p.side==='opp'&&(filter==='all'||p.coalition===filter||p.id===filter)).reduce((s,p)=>s+p.seats,0);
+  
+  const cards = filter==='all'
+    ? [{n:222,l:'Total seats'},{n:148,l:'Gov seats'},{n:74,l:'Opp seats'},{n:112,l:'Majority needed'}]
+    : [{n:total,l:'Seats shown'},{n:govTotal,l:'Gov side'},{n:oppTotal,l:'Opp side'}];
+
+  for(const c of cards){
+    const card=document.createElement('div');
+    card.className='stat-card';
+    card.innerHTML=`<div class="stat-n">${c.n}</div><div class="stat-l">${c.l}</div>`;
+    stats.appendChild(card);
+  }
+}
+
+function renderFilters(){
+  const row=document.getElementById('filterRow');
+  const all=document.createElement('button');
+  all.className='filter-btn active';all.textContent='All';all.dataset.filter='all';
+  row.appendChild(all);
+  
+  // Gov
+  const govLabel=document.createElement('span');
+  govLabel.style.cssText='font-size:10px;color:var(--color-text-tertiary);align-self:center;padding:0 2px';
+  govLabel.textContent='GOV:';row.appendChild(govLabel);
+  for(const c of COALITIONS.slice(0,5)){
+    const btn=document.createElement('button');
+    btn.className='filter-btn';btn.textContent=c.id;btn.dataset.filter=c.id;
+    btn.style.borderColor=c.color;
+    row.appendChild(btn);
+  }
+  const oppLabel=document.createElement('span');
+  oppLabel.style.cssText='font-size:10px;color:var(--color-text-tertiary);align-self:center;padding:0 2px';
+  oppLabel.textContent='OPP:';row.appendChild(oppLabel);
+  for(const c of COALITIONS.slice(5)){
+    const btn=document.createElement('button');
+    btn.className='filter-btn';btn.textContent=c.id;btn.dataset.filter=c.id;
+    btn.style.borderColor=c.color;
+    row.appendChild(btn);
+  }
+
+  row.addEventListener('click',(e)=>{
+    if(!e.target.dataset.filter) return;
+    activeFilter=e.target.dataset.filter;
+    row.querySelectorAll('.filter-btn').forEach(b=>b.classList.toggle('active',b===e.target));
+    renderChamber(activeFilter);
+    renderStats(activeFilter);
+  });
+}
+
+function renderLeaders(){
+  const strip=document.getElementById('leaderStrip');
+  const leaders=PARTIES.filter(p=>p.leader);
+  for(const p of leaders){
+    const badge=document.createElement('div');
+    badge.className='leader-badge';
+    badge.title=`${p.leader.name} — ${p.leader.role}`;
+    badge.innerHTML=`<div class="leader-dot" style="background:${p.color}">${p.leader.initial}</div><div><div class="leader-name">${p.leader.name}</div><div class="leader-role">${p.name} · ${p.leader.role}</div></div>`;
+    badge.addEventListener('click',()=>{
+      activeFilter=p.coalition;
+      document.querySelectorAll('.filter-btn').forEach(b=>b.classList.toggle('active',b.dataset.filter===p.coalition));
+      renderChamber(activeFilter);
+      renderStats(activeFilter);
+    });
+    strip.appendChild(badge);
+  }
+}
+
+function renderLegend(){
+  const leg=document.getElementById('legend');
+  // Group by coalition
+  const groups = {};
+  for(const p of PARTIES){
+    if(!groups[p.coalition]) groups[p.coalition]={label:p.coaFull, parties:[], side:p.side};
+    groups[p.coalition].parties.push(p);
+  }
+  for(const [cid, g] of Object.entries(groups)){
+    const grp=document.createElement('div');
+    grp.className='legend-group';
+    const badge = cid==='PH'?'🔵 Government':cid==='PN'?'🟢 Opposition':'';
+    grp.innerHTML=`<div class="legend-group-title">${g.label}</div>`;
+    for(const p of g.parties){
+      const item=document.createElement('div');
+      item.className='legend-item';
+      item.innerHTML=`<div class="legend-swatch${p.leader?' leader-swatch':''}" style="background:${p.color}"></div>${p.name} <span style="color:var(--color-text-secondary);margin-left:2px">${p.seats}</span>${p.leader?` <span style="font-size:10px;color:var(--color-text-secondary)">★ ${p.leader.initial}</span>`:''}`;
+      grp.appendChild(item);
+    }
+    leg.appendChild(grp);
+  }
+}
+
+renderFilters();
+renderStats('all');
+renderChamber('all');
+renderLeaders();
+renderLegend();
+</script>

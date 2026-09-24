@@ -1,0 +1,817 @@
+﻿@model Tuple<ESS.Core.EmployeeDetailsSummary, List<ESS.Core.DropDownObject>>
+
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewBag.Title = "Mileage Book Application";
+    DateTime d1 = DateTime.Now.AddYears(-20);
+    DateTime d2 = DateTime.Now.AddYears(20);
+    string dtStrStart = d1.ToString("dd/MM/yyyy");
+    string dtStrEnd = d2.ToString("dd/MM/yyyy");
+}
+
+<div class="form-section">
+    <div class="row">
+        <div class="col-md-12">
+            <h1 class="page-title">
+                Mileage Book Application
+                <span style="padding-left:20px;">
+                    <small></small>
+                </span>
+            </h1>
+        </div>
+    </div>
+</div>
+@if (!@ViewBag.CanSubmit)
+{
+    <div class="row">
+        <div class="col-md-12">
+            <div class="note note-danger">
+                <h4 class="block">
+                    Sorry, You are not allowed to submit this application.
+                    Immediate Manager not found, please contact administrator for assistance.
+                </h4>
+            </div>
+        </div>
+    </div>
+}
+<input id="hfEmployeeID" type="hidden" value="@ViewBag.EmployeeID" />
+<style type="text/css">
+    .hidden_1 {
+        display: none;
+    }
+</style>
+<div id="tab_1" class="tab-pane active">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="portlet box blue">
+                <div class="mini-triangle"><img src="/_layouts/15/TNBESS/Assets/img/menu-red-triangle.png" /></div>
+                <div class="portlet-title">
+                    <div class="caption">
+                        <i class="fa fa-reorder"></i>Requestor Details
+                    </div>
+                </div>
+                <div class="portlet-body form">
+                    <div class="form-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <label class="control-label col-md-4">Employee Number</label>
+                                        <div class="col-md-8 form-control-static">
+                                            <label id="ct00_EmployeeCode">@Model.Item1.EmployeeCode</label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <label class="control-label col-md-4">Company</label>
+                                        <div class="col-md-8 form-control-static">
+                                            <label id="ct00_Company">@Model.Item1.Company</label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <label class="control-label col-md-4">Employee Name</label>
+                                        <div class="col-md-8 form-control-static">
+                                            <label id="ct00_EmployeeName">@Model.Item1.EmployeeName</label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <label class="control-label col-md-4">Department</label>
+                                        <div class="col-md-8 form-control-static">
+                                            <label id="ct00_Department">@Model.Item1.Department</label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <label class="control-label col-md-4">Position</label>
+                                        <div class="col-md-8 form-control-static">
+                                            <label id="ct00_Position">@Model.Item1.Position</label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <label class="control-label col-md-4">Unit/Section</label>
+                                        <div class="col-md-8 form-control-static">
+                                            <label id="ct00_UnitSection">@Model.Item1.UnitSection</label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <label class="control-label col-md-4">Immediate Manager</label>
+                                        <div class="col-md-8 form-control-static">
+                                            <label id="ct00_ImmediateManager">@Model.Item1.ImmediateManager</label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <label class="control-label col-md-4">Current Approver</label>
+                                        <div class="col-md-8 form-control-static">
+                                            <label id="ct00_CurrentApprover"></label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-12">
+            <div class="portlet box blue">
+                <div class="mini-triangle"><img src="/_layouts/15/TNBESS/Assets/img/menu-red-triangle.png" /></div>
+                <div class="portlet-title">
+                    <div class="caption">
+                        <i class="fa fa-reorder"></i>Mileage Book
+                    </div>
+                </div>
+                <div class="portlet-body form">
+                    <div class="form-body" id="ct01_CustomFieldFormView">
+                        <input type="hidden" id="FormID" value="FE3A5D7C-39CD-4E9A-94E3-011D82C27C70" />
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <label class="control-label col-md-4">Reference No.</label>
+                                        <div class="col-md-8 form-control-static">
+                                            <input class="form-control" type="text" id="ct_ReferenceNo" readonly />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <label class="control-label col-md-4">Status</label>
+                                        <div class="col-md-8 form-control-static">
+                                            <input class="form-control" type="text" id="ct_Status" readonly />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <label class="control-label col-md-4">Month<span class="mandatory"> *</span></label>
+                                        <div class="col-md-8 form-control-static">
+                                            <select class="form-control" id="ct_Month">
+                                                <option value="">Select One</option>
+                                                <option value="January">January</option>
+                                                <option value="February">February</option>
+                                                <option value="March">March</option>
+                                                <option value="April">April</option>
+                                                <option value="May">May</option>
+                                                <option value="June">June</option>
+                                                <option value="July">July</option>
+                                                <option value="August">August</option>
+                                                <option value="September">September</option>
+                                                <option value="October">October</option>
+                                                <option value="November">November</option>
+                                                <option value="December">December</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <label class="control-label col-md-4">Year<span class="mandatory"> *</span></label>
+                                        <div class="col-md-8 form-control-static">
+                                            <select class="form-control" id="ct_Year">
+                                                <option value="">Select One</option>
+                                                @{
+                                                    int _StartYear = DateTime.Now.AddYears(-1).Year;
+                                                    int _EndYear = DateTime.Now.Year;
+
+                                                    while (_StartYear <= _EndYear)
+                                                    {
+                                                        <option value="@_StartYear">@_StartYear</option>
+                                                        _StartYear++;
+                                                    }
+                                                }
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <label class="control-label col-md-4">Month Start [A]<span class="mandatory"> *</span></label>
+                                        <div class="col-md-8 form-control-static">
+                                            <input class="form-control" type="text" id="ct_ReadingA" onkeyup="CalculateGrossDistance();" onkeypress="NumberOnly(event);" onpaste="return false" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <label class="control-label col-md-4">Month End [B]<span class="mandatory"> *</span></label>
+                                        <div class="col-md-8 form-control-static">
+                                            <input class="form-control" type="text" id="ct_ReadingB" onkeyup="CalculateGrossDistance();" onkeypress="NumberOnly(event);" onpaste="return false" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <label class="control-label col-md-4">Gross Distance [B - A]</label>
+                                        <div class="col-md-8 form-control-static">
+                                            <input class="form-control" type="text" id="ct_GrossDistance" readonly />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <label class="control-label col-md-4">Claimable Distance<span class="mandatory"> *</span></label>
+                                        <div class="col-md-8 form-control-static">
+                                            <input class="form-control" type="text" id="ct_ClaimDistance" onkeyup="CalculateTotalClaims();" onkeypress="NumberOnly(event);" onpaste="return false" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <label class="control-label col-md-4">Rate<span class="mandatory"> *</span></label>
+                                        <div class="col-md-8 form-control-static">
+                                            @Html.DropDownList("ct_Rate", new SelectList(Model.Item2, "Value", "Text"), "Select One", new { @class = "bs-select form-control", onchange = "CalculateTotalClaims();" })
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <label class="control-label col-md-4">Total Claims</label>
+                                        <div class="col-md-8 form-control-static">
+                                            <input class="form-control" type="text" id="ct_TotalClaims" readonly />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <label class="control-label col-md-2">Remarks</label>
+                                        <div class="col-md-10 form-control-static">
+                                            <textarea class="form-control" id="ct_Remarks" rows="6" style="width:100%;"></textarea>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Charge Code-->
+    @Html.Action("ChargeCodeControl", "ChargeCode", new { ID = "", ListOfChargeCode = "" })
+    <div class="row">
+        <div class="col-md-12">
+            <div class="portlet box blue">
+                <div class="mini-triangle"><img src="/_layouts/15/TNBESS/Assets/img/menu-red-triangle.png" /></div>
+                <div class="portlet-title">
+                    <div class="caption">
+                        <i class="fa fa-reorder"></i>Mileage Details
+                    </div>
+                </div>
+                <div class="portlet-body form">
+                    <div class="form-body" id="ct02_CustomFieldFormView">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="form-horizontal">
+                                    <div class="table-toolbar">
+                                        <table id="tblMileage" class="table table-striped table-bordered table-hover table-full-width">
+                                            <thead>
+                                                <tr>
+                                                    <th class="text-center" style="width:5%"></th>
+                                                    <th class="text-center" style="width:50%;">Charge Code</th>
+                                                    <th class="text-center" style="width:45%;">Amount</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr class="trMileage">
+                                                    <td><input type="checkbox" class="MileageBookRemoveCheckbox" /></td>
+                                                    <td>
+                                                        <input type="hidden" class="hfChargeCode" />
+                                                        <select class="form-control ddlChargeCode" onchange="ChargeCodeChange(this);">
+                                                            <option value="">Select One</option>
+                                                        </select>
+                                                    </td>
+                                                    <td><input class="form-control text-right txtAmount" 
+                                                               type="text" 
+                                                               onblur="FormatAmountColumn(this)" 
+                                                               onchange="AmountChange();" /></td>
+                                                </tr>
+                                                @*<tr class="trMileage">
+                                                        <td><input type="checkbox" class="MileageBookRemoveCheckbox" /></td>
+                                                        <td>
+                                                            <input type="hidden" class="hfChargeCode" />
+                                                            <select class="form-control ddlChargeCode" onchange="ChargeCodeChange(this);">
+                                                                <option value="">Select One</option>
+                                                            </select>
+                                                        </td>
+                                                        <td><input class="form-control text-right txtAmount" type="text" onchange="AmountChange();" /></td>
+                                                    </tr>
+                                                    <tr class="trMileage">
+                                                        <td><input type="checkbox" class="MileageBookRemoveCheckbox" /></td>
+                                                        <td>
+                                                            <input type="hidden" class="hfChargeCode" />
+                                                            <select class="form-control ddlChargeCode" onchange="ChargeCodeChange(this);">
+                                                                <option value="">Select One</option>
+                                                            </select>
+                                                        </td>
+                                                        <td><input class="form-control text-right txtAmount" type="text" onchange="AmountChange();" /></td>
+                                                    </tr>*@
+                                                <tr>
+                                                    <td colspan="2" class="text-right">Total</td>
+                                                    <td><input class="form-control text-right" type="text" id="txtTotalAmount" readonly /></td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="form-horizontal">
+                                    <div class="table-toolbar">
+                                        <div class="row">
+                                            <div class="col-md-12">
+                                                <div class="btn-group">
+                                                    <a class="BtnPlus btn green" href="javascript:MileageBook_addRow();">
+                                                        Add Row
+                                                        <i class="fa fa-plus"></i>
+                                                    </a>
+                                                </div>
+                                                <div class="btn-group">
+                                                    <a class="BtnPlus5 btn green" href="javascript:MileageBook_add5Row();">
+                                                        Add 5 Rows
+                                                        <i class="fa fa-plus"></i>
+                                                    </a>
+                                                </div>
+                                                <div class="btn-group">
+                                                    <a class="deleteall btn red" href="javascript:MileageBook_removeRow();">
+                                                        Delete Row
+                                                        <i class="fa fa-minus"></i>
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    @Html.Action("AttachmentControl", "Attachment", new { EmployeeID = ViewBag.EmployeeID, Mode = "New", SourceType = "MileageBook" })
+</div>
+<div class="row">
+    <div class="col-md-12">
+        <input type="button" class="btn green" value="Save As Draft" id="btnSave" onclick="ConfirmAction('SaveAsDraft');" />
+        @if (!@ViewBag.CanSubmit)
+        {
+            <input type="button" class="btn green" value="Submit" id="btnSubmit" onclick="FormValidation();" disabled />
+        }
+        else
+        {
+            <input type="button" class="btn green" value="Submit" id="btnSubmit" onclick="FormValidation();" />
+        }
+        <input type="button" class="btn green" value="Back" id="btnBack" onclick="window.location.href = document.referrer;" />
+    </div>
+</div>
+<!-- Success Message -->
+<div class="modal fade" id="SuccessSubmit" tabindex="-1" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header Success-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true" style="display: none;"></button>
+                <h4 class="Success-title">Action Successfully Completed</h4>
+            </div>
+            <div class="modal-body Success-body">
+                <div class="well">
+                    Your Mileage Book Application has been successfully submitted.
+                </div>
+            </div>
+            <div class="modal-footer Success-footer">
+                <button type="submit" class="btn default blue" id="btnOK">
+                    <i class="fa fa-check"></i>
+                    OK
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Confirmation Message -->
+<div class="modal fade" id="ConfirmUpdate" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                <h4 class="modal-title">Confirmation</h4>
+            </div>
+            <div class="modal-body">
+                <div class="well">
+                    Are you sure you want to Submit this Mileage Book application?\n\rPress Confirm to proceed, or Close to stay on the current page.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="submit" class="btn default blue" id="btnSubmitForm" value="Submit" onclick="javascript: SaveFormAction(this, 'Pending');">
+                    <i class="fa fa-check"></i>
+                    Confirm
+                </button>
+                <button type="submit" class="btn default blue" id="btnSubmitSave" value="Draft" onclick="javascript: SaveFormAction(this, 'Draft');">
+                    <i class="fa fa-check"></i>
+                    Confirm
+                </button>
+                <button type="button" class="btn default" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Loading Gif -->
+<div id="divLoading" style="margin: 0px; padding: 0px; position: fixed; right: 0px; top: 0px; width: 100%; height: 100%; background-color: gainsboro; z-index: 30001; opacity: .8; filter: alpha(opacity=70); display: none; ">
+    <p style="position: absolute; top: 30%; left: 30%; color: black;">
+        Performing action, please wait...<img src="/_layouts/15/TNBESS/Assets/img/ajax-loading.gif">
+    </p>
+</div>
+<!-- Scripts -->
+<script type="text/javascript">
+    var _Path = '/_layouts/15/TNBESS';
+
+    function NumberOnly(evt) {
+        var theEvent = evt || window.event;
+        var key = theEvent.keyCode || theEvent.which;
+        key = String.fromCharCode(key);
+        var regex = /[0-9]/;
+        if (!regex.test(key)) {
+            theEvent.returnValue = false;
+            if (theEvent.preventDefault) theEvent.preventDefault();
+        }
+    }
+
+    function ThousandSeparator(x) {
+        return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    }
+
+    function CalculateGrossDistance() {
+        var _ReadingA = document.getElementById('ct_ReadingA').value;
+        var _ReadingB = document.getElementById('ct_ReadingB').value;
+        var _GrossDistance = document.getElementById('ct_GrossDistance');
+
+        if (_ReadingA != '' && _ReadingB != '') {
+            _GrossDistance.value = ThousandSeparator(parseInt(_ReadingB) - parseInt(_ReadingA));
+        }
+    }
+
+    function CalculateTotalClaims() {
+        var _ClaimableDistance = document.getElementById('ct_ClaimDistance').value;
+        var _Rate = document.getElementById('ct_Rate').value;
+        var _TotalClaims = document.getElementById('ct_TotalClaims');
+
+        if (_ClaimableDistance != '' && _Rate != '') {
+            _TotalClaims.value = ThousandSeparator((parseFloat(_ClaimableDistance) * parseFloat(_Rate)).toFixed(2));
+        }
+        else {
+            _TotalClaims.value = '0.00';
+        }
+    }
+
+    function MileageBook_removeRow() {
+        $('#tblMileage tbody tr').not(':last').each(function () {
+            var _checkbox = $(this).children('td:eq(0)').find('input[type=checkbox]');
+
+            if ($('#tblMileage tbody tr').length == 2) {
+
+            }
+            else {
+                if ($(_checkbox).parent().hasClass('checked')) {
+                    $(_checkbox).closest('tr').remove();
+                }
+            }
+        });
+
+        AmountChange();
+    }
+
+    function MileageBook_add5Row() {
+        MileageBook_addRow();
+        MileageBook_addRow();
+        MileageBook_addRow();
+        MileageBook_addRow();
+        MileageBook_addRow();
+    }
+
+    function MileageBook_addRow() {
+        var _table = $('#tblMileage tr:last');
+        var _rowFormat = '<tr class="trMileage">' +
+                            '<td><div class="checker"><span><input type="checkbox" class="mbcheckbox"></span></div></td>' +
+                            '<td><input type="hidden" class="hfChargeCode" />' +
+                            '<select class="form-control ddlChargeCode" onchange="ChargeCodeChange(this);">' +
+                            '<option value="">Select One</option></select></td>' +
+                            '<td><input class="form-control text-right txtAmount" type="text" onblur="FormatAmountColumn(this)" onchange="AmountChange();" /></td></tr>';
+
+        _table.before(_rowFormat);
+
+        $('.mbcheckbox').parent().unbind('click');
+
+        $('.mbcheckbox').parent().click(function () {
+            if ($(this).hasClass('checked')) {
+                $(this).removeClass('checked');
+            }
+            else {
+                $(this).addClass('checked');
+            }
+        });
+
+        BindtoDDL();
+    }
+
+    var origBindtoDDL = BindtoDDL;
+    BindtoDDL = function () {
+        // overwrite method here
+        var _ChargeCodeList = document.getElementById('ChargeCodeList').value;
+
+        _ChargeCodeList = _ChargeCodeList.substring(0, _ChargeCodeList.length - 1);
+
+        BindOptionToSelect(_ChargeCodeList);
+
+        return origBindtoDDL();
+    }
+
+    function BindOptionToSelect(ChargeCodeList) {
+        var chargeCodes = ChargeCodeList.split(',');
+
+        $('.ddlChargeCode').each(function () {
+            $(this).find('option').remove().end().append('<option value="">Select One</option>'); // how to retain the value
+
+            if (chargeCodes != '') {
+                for (var i = 0; i < chargeCodes.length; i++) {
+                    var option = document.createElement("option");
+                    option.text = chargeCodes[i];
+                    option.value = chargeCodes[i];
+                    this.add(option);
+                }
+
+                $(this).val($(this).siblings('.hfChargeCode').val());
+                if ($(this).val() == null) {
+                    $(this).children("option[value='']").attr('selected', 'selected');
+                }
+            }
+        });
+    }
+
+    function ChargeCodeChange(x) {
+        var _hfChargeCode = $(x).siblings('.hfChargeCode').val($(x).val());
+    }
+
+    function FormatAmountColumn(amountInput) {
+        var amount = parseFloat(amountInput.value.replace(/,/g, ''));
+
+        if (!amount) {
+            amountInput.value = '0.00';
+        }
+        else {
+            amountInput.value = ThousandSeparator(amount.toFixed(2));
+        }
+    }
+
+    function AmountChange() {
+        var _Total = 0;
+
+        $('.txtAmount').each(function () {
+            var _Amount = parseFloat($(this).val().replace(/,/g, '')) || 0;
+            _Total += _Amount;
+        });
+
+        $('#txtTotalAmount').val(ThousandSeparator(_Total.toFixed(2)));
+    }
+
+    function GetChargeCodeDropDownDetails() {
+        var _ChargeCodeDetails = [];
+
+        $('.trMileage').each(function () {
+            var _ChargeCode = $(this).find('.ddlChargeCode').val();
+            var _Amount = $(this).find('.txtAmount').val();
+
+            var _details = { ChargeCode: _ChargeCode, Amount: _Amount };
+
+            _ChargeCodeDetails.push(_details);
+        });
+
+        return _ChargeCodeDetails;
+    }
+
+    function FormValidation() {
+        var _Month = document.getElementById('ct_Month');
+        var _Year = document.getElementById('ct_Year');
+        var _ReadingA = document.getElementById('ct_ReadingA');
+        var _ReadingB = document.getElementById('ct_ReadingB');
+        var _ClaimableDistance = document.getElementById('ct_ClaimDistance');
+        var _Rate = document.getElementById('ct_Rate');
+
+        var _ValidationMsg = '';
+
+        if (_Month.value == '')
+            _ValidationMsg += '- Month field is required.\n';
+
+        if (_Year.value == '')
+            _ValidationMsg += '- Year field is required.\n';
+
+        if (_ReadingA.value == '')
+            _ValidationMsg += '- Month Start field is required.\n';
+
+        if (_ReadingB.value == '')
+            _ValidationMsg += '- Month End field is required.\n';
+
+        if (_ClaimableDistance.value == '')
+            _ValidationMsg += '- Claimable Distance field is required.\n';
+
+        if (_Rate.value == '')
+            _ValidationMsg += '- Rate field is required.\n';
+
+        if (_ValidationMsg != null && _ValidationMsg != '') {
+            alert(_ValidationMsg);
+        }
+        else {
+            var _TotalClaims = parseFloat($('#ct_TotalClaims').val()) || 0;
+            var _TotalAmount = parseFloat($('#txtTotalAmount').val()) || 0;
+
+            if (_TotalClaims == 0) {
+                _ValidationMsg += '- Total Claims cannot be 0.00.\n';
+                alert(_ValidationMsg);
+                return false;
+            }
+
+            if (_TotalClaims != _TotalAmount) {
+                _ValidationMsg += '- Total Claims and Total Amount does not tally.\n';
+            }
+
+            if (_ValidationMsg != null && _ValidationMsg != '') {
+                alert(_ValidationMsg);
+            }
+            else {
+                ConfirmAction('Submit');
+            }
+        }
+    }
+
+    function SaveFormAction(x, _Status) {
+        x.disabled = true;
+        $("#divLoading").css("display", "block");
+        var _saveform = SaveForm(x, _Status);
+        setTimeout(_saveform, 3000);
+    }
+
+    function SaveForm(x, _Status) {
+        if (_Status == 'Draft') {
+            $(".Success-body .well").html('Your Mileage Book Application has been successfully saved.');
+        }
+        else {
+            $(".Success-body .well").html('Your Mileage Book Application has been successfully submitted.');
+        }
+
+        jQuery.support.cors = true;
+
+        var _ChargeCodeDetails = GetChargeCodeDropDownDetails();
+
+        var form = {
+            EmployeeID: document.getElementById('hfEmployeeID').value,
+            ReferenceNo: document.getElementById('ct_ReferenceNo').value,
+            Status: _Status,
+            Month: document.getElementById('ct_Month').value,
+            Year: document.getElementById('ct_Year').value,
+            ReadingA: document.getElementById('ct_ReadingA').value,
+            ReadingB: document.getElementById('ct_ReadingB').value,
+            GrossDistance: document.getElementById('ct_GrossDistance').value,
+            ClaimableDistance: document.getElementById('ct_ClaimDistance').value,
+            Rate: document.getElementById('ct_Rate').value,
+            TotalClaims: document.getElementById('ct_TotalClaims').value,
+            Remarks: document.getElementById('ct_Remarks').value,
+            Details: _ChargeCodeDetails,
+            ListOfChargeCode: document.getElementById('ChargeCodeList').value
+        };
+
+        //$("#divLoading").show();
+        //$("#divLoading").css("display", "block");
+
+        $.ajax({
+            url: '@Url.Content("~/Claims/SaveMileageBookForm")', //_Path + '/API/MileageBookWebApi/PostSaveMileageBookForm',
+            type: 'POST',
+            cache: false,
+            async: false,
+            dataType: "json",
+            data: form, //JSON.stringify(form),
+            //contentType: "application/json;charset=utf-8",
+            success: function (result) {
+                if (result.Success) {
+                    $("#ConfirmUpdate").modal('toggle');
+                    //$("#divLoading").hide();
+                    $("#divLoading").css("display", "none");
+                    $("#SuccessSubmit").modal();
+                } else {
+                    $("#ConfirmUpdate").modal('toggle');
+                    $("#divLoading").css("display", "none");
+                    alert(result.ErrorMsg);
+                    x.disabled = false;
+                }
+            },
+            error: function (x, y, z) {
+                $("#ConfirmUpdate").modal('toggle');
+                $("#divLoading").css("display", "none");
+                console.log(x + '\n' + y + '\n' + z);
+                x.disabled = false;
+            }
+        });
+    }
+
+    function ConfirmAction(_Action) {
+        if (_Action == 'SaveAsDraft') {
+            $('#btnSubmitForm').addClass('hidden_1');
+            $('#btnSubmitSave').removeClass('hidden_1');
+            $('.modal-body .well').html('Are you sure you want to Save this Mileage Book Application?\n\rPress Confirm to proceed, or Close to stay on the current page.');
+            $('#btnOK').click(function () { RedirectTo('Draft'); });
+            $('#ConfirmUpdate').modal('show');
+        }
+        else if (_Action == 'Submit') {
+            $('#btnSubmitForm').removeClass('hidden_1');
+            $('#btnSubmitSave').addClass('hidden_1');
+            $('.modal-body .well').html('Are you sure you want to Submit this Mileage Book Application?\n\rPress Confirm to proceed, or Close to stay on the current page.');
+            $('#btnOK').click(function () { RedirectTo('Submit'); });
+            $('#ConfirmUpdate').modal('show');
+        }
+    }
+
+    function RedirectTo(_Action) {
+        switch (_Action) {
+            case "Draft":
+            case "Submit":
+                window.location.href = '/_layouts/15/TNBESS/Claims/MileageBookHistory'; // '/_layouts/15/TNBESS/Allowance/AllowanceHistory';
+                break;
+            default:
+                window.location.href = '/Pages/default.aspx';
+        }
+    }
+
+    $(document).ready(function () {
+        if (document.referrer == "" || document.URL == document.referrer) {
+            $('#btnBack').hide();
+        } 
+    });
+</script>

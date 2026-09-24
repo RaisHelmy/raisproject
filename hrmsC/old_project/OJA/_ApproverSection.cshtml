@@ -1,0 +1,410 @@
+﻿@model Tuple<List<SEP.RoutingManagement.Models.AuditlogWithPosition>, ESS.Core.RoutingTask>
+
+@{
+    Layout = null;
+}
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="portlet box blue">            
+            <div class="mini-triangle"><img src="~/Assets/img/menu-red-triangle.png" /></div>
+            <div class="portlet-title">
+                <div class="caption">
+                    <i class="fa fa-reorder"></i>Audit Log
+                </div>
+            </div>
+            <div class="portlet-body form">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="form-horizontal">
+                            <div class="form-body">
+                                <table id="tblAuditLog" class="table table-striped table-bordered table-hover table-full-width">
+                                    <thead>
+                                        <tr>
+                                            <th>Action By</th>
+                                            <th>Position</th>
+                                            <th>Date</th>
+                                            <th>Activity</th>
+                                            <th>Action</th>
+                                            <th>Comment</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var item in Model.Item1)
+                                        {
+                                            <tr>
+                                                @if (item.EmployeeCode == "00000000-0000-0000-0000-000000000000")
+                                                {
+                                                    <td>@item.EmployeeName</td>
+                                                }
+                                                else
+                                                {
+                                                    <td>@item.EmployeeName</td>
+                                                }
+                                                <td>@item.Position</td>
+                                                <td>@item.CreatedDate.Value.ToString("dd/MM/yyyy hh:mm tt")</td>
+                                                <td>@item.ActivityName</td>
+                                                <td>@item.ActivityAction</td>
+                                                <td>
+
+                                                    @Html.Raw(item.Comment)
+                                                </td>
+
+                                            </tr>
+                                        }
+
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@if (ViewBag.CanEditAssessment && Model.Item2.isCurrentUserApproval)
+{
+    <div class="assessment">
+        @Html.Action("_ApplicantAssessment", "OJA", new { JobId = Model.Item2.SourceID, canEdit = ViewBag.CanEditAssessment })
+    </div>
+}
+
+@if (Model.Item2.isCurrentUserApproval)
+{
+    @Html.HiddenFor(x => x.Item2.TaskID)
+
+    <div class="form-group">
+        <div id="Approval_approvalsec" class="row">
+            <div class="col-md-12">
+                <!-- BEGIN TAB PORTLET-->
+                <div class="portlet box blue">
+                    <div class="portlet-title">
+                        <div class="caption">
+                            <i class="fa fa-reorder"></i>Approval
+                        </div>
+                    </div>
+                    <div class="portlet-body form">
+                        <div class="form-body">
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="form-horizontal">
+                                        @if (Model.Item2.YesLabel == "Recommend")
+                                        {
+                                            <div class="form-group" style="padding-bottom:5px;">
+                                                <label class="col-md-2">Recommendation
+                                                    <span style="color:red">*</span>
+                                                </label>
+                                                <div class="col-md-4">
+                                                    <select id="Recommendation" name="Recommendation" class="form-control">
+                                                        <option value="">Select</option>
+                                                        <option value="2">Recommended (Can be released)</option>
+                                                        <option value="4">Not Recommended</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        }
+                                        <div class="form-group">
+                                            <label class="col-md-2">Comment
+                                                    @*<span style="color:red" class="hidden" id="commentAsterisk">*</span>*@
+                                            </label>
+                                            <div class="col-md-10">
+                                                <textarea name="Approval_txtComments" maxlength="500" rows="5" cols="20" id="Approval_txtComments" class="form-control"></textarea>
+                                            </div>
+                                        </div>
+                                        <div class="form-group" style="margin-top:5px;">
+                                            <label class="col-md-2" style="padding-right:0px">Show comment to applicant
+                                                <span style="color:red">*</span>
+                                            </label>
+                                            <div class="col-md-3" style="padding-left:9px">
+                                                <input type="checkbox" class="form-control" id="ShowCommentToApplicant" />
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="col-md-2">Hide comment from previous approver(s)
+                                                <span style="color:red">*</span>
+                                            </label>
+                                            <div class="col-md-3" style="padding-left:9px">
+                                                <input type="checkbox" class="form-control" id="HideCommentFromPreviousApprovers" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">&nbsp;</div>
+
+                        </div>
+                    </div>
+                </div>
+                <!-- END TAB PORTLET-->
+
+            </div>
+        </div>
+    </div>
+
+    if (ViewBag.CheckboxDeclarationVisible)
+    {
+        <div class="row" style="padding-top:10px;">
+            <div class="col-md-12">
+                <label class="mt-checkbox"> 
+                    @Html.CheckBox("ConfirmAttachedCV") Upon viewing the attached CV, I hereby certify the applicant's curriculum vitae are correct to my best knowledge and belief.
+                    <span></span>
+                </label>
+            </div>
+        </div>
+    }
+
+    if (ViewBag.CheckboxDeclarationHODVisible)
+    {
+        <div class="row" style="padding-top:10px;">
+            <div class="col-md-12">
+                <label class="mt-checkbox">
+                    @Html.CheckBox("ConfirmDiscuss") I hereby declare that I have discussed this job application with my superiors(Immediate Manager / Immediate Manager of Immediate Manager) and all relevant parties if applicable, in the process of consideration. I acknowledge that I am responsible for my decision.
+                    <span></span>
+                </label>
+
+            </div>
+        </div>
+    }
+
+    <div class="row"  style="padding-top:10px;">
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <div class="col-md-12">
+
+                        <input type="button" value="@Model.Item2.YesLabel" onclick="return checkComments('@Model.Item2.YesStatus');" id="Approval_btnApprove" class="btn green">
+                        @if (!String.IsNullOrEmpty(Model.Item2.NoLabel))
+                        {
+                            <input type="button" value="@Model.Item2.NoLabel" onclick="return checkComments('@Model.Item2.NoStatus');" id="Approval_btnReject" class="btn red">
+                        }
+                        @if (!String.IsNullOrEmpty(Model.Item2.ReworkLabel))
+                        {
+                            <input type="button" value="@Model.Item2.ReworkLabel" onclick="return checkComments('@Model.Item2.ReworkLabel');" class="btn blue">
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+   <!--RESULT MODAL-->
+    <div class="modal fade" id="ApprovalConfirmationModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                    <h4 class="modal-title">Job Application Approval</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="well" id="ApprovalText">
+
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn blue" id="btnApproval">Confirm</button>
+                    <button type="button" class="btn default" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="approvalResultModal" tabindex="-1" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header Success-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true" style="display: none;"></button>
+                    <h4 class="Success-title">Action Successfully Completed</h4>
+                </div>
+                <div class="modal-body Success-body">
+                    <div class="well">
+                        <p id="approvalResultMessage"></p>
+                    </div>
+                </div>
+                <div class="modal-footer Success-footer">
+                    <button type="button" class="btn default blue" id="btnApprovalOK">
+                        <i class="fa fa-check"></i>
+                        OK
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!--END RESULT MODAL-->
+
+    <script>
+
+        $('#Recommendation').change(function () {
+            var value = $(this).val();
+            if (value == '4') {//not recommended
+                $('#Approval_btnApprove').hide();
+            }
+            else {
+                $('#Approval_btnApprove').show();
+            }
+        });
+
+        function checkComments(Action) {
+            var errorMessage = "";
+
+            var Tomorrow = new Date();
+            Tomorrow.setDate(Tomorrow.getDate() + 1);
+            Tomorrow.setHours(0, 0, 0, 0);
+            var ApprovedExtebdDate = moment($('#approveextendedDate').val());
+
+            if ($("#Recommendation").is(':visible')) {
+                errorMessage += $("#Recommendation").val() == "" ? "Recommendation is required \n" : "";
+            }
+
+            if ($("#ConfirmAndCertifyCheck").is(":visible")) {
+                errorMessage += $("#ConfirmAndCertifyCheck").is(":checked") ? "" : "Please check the assessment confirmation box to proceed. \n";
+                errorMessage += assessmentFilled() ? "" : "Please complete the assessment form to proceed. \n";
+            }
+
+            if ($("#ConfirmAttachedCV").is(":visible")) {
+                errorMessage += $("#ConfirmAttachedCV").is(":checked") ? "" : "Please check the declaration statement of approval box \n";
+            }
+
+            if ($("#ConfirmDiscuss").is(":visible")) {
+                errorMessage += $("#ConfirmDiscuss").is(":checked") ? "" : "Please check the declaration statement of approval box \n";
+            }
+
+            //validate only comment if decline is clicked
+            if (Action == "Declined") { 
+                errorMessage = $("#Approval_txtComments").val() == "" ? "Comment is required \n" :"" ;
+            }
+
+            if (errorMessage != "") {
+                alert(errorMessage);
+                return;
+            }
+
+
+            $("#Approval_errorMessage").hide();
+            var text = "";
+            text = "You are about to update this application with " + Action + " status." +
+                " Press confirm to proceed, or close to stay on the current page.";
+
+            $("#btnApproval").attr("onclick", "Approval('" + Action + "')");
+            $("#ApprovalText").text(text);
+            $("#ApprovalConfirmationModal").modal();
+        }
+
+        function Approval(ActionType) {
+            var ID = '@Model.Item2.SourceID';
+            var TaskID = '@Model.Item2.TaskID';
+            var Comment = $('#Approval_txtComments').val();
+            var recommendation = $('#Recommendation').val();
+            var recText = $('#Recommendation option:selected').text();
+            var applicantShow = $("#ShowCommentToApplicant").is(':checked');
+            var hideFromApprover = $("#HideCommentFromPreviousApprovers").is(':checked');
+            $("#ApprovalConfirmationModal").modal("hide");
+            $("#divLoading").show();
+
+            var canEdit = '@ViewBag.CanEditAssessment';
+            var promise = $.Deferred();
+            if (canEdit == "True") {
+                promise = saveAssessment('2');
+            }
+            else {
+                promise.resolve();
+            }
+
+            promise.done(function () {
+                var data = {
+                    SourceID: ID, ActionType: ActionType, Comment: Comment, TaskID: TaskID,
+                    Recommendation: recommendation, RecommendationText: recText,
+                    ShowApplicant: applicantShow,
+                    HideFromApprover: hideFromApprover
+                }
+
+                $.ajax({
+                    type: "POST",
+                    url: '@Url.Action("ApproveReject", "OJA")',
+                    data: data,
+                    success: function (content) {
+                        $("#divLoading").hide();
+                        $("#approvalResultMessage").html(content.Message);
+                        $("#approvalResultModal").modal();
+                        if (content.Success) {
+                            $("#btnApprovalOK").click(function () {
+                                location.href = '@Url.Action("RequestIntray", "OJA")';
+                            });
+                        }
+                        else {
+                            $("#btnApprovalOK").click(function () {
+                                $("#approvalResultModal").modal('hide');
+                                console.log("Technical error: " + response.TechnicalError);
+                            });
+                        }
+                    },
+                    error: function (err) {
+                        $("#divLoading").hide();
+                        console.log("Error in posting the approval.");
+                        console.log(err.responseJSON);
+                    }
+                });
+            });
+        }
+
+        var saveAssessment = function (saveType) {
+
+            $("#SaveType").val(saveType);
+            var data = $("#assessmentForm").serialize();
+            var promise = $.Deferred();
+            $.ajax({
+                url: '@Url.Action("SaveAssessment", "OJA")',
+                data: data,
+                success: function (response) {
+                    promise.resolve(response);
+                },
+                error: function (err) {
+                    promise.reject();
+                }
+            });
+
+            return promise;
+        }
+
+
+        $(document).on('click', '#btnSaveAssessment', function () {
+            saveAssessment('1').done(function () {
+                reloadAssessment();
+            });
+        });
+
+        $(document).on('click', '#btnCopyAssessment', function () {
+            reloadAssessment();
+         });
+
+         var reloadAssessment = function(){
+            var employee = '@ViewBag.EmployeeID';
+            var jobId = '@Model.Item2.SourceID';
+
+            App.blockUI({ textOnly: true });
+            $.ajax({
+                url: '@Url.Action("_PreviousAssessment", "OJA")',
+                data: { EmployeeID: employee, JobId: jobId },
+                success: function (viewHtml) {
+                    $('.assessment').empty().append(viewHtml);
+                },
+                error: function () {
+                    alert('Error in getting previous assessment');
+                }
+            }).always(App.unblockUI());
+         }
+
+        var assessmentFilled = function () {
+            var result = true;
+            $('.assess_edit').each(function (i, element) {
+                var value = $(this).val();
+                if (!value || value === "") {
+                    result = false;
+                }
+            });
+            return result;
+        }
+    </script>
+}
+
+

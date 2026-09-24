@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Laman Web Peribadi untuk Ahli Politik - Rais Helmy</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&display=swap" rel="stylesheet"/>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --red: #dc2626; --red-mid: #b91c1c; --red-soft: #fca5a5;
+  --red-pale: #fff5f5; --rule: #f0bfbf;
+  --ink: #0f0f0f; --ink-2: #333333; --ink-3: #888888;
+  --white: #ffffff; --page-bg: #e0e0e0;
+}
+body { font-family: 'DM Sans', sans-serif; background: var(--page-bg); color: var(--ink); -webkit-font-smoothing: antialiased; }
+#toolbar { position: fixed; top: 16px; right: 20px; z-index: 9999; }
+#toolbar button {
+  font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: .08em; text-transform: uppercase;
+  padding: 8px 18px; border-radius: 2px; cursor: pointer;
+  border: 1.5px solid var(--red); background: var(--red); color: #fff; transition: background .18s;
+}
+#toolbar button:hover { background: var(--red-mid); border-color: var(--red-mid); }
+#pages { display: flex; flex-direction: column; align-items: center; padding: 56px 16px 80px; }
+.page {
+  width: 210mm; min-height: 297mm; background: var(--white);
+  box-shadow: 0 6px 48px rgba(0,0,0,.18); position: relative; overflow: hidden;
+  padding: 15mm; display: flex; flex-direction: column;
+}
+.page::after {
+  content: ''; position: absolute; inset: 0;
+  background: repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(220,38,38,.007) 3px,rgba(220,38,38,.007) 6px);
+  pointer-events: none; z-index: 0;
+}
+.inner { position: relative; z-index: 1; display: flex; flex-direction: column; flex: 1; }
+.page-bar { display: flex; justify-content: space-between; align-items: center; padding-bottom: 8px; margin-bottom: 18px; border-bottom: 1.5px solid var(--red); }
+.page-footer { display: flex; justify-content: space-between; align-items: center; padding-top: 10px; margin-top: auto; border-top: 1.5px solid var(--red); }
+.mono { font-family: 'DM Mono', monospace; }
+.label { font-family: 'DM Mono', monospace; font-size: 7.5px; letter-spacing: .16em; text-transform: uppercase; color: var(--red); margin-bottom: 8px; }
+.grid { display: grid; border-top: 1px solid var(--rule); border-left: 1px solid var(--rule); }
+.grid-2col { grid-template-columns: 1fr 1fr; }
+.cell { border-right: 1px solid var(--rule); border-bottom: 1px solid var(--rule); padding: 13px 14px; }
+.cell-full { grid-column: 1 / -1; }
+.hero { border: 1.5px solid var(--red); background: var(--red-pale); padding: 20px 18px 18px; position: relative; }
+.hero-eyebrow { font-family: 'DM Mono', monospace; font-size: 7.5px; letter-spacing: .18em; text-transform: uppercase; color: var(--red); margin-bottom: 10px; }
+.hero-title { font-size: 30px; font-weight: 700; color: var(--red-mid); letter-spacing: -.03em; line-height: 1.0; }
+.hero-title span { color: var(--ink); }
+.hero-sub { font-size: 9.5px; color: var(--ink-2); line-height: 1.75; margin-top: 9px; max-width: 68%; }
+.hero-aside { position: absolute; right: 18px; top: 18px; text-align: right; }
+.hero-aside-line { font-family: 'DM Mono', monospace; font-size: 7.5px; color: var(--ink-3); letter-spacing: .1em; text-transform: uppercase; margin-bottom: 2px; }
+.hero-aside-em { font-family: 'DM Mono', monospace; font-size: 26px; font-weight: 700; color: var(--red); letter-spacing: -.04em; line-height: 1; margin-bottom: 2px; }
+.hl-row { display: grid; grid-template-columns: 1fr 1fr 1fr; border: 1.5px solid var(--red); position: relative; }
+.hl-cell { padding: 10px 12px; border-right: 1.5px solid var(--red); }
+.hl-cell:last-child { border-right: none; }
+.hl-label { font-family: 'DM Mono', monospace; font-size: 7px; letter-spacing: .12em; text-transform: uppercase; color: var(--red); margin-bottom: 3px; }
+.hl-val { font-size: 11px; font-weight: 700; color: var(--ink); line-height: 1.2; }
+.hl-sub { font-family: 'DM Mono', monospace; font-size: 7.5px; color: var(--ink-3); margin-top: 2px; }
+.grid-stars { position: absolute; inset: 0; pointer-events: none; overflow: visible; z-index: 5; }
+.price-amt { font-family: 'DM Mono', monospace; font-size: 28px; font-weight: 700; color: var(--red-mid); letter-spacing: -.04em; line-height: 1; margin-bottom: 2px; }
+.price-note { font-family: 'DM Mono', monospace; font-size: 7.5px; text-transform: uppercase; letter-spacing: .1em; color: var(--ink-3); margin-bottom: 10px; }
+.price-feature { font-size: 8.5px; color: var(--ink-2); line-height: 1.6; padding-left: 12px; position: relative; margin-top: 3px; }
+.price-feature::before { content: '\2713'; position: absolute; left: 0; color: var(--red); font-size: 7.5px; top: 1px; }
+.step { display: flex; align-items: flex-start; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--rule); }
+.step:last-child { border-bottom: none; }
+.step-num { font-family: 'DM Mono', monospace; font-size: 9px; color: var(--red); flex-shrink: 0; font-weight: 700; min-width: 18px; padding-top: 1px; }
+.step-title { font-size: 9px; font-weight: 600; color: var(--ink); }
+.step-desc { font-size: 8px; color: var(--ink-3); line-height: 1.55; margin-top: 2px; }
+.cta-block { background: var(--ink); padding: 16px 18px; display: flex; justify-content: space-between; align-items: center; gap: 20px; }
+.cta-headline { font-size: 13px; font-weight: 700; color: #fff; line-height: 1.3; margin-bottom: 4px; }
+.cta-headline em { color: var(--red-soft); font-style: normal; }
+.cta-body { font-size: 8px; color: #888; line-height: 1.6; }
+.cta-contacts { display: flex; flex-direction: column; gap: 5px; align-items: flex-end; flex-shrink: 0; }
+.cta-contacts a { font-family: 'DM Mono', monospace; font-size: 8.5px; color: var(--red-soft); text-decoration: none; white-space: nowrap; }
+.cta-contacts a:hover { color: #fff; }
+.cta-btn { display: inline-block; margin-top: 4px; background: var(--red); color: #fff !important; padding: 6px 14px; border-radius: 2px; font-family: 'DM Mono', monospace; font-size: 8px; text-transform: uppercase; letter-spacing: .08em; text-decoration: none; }
+.about-name { font-size: 14px; font-weight: 700; color: var(--red-mid); margin-bottom: 3px; }
+.about-role { font-family: 'DM Mono', monospace; font-size: 7.5px; color: var(--red); letter-spacing: .1em; text-transform: uppercase; margin-bottom: 8px; }
+.about-body { font-size: 8.5px; color: var(--ink-2); line-height: 1.7; }
+.about-body strong { color: var(--ink); }
+.star-layer { position: absolute; inset: 0; pointer-events: none; z-index: 2; overflow: visible; }
+@media print {
+  #toolbar { display: none !important; }
+  body { background: #fff; }
+  #pages { padding: 0; }
+  .page { box-shadow: none; min-height: 297mm; }
+}
+@page { size: A4; margin: 0; }
+@media screen {
+  .hero, .hl-row, .grid, .cta-block { animation: fu .32s ease both; }
+  .hero { animation-delay: .04s; }
+  .hl-row { animation-delay: .10s; }
+  .grid { animation-delay: .16s; }
+  .cta-block { animation-delay: .28s; }
+  @keyframes fu { from{opacity:0;transform:translateY(7px)} to{opacity:1;transform:none} }
+}
+</style>
+</head>
+<body>
+
+<div id="toolbar">
+  <button onclick="window.print()">&#8595; Muat Turun / Cetak PDF</button>
+</div>
+
+<div id="pages">
+<div class="page" id="page1">
+<div class="inner">
+
+  <div class="page-bar">
+    <span class="mono" style="font-size:7.5px;color:var(--red);letter-spacing:.14em;text-transform:uppercase;">laman web peribadi &middot; perkhidmatan pembangunan</span>
+    <span class="mono" style="font-size:7.5px;color:var(--ink-3);">raishelmy97@gmail.com &middot; +60 11-1674 5806</span>
+  </div>
+
+  <!-- Hero -->
+  <div class="hero">
+    <div class="hero-eyebrow">&#10022; Perkhidmatan Laman Web Peribadi untuk Ahli Politik</div>
+    <div class="hero-title">Hadir Secara<br>Digital.<br><span>Dipercayai Rakyat.</span></div>
+    <p class="hero-sub">Laman web peribadi khas untuk Yang Berhormat &mdash; tempat rakyat boleh kenali anda, ikuti perkembangan, dan hubungi anda dengan mudah. Reka bentuk profesional, senang digunakan, dan siap dalam masa singkat.</p>
+    <div class="hero-aside">
+      <div class="hero-aside-line">Bermula dari</div>
+      <div class="hero-aside-em">RM 3,000</div>
+      <div class="hero-aside-line">bayaran sekali sahaja</div>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div class="hl-row" id="hlrow">
+    <div class="hl-cell">
+      <div class="hl-label">bayaran</div>
+      <div class="hl-val">Sekali Sahaja</div>
+      <div class="hl-sub">Tiada caj bulanan</div>
+    </div>
+    <div class="hl-cell">
+      <div class="hl-label">masa siap</div>
+      <div class="hl-val">5&ndash;7 Hari Bekerja</div>
+      <div class="hl-sub">Dari ringkasan hingga lancar</div>
+    </div>
+    <div class="hl-cell">
+      <div class="hl-label">bermula dengan</div>
+      <div class="hl-val">Satu Panggilan</div>
+      <div class="hl-sub">Konsultasi percuma</div>
+    </div>
+    <svg class="grid-stars" id="hl-stars"></svg>
+  </div>
+
+  <!-- Harga -->
+  <div class="grid grid-2col" id="g-price">
+    <div class="cell" style="background:var(--red-pale);">
+      <div class="label">pembangunan laman web</div>
+      <div class="price-amt">RM 3,000</div>
+      <div class="price-note">bayaran sekali &middot; milikan penuh</div>
+      <div class="price-feature">Laman web peribadi lengkap (5&ndash;7 halaman)</div>
+      <div class="price-feature">Profil, biografi &amp; visi YB</div>
+      <div class="price-feature">Bahagian berita &amp; kenyataan media</div>
+      <div class="price-feature">Nombor telefon &amp; borang hubungi</div>
+      <div class="price-feature">Pautan media sosial (Facebook, Instagram, X)</div>
+      <div class="price-feature">Reka bentuk responsif &mdash; cantik di telefon &amp; komputer</div>
+      <div class="price-feature">Hosting 1 tahun percuma via Cloudflare</div>
+      <div class="price-feature">Nama domain .com / .my disertakan</div>
+      <div class="price-feature">Sokongan WhatsApp 30 hari selepas lancar</div>
+    </div>
+    <div class="cell">
+      <div class="label">sokongan &amp; perubahan</div>
+      <div class="price-amt">RM 1,000</div>
+      <div class="price-note">setiap sesi perubahan</div>
+      <div class="price-feature">Kemaskini teks, foto atau kandungan</div>
+      <div class="price-feature">Tambah halaman baru</div>
+      <div class="price-feature">Tambah siaran berita atau kenyataan akhbar</div>
+      <div class="price-feature">Ubah suai reka bentuk atau warna</div>
+      <div class="price-feature">Perubahan kecil siap dalam 24 jam bekerja</div>
+      <div class="price-feature">Perubahan besar siap dalam 3 hari bekerja</div>
+      <div style="margin-top:12px;padding:9px 11px;border:1px dashed var(--rule);border-radius:2px;">
+        <div class="label" style="margin-bottom:3px;">Nota</div>
+        <p style="font-size:8px;color:var(--ink-3);line-height:1.65;">Perubahan kecil dalam <strong style="color:var(--ink);">30 hari pertama adalah percuma</strong>. Sesi RM150 ini untuk permintaan selepas tempoh tersebut atau perubahan berskop lebih besar.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Proses -->
+  <div class="grid grid-2col" id="g-process">
+    <div class="cell">
+      <div class="label">cara kami bekerja</div>
+      <div class="step">
+        <div class="step-num">01</div>
+        <div>
+          <div class="step-title">Panggilan Keperluan &mdash; 30 Minit</div>
+          <div class="step-desc">Kita berbual ringkas melalui WhatsApp atau panggilan video. Anda kongsikan nama, jawatan, foto, warna pilihan, dan apa yang ingin disampaikan kepada rakyat.</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">02</div>
+        <div>
+          <div class="step-title">Draf Reka Bentuk</div>
+          <div class="step-desc">Dalam 2 hari bekerja, draf visual laman web anda disiapkan. Anda semak dan beri maklum balas sebelum pembangunan penuh bermula.</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">03</div>
+        <div>
+          <div class="step-title">Pembangunan &amp; Isi Kandungan</div>
+          <div class="step-desc">Semua kandungan &mdash; biografi, gambar, pautan sosial, dan halaman &mdash; dimasukkan sepenuhnya. Tiada kerja tambahan dari pihak YB.</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">04</div>
+        <div>
+          <div class="step-title">Semakan &amp; Kelulusan YB</div>
+          <div class="step-desc">Anda terima pautan pratonton. Beri ulasan, minta perubahan &mdash; satu pusingan semakan termasuk dalam pakej.</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">05</div>
+        <div>
+          <div class="step-title">Lancar</div>
+          <div class="step-desc">Domain disambung, HTTPS aktif, laman web anda hidup. Semua pengurusan teknikal kami uruskan &mdash; anda hanya perlu kongsikan pautan kepada rakyat.</div>
+        </div>
+      </div>
+    </div>
+    <div class="cell">
+      <div class="label">mengapa bermula dengan satu panggilan?</div>
+      <p style="font-size:8.5px;color:var(--ink-2);line-height:1.75;margin-bottom:11px;">Setiap ahli politik mempunyai identiti, kawasan, dan mesej yang berbeza. Kami tidak gunakan templat umum &mdash; setiap laman web dibina berdasarkan keperluan <strong>anda secara peribadi</strong>.</p>
+      <p style="font-size:8.5px;color:var(--ink-2);line-height:1.75;margin-bottom:14px;">Panggilan 30 minit itu adalah titik permulaan. Tiada komitmen, tiada bayaran. Selepas panggilan, anda sudah ada gambaran jelas tentang laman web anda, dan kami sudah ada semua yang diperlukan untuk mula.</p>
+      <div style="background:var(--red-pale);border-left:3px solid var(--red);padding:11px 13px;">
+        <div class="label" style="margin-bottom:5px;">untuk tempah panggilan</div>
+        <p style="font-size:9px;color:var(--ink-2);line-height:1.7;margin-bottom:10px;">Hubungi kami melalui WhatsApp atau e-mel. Nyatakan nama dan masa yang sesuai &mdash; kami akan sahkan temujanji dalam masa 1 jam bekerja.</p>
+        <a href="https://wa.me/60111674580" style="display:block;font-family:'DM Mono',monospace;font-size:8.5px;color:var(--red);text-decoration:none;margin-bottom:3px;">WhatsApp: +60 11-1674 5806</a>
+        <a href="mailto:raishelmy97@gmail.com" style="display:block;font-family:'DM Mono',monospace;font-size:8.5px;color:var(--ink-2);text-decoration:none;">E-mel: raishelmy97@gmail.com</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tentang -->
+  <div class="grid" id="g-about">
+    <div class="cell cell-full" style="background:var(--red-pale);">
+      <div style="display:grid;grid-template-columns:1fr auto;gap:20px;align-items:start;">
+        <div>
+          <div class="label">tentang pembangun</div>
+          <div class="about-name">Rais Helmy Sapiullah</div>
+          <div class="about-role">Senior Software Engineer &middot; Solution Architect</div>
+          <p class="about-body">Pengalaman lebih <strong>6 tahun</strong> membangunkan sistem peringkat enterprise untuk syarikat-syarikat besar Malaysia &mdash; termasuk <strong>Etiqa Insurance</strong>, <strong>Tenaga Nasional Berhad (TNB)</strong>, dan <strong>Pusat Kawalan PDRM C4i</strong>. Setiap projek diuruskan secara peribadi, dari konsultasi hingga penghantaran &mdash; bukan dioutsource kepada pihak lain. Anda berurusan terus dengan jurutera yang membina laman web anda.</p>
+        </div>
+        <div style="text-align:right;flex-shrink:0;white-space:nowrap;padding-top:18px;">
+          <div class="label" style="margin-bottom:4px;">Hubungi Sekarang</div>
+          <a href="https://wa.me/60111674580" style="display:block;font-family:'DM Mono',monospace;font-size:8.5px;color:var(--red);text-decoration:none;margin-bottom:2px;">+60 11-1674 5806</a>
+          <a href="mailto:raishelmy97@gmail.com" style="display:block;font-family:'DM Mono',monospace;font-size:8px;color:var(--ink-3);text-decoration:none;margin-bottom:10px;">raishelmy97@gmail.com</a>
+          <a href="https://wa.me/60111674580" style="display:inline-block;font-family:'DM Mono',monospace;font-size:8px;padding:6px 14px;background:var(--red);color:#fff;text-decoration:none;border-radius:2px;text-transform:uppercase;letter-spacing:.06em;">WhatsApp Saya &#8594;</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CTA -->
+  <div class="cta-block" id="g-cta">
+    <div>
+      <div class="cta-headline">Bersedia untuk hadir secara digital?<br><em>Mulakan dengan satu panggilan percuma.</em></div>
+      <p class="cta-body">Tiada komitmen. Tiada bayaran untuk konsultasi. Hanya 30 minit &mdash; dan anda akan tahu dengan jelas apa yang akan anda dapat.</p>
+    </div>
+    <div class="cta-contacts">
+      <a href="https://wa.me/60111674580">+60 11-1674 5806</a>
+      <a href="mailto:raishelmy97@gmail.com">raishelmy97@gmail.com</a>
+      <a href="https://wa.me/60111674580" class="cta-btn">Tempah Panggilan &#8594;</a>
+    </div>
+  </div>
+
+  <div class="page-footer">
+    <span class="mono" style="font-size:7.5px;color:var(--red-soft);">rais helmy sapiullah &middot; laman web peribadi untuk ahli politik &middot; <span class="yr"></span></span>
+    <span class="mono" style="font-size:7.5px;color:var(--rule);">&#9642; &#9642; &#9642;</span>
+  </div>
+
+  <svg class="star-layer" id="s1a"></svg>
+  <svg class="star-layer" id="s1b"></svg>
+  <svg class="star-layer" id="s1c"></svg>
+
+</div>
+</div>
+</div>
+
+<script>
+document.querySelectorAll('.yr').forEach(function(el){ el.textContent = new Date().getFullYear(); });
+
+function starPath(outer, inner, arms){
+  outer = outer || 4.5; inner = inner || 1.8; arms = arms || 8;
+  var d = '';
+  for(var i = 0; i < arms * 2; i++){
+    var a = (Math.PI / arms) * i - Math.PI / 2;
+    var r = i % 2 === 0 ? outer : inner;
+    d += (i === 0 ? 'M' : 'L') + (Math.cos(a) * r).toFixed(2) + ',' + (Math.sin(a) * r).toFixed(2);
+  }
+  return d + 'Z';
+}
+
+function drawHlStars(){
+  var ns = 'http://www.w3.org/2000/svg';
+  var row = document.getElementById('hlrow');
+  var svg = document.getElementById('hl-stars');
+  if(!row || !svg) return;
+  svg.innerHTML = '';
+  var rr = row.getBoundingClientRect();
+  var cells = row.querySelectorAll('.hl-cell');
+  var xs = new Set(); var ys = new Set([0, row.offsetHeight]);
+  cells.forEach(function(c){
+    var cr = c.getBoundingClientRect();
+    xs.add(Math.round(cr.left - rr.left));
+    xs.add(Math.round(cr.right - rr.left));
+  });
+  var path = starPath();
+  xs.forEach(function(x){ ys.forEach(function(y){
+    var eg = document.createElementNS(ns, 'g');
+    eg.setAttribute('transform', 'translate(' + x + ',' + y + ')');
+    var p = document.createElementNS(ns, 'path');
+    p.setAttribute('d', path); p.setAttribute('fill', '#ef4444'); p.setAttribute('opacity', '0.45');
+    eg.appendChild(p);
+    var c = document.createElementNS(ns, 'circle');
+    c.setAttribute('cx', '0'); c.setAttribute('cy', '0'); c.setAttribute('r', '1'); c.setAttribute('fill', '#ef4444');
+    eg.appendChild(c);
+    svg.appendChild(eg);
+  }); });
+}
+
+function placeStars(gridId, svgId){
+  var ns = 'http://www.w3.org/2000/svg';
+  var g = document.getElementById(gridId);
+  var s = document.getElementById(svgId);
+  if(!g || !s) return;
+  s.innerHTML = '';
+  var sr = s.getBoundingClientRect();
+  var gr = g.getBoundingClientRect();
+  var cells = g.querySelectorAll('.cell');
+  var xs = new Set([0, Math.round(gr.width)]);
+  var ys = new Set([0, Math.round(gr.height)]);
+  cells.forEach(function(c){
+    var cr = c.getBoundingClientRect();
+    xs.add(Math.round(cr.left - gr.left)); xs.add(Math.round(cr.right - gr.left));
+    ys.add(Math.round(cr.top - gr.top)); ys.add(Math.round(cr.bottom - gr.top));
+  });
+  var ox = gr.left - sr.left, oy = gr.top - sr.top;
+  var path = starPath();
+  Array.from(xs).forEach(function(x){ Array.from(ys).forEach(function(y){
+    var eg = document.createElementNS(ns, 'g');
+    eg.setAttribute('transform', 'translate(' + (ox + x) + ',' + (oy + y) + ')');
+    var p = document.createElementNS(ns, 'path');
+    p.setAttribute('d', path); p.setAttribute('fill', '#ef4444'); p.setAttribute('opacity', '0.38');
+    eg.appendChild(p);
+    var c = document.createElementNS(ns, 'circle');
+    c.setAttribute('cx', '0'); c.setAttribute('cy', '0'); c.setAttribute('r', '0.9'); c.setAttribute('fill', '#ef4444');
+    eg.appendChild(c);
+    s.appendChild(eg);
+  }); });
+}
+
+function allStars(){
+  drawHlStars();
+  placeStars('g-price', 's1a');
+  placeStars('g-process', 's1b');
+  placeStars('g-about', 's1c');
+}
+setTimeout(allStars, 220);
+window.addEventListener('resize', function(){ setTimeout(allStars, 120); });
+</script>
+</body>
+</html>

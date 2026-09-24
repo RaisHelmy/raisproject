@@ -1,0 +1,37 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "xuanzhi-api",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-09-04",
+  "compatibility_flags": ["nodejs_compat"],
+  "observability": { "enabled": true, "head_sampling_rate": 1 },
+  "rules": [{ "type": "Text", "globs": ["**/*.md", "**/*.txt"], "fallthrough": true }],
+  "vars": {
+    "APP_NAME": "XuanZhi AI",
+    "APP_VERSION": "0.1.0",
+    "WEB_ORIGIN": "https://xuanzhi-a8r.pages.dev",
+    // Additional trusted browser origins (comma-separated) for CORS + CSRF: the custom domain in front of the Pages project.
+    "WEB_ORIGINS": "https://xuanzhi.raishelmy.uk",
+    // Where GET /api/auth/sso lands the super-admin after a successful suite SSO (secret: SAAS_SSO_SECRET).
+    "SSO_REDIRECT_TO": "https://xuanzhi.raishelmy.uk/admin",
+    "API_ORIGIN": "https://xuanzhi-api.raishelmy97.workers.dev",
+    // "queue" — enqueue document-processing jobs; "inline" — run in ctx.waitUntil (local dev without a queue).
+    "JOB_MODE": "queue",
+    "SESSION_TTL_HOURS": "336",
+    "MAX_UPLOAD_BYTES": "26214400",
+    // Embedding model (Workers AI). bge-m3: multilingual (Chinese + English), 1024 dimensions — the vector column width.
+    "EMBEDDING_MODEL": "@cf/baai/bge-m3",
+    "EMBEDDING_DIMENSIONS": "1024"
+  },
+  // Secrets (wrangler secret put): SESSION_SECRET, ENCRYPTION_KEY, OPENAI_API_KEY, ANTHROPIC_API_KEY, GOOGLE_API_KEY,
+  // GOOGLE_CLIENT_ID/SECRET, MICROSOFT_CLIENT_ID/SECRET, APPLE_*, STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET, RESEND_API_KEY, EMAIL_FROM, CRON_SECRET
+  "hyperdrive": [{ "binding": "HYPERDRIVE", "id": "7a7777560d434c2b91ff37c52ab1b2c9" }],
+  "r2_buckets": [{ "binding": "FILES", "bucket_name": "xuanzhi-files" }],
+  "kv_namespaces": [{ "binding": "CACHE", "id": "8faf21265e8e449ab2500f9f85dfcb81" }],
+  "ai": { "binding": "AI" },
+  "queues": {
+    "producers": [{ "binding": "JOBS", "queue": "xuanzhi-jobs" }],
+    "consumers": [{ "queue": "xuanzhi-jobs", "max_batch_size": 3, "max_retries": 3, "dead_letter_queue": "xuanzhi-jobs-dlq" }]
+  },
+  "dev": { "port": 8787 }
+}

@@ -1,0 +1,172 @@
+﻿
+@{
+    Layout = null;
+
+    string SearchType = ViewData["SearchType"] + "";
+}
+
+
+
+<div class="col-md-12">
+    <div class="form-horizontal">
+        <div class="form-group">
+            <label class="control-label col-md-2">
+                Accepting Head
+            </label>
+            <div class="col-md-6 form-control-static">
+                <div class="input-group" >
+                    <input class="form-control" id="DisplayEmployee" value="" />
+                    <span class="input-group-btn">
+                        <btn data-toggle="modal" onclick="clearDataTable()" class="btn default"><i class="fa fa-group"></i></btn>
+                    </span>
+                </div>
+                                       
+            </div>
+            <div class="col-md-3 form-control-static">
+                <span>
+                    <input type="button" class="btn default green form-control" id="AddAttendee" onclick="loading()" value="Add Accepting Head" style="width:154px"/>
+                </span>
+            </div>
+                                    
+        </div>
+    </div>
+</div>
+
+<div class="col-md-12">
+    <div class="form-horizontal">
+        <div class="row" style="margin-top:15px;">
+            <div class="col-md-12" id="MultiPplPickerResult">
+
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<input type="hidden" id="hfEmpID" name="hfEmpID" />
+<input type="hidden" id="hfTempEmpID" name="hfTempEmpID" />
+
+
+<div class="modal fade" id="PeoplePicker" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                <h4 class="modal-title">People Picker - Select By Employee Number or Name</h4>
+            </div>
+            <div class="modal-body">
+                <div>
+                    @Html.Action("MultiPeoplePickerBySearchType", "MultiPeoplePicker", new { SearchType = @SearchType })
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn default green" onclick="SetSelectedEmployee()">Select</button>
+                <button type="button" class="btn default" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script type="text/javascript">
+    function SetSelectedEmployee() {
+  
+        var CurrentEmployeeID = $("#hfEmpID").val();
+        var TempEmployeeID = $("#hfTempEmpID").val();
+        var CurrentEmployeeIDArray;
+        var EmployeeID = "";
+        var txtEmpNm2 = "";
+ 
+        if (CurrentEmployeeID != "") {
+            CurrentEmployeeIDArray = TempEmployeeID.split(',');
+        }
+
+        var oTable = $('#tblPeoplePicker').dataTable();
+        var rowcollection = oTable.$("td input[type=checkbox]", { "page": "all" });
+
+        rowcollection.each(function () {
+            var _selected = $(this).prop("checked");
+
+            if (_selected) {
+                var x = 0;
+                var returnValue = true;
+
+                for (var item in CurrentEmployeeIDArray) {
+                    if (CurrentEmployeeIDArray[x] == $(this).val()) {
+                        
+                        returnValue = false;
+                    }
+                    x++;
+                }
+
+                if (returnValue) {
+                    if ($("#" + $(this).attr("empcode")).length == 0) {
+                        EmployeeID = EmployeeID + $(this).val() + ",";
+
+                        txtEmpNm2 = txtEmpNm2 + $(this).attr("empcode") + ' - ' + $(this).attr("empName") + ",";
+                    }
+                }
+                
+            }
+
+        });
+        EmployeeID = EmployeeID.slice(0, -1);
+        txtEmpNm2 = txtEmpNm2.slice(0, -1);
+
+        $('#PeoplePicker').modal('toggle');
+        $("#DisplayEmployee").val(txtEmpNm2);
+
+        if (CurrentEmployeeID != "") {
+            if (EmployeeID != "") {
+                $("#hfTempEmpID").val(EmployeeID + "," + CurrentEmployeeID);
+            }
+        } else {
+            $("#hfTempEmpID").val(EmployeeID);
+        }
+        
+
+    }
+
+    function clearDataTable() {
+        $("#PeoplePickerResult").empty();
+        $("#txtEmpCodeSearch").val("");
+        $("#txtEmpCodeSearch").val("");
+        $('#PeoplePicker').modal();
+    }
+
+    function loading() {
+        $("#divLoading").css("display", "block");
+        var myVar = setTimeout(addAttendees, 1000);
+    }
+
+    function addAttendees() {
+        var temEmpID = $("#hfTempEmpID").val();
+
+        if (temEmpID != "") {
+            $("#hfEmpID").val($("#hfTempEmpID").val());
+        }
+        if ($("#hfEmpID").val() == "" || $("#DisplayEmployee").val() == "") {
+            $("#divLoading").css("display", "none");
+            alert('Please select at least one attendee');
+
+            return false;
+        }
+
+        $.ajax({
+            type: "GET",
+            url: '@Url.Content("~/ETransfer/_MultiPeoplePickerChkBoxResult")',
+            cache: false,
+            dataType: "html",
+            data: { EmployeeID: $("#hfEmpID").val()},
+            success: function (content) {
+                $("#MultiPplPickerResult").html(content);
+                $("#DisplayEmployee").val("");
+                $("#divLoading").css("display", "none");
+            },
+            error: function (e) {
+                $("#divLoading").css("display", "none");
+                console.log(e);
+            }
+        });
+    }
+</script>

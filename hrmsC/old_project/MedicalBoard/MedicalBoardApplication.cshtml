@@ -1,0 +1,305 @@
+﻿@{
+    ViewBag.Title = "MedicalBoardApplication";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    DateTime d1 = DateTime.Now.AddYears(-20);
+    string dtStrStart = d1.ToString("dd MMM yyyy");
+}
+
+<div class="form-section">
+    <div class="row">
+        <div class="col-md-12">
+            <h1 class="page-title">
+                Medical Board Application
+                <span style="padding-left:20px;">
+                    <small></small>
+                </span>
+            </h1>
+        </div>
+    </div>
+</div>
+
+<input id="hfEmployeeID" type="hidden" value="@ViewBag.EmployeeID" />
+
+<!-- Employee Details -->
+@Html.Partial("_MedicalBoardEmployeeDetails")
+
+<!-- Medical Board Details -->
+@Html.Partial("_MedicalBoardDetails")
+
+<!-- Attachment -->
+@Html.Action("AttachmentControl", "Attachment", new { EmployeeID =ViewBag.EmployeeID, Mode="New",SourceType="MedicalBoard" })
+<div class="row">
+    <div class="col-md-12">
+        <label style="position: relative;top: -20px;">Note: COMPULSORY to attach latest Medical Report</label>
+    </div>
+</div>
+
+
+<!-- Disclaimer -->
+<div class="row">
+    <div class="col-md-12">
+        <input type="checkbox" id="chkDisclaimer"> <b>I declare that all the information stated above are accurate and reliable to the best of my knowledge.</b>
+    </div>
+</div>
+
+<br />
+
+<!-- Buttons -->
+<div class="row">
+    <div class="col-md-12">
+        <input type="button" class="btn green" value="Submit" id="btnSubmit" onclick="MedicalBoardValidation();" />
+        <input type="button" class="btn green" value="Back" id="btnBack" style="display:none;" onclick="window.history.back()" />
+    </div>
+</div>
+
+
+<!-- Success Message -->
+<div class="modal fade" id="SuccessSubmit" tabindex="-1" role="basic" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header Success-header">
+                @*<button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>*@
+                <h4 class="Success-title">Action Successfully Completed</h4>
+            </div>
+            <div class="modal-body Success-body">
+                <div class="well">
+                    Your Medical Board application has been successfully submitted.
+                </div>
+            </div>
+            <div class="modal-footer Success-footer">
+                <button type="submit" class="btn default blue" id="btnOK">
+                    <i class="fa fa-check"></i>
+                    OK
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Confirmation Message -->
+<div class="modal fade" id="ConfirmUpdate" tabindex="-1" role="basic" aria-hidden="true" >
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                <h4 class="modal-title">Confirmation</h4>
+            </div>
+            <div class="modal-body">
+                <div class="well">
+                    Are you sure you want to Submit this Medical Board application?\n\rPress Confirm to proceed, or Close to stay on the current page.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="submit" class="btn default blue" id="btnSubmitForm" onclick="javascript: SubmitForm()">
+                    <i class="fa fa-check"></i>
+                    Confirm
+                </button>
+                <button type="button" class="btn default" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Loading Gif -->
+<div id="divLoading" style="margin: 0px; padding: 0px; position: fixed; right: 0px;
+    top: 0px; width: 100%; height: 100%; background-color:gainsboro; z-index: 30001;
+    opacity: .8; filter: alpha(opacity=70);display:none">
+    <p style="position: absolute; top: 30%; left: 30%; color: black;">
+        Loading, please wait...<img src="../Assets/img/ajax-loading.gif" />
+
+    </p>
+</div>
+
+<script type="text/javascript">
+
+    // Variable
+    //var Path = '/_layouts/15/tnbess';
+    //var Path = '/_layouts/15/essv2';
+    var Path = 'http://localhost:49773';
+    var EmployeeID = '';
+
+    // Helper function
+    function convertDate(inputFormat) {
+        function pad(s) { return (s < 10) ? '0' + s : s; }
+        var d = new Date(inputFormat);
+        return [pad(d.getDate()), pad(d.getMonth() + 1), d.getFullYear()].join('/');
+    }
+
+    //  Logical function (AJAX)
+    function GetEmployeeDetails(EmpID) {
+        jQuery.support.cors = true;
+
+        $.ajax({
+            url: Path + '/api/EmployeeWebApi/GetEmployeeDetailsSummary?EmployeeID=' + EmpID,
+            type: 'GET',
+            contentType: "application/json;charset=utf-8",
+            success: function (data) {
+
+                document.getElementById('ct00_EmployeeCodeRO').innerHTML = data.EmployeeCode;
+                document.getElementById('ct00_EmployeeNameRO').innerHTML = data.EmployeeName;
+                document.getElementById('ct00_NewICRO').innerHTML = data.NewIC;
+                document.getElementById('ct00_PayScaleGroupRO').innerHTML = data.PayScaleGroup;
+                document.getElementById('ct00_CostCenterRO').innerHTML = (data.CostCenterCode + " - " + data.CostCenterName);
+
+                document.getElementById('ct00_JoinedDateRO').innerHTML = convertDate(data.JoinedDate);
+                document.getElementById('ct00_DepartmentRO').innerHTML = data.Department;
+                document.getElementById('ct00_UnitSectionRO').innerHTML = data.UnitSection;
+                document.getElementById('ct00_PositionRO').innerHTML = data.Position;
+                document.getElementById('ct00_ManagerRO').innerHTML = data.ImmediateManager;
+
+                // Hidden Value
+                document.getElementById('ct00_PayScaleGroup').value = data.PayScaleGroup;
+                document.getElementById('ct00_CostCenterCode').value = data.CostCenterCode;
+                document.getElementById('ct00_CostCenterName').value = data.CostCenterName;
+                document.getElementById('ct00_CompanyCode').value = data.CompanyCode;
+                document.getElementById('ct00_CompanyName').value = data.Company;
+                document.getElementById('ct00_AreaCode').value = data.DepartmentCode;
+                document.getElementById('ct00_AreaName').value = data.Department;
+                document.getElementById('ct00_SubAreaCode').value = data.UnitSectionCode;
+                document.getElementById('ct00_SubAreaName').value = data.UnitSection;
+                document.getElementById('ct00_PositionCode').value = data.PositionCode;
+                document.getElementById('ct00_PositionName').value = data.Position;
+                document.getElementById('ct00_ManagerID').value = data.ManagerID;
+
+            },
+            error: function (x, y, z) {
+                alert(x + '\n' + y + '\n' + z);
+            }
+        });
+    }
+
+    function MedicalBoardValidation()
+    {
+        var _chkDisclaimer = document.getElementById("chkDisclaimer").checked;
+        var ValidationMsg = '';
+
+        if (!_chkDisclaimer)
+            ValidationMsg += '- Disclaimer is required.\n'
+
+        if ($("#txtEmpName").val() == '')
+            ValidationMsg += '- Employee Name is required.\n'
+
+        // Consolidate Message
+        if (ValidationMsg != null && ValidationMsg != '') {
+            alert(ValidationMsg);
+        }
+        else {
+            $(".modal-body .well").html('Clicking Confirm will submit this application for Approval. If you want to make changes, click Close.');
+            $("#btnOK").click(function () { RedirectTo('Submit'); });
+            $("#ConfirmUpdate").modal();
+        }
+    }
+
+    function RedirectTo(_Action) {
+        switch (_Action) {
+            case "Submit":
+                window.location.href = Path + '/MedicalBoard/MedicalBoardHistory';
+                break;
+            default:
+                window.location.href = '/Pages/default.aspx';
+        }
+    }
+    function SubmitForm()
+    {
+        btnSubmitForm.disabled = true;
+        $("#divLoading").css("display", "block");
+        var myVar = setTimeout(SubmitFormAction, 3000);
+    }
+
+    function SubmitFormAction()
+    {
+        jQuery.support.cors = true;
+
+        var _PayScaleGroup = document.getElementById('ct00_PayScaleGroup').value;
+        var _CostCenterCode = document.getElementById('ct00_CostCenterCode').value;
+        var _CostCenterName = document.getElementById('ct00_CostCenterName').value;
+        var _CompanyCode = document.getElementById('ct00_CompanyCode').value;
+        var _CompanyName = document.getElementById('ct00_CompanyName').value;
+        var _AreaCode = document.getElementById('ct00_AreaCode').value;
+        var _AreaName = document.getElementById('ct00_AreaName').value;
+        var _SubAreaCode = document.getElementById('ct00_SubAreaCode').value;
+        var _SubAreaName = document.getElementById('ct00_SubAreaName').value;
+        var _PositionCode = document.getElementById('ct00_PositionCode').value;
+        var _PositionName = document.getElementById('ct00_PositionName').value;
+        var _ManagerID = document.getElementById('ct00_ManagerID').value;
+        var _JoinedDate = document.getElementById('ct00_JoinedDateRO').innerHTML;
+
+        var _ApplicantID = document.getElementById('hfEmpID').value;
+        var _AppointmentDate = document.getElementById('ct01_AppointmentDate').value;
+        var _Location = document.getElementById('ct01_Location').value;
+        var _EmployeeID = document.getElementById('ct01_EmployeeID').value;
+   
+        var form = {
+            PayScaleGroup: _PayScaleGroup,
+            CostCenterCode: _CostCenterCode,
+            CostCenterName: _CostCenterName,
+            JoinedDate:_JoinedDate,
+            CompanyCode: _CompanyCode,
+            CompanyName: _CompanyName,
+            AreaCode: _AreaCode,
+            AreaName: _AreaName,
+            SubAreaCode: _SubAreaCode,
+            SubAreaName: _SubAreaName,
+            PositionCode: _PositionCode,
+            PositionName: _PositionName,
+            ManagerID:_ManagerID,
+            ApplicantID: _ApplicantID,
+            AppointmentDate: _AppointmentDate,
+            Location: _Location,
+            SubmitterID: _EmployeeID,
+            AttachMandatory:'true'
+        };
+
+        $.ajax({
+            type: "POST",
+            url: '@Url.Content("~/MedicalBoard/SubmitForm")',
+            cache: false,
+            async: false,
+            dataType: "json",
+            data: form,
+            success: function (result) {
+                if (result.Success)
+                {
+                    $("#ConfirmUpdate").modal('toggle');
+                    $("#divLoading").hide();
+                    $(".Success-body .well").html('Your Medical Board Application has been successfully submitted.');
+                    $("#SuccessSubmit").modal();
+                   
+                }
+                else
+                {
+                    $("#ConfirmUpdate").modal('toggle');
+                    $("#divLoading").hide();
+                    btnSubmitForm.disabled = false;
+                    alert(result.ErrorMsg);
+                }
+            },
+            error: function (e) {
+
+            }
+        });
+
+    }
+
+    // Page Load
+    function FormConfiguration() {
+        EmployeeID = document.getElementById('hfEmployeeID').value;
+        document.getElementById('ct01_EmployeeID').value = EmployeeID;
+        document.getElementById('ct01_CreatedBy').value = EmployeeID;
+
+        GetEmployeeDetails(EmployeeID);
+        document.getElementById('lvEmpMan').style.display = '';
+        document.getElementById('trLocation').style.display = 'none';
+        document.getElementById('trAppDate').style.display = 'none';
+    }
+
+    $(document).ready(function () {
+        FormConfiguration();
+
+        // Form plugin function
+        $('.date-picker').datepicker({
+            format: 'dd/mm/yyyy',
+            autoclose: true,
+            setStartDate: '@dtStrStart',
+        });
+
+    });
+</script>

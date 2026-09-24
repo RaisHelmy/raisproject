@@ -1,0 +1,271 @@
+﻿@model ESS.Claim.ViewModels.ClaimVM
+@{
+    Layout = null;
+    string CurrAction = ViewContext.RouteData.Values["action"].ToString().ToLower();
+}
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="portlet box blue">
+            <div class="mini-triangle"><img src="../Assets/img/menu-red-triangle.png" /></div>
+            <div class="portlet-title">
+                <div class="caption">
+                    <i class="fa fa-reorder"></i>Claims Particular
+                </div>
+                @if (RoleMaintenance.RoleService.IsInRole("Claim", "HR Admin")
+                    && (CurrAction == "index" || CurrAction == "viewilsasclaims"))
+                {
+                    <a href="#" class="btn btn-xs green pull-right" onclick="loadTimeSheetPartial();">
+                        <i class="fa fa-eye"></i> View Timesheet Report
+                    </a>
+                }
+            </div>
+            <div class="portlet-body form">
+                <div class="form-body" id="ct01_CustomFieldFormView">
+                    <div class="row" style="">
+                        <div id="divCurrentApprover" class="col-md-6">
+                            <div class="form-horizontal">
+                                <div class="form-group">
+                                    <label class="control-label col-md-4">Category</label>
+                                    <div class="col-md-8 form-control-static">
+                                        <label id="ct01_Category" class="LabelDisplay">@Model.ClaimType</label>
+                                        <input type="hidden" name="ClaimType" value="@Model.ClaimType" />
+                                        <input type="hidden" name="ClaimTypeCode" value="@Model.ClaimTypeCode" />
+
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-horizontal">
+                                <div class="form-group ClaimStatus">
+                                    <label class="control-label col-md-4">Claim Status</label>
+                                    <div class="col-md-8 form-control-static">
+                                        <input type="hidden" name="Status" value="@Model.Status" />
+                                        @*@if (Model.Status == "Draft")
+                                            {
+                                                <div>Draft</div>
+                                            }
+                                            else
+                                            {
+                                                @ESS.Claim.Service.GetStatus(int.Parse(Model.Status))
+                                            }*@
+                                        @if (Model.Status == "Draft")
+                                        {
+                                            <div>Draft</div>
+                                        }
+                                        else
+                                        {
+                                            string status = ESS.Claim.Service.GetStatus(int.Parse(Model.Status));
+                                            if (Model.Status == "4" || Model.Status == "5" || Model.Status == "8" || Model.Status == "9")
+                                            {
+                                                <div style="color: red; font-weight:bold;">@status</div>
+                                            }
+                                            else
+                                            {
+                                                <div style="color: green;font-weight:bold;">@status</div>
+                                            }
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <input type="hidden" name="ID" value="@Model.ID" />
+                    @if (Model.Status != "0" && Model.Status != "Draft" && Model.Status != "5" && Model.Status != "Withdrawn" && Model.Status != "4" && Model.Status != "Declined")
+                    {
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <label class="control-label col-md-4">Reference No.</label>
+                                        <div class="col-md-8 form-control-static">
+                                            <input type="hidden" name="RequestNo" value="@Model.RequestNo" />
+                                            @Html.DisplayFor(x => x.RequestNo)
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <label class="control-label col-md-4">Current Approver</label>
+                                        <div class="col-md-8 form-control-static">
+                                            @if (Model.ApproverName != "")
+                                            {
+                                                @Html.DisplayFor(x => x.ApproverName)
+                                            }
+                                            else
+                                            {
+                                                <span>-</span>
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                    @if (Model.ClaimTypeCode != "COH01" && Model.ClaimTypeCode != "COB01")
+                    {
+                        <div id="trClaimsDate" class="row" style="">
+                            <div class="col-md-12">
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <input type="hidden" name="hfStartDate" id="hfStartDate" value="@ViewBag.hfStartDate" />
+                                        <input type="hidden" name="hfEndDate" id="hfEndDate" value="@ViewBag.hfEndDate" />
+                                        <label class="control-label col-md-2">
+                                            Start Date <span id="dtStartDate" style="color:red;"> *</span>
+                                        </label>
+
+                                        <div class="col-md-4 form-control-static">
+                                            @if (Model.Status != "Draft" && Model.Status != "0" && Model.Status != "5" && Model.Status != "Withdrawn" && Model.Status != "4" && Model.Status != "Declined")
+                                            {
+                                                <div id="divEndDate" class="input-group">
+                                                    @Html.TextBoxFor(m => m.StartDate, new { @class = "form-control", @readonly = "readonly" })
+                                                    <span class="input-group-btn">
+                                                        <button type="button" class="btn default"><i class="fa fa-calendar"></i></button>
+                                                    </span>
+                                                </div>
+                                            }
+                                            else
+                                            {
+                                                <div id="divEndDate" class="input-group date date-picker" data-date-format="dd/mm/yyyy">
+                                                    @Html.TextBoxFor(m => m.StartDate, new { @class = "form-control" })
+                                                    <span class="input-group-btn">
+                                                        <button type="button" class="btn default"><i class="fa fa-calendar"></i></button>
+                                                    </span>
+                                                </div>
+                                            }
+
+                                        </div>
+                                        <label class="control-label col-md-2">
+                                            End Date <span id="dtEndDate" style="color:red;"> *</span>
+                                        </label>
+                                        <div class="col-md-4 form-control-static">
+                                            @if (Model.Status != "Draft" && Model.Status != "0" && Model.Status != "5" && Model.Status != "Withdrawn" && Model.Status != "4" && Model.Status != "Declined")
+                                            {
+                                                <div id="divEndDate" class="input-group">
+                                                    @Html.TextBoxFor(m => m.EndDate, new { @class = "form-control", @readonly = "readonly" })
+                                                    <span class="input-group-btn">
+                                                        <button type="button" class="btn default"><i class="fa fa-calendar"></i></button>
+                                                    </span>
+                                                </div>
+                                            }
+                                            else
+                                            {
+                                                <div id="divEndDate" class="input-group date date-picker" data-date-format="dd/mm/yyyy">
+                                                    @Html.TextBoxFor(m => m.EndDate, new { @class = "form-control" })
+                                                    <span class="input-group-btn">
+                                                        <button type="button" class="btn default"><i class="fa fa-calendar"></i></button>
+                                                    </span>
+                                                </div>
+                                            }
+
+
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+
+                        <div id="trClaimsTime" class="row" style="">
+                            <div class="col-md-12">
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <input type="hidden" name="hfStartTime" id="hfStartTime" />
+                                        <input type="hidden" name="hfEndTime" id="hfEndTime" />
+                                        <label class="control-label col-md-2">
+                                            Start Time <span id="dtStartDate" style="color:red;"> *</span>
+                                        </label>
+
+                                        <div class="col-md-4 form-control-static">
+                                            @if (Model.Status != "Draft" && Model.Status != "0" && Model.Status != "5" && Model.Status != "Withdrawn" && Model.Status != "4" && Model.Status != "Declined")
+                                            {
+                                                @Html.TextBoxFor(m => m.StartTime, new { @class = "form-control timeinput", @placeholder = "HH:MM (e.g 12:30)", @readonly = "Readonly" })
+                                            }
+                                            else
+                                            {
+                                                @Html.TextBoxFor(m => m.StartTime, new { @class = "form-control timeinput", @placeholder = "HH:MM (e.g 12:30)" })
+
+                                            }
+                                        </div>
+
+                                        <label class="control-label col-md-2">
+                                            End Time <span id="dtEndTime" style="color:red;"> *</span>
+                                        </label>
+                                        <div class="col-md-4 form-control-static">
+                                            @if (Model.Status != "Draft" && Model.Status != "0" && Model.Status != "5" && Model.Status != "Withdrawn" && Model.Status != "4" && Model.Status != "Declined")
+                                            {
+                                                @Html.TextBoxFor(m => m.EndTime, new { @class = "form-control timeinput", @placeholder = "HH:MM (e.g 12:30)", @readonly = "Readonly" })
+                                            }
+                                            else
+                                            {
+                                                @Html.TextBoxFor(m => m.EndTime, new { @class = "form-control timeinput", @placeholder = "HH:MM (e.g 12:30)" })
+
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                    }
+                    <div id="trClaimsRemarks" class="row" style="">
+                        <div class="col-md-12">
+                            <div class="form-horizontal">
+                                <div class="form-group">
+                                    <label class="control-label col-md-2">
+                                        Remarks <span style="color:red;"> *</span>
+                                    </label>
+
+                                    <div class="col-md-10 form-control-static">
+                                        @if (Model.Status != "Draft" && Model.Status != "0" && Model.Status != "5" && Model.Status != "Withdrawn" && Model.Status != "4" && Model.Status != "Declined")
+                                        {
+                                            @Html.TextAreaFor(m => m.Description, new { @class = "claims-remark form-control", rows = "5", @readonly = "readonly", @maxlength = "1000" })
+
+                                        }
+                                        else
+                                        {
+                                            @Html.TextAreaFor(m => m.Description, new { @class = "claims-remark form-control", rows = "5", @maxlength = "1000" })
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    $(function () {
+        $('.claims-remark').keyup(function () {
+            var totalNewlines = document.getElementsByClassName("claims-remark")[0].value.split(/\r\n|\r|\n/).length - 1;
+            var totalTextLength = document.getElementsByClassName("claims-remark")[0].value.length;
+
+            if (totalTextLength + totalNewlines > 1000) {
+                $(this).val($(this).val().slice(0, -(totalTextLength + totalNewlines - 1000)));
+            }
+        });
+    });
+
+    function loadTimeSheetPartial() {
+        var startDate = $('#trClaimsDate #StartDate').val();
+        var endDate = $('#trClaimsDate #EndDate').val();
+        var empNo = $('label:contains("Employee Number")').closest('div').find('a').text().trim();
+
+        //assignDate on #modalTimeSheet
+        $('#modalTimeSheet #Employee').val(empNo);
+        if (typeof (startDate) !== 'undefined' || typeof (endDate) !== 'undefined') {
+            $('#modalTimeSheet #StartDate').datepicker({ format: "dd/mm/yyyy" }).datepicker('setDate', startDate);
+            $('#modalTimeSheet #EndDate').datepicker({ format: "dd/mm/yyyy" }).datepicker('setDate', endDate);
+            $('#btn-Search').click();
+        }
+        $('#modalTimeSheet').modal('show');
+    }
+</script>

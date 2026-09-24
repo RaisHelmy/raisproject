@@ -1,0 +1,220 @@
+﻿@model Integrity.ConflictOfInterest.Models.ConflictVM
+@{
+    Layout = null;
+}
+
+<style>
+    .col-radio-left {
+        padding-right: 0px;
+    }
+</style>
+<input type="hidden" name="DeclarationID" value="@Model.DeclarationID" />
+
+<div class="portlet box blue">
+    <div class="mini-triangle"><img src="/_layouts/15/TNBESS/Assets/img/menu-red-triangle.png" /></div>
+    <div class="portlet-title">
+        <div class="caption">
+            <i class="fa fa-reorder"></i>Request Details
+        </div>
+        <div class="tools">
+            <a title="" data-original-title="" href="javascript:;" class="collapse"> </a>
+        </div>
+    </div>
+    <div class="portlet-body form">
+        <div class="form-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-horizontal">
+                        <div class="form-group">
+                            <label class="control-label col-md-4">Reference No</label>
+                            <div class="col-md-8 form-control-static">
+                                <input type="text" class="form-control ReferenceNo" name="ReferenceNo"
+                                       readonly="readonly" value="@Model.ReferenceNo" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="form-horizontal">
+                        <div class="form-group">
+                            <label class="control-label col-md-4">Status</label>
+                            <div class="col-md-8 form-control-static">
+                                <input type="text" class="form-control Status" name="Status"
+                                       readonly="readonly" value="@Model.Status" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-horizontal">
+                        <div class="form-group">
+                            <label class="control-label col-md-4">Category</label>
+                            <div class="col-md-8 form-control-static">
+                                <select class="form-control Category" name="Category" onchange="OnCategoryChanged()" @(Model.CanEdit ? "" : "disabled")>
+                                    <option value="" @(Model.Category == "" ? "selected='selected'" : "")>- Select Category -</option>
+                                    @{
+                                        var options = Integrity.ConflictOfInterest.COIService.SPGetConflictOfInterestCategory();
+                                        foreach (var opt in options)
+                                        {
+                                            <option value="@opt" 
+                                                    @(Model.Category == opt ? "selected='selected'" : "")>@opt</option>
+                                        }
+                                    }
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="form-horizontal">
+                        <div class="form-group">
+                            <label class="control-label col-md-4">Current Approver</label>
+                            <div class="col-md-8 form-control-static">
+                                <input type="text" class="form-control"
+                                       readonly="readonly" value="@Model.GetCurrentApprover()" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-horizontal">
+                        <div class="form-group">
+                            <label class="control-label col-md-4">Type of Conflict of Interest</label>
+                            <div class="col-md-8 form-control-static">
+                                <div class="radio-list">
+                                    <div class="row">
+                                        <label class="col-md-12 col-radio-left">
+                                            <input type="radio" name="ConflictType" value="Actual"
+                                                   onchange="OnConflictTypeChange()"
+                                                   @(Model.CanEdit ? "" : "disabled")
+                                                   @(Model.ConflictType == "Actual" ? "checked='checked'" : "") />
+                                            <span class="BI">Actual</span>
+                                            <span class="BM">Sebenar</span>
+                                        </label>
+                                        <label class="col-md-12 col-radio-left">
+                                            <input type="radio" name="ConflictType" value="Potential"
+                                                   onchange="OnConflictTypeChange()"
+                                                   @(Model.CanEdit ? "" : "disabled")
+                                                   @(Model.ConflictType == "Potential" ? "checked='checked'" : "") />
+
+                                            <span class="BI">Potential</span>
+                                            <span class="BM">Berpotensi</span>
+                                        </label>
+                                        <label class="col-md-12 col-radio-left">
+                                            <input type="radio" name="ConflictType" value="Perceived"
+                                                   onchange="OnConflictTypeChange()"
+                                                   @(Model.CanEdit ? "" : "disabled")
+                                                   @(Model.ConflictType == "Perceived" ? "checked='checked'" : "") />
+                                            <span class="BI">Perceived</span>
+                                            <span class="BM">Konflik kepentingan yang dianggap berlaku</span>
+                                        </label>
+                                        <label class="col-md-12 col-radio-left">
+                                            <input type="radio" name="ConflictType" value="None"
+                                                   onchange="OnConflictTypeChange()"
+                                                   @(Model.CanEdit ? "" : "disabled")
+                                                   @(Model.ConflictType == "None" ? "checked='checked'" : "") />
+                                            <span class="BI">None</span>
+                                            <span class="BM">Tiada</span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        @*<div class="form-group">
+                            <div class="control-label col-md-offset-4 col-md-8">
+                                Please state, is the conflict
+                                <ol type="a">
+                                    <li><b>Actual</b> (i.e already happening);</li>
+                                    <li><b>Potential</b> (it could happen but hasn't yet); </li>
+                                    <li><b>Perceived</b> (people might think it is conflict even if it isn't)</li>
+                                </ol>
+                            </div>
+                        </div>*@
+                        @*<div class="form-group BM">
+                            <div class="control-label col-md-offset-4 col-md-8">
+                                Please state, is the conflict
+                                <ol type="a">
+                                    <li><b>Sebenar</b> (i.e Sudah berlaku);</li>
+                                    <li><b>Berpotensi</b> (Mungkin berlaku tapi belum); </li>
+                                    <li><b>Konflik kepentingan yang dianggap berlaku</b> (people might think it is conflict even if it isn't)</li>
+                                </ol>
+                            </div>
+                        </div>*@
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="form-horizontal">
+                        <div class="form-group">
+                            <label class="control-label col-md-4">Email Address</label>
+                            <div class="col-md-8 form-control-static">
+                                <input type="text" class="form-control" name="EmailAddress"
+                                       value="@Model.EmployeeDetails.EmailAddress"
+                                       readonly="readonly"/>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label col-md-4">Contact No</label>
+                            <div class="col-md-8 form-control-static">
+                                <input type="text" class="form-control" name="ContactNo"
+                                       value="@Model.EmployeeDetails.ContactNo"
+                                       readonly="readonly" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(function () {
+        OnCategoryChanged();
+        OnConflictTypeChange();
+    });
+
+    function OnCategoryChanged() {
+        var selectedCategory = $('[name="Category"]').val();
+
+        if (selectedCategory == "Staff" || selectedCategory == "" || selectedCategory == null) {
+            $('.ChairmanOfCommitee').hide();
+            $('.NotifyPeer').hide();
+
+            
+            $('#hfEmpID').val('');
+            $('#txtEmpName').val('');
+            ClearPeers();
+        }
+        else {
+            $('.ChairmanOfCommitee').show();
+            $('.NotifyPeer').show();
+        }
+    }
+
+    function OnConflictTypeChange() {
+        var selectedType = $('[name="ConflictType"]:checked').val();
+
+        if (selectedType == "None") {
+            $('.rBtnAnswerFalse').prop('checked', true);
+            $('.rBtnAnswerTrue').attr('disabled', true);
+
+            $('.txtAreaAnswer').prop('readonly', true);
+        }
+        else {
+            $('.rBtnAnswerTrue').attr('disabled', false);
+
+            $('.txtAreaAnswer').prop('readonly', false);
+        }
+
+        $('.rBtnAnswer').uniform('update');
+    }
+</script>

@@ -1,0 +1,94 @@
+﻿@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewBag.Title = "Leave Balance";
+}
+
+<div class="row">
+    <div class="col-md-12">
+        <br />
+        <h1 class="page-title">
+            Leave Balance<span style="padding-left:20px;"><small></small></span>
+        </h1>
+    </div>
+</div>
+<br />
+<div class="form-body">
+    <input type="hidden" id="hfEmployeeID" name="EmployeeID" value="@ViewBag.EmployeeID" />
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-3 control-label">Quota Year</label>
+                    <div class="col-md-4 form-control-static">
+                        <select class="form-control" id="ddlQuotaYear" onchange="SearchListing()"></select>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">&nbsp;</div>
+    <div class="row">
+        <div class="col-md-12">
+            <div id="SearchResult">
+
+            </div>
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+    function GetQuotaYear() {
+        $.get('@Url.Action("GetLeaveBalanceQuotaYears", "LeaveApplication")', PopulateQuotaYear);
+    }
+
+    function PopulateQuotaYear(quotaYears) {
+
+        var ddlQuotaYears = $('#ddlQuotaYear');
+        quotaYears.sort();
+
+        var i = 0;
+        for (i = 0; i < quotaYears.length; i++) {
+            ddlQuotaYears.append('<option value="' + quotaYears[i] + '">' + quotaYears[i] + '</option>');
+        }
+
+        var currentYear = '@DateTime.Now.Year.ToString()';
+        var closestYear = quotaYears.reduce(function (prev, current) {
+            return Math.abs(prev - currentYear) < Math.abs(current - currentYear) ? prev : current;
+        });
+
+        ddlQuotaYears.val(closestYear);
+
+        SearchListing();
+    }
+
+    function SearchListing() {
+        var _EmployeeID = $('#hfEmployeeID').val();
+        var _QuotaYear = $('#ddlQuotaYear').val();
+        $("#SearchResult").html("LOADING...");
+
+        $.ajax({
+            type: "GET",
+            cache : false,
+            url: '@Url.Action("_LeaveBalanceResult", "LeaveApplication")',
+            data: {
+                empID: _EmployeeID,
+                quotaYear: _QuotaYear
+            },
+            success: function (content) {
+                $("#SearchResult").html(content);
+            },
+            error: function (e) {
+                console.log(e);
+            }
+        });
+    }
+
+    jQuery(document).ready(function () {
+        $('.date-picker').datepicker({
+            format: 'dd/mm/yyyy',
+            autoclose: true,
+        });
+
+        GetQuotaYear();
+    });
+</script>
+

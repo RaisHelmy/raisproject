@@ -1,0 +1,527 @@
+﻿@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewBag.Title = "Leave Application In-Tray";
+    DateTime d1 = DateTime.Now.AddYears(-20);
+    DateTime d2 = DateTime.Now.AddYears(20);
+    string dtStrStart = d1.ToString("dd MMM yyyy");
+    string dtStrEnd = d2.ToString("dd MMM yyyy");
+
+    string CurrentUserID = ViewBag.CurrentUserID;
+}
+
+<div class="row">
+    <div class="col-md-12">
+        <br />
+        <h1 class="page-title">
+            Leave Application In-Tray <span style="padding-left:20px;"><small></small></span>
+        </h1>
+    </div>
+</div>
+<br />
+<div class="form-body">
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-4 control-label">Employee</label>
+                    <div class="col-md-8 form-control-static">
+                        <input id="SearchEmpID" name="SearchEmpID" class="form-control" type="text" />
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-4 control-label">Leave Type</label>
+                    <div class="col-md-8 form-control-static">
+                        <select class="form-control" id="ddlLeaveType" onchange="PopulateLeaveSubtype();">
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-4 control-label">Leave Subtype</label>
+                    <div class="col-md-8 form-control-static">
+                        <select class="form-control" id="ddlLeaveSubtype">
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-4 control-label">Start Date</label>
+                    <div class="col-md-8 form-control-static">
+                        <div class="input-group date date-picker" data-date-format="dd MM yyyy">
+                            <input type="text" class="form-control" id="StartDate" name="StartDate" />
+                            <span class="input-group-btn">
+                                <button type="button" class="btn default"><i class="fa fa-calendar"></i></button>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-4 control-label">End Date</label>
+                    <div class="col-md-8 form-control-static">
+                        <div class="input-group date date-picker" data-date-format="dd MM yyyy">
+                            <input type="text" class="form-control" id="EndDate" name="EndDate" />
+                            <span class="input-group-btn">
+                                <button type="button" class="btn default"><i class="fa fa-calendar"></i></button>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">&nbsp;</div>
+    <div class="row">
+        <div class="col-md-12">
+            <div class="text-right">
+                <input type="button" id="btn-Search" class="btn green btn-Search" value="Search" onclick="SearchListing();">
+                <input id="btn-Clear" type="button" class="btn default " value="Clear" onclick="ClearFilter();">
+            </div>
+        </div>
+    </div>
+    <div class="row">&nbsp;</div>
+    <div class="row">
+        <div class="col-md-12">
+            <div id="SearchResult">
+
+            </div>
+        </div>
+    </div>
+
+    <div id="btnBarApproval" class="row">
+        <div class="col-md-12">
+            <input type="button" class="btn green" value="Verify" id="btnVerify" onclick="BatchApprove('Verify')" />
+            <input type="button" class="btn green" value="Acknowledge" id="btnAcknowledge" onclick="BatchApprove('Acknowledge')" />
+            <input type="button" class="btn green" value="Agree" id="btnAgree" onclick="BatchApprove('Agree')" />
+            <input type="button" class="btn green" value="Approve" id="btnApprove" onclick="BatchApprove('Approve')" />
+            @*<input type="button" class="btn green" value="Receive" id="btnReceive" onclick="ApproverAction('Receive')" />
+            <input type="button" class="btn green" value="Recommend" id="btnRecommend" onclick="ApproverAction('Recommend')" />
+            <input type="button" class="btn green" value="Endorse" id="btnEndorse" onclick="ApproverAction('Endorse')" />
+            <input type="button" class="btn green" value="Approve Cancel" id="btnAgreeCancel" onclick="ApproverAction('AgreeCancel')" />*@
+            <input type="button" class="btn green" value="Process" id="btnProcess" onclick="BatchApprove('Process')" />
+            <input type="button" class="btn green" value="Process Memo" id="btnProcessMemo" onclick="BatchApprove('ProcessMemo')" />
+            <input type="button" class="btn red" value="Approve Cancel" id="btnCancel" title="Cancel this Leave" onclick="BatchApprove('AgreeCancel')" />            
+            <input type="button" class="btn red" value="Decline" id="btnDecline" onclick="BatchApprove('Decline')" />
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+    function SearchListing() {
+        var _DateFrom = $('#StartDate').val();
+        var _DateTo = $('#EndDate').val();
+        var _EmpID = $('#SearchEmpID').val();
+        var _LeaveType = $('#ddlLeaveType').val();
+        var _LeaveSubtype = $('#ddlLeaveSubtype').val();
+
+        $("#SearchResult").html("LOADING...");
+        $('#btnBarApproval').hide();
+
+        $.ajax({
+            type: "GET",
+            url: '@Url.Content("~/MSS/_LeaveApplicationInTrayResult")',
+            cache: false,
+            dataType: "html",
+            data: { DateFrom: _DateFrom, DateTo: _DateTo, SearchEmpID: _EmpID, LeaveType: _LeaveType, LeaveSubtype : _LeaveSubtype },
+            success: function (content) {
+                $('#btnBarApproval').show();
+                $("#SearchResult").html(content);
+            },
+            error: function (e) {
+                console.log(e);
+            }
+        });
+    }
+
+    jQuery.extend(jQuery.fn.dataTableExt.oSort, {
+        "date-dmy-pre": function (a) {
+            if (a == null || a == "") {
+                return 0;
+            }
+            var date = a.split('-');
+            return (date[2] + date[1] + date[0]) * 1;
+        },
+
+        "date-dmy-asc": function (a, b) {
+            return ((a < b) ? -1 : ((a > b) ? 1 : 0));
+        },
+
+        "date-dmy-desc": function (a, b) {
+            return ((a < b) ? 1 : ((a > b) ? -1 : 0));
+        }
+    });
+
+    jQuery(document).ready(function () {
+        $('.date-picker').datepicker({
+            format: 'dd/mm/yyyy',
+            autoclose: true,
+            setStartDate: '@dtStrStart',
+            setEndDate: '@dtStrEnd'
+        });
+
+        $('#btnBarApproval').hide();
+        RetrieveLeaveTypeOptions();
+        SearchListing();
+    });
+
+    function ClearFilter() {
+        $('#StartDate').val('');
+        $('#EndDate').val('');
+        $('#SearchEmpID').val('');
+        $('#ClaimCategory').val('');
+        SearchListing();
+    }
+
+    var LeaveTypes = null;
+    var LeaveSubtypes = null;
+    function RetrieveLeaveTypeOptions() {
+        $.get('@Url.Action("GetLeaveTypeOptions", "LeaveApplication")', function (result) {
+            LeaveTypes = result;
+            PopulateLeaveType();
+        });
+    }
+
+    function PopulateLeaveType() {
+        var ddlLeaveType = $('#ddlLeaveType');
+
+        var i = 0;
+        ddlLeaveType.empty();
+        ddlLeaveType.append('<option value=""> - All - </option>');
+        for (i = 0; i < LeaveTypes.length; i++) {
+            ddlLeaveType.append('<option value="' + LeaveTypes[i].LeaveTypeCode + '">' + LeaveTypes[i].LeaveTypeName + '</option>');
+        }
+
+        ddlLeaveType.prop("selectedIndex", 0);
+        ddlLeaveType.change();
+    }
+
+    function PopulateLeaveSubtype() {
+        var ddlLeaveSubtype = $('#ddlLeaveSubtype');
+        var selectedLeaveTypeIndex = $('#ddlLeaveType').prop("selectedIndex") - 1;
+        var leaveType = LeaveTypes[selectedLeaveTypeIndex];
+
+        if (leaveType) {
+            LeaveSubtypes = leaveType["LeaveSubtypes"];
+        }
+        else {
+            LeaveSubtypes = null;
+        }
+
+        var i = 0;
+        ddlLeaveSubtype.empty();
+        ddlLeaveSubtype.append('<option value=""> - All - </option>');
+
+        if (LeaveSubtypes) {
+            for (i = 0; i < LeaveSubtypes.length; i++) {
+                ddlLeaveSubtype.append('<option value="' + LeaveSubtypes[i].LeaveSubtypeCode + '">' + LeaveSubtypes[i].LeaveSubtypeName + '</option>');
+            }
+        }
+
+        ddlLeaveSubtype.prop("selectedIndex", 0);
+    }
+
+    function BatchApprove(action) {
+        var _ApproverInfo = {};
+        var _ApproverAction = "";
+        var _ApproverComment = "";
+        var _DeclineReason = "";
+        var _RedirectUrl = "";
+        var tasks = GetSelectedTasks();
+
+        if (tasks == "") {
+            alert("No tasks is selected.");
+            return;
+        }
+
+        switch (action) {
+            case "Verify":
+                _ApproverAction = "Verified";
+                break;
+            case "Acknowledge":
+                _ApproverAction = "Acknowledged";
+                break;
+            case "Agree":
+                _ApproverAction = "Agreed";
+                break;
+            case "Approve":
+                _ApproverAction = "Approved";
+                break;
+            case "Cancel":
+                _ApproverAction = "Cancelled";
+                break;
+            case "Decline":
+                _ApproverAction = "Declined";
+                break;
+            case "Endorse":
+                _ApproverAction = "Endorsed";
+                break;
+            case "Process":
+                _ApproverAction = "Processed";
+                break;
+            case "ProcessMemo":
+                _ApproverAction = "ProcessMemo";
+                break;
+            case "Receive":
+                _ApproverAction = "Received";
+                break;
+            case "Recommend":
+                _ApproverAction = "Recommended";
+                break;
+            case "Withdraw":
+                _ApproverAction = "Withdrawn";
+                _ApproverComment = "";
+                _RedirectUrl = '@Url.Action("LeaveHistory", "LeaveApplication")';
+                break;
+            case "AgreeCancel":
+                _ApproverAction = "AgreeCancel";
+                break;
+            case "Rework":
+                _ApproverAction = "Reworked";
+                break;
+        }
+
+        var action2 = "";
+        if (action == "AgreeCancel") {
+            action2 = "Approve Cancel";
+        } else {
+            action2 = action;
+        }
+
+        var promptMessage = "Are you sure you want to " + action2 + " these Leave Applications?\n\r" +
+                            "Press Confirm to proceed";
+        var notifyMessage = "";
+
+        if (_ApproverAction == "Cancelled") {
+            notifyMessage = "This Leave Application was successfully submitted for cancellation.";
+        } else if (_ApproverAction == "AgreeCancel") {
+            notifyMessage = "This Leave Application was cancelled successfully.";
+        }
+        else {
+            notifyMessage = "These Leave Applications was " + _ApproverAction + " successfully.";
+        }
+
+        _ApproverInfo = {
+            ID: GetSelectedTasks(),
+            TaskID: '',
+            CurrentUserID: '@CurrentUserID',
+            Status: _ApproverAction,
+            ApproverComment: _ApproverComment + "\n " + _DeclineReason,
+            ActivityName: '',
+            OptionalApprover: false
+        };
+
+        ShowConfirmationDialog({
+            message: promptMessage,
+            positiveCallback: function () {
+                HideConfirmationDialog();
+                ShowLoadingScreen();
+
+                $.post('@Url.Action("MultiPostApproverAction", "LeaveApplication")',
+                    {
+                        info: _ApproverInfo,
+                        ApproverAction: _ApproverAction,
+                        Target: ""
+                    },
+                    function (result) {
+                        HideLoadingScreen();
+
+                        if (result.Success) {
+                            if (result.ErrorMsg != "") {
+                                alert(result.ErrorMsg);
+                                SearchListing();
+                            }
+                            else {
+                                ShowDialog({
+                                message: notifyMessage,
+                                okCallback: function () {
+                                    SearchListing();
+                                }
+                            });
+                            }
+                        }
+                        else {
+                            ShowDialog({
+                                title: "Action not completed.",
+                                message: "Error Message : " + result.ErrorMsg,
+                                okCallback: function () {
+                                    HideDialog();
+                                }
+                            });
+                        }
+                    });
+            }
+        });
+    }
+
+    function GetSelectedTasks() {
+        var tasks = "";
+
+        $.each(tblResult.fnGetNodes(), function (i, v) {
+            var row = $(v).closest('tr');
+            if (row.find('.BatchApprovalCheckbox').prop('checked') == false) {
+                return;
+            }
+
+            var leaveID = row.find('.LeaveID').val();
+            var taskID = row.find('.TaskID').val();
+
+            tasks += leaveID + "," + taskID + ":";
+        });
+
+        return tasks.slice(0, tasks.length - 1);
+    }
+</script>
+
+<!-- Confirmation Message -->
+<div class="modal fade" id="ConfirmationDialog" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                <h4 id="ConfirmationDialog_Title" class="modal-title"></h4>
+            </div>
+            <div class="modal-body">
+                <div id="ConfirmationDialog_Message" class="well">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="ConfirmationDialog_PositiveButton" type="button" class="btn default blue">
+                    <i class="fa fa-check"></i>
+                </button>
+                <button id="ConfirmationDialog_NegativeButton" type="button" class="btn default" data-dismiss="modal">
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Success Message -->
+<div class="modal fade" id="SuccessDialog" tabindex="-1" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header Success-header">
+                <h4 id="SuccessDialog_Title" class="Success-title">
+                    Action Successfully Completed
+                </h4>
+            </div>
+            <div class="modal-body Success-body">
+                <div class="well" id="SuccessDialog_Message">
+                    Claims has been successfully submitted.
+                </div>
+            </div>
+            <div class="modal-footer Success-footer">
+                <a class="btn default blue" id="SuccessDialog_OkButton" data-dismiss="modal">
+                    <i class="fa fa-check"></i>
+                    OK
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="divLoading" style="margin: 0px; padding: 0px; position: fixed;
+    right: 0px; top: 0px; width: 100%; height: 100%; background-color: gainsboro; z-index: 30001; opacity: .8; filter: alpha(opacity=70); display: none; ">
+    <p style="position: absolute; top: 30%; left: 30%; color: black;">
+        Performing action, please wait...<img src="/_layouts/15/TNBESS/Assets/img/ajax-loading.gif">
+    </p>
+</div>
+
+<script>
+    // Dialog with Confirm/Close
+    function ShowConfirmationDialog(data) {
+        if (!data) {
+            data = {};
+        }
+
+        var dialog = $('#ConfirmationDialog'),
+            title = data.title || "Confirmation",
+            message = data.message || "Are you sure you want to submit this Leave Application?\n\r Press Confirm to proceed, or Close to stay on the current page.",
+            positiveButtonText = data.positiveButtonText || "Confirm",
+            positiveCallback = data.positiveCallback,
+            negativeButtonText = data.negativeButtonText || "Close",
+            negativeCallback = data.negativeCallback;
+
+        dialog.find("#ConfirmationDialog_Title").html(title);
+        dialog.find("#ConfirmationDialog_Message").html(message);
+        var ePositiveButton = dialog.find("#ConfirmationDialog_PositiveButton");
+        var eNegativeButton = dialog.find("#ConfirmationDialog_NegativeButton");
+
+        ePositiveButton.html(positiveButtonText);
+        ePositiveButton.off('click');
+        ePositiveButton.one('click', function () {
+            if (positiveCallback)
+                positiveCallback(dialog);
+        });
+
+        eNegativeButton.html(negativeButtonText);
+        eNegativeButton.off('click');
+        eNegativeButton.one('click', function () {
+            if (negativeCallback)
+                negativeCallback(dialog);
+        });
+
+        dialog.modal();
+    }
+
+    function HideConfirmationDialog() {
+        var dialog = $('#ConfirmationDialog');
+        dialog.modal("hide");
+    }
+
+    // Dialog with OK
+    function ShowDialog(data) {
+        if (!data) {
+            data = {};
+        }
+
+        var dialog = $('#SuccessDialog'),
+            title = data.title,
+            message = data.message || "The operation was success.",
+            okCallback = data.okCallback;
+
+        var okButton = dialog.find("#SuccessDialog_OkButton");
+
+        dialog.find("#SuccessDialog_Title").html(title);
+        dialog.find("#SuccessDialog_Message").html(message);
+
+        okButton.off('click');
+        okButton.one('click', function () {
+            if (okCallback)
+                okCallback();
+        });
+
+        dialog.modal();
+    }
+
+    function HideDialog() {
+        var dialog = $('#SuccessDialog');
+        dialog.modal("hide");
+    }
+
+    function ShowLoadingScreen() {
+        $("#divLoading").show();
+    }
+
+    function HideLoadingScreen() {
+        $('#divLoading').hide();
+    }
+</script>

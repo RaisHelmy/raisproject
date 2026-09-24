@@ -1,0 +1,173 @@
+﻿@model ESS.MedicalBoard.Models.MedicalBoardVM
+
+@{
+    Layout = "";
+}
+
+<div class="portlet box blue">
+    <div class="mini-triangle"><img src="/_layouts/15/TNBESS/Assets/img/menu-red-triangle.png" /></div>
+    <div class="portlet-title">
+        <div class="caption">
+            <i class="fa fa-reorder"></i>Notify Peer
+        </div>
+        <div class="tools">
+            <a title="" data-original-title="" href="javascript:;" class="collapse"> </a>
+        </div>
+    </div>
+    <div class="portlet-body form">
+        <div class="form-body">
+            <div id="tblNotifyPeerContainer">
+                @Html.Action("GetPeers", "MedicalBoard", new { ID = Model.MedicalBoardID })
+            </div>
+
+            @if (Model.IsTaskOwner)
+            {
+                <div class="form-horizontal">
+                    <div class="table-toolbar">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="btn-group">
+                                    <a class="btn green" id="btnAddPeersPanel" onclick="OpenAddPeersPanel();">
+                                        Add
+                                        <i class="fa fa-plus"></i>
+                                    </a>
+                                </div>
+                                <div class="btn-group">
+                                    <a class="btn red" id="btnRemovePeers" onclick="RemovePeers();">
+                                        Delete
+                                        <i class="fa fa-minus"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="NotifyPeerPeoplePicker" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                <h4 id="ConfirmationDialog_Title" class="modal-title">Notify Peers</h4>
+            </div>
+            <div class="modal-body">
+                @Html.Action("_NotifyPeersPicker", "MedicalBoard")
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn default blue" onclick="AddPeers()">
+                    Add
+                </button>
+                <button type="button" class="btn default" data-dismiss="modal">
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    var tblNotifyPeer = null;
+    $(function () {
+        tblNotifyPeer = $('#tblNotifyPeer').dataTable({
+            "bLengthChange": false,
+            "bFilter": false,
+            "bPaginate": false,
+            "bInfo": false,
+            "bSortable": false,
+        });
+    });
+
+    function OpenAddPeersPanel() {
+        $('.MultiPeoplePickerCheckbox').prop('checked', false);
+        $('#NotifyPeerPeoplePicker').modal();
+        //SearchPP();
+    }
+
+    function AddPeers() {
+        var data = {};
+        var _SelectedPeers = $('.MultiPeoplePickerCheckbox:checked');
+        var _TotalPeers = GetPeers().length + _SelectedPeers.length;
+
+        if (_TotalPeers > 10) {
+            alert("Maximum 10 peers is allowed.");
+            return;
+        }
+
+        var thisTable = $('#tblNotifyPeer'); 
+
+        _SelectedPeers.each(function (i, v) {
+            var row = $(v).closest('tr');
+            var EmployeeID = $(v).val();
+            var EmployeeCode = row.find('.EmployeeCode').text();
+            var EmployeeName = row.find('.EmployeeName').text();
+            var Department = row.find('.Department').text();
+            var UnitSection = row.find('.UnitSection').text();
+            var Position = row.find('.Position').text();
+            var Added = 'false';
+
+            thisTable.find(".RemovePeerCheckbox").each(function () {
+                var $row = $(this).closest("tr");
+                var ExistingID = $row.find(".RemovePeerCheckbox").val();
+                if (ExistingID.toUpperCase() === EmployeeID.toUpperCase()) {
+                    Added = 'true';
+ 
+                }
+ 
+            });
+             
+
+            if (Added == 'false') {
+                tblNotifyPeer.fnAddData([
+                    '<input type="hidden" name="Peers" value="' + EmployeeID +
+                    '" /><input type="checkbox" class="RemovePeerCheckbox" value="' + EmployeeID + '" />',
+                    EmployeeCode,
+                    EmployeeName,
+                    Department,
+                    UnitSection,
+                    Position]);
+            }
+
+        });
+
+        $('input[type="checkbox"]').uniform();
+        $('#NotifyPeerPeoplePicker').modal("hide");
+        @*data.ID = '@Model.LeaveID';
+        data.Peers = selectedPeers;
+
+        $.post('@Url.Action("AddPeers", "LeaveApplication")', data, function (result) {
+            $('#tblNotifyPeerContainer').html(result);
+        });*@
+    }
+
+    function RemovePeers() {
+        var data = {};
+        var selectedPeers = [];
+
+        $('.RemovePeerCheckbox:checked').each(function (i, v) {
+            var row = $(v).closest('tr').get(0);
+            tblNotifyPeer.fnDeleteRow(tblNotifyPeer.fnGetPosition(row));
+        });
+
+        @*data.ID = '@Model.LeaveID';
+        data.Peers = selectedPeers;
+
+        $.post('@Url.Action("RemovePeers", "LeaveApplication")', data, function (result) {
+            $('#tblNotifyPeerContainer').html(result);
+        });*@
+    }
+
+    function GetPeers() {
+        var peers = [];
+
+        $('.RemovePeerCheckbox').each(function (i, v) {
+            peers.push($(v).val());
+        });
+
+        return peers;
+    }
+</script>

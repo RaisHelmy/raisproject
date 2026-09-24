@@ -1,0 +1,106 @@
+﻿@model OJA.Models.AdditionalInfo
+@{
+    Layout = null;
+    var updateFunction = "update_" + Model.DivName;
+}
+
+<div class="portlet box blue">
+    <div class="mini-triangle"><img src="../Assets/img/menu-red-triangle.png" /></div>
+    <div class="portlet-title">
+        <div class="caption">
+            <i class="fa fa-reorder"></i>@Model.FieldName
+        </div>
+        <div class="tools">
+            <a style="margin-left:10px" href="javascript:;" class="expand arrow-down">
+            </a>
+        </div>
+    </div>
+
+    <div class="portlet-body form" style="display:none">
+        <div class="form-body">
+            <div class="form-horizontal">
+                @if (string.IsNullOrEmpty(Model.FieldValue))
+                {
+                    <label>There is no information available. Please edit to add in the information. </label>
+                }
+                else
+                {
+                    <label>@Model.FieldValue</label>
+                }
+            </div>
+
+            @if (ViewBag.CanEdit)
+            {
+                <div class="row">
+                    <div class="col-md-12">
+                        <a class="btn btn-primary btnEditAdditionalInfo">Edit <i class="fa fa-pencil"></i></a>
+                    </div>
+                </div>
+            } 
+        </div>
+    </div>
+
+
+    <div class="modal fade" id="@(Model.DivName + "EditAddtionalInfoModal")" role="dialog">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal"></button>
+                    <h4 class="modal-title">Edit @Model.FieldName</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="form-horizontal">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <textarea class="form-control" rows="10" cols="20" maxlength="8000" id="@(Model.DivName + "AdditionalInfoFieldValue")">@Model.FieldValue</textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn blue @(Model.DivName + " btnSubmitAdditionalInfo")">Update</button>
+                    <button type="button" class="btn default" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    $('#@Model.DivName .btnEditAdditionalInfo').click(function () {
+         $('#@(Model.DivName + "EditAddtionalInfoModal")').modal();
+    });
+
+    $('#@Model.DivName .btnSubmitAdditionalInfo').click( function () {
+        confirmationModal('update @Model.FieldName', @updateFunction);
+    });
+
+    @("function " + updateFunction + " (confirmed)"){
+        if (!confirmed)
+            return;
+
+        var fieldValue = $('#@(Model.DivName + "AdditionalInfoFieldValue")').val();
+        var fieldName = '@(Model.FieldName)';
+
+        var data = {
+            FieldName: fieldName,
+            FieldValue: fieldValue
+        };
+
+        ShowLoading();
+        $.ajax({
+            url: '@Url.Action("UpdateAdditionalInformation")',
+            data: data,
+            success: function (response) {
+                if (response.Success) {
+                    displaySuccessModal(response.Message);
+                }
+                else {
+                    alert(response.Message);
+                }
+            }
+        });
+    }
+
+</script>

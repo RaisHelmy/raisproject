@@ -1,0 +1,151 @@
+﻿@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewBag.Title = "My ETK / EMS Request History";
+}
+
+<div class="row">
+    <div class="col-md-12">
+        <br />
+        <h1 class="page-title">
+            @ViewBag.Title
+            <span style="padding-left:20px;">
+                <small></small>
+            </span>
+        </h1>
+    </div>
+</div>
+<br />
+<div class="form-body">
+    @*<div class="row">
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-4 control-label">Start Date</label>
+                    <div class="col-md-8 form-control-static">
+                        <div class="input-group date date-picker" data-date-format="dd MM yyyy">
+                            <input type="text" class="form-control" id="StartDate" name="StartDate" />
+                            <span class="input-group-btn">
+                                <button type="button" class="btn default"><i class="fa fa-calendar"></i></button>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-4 control-label">End Date</label>
+                    <div class="col-md-8 form-control-static">
+                        <div class="input-group date date-picker" data-date-format="dd MM yyyy">
+                            <input type="text" class="form-control" id="EndDate" name="EndDate" />
+                            <span class="input-group-btn">
+                                <button type="button" class="btn default"><i class="fa fa-calendar"></i></button>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>*@
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-4 control-label">Request Type</label>
+                    <div class="col-md-8 form-control-static">
+                        <select class="form-control" id="ddlRequestType">
+                            <option value="">- Select One - </option>
+                            <option value="ETK">ETK</option>
+                            <option value="EMS">EMS</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-4 control-label">Request Status</label>
+                    <div class="col-md-8 form-control-static">
+                        <select class="form-control" id="ddlRequestStatus">
+                            <option value="">- Select One - </option>
+                            <option value="1">Pending</option>
+                            <option value="2">Agreed</option>
+                            <option value="3">Approved</option>
+                            <option value="4">Declined</option>
+                            <option value="5">Payment Processing: Submitted</option>
+                            <option value="6">Payment Processing: Agreed</option>
+                            <option value="7">Payment Processing: Approved</option>
+                            <option value="8">Payment Processing: Declined</option>
+                            <option value="9">Extension Request: Submitted</option>
+                            <option value="10">Extension Request: Agreed</option>
+                            <option value="11">Extension Request: Approved</option>
+                            <option value="12">Extension Request: Declined</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">&nbsp;</div>
+    <div class="row">
+        <div class="col-md-12">
+            <div class="text-right">
+                <input type="button" id="btn-Search" class="btn green btn-Search" value="Search" onclick="SearchListing();">
+                <input id="btn-Clear" type="button" class="btn default " value="Clear" onclick="ClearFilter();">
+            </div>
+        </div>
+    </div>
+    <div class="row">&nbsp;</div>
+    <div class="row">
+        <div class="col-md-12">
+            <div id="SearchResult">
+
+            </div>
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+    function SearchListing() {
+        var _DateFrom = $('#StartDate').val();
+        var _DateTo = $('#EndDate').val();
+        var _RequestType = $('#ddlRequestType').val();
+        var _RequestStatus = $('#ddlRequestStatus').val();
+
+        $("#SearchResult").html("LOADING...");
+
+        $.ajax({
+            type: "GET",
+            url: '@Url.Action("_RequestHistoryResult", "ETKEMS")',
+            data: {
+                DateFrom: _DateFrom,
+                DateTo: _DateTo,
+                RequestType: _RequestType,
+                RequestStatus: _RequestStatus
+            },
+            success: function (content) {
+                $("#SearchResult").html(content);
+            },
+            error: function (e) {
+                console.log(e);
+            }
+        });
+    }
+
+    jQuery(document).ready(function () {
+        $('.date-picker').datepicker({
+            format: 'dd/mm/yyyy',
+            autoclose: true,
+        });
+
+        SearchListing();
+    });
+
+
+    function ClearFilter() {
+        SearchListing();
+    }
+</script>
+

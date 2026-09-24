@@ -1,0 +1,732 @@
+﻿@model Tuple<ESS.ContractAbsorption.Models.EContractAbsorptionVM, SEP.RoutingManagement.Models.RoutingRule>
+
+@using ESS.Core
+
+@{
+	ViewBag.Title = "Absorption of Contract Staff Form";
+
+	Layout = "~/Views/Shared/_Layout.cshtml";
+
+	string TaskID = ViewBag.TaskID + "";
+	string RequestID = ViewBag.RequestID + "";
+	string ApprovalLevel = ViewBag.ApprovalLevel + "";
+	string Source = ViewBag.Source + "";
+	string EmployeeID = Model.Item1.Submiter.EmployeeID.ToString();
+	string OnlineAssessmentDefinitionURL = ViewBag.OnlineAssessmentDefinitionURL + "";
+
+	var data = new ViewDataDictionary
+{
+		new KeyValuePair<string, object>("TaskID", TaskID),
+		new KeyValuePair<string, object>("RequestID", RequestID),
+		new KeyValuePair<string, object>("ApprovalLevel", ApprovalLevel),
+		new KeyValuePair<string, object>("Source", Source),
+		new KeyValuePair<string, object>("EmployeeID", EmployeeID),
+		new KeyValuePair<string, object>("OnlineAssessmentDefinitionURL", OnlineAssessmentDefinitionURL)
+	};
+
+	int applvl = String.IsNullOrEmpty(ApprovalLevel) ? 0 : Convert.ToInt32(ApprovalLevel);
+
+	string ReadOnly = "disabled";
+
+	if (Model.Item1.btnRework == true || Model.Item1.btnSubmit == true)
+	{
+		ReadOnly = "";
+
+		if (applvl == 4)
+		{
+			<style>
+				/*4*/
+				.NonEdittableContent {
+					display: none;
+				}
+
+				.EdittableContent {
+					display: block;
+				}
+
+				.NonEdittableRatingContent {
+					display: block;
+				}
+
+				.EdittableRatingContent {
+					display: none;
+				}
+
+				.NonEditContent {
+					display: none;
+				}
+
+				.EditContent {
+					display: block;
+				}
+			</style>
+		}
+		else if (applvl >= 5)
+		{
+			<style>
+				/*5,6,7,8*/
+				.NonEdittableContent {
+					display: block;
+				}
+
+				.EdittableContent {
+					display: none;
+				}
+
+				.NonEdittableRatingContent {
+					display: block;
+				}
+
+				.EdittableRatingContent {
+					display: none;
+				}
+
+				.NonEditContent {
+					display: none;
+				}
+
+				.EditContent {
+					display: block;
+				}
+			</style>
+		}
+		else
+		{
+			<style>
+				/*1,2,3*/
+				.NonEdittableContent {
+					display: none;
+				}
+
+				.EdittableContent {
+					display: block;
+				}
+
+				.NonEdittableRatingContent {
+					display: none;
+				}
+
+				.EdittableRatingContent {
+					display: block;
+				}
+
+				.NonEditContent {
+					display: none;
+				}
+
+				.EditContent {
+					display: block;
+				}
+			</style>
+		}
+	}
+	else
+	{
+		<style>
+			.NonEdittableContent {
+				display: block;
+			}
+
+			.EdittableContent {
+				display: none;
+			}
+
+			.NonEdittableRatingContent {
+				display: block;
+			}
+
+			.EdittableRatingContent {
+				display: none;
+			}
+
+			.NonEditContent {
+				display: block;
+			}
+
+			.EditContent {
+				display: none;
+			}
+		</style>
+	}
+}
+
+<style type="text/css">
+	.hidden_1 {
+		display: none;
+	}
+
+	.LabelDisplay {
+		border: 1px #e5e5e5 solid;
+		padding: 6px;
+		width: 100%;
+		background-color: #F9F9F9;
+	}
+</style>
+
+<div class="form-section">
+	<div class="row">
+		<div class="col-md-12">
+			<h1 class="page-title">
+				Absorption of Contract Staff
+				<span style="padding-left:20px;">
+					<small></small>
+				</span>
+			</h1>
+		</div>
+	</div>
+</div>
+
+<!-- Hidden -->
+@*Approver Employee*@
+<input type="hidden" value="@ViewBag.EmployeeID" id="hfCurrEmpID" />
+<input type="hidden" value="@ViewBag.TaskID" id="hfTaskID" />
+<input type="hidden" value="@ViewBag.RequestID" id="hfRequestID" />
+<input type="hidden" value="@ViewBag.ApprovalLevel" id="hfApprovalLevel" />
+<input type="hidden" value="@Model.Item1.AssessmentID" id="hfAssessmentID">
+
+
+@*Review For*@
+<input id="hfEmployeeID" type="hidden" value="@Model.Item1.Submiter.EmployeeID" />
+<input id="AttachMandatory" type="hidden" value="false" />
+
+<!-- ETransfer Details -->
+@Html.Partial("_OnlineAssessmentFormDetails", Model, data)
+
+@if (Model.Item1.btnRework == true || Model.Item1.btnSubmit == true)
+{
+	if (applvl != 6)
+	{
+		@Html.Action("AttachmentControl", "Attachment", new { EmployeeID = ViewBag.EmployeeID, Mode = "Add", SourceType = "ContractAbsorption", RequestID = Model.Item1.hdfRequestID })
+	}
+	else
+	{
+		@Html.Action("AttachmentControl", "Attachment", new { EmployeeID = ViewBag.EmployeeID, Mode = "Add", SourceType = "ContractAbsorption", RequestID = Model.Item1.hdfRequestID, Self = "TRUE" })
+	}
+}
+else
+{
+	if (new Guid(Common.GetEmployeeID()) != Model.Item1.Submiter.EmployeeID)
+	{
+		@Html.Action("AttachmentControl", "Attachment", new { EmployeeID = ViewBag.EmployeeID, Mode = "View", SourceType = "ContractAbsorption", RequestID = Model.Item1.hdfRequestID })
+	}
+}
+
+@Html.Partial("_OnlineAssessmentFormDetailsFitToWork", Model, data)
+
+<!-- Audit Log -->
+@Html.Action("_AuditLog", "ContractAbsorption", new { RequestID = Model.Item1.hdfRequestID, AssessmentID = Model.Item1.AssessmentID })
+
+@Html.Partial("_OnlineAssessmentFormDetailsRecommendation", Model, data)
+
+@Html.Partial("_ContractAbsorptionApproval", Model, data)
+
+<!-- Buttons -->
+<div class="row">
+	<input type="hidden" name="ctl00$ContentPlaceHolder1$hfDownloadSource" id="ContentPlaceHolder1_hfDownloadSource">
+	<div class="col-md-12">
+		<input type="button" class="btn red" value="@Model.Item1.btnResignTxt" id="btnResign" onclick="Resign()" />
+		<input type="button" class="btn red" value="@Model.Item1.btnReworkTxt" id="btnRework" onclick="Rework();" />
+		<input type="button" class="btn green" value="@Model.Item1.btnSaveTxt" id="btnSave" onclick="javascript: ApproverAction(this, '@Model.Item1.btnSaveTxt')" />
+		<input type="button" class="btn green" value="@Model.Item1.btnSubmitTxt" id="btnSubmit" onclick="FormValidation();" />
+		<input type="button" class="btn green" value="Back" id="btnBack" onclick="window.history.back()" />
+	</div>
+</div>
+
+<!-- Success Message -->
+<div class="modal fade" id="SuccessSubmit" tabindex="-1" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header Success-header">
+				<button type="button" class="close" data-dismiss="modal" aria-hidden="true" style="display: none;"></button>
+				<h4 class="Success-title">Action Successfully Completed</h4>
+			</div>
+			<div class="modal-body Success-body">
+				<div class="well">
+					The Absorption of Contract Staff has been successfully completed.
+				</div>
+			</div>
+			<div class="modal-footer Success-footer">
+				<button type="submit" class="btn default blue" id="btnOK">
+					<i class="fa fa-check"></i>
+					OK
+				</button>
+			</div>
+		</div>
+	</div>
+</div>
+
+<!-- Confirmation Message -->
+<div class="modal fade" id="ConfirmUpdate" tabindex="-1" aria-hidden="true">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+				<h4 class="modal-title">Confirmation</h4>
+			</div>
+			<div class="modal-body">
+				<div class="well">
+					Are you sure you want to Submit this Absorption of Contract Staff Form application?<br />Press Confirm to proceed, or Close to stay on the current page.
+				</div>
+			</div>
+			<div class="modal-footer">
+				<button type="submit" class="btn default blue" id="btnSubmitRework" onclick="ApproverAction(this, 'Rework')">
+					<i class="fa fa-check"></i>
+					@Model.Item1.btnReworkTxt.ToString()
+				</button>
+				<button type="submit" class="btn default blue" id="btnSubmitResign" onclick="ApproverAction(this, 'Resigned')">
+					<i class="fa fa-check"></i>
+					@Model.Item1.btnResignTxt.ToString()
+				</button>
+				<button type="submit" class="btn default blue" id="btnSubmitForm" onclick="javascript: ApproverAction(this, ' @Model.Item1.btnSubmitTxt')">
+					<i class="fa fa-check"></i>
+					Submit
+				</button>
+				<button type="button" class="btn default" data-dismiss="modal">Close</button>
+			</div>
+		</div>
+	</div>
+</div>
+
+
+
+<!-- Loading Gif -->
+<div id="divLoading" style="margin: 0px; padding: 0px; position: fixed; right: 0px;
+    top: 0px; width: 100%; height: 100%; background-color:gainsboro; z-index: 30001;
+    opacity: .8; filter: alpha(opacity=70);display:none">
+	<p style="position: absolute; top: 30%; left: 30%; color: black;">
+		Loading, please wait...<img src="../Assets/img/ajax-loading.gif" />
+	</p>
+</div>
+
+@if (Model.Item1.btnRework == true)
+{
+	<script>
+		$("#btnRework").removeClass("hidden");
+	</script>
+}
+else
+{
+	<script>
+		$("#btnRework").addClass("hidden");
+	</script>
+}
+
+@if (Model.Item1.btnSave == true)
+{
+	<script>
+		$("#btnSave").removeClass("hidden");
+	</script>
+}
+else
+{
+	<script>
+		$("#btnSave").addClass("hidden");
+	</script>
+}
+
+@if (Model.Item1.btnResign == true)
+{
+	<script>
+		$("#btnResign").removeClass("hidden");
+	</script>
+}
+else
+{
+	<script>
+		$("#btnResign").addClass("hidden");
+	</script>
+}
+
+@if (Model.Item1.btnSubmit == true)
+{
+	<script>
+		$("#btnSubmit").removeClass("hidden");
+	</script>
+}
+else
+{
+	<script>
+		$("#btnSubmit").addClass("hidden");
+	</script>
+}
+
+<script type="text/javascript">
+    $(document).ready(function () {
+        $("#btnSubmitForm").addClass("hidden");
+		$("#btnSubmitRework").addClass("hidden");
+		$("#btnSubmitResign").addClass("hidden");
+    });
+
+    function FormValidation() {
+        var _Employeee = document.getElementById('hfEmployeeID');
+
+        var _ValidationMsg = '';
+
+        if (_Employeee.value == '')
+			_ValidationMsg += '- Employee field is required.\n';
+
+	@if (new Guid(Common.GetEmployeeID()) != Model.Item1.Submiter.EmployeeID) {
+		<text>
+		var _ValidationRadioMsg = '';
+		var minWords = false;
+
+        $(".reqRadio").each(function() {
+			var name = $(this).attr('name');
+
+			if ($('input[name="' + name + '"]:checked').size() == 0) {
+				_ValidationRadioMsg = '- Please ensure all Employee Assessment Rating is selected before proceed.\n';
+			}
+		});
+
+		_ValidationMsg += _ValidationRadioMsg;
+
+		_ValidationRadioMsg = '';
+
+        $(".reqComment").each(function() {
+			var name = $(this).attr('id');
+			var comment = true;
+			var totalWords = 0;
+
+			if (($("#" + name).val()) == "") {
+				comment = false;
+			}
+
+			if (!comment) {
+				_ValidationMsg = '- Please comment before proceed.\n';
+			}
+
+			totalWords = $("#" + name).val().replace(/\r?\n/g, "\r\n").split(' ').length;
+
+			if (totalWords < 10) {
+				minWords = true;
+			}
+		});
+
+		if (minWords) {
+			_ValidationMsg += '- Please enter minimum 10 words.\n';
+		}
+
+		if ($('input[name="rblAcknowledgement"]:checked').size() == 0)
+			_ValidationMsg += '- Please select Recommendation before proceed.\n';
+
+		var _ValidationRecommendationMsg = '';
+		var _RatingRate = '@ViewBag.RatingRate';
+		var _TotalRate = 0;
+		var _TotalRadio = 0;
+
+		_TotalRate = $(".reqRadio").length;
+
+		_TotalRadio = _TotalRate / 5;
+
+		if ($(".reqRadio:checked").length != _TotalRadio){
+			_ValidationMsg += '- Cannot proceed with submission, please rate all the assessment factor.\n';
+		}
+
+		else
+		{
+			if (_RatingRate == 1) {
+				//DO NOTHING...
+			}
+			else {
+				var _Acknowledgement = $('input[name="rblAcknowledgement"]:checked').val();
+
+				@if (applvl < 4) {
+					<text>
+					if (_Acknowledgement == 'R') {
+						$(".reqRadio").each(function () {
+							var name = $(this).attr('name');
+							if (Number($('input[name="' + name + '"]:checked').val()) < _RatingRate) {
+								_ValidationRecommendationMsg = '- Recommended status cannot be accepted as there is/are rating(s) of 1 and/or 2 found.\n'
+							}
+						})
+					}
+					</text>
+				}
+
+				_ValidationMsg += _ValidationRecommendationMsg;
+			}
+		}
+		</text>
+	}
+
+	@if (applvl >= 5 && new Guid(Common.GetEmployeeID()) != Model.Item1.Submiter.EmployeeID){
+		<text>
+		if ($('input[name="rblDisciplinaryCase"]:checked').size() == 0)
+			_ValidationMsg += '- Please select Disciplinary Case before proceed.\n';
+		</text>
+	}
+
+	@if (applvl == 6){
+		<text>
+		if ($('input[name="rblAcceptance"]:checked').size() == 0)
+			_ValidationMsg += '- Please select Employee Acceptance before proceed.\n';
+
+		if ($("#txtHeight").val() == '')
+			_ValidationMsg += '- Please key in height.\n';
+		else {
+			var _Height = parseInt($("#txtHeight").val());
+
+			if (_Height < 100)
+				_ValidationMsg += '- Please key in height. Minimum value: 100\n';
+
+			if (_Height > 250)
+				_ValidationMsg += '- Please key in height. Maximum value: 250\n';
+		}
+
+		if ($("#txtWeight").val() == '')
+			_ValidationMsg += '- Please key in weight.\n';
+		
+		</text>
+	}
+
+	@if (applvl >= 7){
+		<text>
+		if ($('input[name="rblFitToWork"]:checked').size() == 0)
+			_ValidationMsg += '- Please select Suitable for Work before proceed.\n';
+
+		if ($('input[name="rblSmoking"]:checked').size() == 0)
+			_ValidationMsg += '- Please select Smoking before proceed.\n';
+		</text>
+	}
+
+        if ($("#txtApprovalComment").val() == '')
+            _ValidationMsg += '- Please key in comment.\n';
+
+        if (_ValidationMsg != null && _ValidationMsg != '') {
+            alert(_ValidationMsg);
+        }
+        else {
+            document.getElementById('AttachMandatory').value = 'true';
+            $("#btnSubmitForm").removeClass("hidden");
+			$("#btnSubmitRework").addClass("hidden");
+			$("#btnSubmitResign").addClass("hidden");
+
+	@if (applvl == 8) {
+		<text>
+			$("#ConfirmUpdate .modal-body .well").html('Clicking Submit will complete this assessment. If you want to make changes, click Close');
+		</text>
+	}
+	else
+	{
+		<text>
+			$("#ConfirmUpdate .modal-body .well").html('Clicking Confirm will submit this application. If you want to make changes, click Close.');
+		</text>
+	}
+
+            $("#ConfirmUpdate").modal('show');
+        }
+    }
+
+    function RedirectTo(_Action) {
+        switch (_Action) {
+            default:
+                window.location.href = '@Url.Action("ContractAbsorptionInTray", "MSS")';
+        }
+    }
+
+    function ApproverAction(btn, _Action) {
+        btn.disabled = true;
+
+        $("#divLoading").show();
+
+        var myVar = setTimeout(function () { ConfirmAction(btn, _Action); }, 3000);
+    }
+
+    function Rework() {
+        $("#btnSubmitDraft").addClass("hidden");
+		$("#btnSubmitForm").addClass("hidden");
+		$("#btnSubmitResign").addClass("hidden");
+        $("#btnSubmitRework").removeClass("hidden");
+        $("#ConfirmUpdate .modal-body .well").html('Clicking Confirm will Rework the form. If you want to make changes, click Close.');
+        $("#ConfirmUpdate").modal('show');
+        document.getElementById('AttachMandatory').value = 'false';
+	}
+
+	function Resign() {
+		$("#btnSubmitDraft").addClass("hidden");
+		$("#btnSubmitForm").addClass("hidden");
+		$("#btnSubmitRework").addClass("hidden");
+		$("#btnSubmitResign").removeClass("hidden");
+		$("#ConfirmUpdate .modal-body .well").html('Clicking Confirm will Resign the form. If you want to make changes, click Close.');
+		$("#ConfirmUpdate").modal('show');
+		document.getElementById('AttachMandatory').value = 'false';
+	}
+
+    function ConfirmAction(btn, SubmitType) {
+        var _Employee = document.getElementById('hfEmployeeID').value;
+        var _SubmitterID = document.getElementById('hfCurrEmpID').value;
+
+		var _Acknowledgement = $('input[name="rblAcknowledgement"]:checked').val();
+
+		var ResultMsg = "The Absorption of Contract Staff has been successfully completed.";
+
+        if (SubmitType == "Rework") {
+			ResultMsg = "The Absorption of Contract Staff has been successfully " + "@Model.Item1.btnReworkLabel.ToString()" + ".";
+		}
+
+		if (SubmitType == "Save") {
+			ResultMsg = "The Absorption of Contract Staff has been successfully " + "@Model.Item1.btnSaveLabel.ToString()" + ".";
+        }
+
+        var lblOrder ='';
+
+        $(".reqOrder").each(function () {
+            var name = $(this).attr('id');
+
+            lblOrder += $("#" + name).text() + " ,";
+        });
+
+        var lblAssessmentFactor ='';
+
+        $(".reqAssessment").each(function () {
+            var name = $(this).attr('id');
+
+            lblAssessmentFactor += $("#" + name).text() + " ,";
+        });
+
+        var rbRating ='';
+        var countRdr = 0;
+
+        $(".reqRadioDiv").each(function () {
+            var RadioValue = '';
+
+            if ($("input[name='optionsRadios_" + countRdr + "']").is(':checked'))
+            {
+                RadioValue = $("input[name='optionsRadios_" + countRdr + "']:checked").val();
+            }
+
+            rbRating += RadioValue + " ,";
+
+            countRdr++;
+        });
+
+        var JSONtxtComment = $(".reqComment").map(function () {
+            var name = $(this).attr('id');
+
+            return $("#" + name).val();
+        });
+
+        var txtComment = JSON.stringify(JSONtxtComment.get());
+
+		var _ApproverComment = document.getElementById('txtApprovalComment').value;
+
+		var _DisciplinaryCase = $('input[name="rblDisciplinaryCase"]:checked').val();
+		var _DisciplinaryCaseComment = $('#txtDisciplinaryCaseComment').val();
+
+		var _Acceptance = $('input[name="rblAcceptance"]:checked').val();
+
+		var _Height = $("#txtHeight").val();
+		var _Weight = $("#txtWeight").val();
+
+		if (!_Height)
+			_Height = 0;
+
+        if (!_Weight)
+            _Weight = 0;
+
+		var _FitToWork = $('input[name="rblFitToWork"]:checked').val();
+
+		var _Smoking = $('input[name="rblSmoking"]:checked').val();
+
+        var form = {
+            ReferenceNo: '@Model.Item1.ReferenceNo',
+            EntryID: '@Model.Item1.AssessmentID',
+            RequestID: '@Model.Item1.hdfRequestID',
+            SubmissionType: SubmitType,
+            SubmitterID: _SubmitterID,
+            EmployeeID: _Employee,
+            EmployeeName: '@Model.Item1.Submiter.EmployeeName',
+            Category: '@Model.Item1.Category.ToString()',
+            CurrentApprovalLevel: '@Model.Item1.CurrentApprovalLevel',
+            ApproverComment: _ApproverComment,
+            Acknowledgement: _Acknowledgement,
+            lblOrder: lblOrder,
+            lblAssessmentFactor: lblAssessmentFactor,
+            rbRating : rbRating,
+            txtComment: txtComment,
+			TaskID: '@ViewBag.TaskID',
+			PayScaleGroup: '@Model.Item1.Submiter.PayScaleGroup',
+			DisciplinaryCase: _DisciplinaryCase,
+			DisciplinaryCaseComment: _DisciplinaryCaseComment,
+			Acceptance: _Acceptance,
+			Height: _Height,
+			Weight: _Weight,
+			FitToWork: _FitToWork,
+			Smoking: _Smoking
+		};
+
+		console.log(JSON.stringify(form));
+
+		var url;
+
+		if (SubmitType == "Save") {
+			url = '@Url.Content("~/ContractAbsorption/SaveForm")';
+
+			if ($('#divLoading').is(':visible')) {
+				$.ajax({
+					type: "POST",
+					url: url,
+					cache: false,
+					async: false,
+					dataType: "json",
+					data: form,
+					success: function (result) {
+						if (result.Success) {
+							$("#divLoading").hide();
+							$(".Success-body .well").html(ResultMsg);
+							$(".Success-body .well").html(result.ErrorMsg);
+							$("#SuccessSubmit").modal();
+
+							$("#SuccessSubmit #btnOK").click(function () { RedirectTo(SubmitType); });
+						}
+						else {
+							$("#divLoading").hide();
+							btn.disabled = false;
+
+							alert(result.ErrorMsg);
+						}
+					},
+					error: function (e) {
+					}
+				});
+			}
+		}
+		else {
+			url = '@Url.Content("~/ContractAbsorption/SubmitForm")'
+
+			if ($('#divLoading').is(':visible')) {
+				$.ajax({
+					type: "POST",
+					url: url,
+					cache: false,
+					async: false,
+					dataType: "json",
+					data: form,
+					success: function (result) {
+						if (result.Success) {
+							$("#ConfirmUpdate").modal('toggle');
+							$("#divLoading").hide();
+							$(".Success-body .well").html(ResultMsg);
+							$(".Success-body .well").html(result.ErrorMsg);
+							$("#SuccessSubmit").modal();
+
+							$("#SuccessSubmit #btnOK").click(function () { RedirectTo(SubmitType); });
+						}
+						else {
+							$("#ConfirmUpdate").modal('toggle');
+							$("#divLoading").hide();
+							btn.disabled = false;
+
+							alert(result.ErrorMsg);
+						}
+					},
+					error: function (e) {
+					}
+				});
+			}
+		}
+	}
+
+</script>
+
+

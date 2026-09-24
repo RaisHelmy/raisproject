@@ -1,0 +1,185 @@
+﻿
+
+<div class="modal fade" id="SearchBookingNo" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                <h4 class="modal-title">
+                    <p>Booking Number Search</p>
+                </h4>
+            </div>
+            <div class="modal-body">
+                <div>
+
+                    <div class="row" onkeypress="return event.keyCode!=13;">
+                        <div class="col-md-12">
+                            <div class="form-horizontal">
+                                <div class="form-body">
+                                    <div class="row">
+                                        <label class="control-label col-md-2 ">
+                                            Start Date
+                                        </label>
+                                        <div class="col-md-4 form-control-static">
+                                            <div class="date date-picker input-group" data-date-format="dd MM yyyy">
+                                                <input type="text" class="form-control Date" id="IFMSStartDateSearch" />
+                                                <span class="input-group-btn">
+                                                    <button type="button" class="btn default"><i class="fa fa-calendar"></i></button>
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <label class="control-label col-md-2 ">
+                                            End Date
+                                        </label>
+                                        <div class="col-md-4 form-control-static">
+                                            <div class="date date-picker input-group" data-date-format="dd MM yyyy">
+                                                <input type="text" class="form-control Date" id="IFMSEndDateSearch" />
+                                                <span class="input-group-btn">
+                                                    <button type="button" class="btn default"><i class="fa fa-calendar"></i></button>
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <label class="control-label col-md-2 ">
+                                            Booking No.
+                                        </label>
+                                        <div class="col-md-4 form-control-static">
+                                            <input type="text" id="BookingNoSearch" class="form-control" />
+                                        </div>
+                                        <label class="control-label col-md-2 ">
+                                            Remark
+                                        </label>
+                                        <div class="col-md-4 form-control-static">
+                                            <input type="text" id="RemarkSearch" class="form-control" />
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <label class="control-label col-md-2 ">
+                                            Vehicle No.
+                                        </label>
+                                        <div class="col-md-4 form-control-static">
+                                            <input type="text" id="VehicleNoSearch" class="form-control" />
+                                        </div>
+                                    </div>
+                                    <div class="form-group ">
+                                        <div class="text-right">
+                                            <input id="btn-Search" type="button" value="Search" class="btn green btn-Search" onclick="SearchBookingNo();">
+                                        </div>
+                                    </div>
+                                </div>
+                                <br />
+                                <div id="BookingNoResult">
+
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn default green" onclick="setSelectedBookingNo()">Select</button>
+                <button type="button" class="btn default" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+
+
+    function BookingNoPickerSetDate(obj)
+    {
+        var element = $(obj).parent().siblings('.BookingNoDisplayText');
+        if (element.attr('name') === 'BookingNoDisplayText')
+        {
+            var row = $(element).closest('tr');
+            var StartDate = $(row).find('.StartDate').val();
+            var EndDate = $(row).find('.EndDate').val();
+            if ((StartDate !== '' && StartDate !== undefined)
+                && (EndDate !== '' && EndDate !== undefined))
+            {
+                $('#IFMSStartDateSearch').val(StartDate);
+                $('#IFMSEndDateSearch').val(EndDate);
+            }
+            else {
+                StartDate = $('input[name="StartDate"]').val();
+                EndDate = $('input[name="EndDate"]').val();
+                if ((StartDate !== '' && StartDate !== undefined)
+                    && (EndDate !== '' && EndDate !== undefined)) {
+                    $('#IFMSStartDateSearch').val(StartDate);
+                    $('#IFMSEndDateSearch').val(EndDate);
+                }
+            }
+        }
+        else if (element.attr('name') === 'BulkBookingNoDisplayText')
+        {
+            var StartDate = $('input[name="BulkStartDate"]').val();
+            var EndDate = $('input[name="BulkEndDate"]').val();
+            if (StartDate !== '' && EndDate !== '') {
+                $('#IFMSStartDateSearch').val(StartDate);
+                $('#IFMSEndDateSearch').val(EndDate);
+            }
+        }
+        else {
+
+            $('#IFMSStartDateSearch').val('');
+            $('#IFMSEndDateSearch').val('');
+        }
+
+    }
+
+    function SearchBookingNo()
+    {
+        var _StartDate = $('#IFMSStartDateSearch').val();
+        var _EndDate = $('#IFMSEndDateSearch').val();
+        var _BookingNo = $('#BookingNoSearch').val();
+        var _Remark = $('#RemarkSearch').val();
+        var _VehicleNo = $('#VehicleNoSearch').val();
+
+        $.ajax({
+            url: '@Url.Content("~/TimeAttendance/_IFMSBookingNoSearchResult")',
+            type: 'POST',
+            data: {
+                StartDate: _StartDate,
+                EndDate: _EndDate,
+                BookingNo: _BookingNo,
+                Remark: _Remark,
+                VehicleNo: _VehicleNo
+            },
+            success: function (result) {
+
+                $('#BookingNoResult').html(result);
+                // ... Process the result ...
+            }
+        });
+    }
+
+    var currentSelectedBookingNo = null
+
+    function setSelectedBookingNo() {
+        $.each($('input[name="AddBookingNo"]:checked'), function (i, val) {
+            var BookingNo = $(this).parent().parent().find('.BookingNo').text().trim();
+
+            $(currentSelectedBookingNo).parent().siblings('.BookingNoPickerValue').val(BookingNo);
+            $(currentSelectedBookingNo).parent().siblings('.BookingNoDisplayText').val(BookingNo);
+        });
+
+        $('#SearchBookingNo').modal('toggle');
+        currentSelectedBookingNo = null;
+    }
+
+    function SetCurrentSelectedBookingNo() {
+
+        currentSelectedBookingNo = $(this);
+        $('#BookingNoResult').empty();
+        //$('#chargecodedll').val('ALL');
+    }
+
+    $(function () {
+        $('.BookingNoPicker').on("click", SetCurrentSelectedBookingNo);
+    })
+
+</script>

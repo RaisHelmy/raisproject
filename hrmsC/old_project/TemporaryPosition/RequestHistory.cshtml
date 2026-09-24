@@ -1,0 +1,114 @@
+﻿@using TemporaryPosition
+@{
+	ViewBag.Title = "Request Listing";
+}
+
+<style>
+	.position-form .form-group {
+		margin-bottom: 6px;
+	}
+</style>
+
+<div class="row">
+	<div class="col-md-12">
+		<br />
+		<h1 class="page-title">
+			My Temporary Position History<span style="padding-left:20px;"><small></small></span>
+		</h1>
+	</div>
+</div>
+<br />
+
+<div class="row">
+	<div class="col-md-12">
+		<form id="filterForm">
+			<div class="form-horizontal">
+				<div class="form-body position-form">
+					<div class="form-group">
+						<label class="col-md-2 control-label">Position Category</label>
+						<div class="col-md-4 form-control-static">
+							<select id="PositionCategory" name="PositionCategory" class="form-control">
+								<option value="">ALL</option>
+								@foreach (var position in Service.GetTemporaryPositionCategory())
+								{
+									string value = position.TitleValue;
+									<option value="@value">@position.DisplayTitle</option>
+								}
+							</select>
+						</div>
+						<label class="col-md-2 control-label">Status</label>
+						<div class="col-md-4">
+							<select class="form-control" name="Status">
+								<option value="">ALL</option>
+								@foreach (var status in Service.GetTemporaryPositionStatus())
+								{
+									string value = status.StatusCode;
+									<option value="@value">@status.StatusName</option>
+								}
+							</select>
+						</div>
+					</div>
+					<div class="form-group">
+						<label class="col-md-2 control-label">Employee</label>
+						<div class="col-md-4">
+							<input class="form-control" id="Employee" name="Employee" />
+						</div>
+						<label class="col-md-2 control-label">Job Text</label>
+						<div class="col-md-4">
+							<input class="form-control" id="JobText" name="JobText" />
+						</div>
+					</div>
+					<div class="form-group">
+						<label class="col-md-2 control-label">Position Text</label>
+						<div class="col-md-4">
+							<input class="form-control" id="PositionText" name="PositionText" />
+						</div>
+					</div>
+				</div>
+			</div>
+		</form>
+	</div>
+</div>
+
+<div class="row">
+	<div class="col-md-12">
+		<div class="text-right">
+			<a id="btn-Search" class="btn green btn-Search" value="Search" onclick="SearchListing();">Search</a>
+		</div>
+	</div>
+</div>
+<div class="row">&nbsp;</div>
+<div class="row">
+	<div class="col-md-12">
+		<div id="SearchResult">
+
+		</div>
+	</div>
+</div>
+<script>
+    $(document).ready(function () {
+        $('.date-picker').datepicker({
+            format: 'dd/mm/yyyy',
+            autoclose: true
+        });
+
+        SearchListing();
+    });
+
+    function SearchListing() {
+        $("#SearchResult").html("LOADING...");
+        $.ajax({
+            type: "GET",
+            cache: false,
+            url: '@Url.Content("~/TemporaryPosition/_RequestHistoryResult")',
+            data: $("#filterForm").serialize(),
+            success: function (listingContent) {
+                $("#SearchResult").empty().append(listingContent);
+            },
+            error: function (err) {
+
+                console.log(err);
+            }
+        });
+    }
+</script>

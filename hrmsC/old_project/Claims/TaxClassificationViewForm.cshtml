@@ -1,0 +1,482 @@
+﻿@model ESS.Claim.ViewModels.TaxClassification
+@{
+    ViewBag.Title = "TaxClassificationViewForm";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+    double TotalClaimed = 0.00;
+    double TotalApproved = 0.00;
+    double TotalTaxable = 0.00;
+    double TotalNonTaxable = 0.00;
+    int TaxItemNo = 0;
+    
+}
+
+<style type="text/css">
+    .LabelDisplay {
+        padding: 6px;
+        width: 100%;
+    }
+
+    .color1 {
+        background-color: #F9F9F9;
+    }
+
+    .color2 {
+        background-color: #A1A7B1;
+    }
+
+    
+</style>
+
+<div class="form-section">
+    <div class="row">
+        <div class="col-md-12">
+            <h1 class="page-title">
+                Tax Classification Summary
+                <span style="padding-left:20px;">
+                    <small></small>
+                </span>
+            </h1>
+        </div>
+    </div>
+</div>
+
+<form>
+    <input type="hidden" id="CanUpdate" value="@ViewBag.ShowUpdateBtn.ToString()" />
+    <input type="hidden" id="CanSave" value="@ViewBag.ShowSaveBtn.ToString()" />
+
+    <!-- Employee Details -->
+    @Html.Partial("_EmployeeInfoClaim", Model.Submiter)
+
+    <!-- Tax Classification Details -->
+    <div class="portlet box blue">
+        <div class="mini-triangle"><img src="../Assets/img/menu-red-triangle.png" /></div>
+        <div class="portlet-title">
+            <div class="caption">
+                <i class="fa fa-reorder"></i>Tax Classification Details
+            </div>
+            @*<a href="@Url.Content("~/Claims/_TaxClassificationRef")" class="btn btn-xs green pull-right"
+               target="popup"
+               onclick="window.open('@Url.Content("~/Claims/_TaxClassificationRef")', 'popup', 'width=600,height=600,resizable,scrollbars=yes'); return false;">
+                References
+            </a>*@
+            <a href="/SiteCollectionDocuments/Flexi%20Benefits/Flexi%20Benefits%20-%20Tax%20Classification%20References.aspx" class="btn btn-xs green pull-right"
+               target="popup"
+               onclick="window.open('/SiteCollectionDocuments/Flexi%20Benefits/Flexi%20Benefits%20-%20Tax%20Classification%20References.aspx', 'popup', 'width=600,height=600,resizable,scrollbars=yes'); return false;">
+                References
+            </a>
+        </div>
+        <div class="portlet-body form" style="padding:10px !important">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-horizontal">
+                        <div class="form-group">
+                            <label class="control-label col-md-4">
+                                Year
+                            </label>
+                            <div class="col-md-8 form-control-static">
+                                @Html.HiddenFor(m => m.TaxID)
+                                @Html.HiddenFor(m => m.EmployeeID)
+                                @Html.TextBoxFor(m => m.Year, new { @class = "form-control", @readonly = "readonly" })
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-horizontal">
+                        <div class="form-group">
+                            <label class="control-label col-md-4">
+                                Status
+                            </label>
+                            <div class="col-md-8 form-control-static">
+                                @Html.TextBoxFor(m => m.Status, new { @class = "form-control", @readonly = "readonly" })
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <br />
+            <div class="row">
+                <div class="col-md-12">
+                    <table class="table  table-bordered" id="TaxListTable">
+                        <thead>
+                            <tr>
+                                <th scope="col" width="10%">Component</th>
+                                <th scope="col" width="40%">Item</th>
+                                <th scope="col" width="10%">Claimed Amount (RM)</th>
+                                <th scope="col" width="10%">Approved Amount (RM)</th>
+                                <th scope="col" width="10%">Taxable Amount (RM)</th>
+                                <th scope="col" width="10%">Non-Taxable Amount (RM)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+
+                            @foreach (var Subtype in Model.ClaimSubtype)
+                            {
+                                List<ESS.Claim.ViewModels.TaxClassificationDetails> _taxDetails = new List<ESS.Claim.ViewModels.TaxClassificationDetails>();
+                                _taxDetails = (Model.TaxDetails).Where(x => x.Component == Subtype.ClaimsSubtypeName).ToList();
+                                if (_taxDetails != null && _taxDetails.Count > 0)
+                                {
+                                    string rowspanCount = ((_taxDetails.Count) + 1).ToString();
+                                    int rowCount = 0;
+                                    string CalTaxFunctionName = "CalculateTaxableAmt('" + Subtype.ClaimsSubtypeName + "');";
+                                    string CalNonTaxFunctionName = "CalculateNonTaxableAmt('" + Subtype.ClaimsSubtypeName + "');";
+                                    foreach (var item in _taxDetails)
+                                    {
+                                        <tr class="@Subtype.ClaimsSubtypeName">
+                                            @if (rowCount == 0)
+                                            {
+                                                <td rowspan="@rowspanCount" class="color1">@item.Component</td>
+                                                <td>@item.Item</td>
+                                                <td class="text-right">
+                                                    <input type="hidden" name="TaxDetails[@TaxItemNo].DetailsID" value="@item.DetailsID" />
+                                                    <label class="LabelDisplay">@item.ClaimedAmount </label>
+                                                </td>
+                                                <td class="text-right"><label class="LabelDisplay">@item.ApprovedAmount </label></td>
+                                                <td>
+                                                    <input type="text" name="TaxDetails[@TaxItemNo].TaxableAmount" class="form-control text-right TaxableAmount" value="@item.TaxableAmount" readonly onpaste="return false"  onkeyup="@CalTaxFunctionName"  />
+                                                </td>
+                                                <td>
+                                                    <input type="text" name="TaxDetails[@TaxItemNo].NonTaxableAmount" class="form-control text-right NonTaxableAmount" value="@item.NonTaxableAmount" readonly onpaste="return false"  onkeyup="@CalNonTaxFunctionName"  />
+                                                </td>
+
+                                            }
+                                            else
+                                            {
+                                                <td>@item.Item</td>
+                                                <td class="text-right">
+                                                    <input type="hidden" name="TaxDetails[@TaxItemNo].DetailsID" value="@item.DetailsID" />
+                                                    <label class="LabelDisplay">@item.ClaimedAmount </label>
+                                                </td>
+                                                <td class="text-right"><label class="LabelDisplay">@item.ApprovedAmount </label></td>
+                                                <td><input type="text" name="TaxDetails[@TaxItemNo].TaxableAmount" class="form-control text-right TaxableAmount" value="@item.TaxableAmount" readonly onpaste="return false"  onkeyup="@CalTaxFunctionName"  /></td>
+                                                <td><input type="text" name="TaxDetails[@TaxItemNo].NonTaxableAmount" class="form-control text-right NonTaxableAmount" value="@item.NonTaxableAmount" readonly onpaste="return false"  onkeyup="@CalNonTaxFunctionName"  /></td>
+                                            }
+                                        </tr>
+                                        rowCount++;
+                                        TaxItemNo++;
+                                    }
+                                  
+                                    <tr class="color1">
+                                        <td><b>Subtotal</b> : @Subtype.ClaimsSubtypeName</td>
+                                        <td class="text-right">
+                                            @{
+                                                TotalClaimed = TotalClaimed + _taxDetails.Sum(x => Convert.ToDouble(x.ClaimedAmount));
+                                                TotalApproved = TotalApproved + _taxDetails.Sum(x => Convert.ToDouble(x.ApprovedAmount));
+                                                TotalTaxable = TotalTaxable + _taxDetails.Sum(x => Convert.ToDouble(x.TaxableAmount));
+                                                TotalNonTaxable = TotalNonTaxable + _taxDetails.Sum(x => Convert.ToDouble(x.NonTaxableAmount));
+                                                string SubTaxableID = Subtype.ClaimsSubtypeName + "Taxable";
+                                                string SubNonTaxableID = Subtype.ClaimsSubtypeName + "NonTaxable";
+                                            }
+                                            
+                                            <label class="LabelDisplay">@String.Format("{0:0.00}", _taxDetails.Sum(x => Convert.ToDouble(x.ClaimedAmount)))</label>
+                                        </td>
+                                        <td class="text-right"><label class="LabelDisplay">@String.Format("{0:0.00}", _taxDetails.Sum(x => Convert.ToDouble(x.ApprovedAmount)))</label></td>
+                                        <td>
+                                            <input type="text" id="@SubTaxableID" class="form-control text-right" value="@String.Format("{0:0.00}",@_taxDetails.Sum(x => Convert.ToDouble(x.TaxableAmount)))" readonly />
+                                        </td>
+                                        <td>
+                                            <input type="text" id="@SubNonTaxableID" class="form-control text-right" value="@String.Format("{0:0.00}",@_taxDetails.Sum(x => Convert.ToDouble(x.NonTaxableAmount)))" readonly />
+                                        </td>
+                                    </tr>
+
+                                }
+                                
+                            }
+                        </tbody>
+                        <tfoot>
+                            <tr class="color1">
+                                <td colspan="2"> <b>Total</b></td>
+                                <td class="text-right"><label class="LabelDisplay">@String.Format("{0:0.00}",TotalClaimed)</label></td>
+                                <td class="text-right"><label class="LabelDisplay">@String.Format("{0:0.00}",TotalApproved)</label></td>
+                                <td class="text-right"><input type="text" id="TotalTaxable" class="form-control text-right" value="@String.Format("{0:0.00}",TotalTaxable)" readonly /></td>
+                                <td class="text-right"><input type="text" id="TotalNonTaxable" class="form-control text-right" value="@String.Format("{0:0.00}",TotalNonTaxable)" readonly /></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Buttons -->
+    <div class="row">
+        <div class="col-md-12">
+            @if (ViewBag.ShowSaveBtn)
+            {
+                <button type="button" class="btn default green" id="btnSave" onclick="TaxSave();">
+                    Save
+                </button>
+            }
+            @if (ViewBag.ShowUpdateBtn)
+            {
+                <button type="button" class="btn default green" id="btnUpdate" onclick="TaxValidation();">
+                    Update
+                </button>
+            }
+            <a class="btn green" href="@Url.Content("~/Claims/TaxClassificationListing")">
+                Back
+            </a>           
+        </div>
+    </div>
+
+    <!-- Confirmation Message -->
+    <div class="modal fade" id="ConfirmUpdate" tabindex="-1" role="basic" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                    <h4 class="modal-title">Confirmation</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="well">
+                        Are you sure you want to update Tax Classification Summary for this employee? If you want to make changes, click Close.
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn default blue" id="btnSaveTax" onclick="SaveTax(); return false;">
+                        <i class="fa fa-check"></i>
+                        Confirm 
+                    </button>
+
+                    <button type="button" class="btn default blue" id="btnUpdateTax" onclick="UpdateTax(); return false;">
+                        <i class="fa fa-check"></i>
+                        Confirm
+                    </button>
+
+                    <button type="button" class="btn default" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Success Message -->
+    <div class="modal fade" id="SuccessSubmit" tabindex="-1" role="basic" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header Success-header">
+                    @*<button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>*@
+                    <h4 class="Success-title">Action Successfully Completed</h4>
+                </div>
+                <div class="modal-body Success-body">
+                    <div class="well">
+                        Tax Classification Summary  has been successfully updated.
+                    </div>
+                </div>
+                <div class="modal-footer Success-footer">
+                    <a class="btn default blue" id="btnOK">
+                        <i class="fa fa-check"></i>
+                        OK
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</form>
+
+<script>
+    jQuery(document).ready(function () {
+        FormConfiguration();
+    });
+
+    //Helper funtion
+
+    function CalculateTaxableAmt(Component)
+    {
+        var thisTable = $('#TaxListTable');
+        var thisComponent = "." + Component;
+        var grandTaxableAmount = 0;
+
+        thisTable.find(thisComponent).each(function () {
+            var $row = $(this).closest("tr");
+            var amount = $row.find(".TaxableAmount").val();
+            if (!isNaN(amount) && amount.length != 0) {
+                grandTaxableAmount = (grandTaxableAmount + (amount * 1));
+            }
+        });
+
+        thisTable.find("#" + Component + "Taxable").val(grandTaxableAmount.toFixed(2));
+        CalculateTotalTaxableAmt();
+    }
+
+    function CalculateTotalTaxableAmt()
+    {
+        var TotalSum = 0;
+        $('#TaxListTable').find(".TaxableAmount").each(function () {
+            var totalValue =this.value;           
+            TotalSum = parseFloat(TotalSum) + parseFloat(totalValue);
+        });
+
+        $('#TotalTaxable').val(TotalSum.toFixed(2));
+    }
+
+    function CalculateNonTaxableAmt(Component)
+    {
+        var thisTable = $('#TaxListTable');
+        var thisComponent = "." + Component;
+        var grandNonTaxableAmount = 0;
+
+        thisTable.find(thisComponent).each(function () {
+            var $row = $(this).closest("tr");
+            var amount = $row.find(".NonTaxableAmount").val();
+            if (!isNaN(amount) && amount.length != 0) {
+                grandNonTaxableAmount = (grandNonTaxableAmount + (amount * 1));
+            }
+        });
+
+        thisTable.find("#" + Component + "NonTaxable").val(grandNonTaxableAmount.toFixed(2));
+        CalculateTotalNonTaxableAmt();
+    }
+
+    function CalculateTotalNonTaxableAmt()
+    {
+        var TotalSum = 0;
+        $('#TaxListTable').find(".NonTaxableAmount").each(function () {
+            var totalValue =this.value;           
+            TotalSum = parseFloat(TotalSum) + parseFloat(totalValue);
+        });
+
+        $('#TotalNonTaxable').val(TotalSum.toFixed(2));
+    }
+
+    // Page Load
+    function FormConfiguration()
+    {
+        var _CanUpdate = $('#CanUpdate').val();
+        var _CanSave = $('#CanSave').val();
+        if (_CanUpdate == "True" || _CanSave == "True")
+        {
+            $('#TaxListTable .TaxableAmount').removeAttr('readonly');
+            $('#TaxListTable .NonTaxableAmount').removeAttr('readonly');
+        }
+    }
+
+    function TaxValidation() {
+        var ValidationMsg = '';
+        var thisTable = $('#TaxListTable');
+
+        thisTable.find(".TaxableAmount").each(function () {
+            var $row = $(this).closest("tr");
+            var TaxAmount = $row.find(".TaxableAmount").val();
+            var NonTaxAmount = $row.find(".NonTaxableAmount").val();
+
+            if (TaxAmount == null || TaxAmount == '') {
+                ValidationMsg += '- TaxAmount is required.\n'
+            }
+
+            if (NonTaxAmount == null || NonTaxAmount == '') {
+                ValidationMsg += '- NonTaxAmount is required.\n'
+            }
+
+        });
+
+        if (ValidationMsg != null && ValidationMsg != '') {
+            alert(ValidationMsg);
+        } else {
+            $("#btnSaveTax").show();
+            $("#btnUpdateTax").show();
+            $("#ConfirmUpdate").modal();
+            $("#btnSaveTax").hide();
+        }
+        
+    }
+
+    function TaxSave() {
+        $("#btnSaveTax").show();
+        $("#btnUpdateTax").show();
+        $("#ConfirmUpdate").modal();
+        $("#btnUpdateTax").hide();
+    }
+
+    function SaveTax() {
+        var data = $('form').serializeArray();
+
+        $.ajax({
+            url: '@Url.Content("~/Claims/SaveTaxClassification")',
+            type: 'POST',
+            data: data,
+            success: function (result) {
+                if (result.Success == true) {
+                    $("#ConfirmUpdate").modal('hide');
+                    $('#SuccessSubmit').modal();
+                    $('#btnOK').attr('href', '../Claims/TaxClassificationListing');
+                }
+                else {
+                    alert(result.ErrorMessage);
+                }
+            },
+            error: function (x, y, z) {
+                alert(x + '\n' + y + '\n' + z);
+            }
+        });
+    }
+
+    function UpdateTax()
+    {
+        var data = $('form').serializeArray();
+
+        $.ajax({
+            url: '@Url.Content("~/Claims/UpdateTaxClassification")',
+            type: 'POST',
+            data: data,
+            success: function (result) {
+                if (result.Success == true) {
+                    $("#ConfirmUpdate").modal('hide');
+                    $('#SuccessSubmit').modal();
+                    $('#btnOK').attr('href', '../Claims/TaxClassificationListing');
+                }
+                else {
+                    alert(result.ErrorMessage);
+                }
+            },
+            error: function (x, y, z) {
+                alert(x + '\n' + y + '\n' + z);
+            }
+        });
+    }
+
+    $(".TaxableAmount").on("blur", function (e) {
+        var myNumeric = parseFloat($(this).val().replace(/,/g, ''));
+        if (!myNumeric) {
+            $(this).val('0.00');
+        }
+        else {
+            $(this).val(myNumeric.toFixed(2));
+        }
+    });
+
+    $(".NonTaxableAmount").on("blur", function (e) {
+        var myNumeric = parseFloat($(this).val().replace(/,/g, ''));
+        if (!myNumeric) {
+            $(this).val('0.00');
+        }
+        else {
+            $(this).val(myNumeric.toFixed(2));
+        }
+       
+    });
+
+    function ThousandSeparator(x) {
+        return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

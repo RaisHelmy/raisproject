@@ -1,0 +1,330 @@
+﻿@model List<ESS.Core.DropDownObject>
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewBag.Title = "Standby Planning";
+    DateTime Today = DateTime.Now;
+    Decimal Year = Convert.ToDecimal(Today.ToString("yyyy")) +  1;
+
+    //if (Model.Count <= 0)
+    if (!RoleMaintenance.RoleService.IsInRole("Time Attendance", "StandByStaff"))
+    {
+        Response.Redirect("~/AccessControl/ErrorPermission");
+    }
+}
+
+<div class="row">
+    <div class="col-md-12">
+        <br />
+        <h1 class="page-title">
+            @ViewBag.Title <span style="padding-left:20px;"><small></small></span>
+            <input type="hidden" value="@Year"/>
+        </h1>
+    </div>
+</div>
+<br />
+<div class="form-body">
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-4 control-label">Year</label>
+                    <div class="col-md-8 form-control-static">
+                        <select class="form-control" id="Year">
+
+                            <option value="@Year">@Year @{Year = Year - 1;}</option>
+                            <option selected value="@Year">@Year @{Year = Year - 1;}</option>
+                            <option value="@Year">@Year @{Year = Year - 1;}</option>
+                            <option value="@Year">@Year @{Year = Year - 1;}</option>
+                            <option value="@Year">@Year</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-4 control-label">Status</label>
+                    <div class="col-md-8 form-control-static">
+                        <select class="form-control" id="Status">
+                            <option selected value="">- All -</option>
+                            <option value="1">Active</option>
+                            <option value="0">Inactive</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-4 control-label">Company</label>
+                    <div class="col-md-8 form-control-static">
+                            @Html.DropDownList("Company", new SelectList(Model, "Value", "Text"), "- All -", new { @class = "bs-select form-control", @onchange = "changeCompany(this)"})
+                          
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-4 control-label">Department</label>
+                    <div class="col-md-8 form-control-static">
+
+                        @Html.Action("_DDLDepartment", "TimeAttendance", new { })
+                      
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-4 control-label">Unit / Section</label>
+                    <div class="col-md-8 form-control-static">
+                        @Html.Action("_DDLUnitSection", "TimeAttendance", new { })
+                    
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-4 control-label">Employee</label>
+                    <div class="col-md-8 form-control-static">
+                        @Html.Partial("TSPeoplePicker", new Tuple<int?, TimeAttendance.Models.TimesheetAttendanceVM, string, string>(null, null, "SearchEmployee", ""))
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    @*<div class="row">
+        <div class="col-md-6">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-4 control-label">testing</label>
+                    <div class="col-md-8 form-control-static">
+                        <select class="form-control select2 select2-offscreen" id="select2_sample2" multiple tabindex="-1">
+                            <option>Mustard</option>
+                            <option>Ketchup</option>
+                            <option>Relish</option>
+                            <option>Mustard</option>
+                            <option>Ketchup</option>
+                            <option>Relish</option>
+                            <option>Mustard</option>
+                            <option>Ketchup</option>
+                            <option>Relish</option>
+                            <option>Mustard</option>
+                            <option>Ketchup</option>
+                            <option>Relish</option>
+                            <option>Mustard</option>
+                            <option>Ketchup</option>
+                            <option>Relish</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>*@
+
+    <div class="row">&nbsp;</div>
+    <div class="row">
+        <div class="col-md-12">
+            <div class="text-right">
+                <input type="button" id="btn-Search" class="btn green btn-Search" value="Search" onclick="SearchListing();">
+                @*<input type="button" id="btn-Clear" class="btn btn-Search" value="Clear" onclick="ClearFilter();">*@
+            </div>
+        </div>
+    </div>
+    <div class="row">&nbsp;</div>
+    <div class="row">
+        <div class="col-md-12">
+            <div id="SearchResult">
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="text-right">
+            <input type="button" id="btn-AddNew" class="btn green btn-Search" value="Add New" onclick="AddNew();">
+        </div>
+    </div>
+</div>
+
+@Html.Action("TSPeoplePickerIndex", "TimeAttendance", new { CurrEmpID = ViewBag.EmployeeID, SearchType = "" })
+
+<div id="dialog"></div>
+
+<div class="modal fade" id="StandByModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div id="StandByResult">
+
+            </div>
+        </div>
+    </div>
+</div>
+
+@*<div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+    <h4 class="modal-title">
+        <p>Add New StandBy Planning</p>
+    </h4>
+</div>
+<div class="modal-body">
+
+</div>
+<div class="modal-footer">
+    <button type="button" class="btn default green" onclick="PopulateWorkSchedule()">Generate</button>
+    <button type="button" class="btn default" data-dismiss="modal">Close</button>
+</div>*@
+
+
+<script>
+
+    function SearchListing() {
+
+        var _Year = $('#Year').val();
+        var _Status = $('#Status').val();
+
+        var _CompanyCode = $('#Company option:selected').val();
+        var _DepartmentCode = $('#Department option:selected').val();
+        var _UnitSectionCode = $('#UnitSection option:selected').val();
+        var _SearchEmpID = $('input[name="SearchEmployeeID"]').val();
+
+        if (_CompanyCode == '' && _SearchEmpID == '') {
+            alert('Please specific either Company or Employee.');
+        }
+        else {
+            $("#SearchResult").html("LOADING...");
+
+            $.ajax({
+                type: "GET",
+                url: '@Url.Content("~/TimeAttendance/_StandByListResult")',
+                cache: false,
+                dataType: "html",
+                data: {
+                    Year: _Year,
+                    Status: _Status,
+                    Division: _CompanyCode,
+                    Department: _DepartmentCode,
+                    Section: _UnitSectionCode,
+                    EmployeeID: _SearchEmpID
+                },
+                success: function (content) {
+                    $("#SearchResult").html(content);
+                },
+                error: function (e) {
+                    console.log(e);
+                }
+            });
+        }
+        
+    }
+
+    function ViewStandBy(ID)
+    {
+        $.ajax({
+            url: '../TimeAttendance/_Standby',
+            type: 'GET',
+            data: {
+                ID: ID,
+                Mode: "View"
+            },
+            success: function (result) {
+                $("#StandByResult").html(result);
+                $('#StandByModal').modal({
+                    backdrop: 'static',
+                    keyboard: true
+                }, 'show');
+            },
+            error: function (e) {
+                console.log(e);
+            }
+        });
+    }
+
+    function changeCompany(e) {
+        $.ajax({
+            type: "GET",
+            url: '@Url.Content("~/TimeAttendance/_DDLDepartment")',
+            cache: false,
+            dataType: "html",
+            data: { CompanyCode: e.value },
+            success: function (content) {
+                $("#DepartmentResult").html(content);
+            },
+            error: function (e) {
+                console.log(e);
+            }
+        });
+    }
+
+    function changeDepartment(e) {
+        $.ajax({
+            type: "GET",
+            url: '@Url.Content("~/TimeAttendance/_DDLUnitSection")',
+            cache: false,
+            dataType: "html",
+            data: { DepartmentCode: e.value },
+            success: function (content) {
+                $("#UnitSectionResult").html(content);
+            },
+            error: function (e) {
+                console.log(e);
+            }
+        });
+    }
+
+    function AddNew()
+    {
+        $.ajax({
+            type: "GET",
+            url: '@Url.Content("~/TimeAttendance/_StandBy")',
+            cache: false,
+            dataType: "html",
+            data: {
+                ID: "",
+                Mode: "Insert"
+            },
+            success: function (result) {
+                $("#StandByResult").html(result);
+                $('#StandByModal').modal({
+                    backdrop: 'static',
+                    keyboard: true
+                }, 'show');
+            },
+            error: function (e) {
+                console.log(e);
+            }
+        });
+    }
+
+    function ClearFilter() {
+        $('#Status').val('');
+
+        $('#Company').val('');
+        $('#Department').val('');
+        $('#UnitSection').val('');
+        $('input[name="SearchEmployeeID"]').val('');
+        $('input[name="SearchEmployeeDisplayText"]').val('');
+
+    }
+
+    $(document).ready(function () {
+        //$('select[name="Company"]').val('@ViewBag.CompanyCode');
+        //$('select[name="Company"]').change();
+        //SearchListing();
+    });
+
+</script>

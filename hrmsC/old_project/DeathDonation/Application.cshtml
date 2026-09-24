@@ -1,0 +1,384 @@
+﻿
+@model Tuple<ESS.DeathDonation.Models.Application, SEP.RoutingManagement.Service.AllowAction>
+@using ESS.DeathDonation.Constants
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+    //set page title
+    ViewBag.Title = "Application";
+    bool canComplete = false;
+
+    if (Model.Item1.deceasedDetail.createdBy == ViewBag.EmployeeID && Model.Item1.deceasedDetail.status == StatusConstants.STATUS_APPROVED)
+    {
+        canComplete = true;
+    }
+
+}
+
+@using (Html.BeginForm("Application", "DeathDonation", FormMethod.Post, new { enctype = "multipart/form-data" }))
+{
+    <div class="form-section">
+        <div class="row">
+            <div class="col-md-12">
+                <h1 class="page-title">
+                    Death Donation
+                    <span style="padding-left:20px;">
+                        <small></small>
+                    </span>
+                </h1>
+            </div>
+        </div>
+    </div>
+
+    <!-- Employee Details -->
+    @Html.Partial("_EmployeeInfo", Model.Item1.submitter)
+
+    <!-- Deceased Details -->
+    @Html.Partial("_DeceasedDetail", Model)
+
+    <!-- Notify -->
+    @Html.Partial("_NotifyPeers", Model)
+
+    <!-- Attachment -->
+    if (string.IsNullOrEmpty(Model.Item1.deceasedDetail.status) || Model.Item1.deceasedDetail.status == StatusConstants.STATUS_WITHDRAW)
+    {
+        @Html.Action("AttachmentControl", "Attachment", new { EmployeeID = ViewBag.EmployeeID, Mode = "Edit", SourceType = "DeathDonation", RequestID = Model.Item1.deceasedDetail.id })
+        <p>
+            <b>
+                Nota: BSO perlu memastikan maklumat yang dilengkapkan adalah tepat bagi memastikan urusan pembayaran Sumbangan Kematian dapat dilaksanakan dengan betul.
+            </b>
+        </p>
+    }
+    else
+    {
+        @Html.Action("AttachmentControl", "Attachment", new { EmployeeID = ViewBag.EmployeeID, Mode = "View", SourceType = "DeathDonation", RequestID = Model.Item1.deceasedDetail.id })
+    }
+
+    <!-- Audit Log -->
+    if (!string.IsNullOrEmpty(Model.Item1.deceasedDetail.status))
+    {
+        @Html.Action("_AuditLog", "DeathDonation", new { SourceID = Model.Item1.deceasedDetail.id })
+
+        if (Model.Item2.CanApprove == "1" || Model.Item2.CanWithdraw == "1" || Model.Item2.CanDecline == "1" || canComplete)
+        {
+            <!-- Approval Comment -->
+            <div id="ApprovalComment" class="row">
+                <div class="col-md-12">
+                    <div class="portlet box blue">
+                        <div class="mini-triangle"><img src="/_layouts/15/TNBESS/Assets/img/menu-red-triangle.png" /></div>
+                        <div class="portlet-title">
+                            <div class="caption">
+                                <i class="fa fa-reorder"></i>Comment
+                            </div>
+                        </div>
+                        <div class="portlet-body form">
+                            <div class="form-body">
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <div class="form-horizontal">
+                                            <div class="form-group">
+                                                <label class="control-label col-md-2 ">
+                                                    Comment<span style="color:red;"> *</span>
+                                                </label>
+                                                <div class="col-md-10 form-control-static">
+                                                    <textarea class="form-control" id="txtAppComment" rows="5" cols="60" maxlength="500" name="approvalComment"></textarea>
+                                                    <i>Maximum 500 characters</i>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+
+    }
+
+    <!-- Action Buttons -->
+    <div class="row">
+        <div class="col-md-12">
+
+            @if (string.IsNullOrEmpty(Model.Item1.deceasedDetail.status) || Model.Item1.deceasedDetail.status == StatusConstants.STATUS_WITHDRAW)
+            {
+                if (ViewBag.IsBSO)
+                {
+                    <input type="button" class="btn green" value="Submit" id="btnSubmit" onclick="verifyApplication('Submit')" />
+                }
+            }
+            else
+            {
+                if (Model.Item2.CanWithdraw == "1")
+                {
+                    <input type="button" class="btn green" value="Withdraw" id="btnWithdraw" onclick="verifyApplication('Withdrawn')" />
+                }
+            }
+
+            @if (Model.Item2.CanApprove == "1")
+            {
+                <input type="button" class="btn green" value="Approve" id="btnApprove" onclick="verifyApplication('Approved')" />
+            }
+
+            @if (Model.Item2.CanDecline == "1")
+            {
+                <input type="button" class="btn green" value="Decline" id="btnDecline" onclick="verifyApplication('Declined')" />
+            }
+
+            @if (canComplete)
+            {
+                <input type="button" class="btn green" value="Complete" id="btnComplete" onclick="verifyApplication('Completed')" />
+            }
+
+            <input type="button" class="btn green" value="Back" id="btnBack" onclick="backToPrevious()" />
+        </div>
+    </div>
+
+    <!-- Success Message -->
+    <div class="modal fade" id="SuccessSubmit" tabindex="-1" role="basic" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header Success-header">
+                    <h4 class="Success-title" id="SuccessTitle">Action Successfully Completed</h4>
+                </div>
+                <div class="modal-body Success-body">
+                    <div class="well" id="SuccessMessage">
+                        Your application has been successfully submitted.
+                    </div>
+                </div>
+                <div class="modal-footer Success-footer">
+                    <a class="btn default blue" id="btnOK">
+                        <i class="fa fa-check"></i>
+                        OK
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <input type="hidden" name="approverAction" id="approverAction" />
+
+    <!-- Confirmation Message -->
+    <div class="modal fade" id="ConfirmSubmit" tabindex="-1" role="basic" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                    <h4 class="modal-title">Confirmation</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="well" id="ConfirmMessage">
+                        <span id="confirmMessageQuestion1">Are you sure you want to submit this request?</span>
+                        <br />
+                        <span id="confirmMessageQuestion2"> Press Confirm to proceed, or Close to stay on the current page</span>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn default blue" id="btnSubmitForm" onclick="submitForm(); return false;">
+                        <i class="fa fa-check"></i>
+                        Confirm
+                    </button>
+                    <button type="button" class="btn default" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Loading Gif -->
+    <div id="divLoading" style="margin: 0px; padding: 0px; position: fixed; right: 0px;
+        top: 0px; width: 100%; height: 100%; background-color:gainsboro; z-index: 30001;
+        opacity: .8; filter: alpha(opacity=70);display:none">
+        <p style="position: absolute; top: 30%; left: 30%; color: black;">
+            Loading, please wait...<img src="/_layouts/15/TNBESS/Assets/img/ajax-loading.gif" />
+
+        </p>
+    </div>
+
+    if (string.IsNullOrEmpty(Model.Item1.deceasedDetail.status) || Model.Item1.deceasedDetail.status == StatusConstants.STATUS_WITHDRAW)
+    {
+        <script>
+            function verifyApplication(_action) {
+                var errorMessage = "";
+
+
+                if (_action == "Submit") {
+                    // Submit Validation
+                    var _employeeID = $("#hfEmpID").val();
+                    var _dateOfDeath = $("#dateOfDeath").val();
+                    var _bsoBank = $("#bsoBank").val();
+                    var _ChargeCodePickerDesc = $("input[name=ChargeCodeDesc]").val();
+                    var _ChargeCodePickerCC = $("input[name=ChargeCode]").val();
+                    var _ChargeCodePickerType = $("input[name=ChargeType]").val();
+
+
+                    if (_employeeID == "" || _employeeID == null) {
+                        errorMessage += "Employee is required.\n";
+                    }
+                    if (_dateOfDeath == "" || _dateOfDeath == null) {
+                        errorMessage += "Date Of Death is required.\n";
+                    }
+                    if (_bsoBank == "" || _bsoBank == null) {
+                        errorMessage += "BSO Bank is required.\n";
+                    }
+                    if ((_ChargeCodePickerDesc == "" || _ChargeCodePickerDesc == null) ||
+                        (_ChargeCodePickerCC == "" || _ChargeCodePickerCC == null) ||
+                        (_ChargeCodePickerType == "" || _ChargeCodePickerType == null)) {
+                        errorMessage += "Charge Code is required.\n";
+                    }
+                }
+                else {
+                    errorMessage += "Invalid action triggered";
+                }
+
+
+                if (errorMessage.length > 0) {
+                    alert(errorMessage);
+                }
+                else {
+                    $("#ConfirmSubmit").modal();
+                }
+            }
+
+            function submitForm() {
+                var formData = new FormData();
+                var fileUpload_deathCert = $("#deathCert").get(0);
+                var files_deathCert = fileUpload_deathCert.files;
+                formData.append("deathCert", files_deathCert[0]);
+
+                var fileUpload_receipt = $("#receipt").get(0);
+                var files_receipt = fileUpload_receipt.files;
+                formData.append("receipt", files_receipt[0]);
+
+                $("form").serializeArray().forEach(function (field) {
+                    formData.append(field.name, field.value)
+                });
+
+                $('#divLoading').show();
+
+                $.ajax({
+                    url: '@Url.Action("SubmitApplication", "DeathDonation")',
+                    type: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function (result) {
+                        $('#divLoading').hide();
+                        $("#ConfirmSubmit").modal('toggle');
+                        if (!result.result) {
+                            $("#id").val(result.newRequestID);
+                            alert(result.errorMessage);
+                        }
+                        else {
+                            $('#SuccessSubmit').modal();
+                            $('#btnOK').attr('href', '@Url.Action("History", "DeathDonation")');
+                        }
+                    }
+                });
+            }
+        </script>
+    }
+    else
+    {
+        <script>
+            function verifyApplication(_action) {
+                var errorMessage = "";
+                var _comment = $("#txtAppComment").val();
+
+                if (_comment == "" || _comment == null) {
+                    errorMessage += "Comment is required.\n";
+                }
+
+                if (_action == "Withdrawn" || _action == "Approved" || _action == "Declined") {
+                    //Validation
+                }
+                else if (_action == "Completed") {
+
+                    var receiptId = $("#receiptId").val();
+                    var deathCertId = $("#deathCertId").val();
+
+                    if (receiptId == "" || receiptId == null) {
+                        if (document.getElementById("receipt").files.length == 0) {
+                            errorMessage += "Receipt is required.\n";
+                        }
+                    }
+                    if (deathCertId == "" || deathCertId == null) {
+                        if (document.getElementById("deathCert").files.length == 0) {
+                            errorMessage += "Death Cert/ Register of Death is required.\n";
+                        }
+                    }
+
+                }
+                else {
+                    errorMessage += "Invalid action triggered";
+                }
+
+                if (errorMessage.length > 0) {
+                    alert(errorMessage);
+                }
+                else {
+                    $("#approverAction").val(_action);
+                    var confirmMessageQuestion1 = "Are you sure you want to " + _action + " this Application?";
+                    var confirmMessageQuestion2 = "Press OK to continue or Cancel to stay on the current page.";
+                    $("#confirmMessageQuestion1").html(confirmMessageQuestion1);
+                    $("#confirmMessageQuestion2").html(confirmMessageQuestion2);
+                    $("#ConfirmSubmit").modal();
+                }
+            }
+
+            function submitForm() {
+
+                var submitStatus = $("#approverAction").val();
+                var formData = new FormData();
+                if (submitStatus == "Completed") {
+                    var fileUpload_deathCert = $("#deathCert").get(0);
+                    var files_deathCert = fileUpload_deathCert.files;
+                    formData.append("deathCert", files_deathCert[0]);
+
+                    var fileUpload_receipt = $("#receipt").get(0);
+                    var files_receipt = fileUpload_receipt.files;
+                    formData.append("receipt", files_receipt[0]);
+                }
+
+                $("form").serializeArray().forEach(function (field) {
+                    formData.append(field.name, field.value)
+                });
+                $('#divLoading').show();
+
+                $.ajax({
+                    url: '@Url.Action("PostApproverAction", "DeathDonation")',
+                    type: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function (result) {
+                        $('#divLoading').hide();
+                        $("#ConfirmSubmit").modal('toggle');
+                        if (!result.Success) {
+                            alert(result.ErrorMsg);
+                        }
+                        else {
+                            $("#SuccessMessage").html("Application has been successfully " + submitStatus);
+                            $('#SuccessSubmit').modal();
+                            if (submitForm == "Withdrawn") {
+                                $('#btnOK').attr('href', '@Url.Action("History", "DeathDonation")');
+                            }
+                            else {
+                                $('#btnOK').attr('href', '@Url.Action("DeathDonationIntray", "DeathDonation")');
+                            }
+                        }
+                    }
+                });
+            }
+        </script>
+    }
+    <script>
+        $(document).ready(function () {
+
+        });
+
+        function backToPrevious() {
+            window.history.back();
+        }
+    </script>
+}

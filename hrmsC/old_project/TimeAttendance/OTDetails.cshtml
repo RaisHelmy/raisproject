@@ -1,0 +1,787 @@
+﻿@model Tuple<TimeAttendance.Models.OTPlanningEntryVM, List<SEP.RoutingManagement.Service.AllowAction>>
+
+@{
+    ViewBag.Title = (!string.IsNullOrEmpty(ViewBag.TaskID) && (Model.Item2[0].CanApprove == "1" || Model.Item2[0].CanVerify == "1")) ? 
+                    "Overtime Planning Approval" : "Overtime Planning Details";
+
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    DateTime FirstMondayOfLastWeek = DateTime.Now;
+    while (FirstMondayOfLastWeek.DayOfWeek != DayOfWeek.Monday)
+    {
+        FirstMondayOfLastWeek = FirstMondayOfLastWeek.AddDays(-1);
+    }
+    FirstMondayOfLastWeek = FirstMondayOfLastWeek.AddDays(-7);
+    DateTime WorkScheduleFromDate = FirstMondayOfLastWeek;
+    DateTime WorkScheduleToDate = DateTime.Now;
+
+
+
+    DateTime prevMonth = DateTime.Today.AddMonths(-1);
+    DateTime MinDate = new DateTime(prevMonth.Year, prevMonth.Month, 1);
+    DateTime MaxDate = DateTime.Now;
+
+    string dtStrStart = MinDate.ToString("dd MM yyyy");
+    string dtStrEnd = MaxDate.ToString("dd MM yyyy");
+}
+<div class="form-section">
+    <div class="row">
+        <div class="col-md-12">
+            <h1 class="page-title">
+                @ViewBag.Title
+                <span style="padding-left:20px;">
+                    <small></small>
+                </span>
+            </h1>
+        </div>
+    </div>
+</div>
+
+@using (Html.BeginForm("OTDetails", "TimesheetAttendance", FormMethod.Get,new { ID = Model.Item1.EntryID}))
+{
+    <div id="tab_1" class="tab-pane active">
+
+        @Html.Partial("_EmployeeDetails", Model.Item1.EmployeeDetail)
+        @Html.Action("_SubmissionDetails", "TimeAttendance", new { TSModel = "",
+                                                                   OTModel = Model.Item1
+                                                                 })
+        @*@Html.Partial("_SubmissionDetails", new Tuple<string, string, string, string>(Model.Item1.EntryID.ToString(),
+                                                                                      Model.Item1.StatusDesc,
+                                                                                      "",
+                                                                                      ""))*@
+        <div class="row text-right form-body" style="padding-top:0px">
+            <div style="margin-right:10px">
+                <a href="@Url.Action("WorkSchedule", "TimeAttendance", new { EmployeeID = Model.Item1.EmployeeDetail.EmployeeID.ToString()})" target="_blank" style="padding-top:16px;">Working Hours</a>
+            </div>
+        </div>
+        @Html.Partial("_OvertimePlanningDetails", Model.Item1)
+
+
+        @if (Model.Item1.EditMode)
+        {
+        <!-- Attachment -->
+            @Html.Action("TSAttachmentControl", "TimeAttendance", new { EmployeeID = ViewBag.CurrentUser, Mode = "Add", SourceType = "Time Attendance", RequestID = Model.Item1.EntryID.ToString(), Type = "" })
+        }
+        else
+        {
+            @Html.Action("TSAttachmentControl", "TimeAttendance", new { EmployeeID = ViewBag.CurrentUser, Mode = "View", SourceType = "Time Attendance", RequestID = Model.Item1.EntryID.ToString(), Type = "" })
+        }
+
+        @{
+            if (Model.Item1.StatusCode != "DR")
+            {
+                @Html.Action("_AuditLog", "TimeAttendance", new { SourceID = Model.Item1.EntryID })
+            }
+        }
+
+        <input type="hidden" name="TimesheetSubAction" id="TimesheetSubAction" value="" />
+
+
+        @Html.Action("TSPeoplePickerIndex", "TimeAttendance", new { CurrEmpID = ViewBag.EmployeeID, SearchType = "" })
+        @Html.Action("TSChargeCodeIndex", "TimeAttendance", new { CurrEmpID = ViewBag.EmployeeID, SearchType = "" })
+        
+
+
+    </div>
+
+    if (!string.IsNullOrEmpty(ViewBag.TaskID) && (Model.Item2[0].CanApprove == "1" || Model.Item2[0].CanVerify == "1"))
+    {
+        <div class="row">
+            <div class="col-md-12">
+                <div class="portlet box blue">
+                    <div class="mini-triangle"><img src="../Assets/img/menu-red-triangle.png" /></div>
+                    <div class="portlet-title">
+                        <div class="caption">
+                            <i class="fa fa-reorder"></i>Approval Comments
+                        </div>
+                    </div>
+                    <div class="portlet-body form">
+                        <div class="form-body">
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="form-horizontal">
+                                        <div class="form-group">
+                                            <label class="control-label col-md-2">Comments</label>
+                                            <div class="col-md-10 form-control-static">
+                                                <textarea class="form-control" id="txtAppComment" rows="5" cols="60"
+                                                          maxlength="1000"></textarea>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+    <div id="OTPlanningActionDiv">
+        <div class="row">
+            <div class="col-md-12">
+                @if (Model.Item1.CanEdit)
+                {
+                    <input type="button" class="btn green" value="Edit" id="btnEdit" onclick="SubmitOTPlanning('ConvertToDraft');" />
+                }
+                @if (Model.Item1.CanSave)
+                {
+                    <input type="button" class="btn green" value="Save as Draft" id="btnDraft" onclick="SubmitOTPlanning('Draft'); " />
+                }
+                @if (Model.Item1.CanSubmit)
+                {
+                    <input type="button" class="btn green" value="Submit" id="btnSubmit" onclick="SubmitOTPlanning('PerformActionOnSubmit'); " />
+                }
+                @if (Model.Item1.CanDelete)
+                {
+                    <input type="button" class="btn green" value="Delete" id="btnDelete" onclick="SubmitOTPlanning('Delete');" />
+                }
+                @if (Model.Item2[0].CanWithdraw == "1")
+                {
+                    <input type="button" class="btn green" value="Withdraw" id="btnWithdraw" onclick="WithdrawOTPlanning();" />
+                }
+                @if (Model.Item2[0].CanCancel == "1")
+                {
+                <input type="button" class="btn green" value="Cancel" id="btnCancel" onclick="CancelOTPlanning();" />
+                }
+                @{
+                    if (!string.IsNullOrEmpty(ViewBag.TaskID))
+                    {
+                        if (Model.Item2[0].CanApprove == "1")
+                        {
+                            <input type="button" class="btn green" value="Approve" id="btnApprove" onclick="PostApproverAction('Approve');" />
+                        }
+                        if (Model.Item2[0].CanVerify == "1")
+                        {
+                            <input type="button" class="btn green" value="Verify" id="btnVerify" onclick="PostApproverAction('Verify');" />
+                        }
+                        if (Model.Item2[0].CanDecline == "1")
+                        {
+                            <input type="button" class="btn green" value="Decline" id="btnDecline" onclick="PostApproverAction('Decline');" />
+                        }
+                    }
+                    
+                }
+
+                
+                <input type="button" class="btn green" value="Exit" id="btnExit" onclick="history.back()" />
+            </div>
+        </div>
+    </div>
+
+    <!-- Success Message -->
+    <div class="modal fade" id="SuccessSubmit" tabindex="-1" role="basic" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header Success-header">
+                    @*<button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>*@
+                    <h4 class="Success-title">Action Successfully Completed</h4>
+                </div>
+                <div class="modal-body Success-body">
+                    <div class="well" id="SuccessMessage">
+                        Claims has been successfully submitted.
+                    </div>
+                </div>
+                <div class="modal-footer Success-footer">
+                    <a class="btn default blue" id="btnOK">
+                        <i class="fa fa-check"></i>
+                        OK
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+            <!-- Confirmation Message -->
+    <div class="modal fade" id="ConfirmSubmit" tabindex="-1" role="basic" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                    <h4 class="modal-title">Confirmation</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="well" id="ConfirmMessage">
+                        Are you sure you want to Submit this Claim?\n\rPress Confirm to proceed, or Close to stay on the current page.
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn default blue" id="btnSubmitForm" submitvalue="">
+                        <i class="fa fa-check"></i>
+                        Confirm
+                    </button>
+                    <button type="button" class="btn default" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+            <!-- Loading Gif -->
+            <div id="divLoading" style="margin: 0px; padding: 0px; position: fixed; right: 0px;
+        top: 0px; width: 100%; height: 100%; background-color:gainsboro; z-index: 30001;
+        opacity: .8; filter: alpha(opacity=70);display:none">
+                <p style="position: absolute; top: 30%; left: 30%; color: black;">
+                    Loading, please wait...<img src="../Assets/img/ajax-loading.gif" />
+
+                </p>
+            </div>
+
+}
+<script>
+    var Path = '/_layouts/15/ESSV2'; //local
+    //var Path = '/_layouts/15/TNBESS'; //STG & PRD
+
+    var TimesheetAttendanceTable = $('#tblTimesheetEntry').dataTable({
+        "bPaginate": false,
+        "bFilter": false,
+        "bInfo": false
+    });
+
+
+
+    function ConfirmAction(_Action)
+    {
+        if (_Action == 'Draft') {
+            $('#btnSubmitForm').addClass('hidden_1');
+            $('#btnSubmitSave').removeClass('hidden_1');
+            $('.modal-body .well').html('Are you sure you want to Save this Timesheet Application?\n\rPress Confirm to proceed, or Close to stay on the current page.');
+            $('#btnOK').click(function () { RedirectTo('Draft'); });
+            $('#ConfirmSubmit').modal('show');
+        }
+        else if (_Action == 'Submit') {
+            $('#btnSubmitForm').removeClass('hidden_1');
+            $('#btnSubmitSave').addClass('hidden_1');
+            $('.modal-body .well').html('Are you sure you want to Submit this Timesheet Application?\n\rPress Confirm to proceed, or Close to stay on the current page.');
+            $('#btnOK').click(function () { RedirectTo('Submit'); });
+            $('#ConfirmSubmit').modal('show');
+            $('#ConfirmSubmit').modal();
+            if ($('#tblAttachment .dataTables_empty').length == 1) {
+                alert("Submit this claim without attachment?");
+            }
+        }
+    }
+
+    function SubmitOTPlanning(Type) {
+        DisableActionButton();
+        var data = '';
+        if (Type == 'Draft' || Type == 'PerformActionOnSubmit')
+        {
+            ToggleFieldForSubmit(true);
+            data = $('form').serializeArray();
+            ToggleFieldForSubmit(false);
+            data.push(
+                { name: 'SubmitType', value: Type }
+            );
+        }
+        else {
+            var _entryIDs = $('#EntryID').val() + ',';
+            data = {
+                SubmitType: Type,
+                EntryIDs: _entryIDs
+            };
+        }
+
+        PerformOTPlanningSubmission(data, Type);
+    }
+
+    function PerformOTPlanningSubmission(data, Type) {
+
+        var Action = Type;
+        switch (Type) {
+            case 'PerformActionOnSubmit':
+                Action = 'Submitted';
+                break;
+            case 'Cancel':
+                Action = 'Cancelled';
+            case 'Delete':
+                Action = 'Deleted';
+                break;
+            case 'Submit':
+                Action = 'Submitted';
+                break;
+            case 'Draft':
+                Action = 'Saved as Draft';
+                break;
+            default:
+        }
+        $.ajax({
+            url: '../TimeAttendance/SubmitOTPlanningAction',
+            type: 'POST',
+            data: data,
+            success: function (result) {
+
+                $('#divLoading').hide();
+                if (result.result == true) {
+
+
+                    $('#SuccessSubmit').modal();
+                    $('#SuccessMessage').html("Timesheet has been successfully " + Action);
+                    if ('@ViewBag.Source' != '') {
+                        $('#btnOK').attr('href', '../TimeAttendance/' + '@ViewBag.Source');
+                    }
+                    else {
+                        $('#btnOK').attr('href', '../TimeAttendance/OTplanningHistoryGroup');
+                    }
+                }
+                else if (!result.result) {
+                    if (CheckEmptyKeyValueMessage(result.EntryErrorMessage)) {
+                        ShowErrorWarningMessage(result.EntryErrorMessage);
+
+                    } else if (CheckEmptyKeyValueMessage(result.EntryWarningMessage)) {
+                        ShowErrorWarningMessage(result.EntryErrorMessage);
+                    } else if(result.ErrorMessage != '' & result.ErrorMessage != undefined){
+                        alert(result.ErrorMessage);
+                    }
+                    EnableActionButton();
+                }
+                // ... Process the result ...
+            }
+        });
+    }
+
+    function PostApproverAction(Action) {
+        DisableActionButton();
+        var _TaskIDs = '@ViewBag.TaskID' + ',';
+        var _ApproverAction = Action;
+        var _ApproverComment = $('#txtAppComment').val();
+        var MatchApproverAction = true;
+
+
+        //field to update during approval
+        var _StartTime = $('input[name="StartTime"]').val()
+        var _EndTime = $('input[name="EndTime"]').val()
+        var _ChargeCode = $('input[name="ChargeCode"]').val()
+        var _ChargeType = $('input[name="ChargeType"]').val()
+        var _ChargeCodeDesc = $('input[name="ChargeCodeDesc"]').val()
+        var _Description = $('textarea[name="Description"]').val()
+        var _TotalHours = $('input[name="TotalHours"]').val()
+
+        var JsonObjectParam = {
+            "StartTime": _StartTime,
+            "EndTime": _EndTime,
+            "ChargeCode": _ChargeCode,
+            "ChargeType": _ChargeType,
+            "ChargeCodeDesc": _ChargeCodeDesc,
+            "Description": _Description,
+            "TotalHours": _TotalHours
+        }
+        var Param = JSON.stringify(JsonObjectParam);
+
+        if (!(_ApproverComment === '' && Action === 'Decline')) {
+            if (_TaskIDs != "") {
+                if (MatchApproverAction) {
+                    $.ajax({
+                        type: "POST",
+                        url: '@Url.Content("~/TimeAttendance/OTPostApproverAction")',
+                        data: {
+                            TaskIDs: _TaskIDs,
+                            ApproverAction: _ApproverAction,
+                            ApproverComment: _ApproverComment,
+                            UpdateFields: Param
+                        },
+                        success: function (result) {
+                            EnableActionButton();
+                            if (result.result == true) {
+
+                                $('#SuccessSubmit').modal();
+                                var ActionMessage = Action;
+                                if (Action === "Approve") ActionMessage = "Approved";
+                                if (Action === "Decline") ActionMessage = "Declined";
+                                if (Action === "Verify") ActionMessage = "Verified";
+                                if (Action === "ConvertToDraft") ActionMessage = "Convert To Draft";
+                                $('#SuccessMessage').html("Overtime Planning has been successfully " + ActionMessage);
+                                $('#btnOK').attr('href', '../TimeAttendance/OvertimePlanningInTray');
+                            } else {
+                                //alert(result.EntryErrorMessage);
+                                ShowErrorWarningMessage(result.EntryErrorMessage);
+                                EnableActionButton();
+                            }
+                        },
+                        error: function (e) {
+                            console.log(e);
+                            EnableActionButton();
+                        }
+                    });
+                }
+                else {
+                    alert('Approval action is not allow.');
+                    EnableActionButton();
+                }
+            }
+            else {
+                alert('Workflow not found. Please contact your system administrator.');
+                EnableActionButton();
+            }
+        }
+        else {
+            alert('Please fill in the comments.');
+            EnableActionButton();
+        }
+
+        
+    }
+
+    function WithdrawOTPlanning() {
+        DisableActionButton();
+        var _EntryIDs = $('#EntryID').val();
+        if (_EntryIDs != "")
+        {
+            _EntryIDs = _EntryIDs + ',';
+        }
+
+        if (_EntryIDs != "") {
+            $.ajax({
+                type: "POST",
+                url: '@Url.Content("~/TimeAttendance/WithdrawOTPlanning")',
+                data: {
+                    EntryIDs: _EntryIDs
+                },
+                success: function (result) {
+                    if (result.result == true) {
+
+                        EnableActionButton();
+                        $('#SuccessSubmit').modal();
+                        $('#SuccessMessage').html("Overtime Planning has been successfully " + "Withdrawn.");
+                        if ('@ViewBag.Source' != '') {
+                            $('#btnOK').attr('href', '../TimeAttendance/' + '@ViewBag.Source');
+                        }
+                        else {
+                            $('#btnOK').attr('href', '../TimeAttendance/OTplanningHistoryGroup');
+                        }
+                    } else {
+                        if (CheckEmptyKeyValueMessage(result.EntryErrorMessage)) {
+                            ShowErrorWarningMessage(result.EntryErrorMessage);
+                        } else {
+                            alert('Request action failed.');
+                        }
+                        EnableActionButton();
+                    }
+                },
+                error: function (e) {
+                    console.log(e);
+                    EnableActionButton();
+                }
+            });
+        }
+        else {
+            alert('Please select entry to proceed.');
+            EnableActionButton();
+        }
+    }
+
+    function CancelOTPlanning() {
+        DisableActionButton();
+        var _EntryIDs = $('#EntryID').val();
+        if (_EntryIDs != "") {
+            _EntryIDs = _EntryIDs + ',';
+        }
+
+        if (_EntryIDs != "") {
+            $.ajax({
+                type: "POST",
+                url: '@Url.Content("~/TimeAttendance/CancelOTPlanning")',
+                data: {
+                    EntryIDs: _EntryIDs
+                },
+                success: function (result) {
+                    if (result.result == true) {
+
+                        EnableActionButton();
+                        $('#SuccessSubmit').modal();
+                        $('#SuccessMessage').html("Overtime Planning has been successfully " + "Cancelled.");
+                        if ('@ViewBag.Source' != '') {
+                            $('#btnOK').attr('href', '../TimeAttendance/' + '@ViewBag.Source');
+                        }
+                        else {
+                            $('#btnOK').attr('href', '../TimeAttendance/OTplanningHistoryGroup');
+                        }
+                    } else {
+                        if (CheckEmptyKeyValueMessage(result.EntryErrorMessage)) {
+                            ShowErrorWarningMessage(result.EntryErrorMessage);
+                        } else {
+                            alert('Request action failed.');
+                        }
+                        EnableActionButton();
+                    }
+                },
+                error: function (e) {
+                    console.log(e);
+                    EnableActionButton();
+                }
+            });
+        }
+        else {
+            alert('Please select entry to proceed.');
+            EnableActionButton();
+        }
+    }
+
+
+    function CalculateDateTime() {
+
+        var EmployeeID = $('input[name="EmployeeID"]').val();
+        var StartDate = $('input[name="StartDate"]').val();
+        var EndDate = $('input[name="EndDate"]').val();
+        var StartTime = $('input[name="StartTime"]').val();
+        var EndTime = $('input[name="EndTime"]').val();
+
+        if (StartDate != '' && EndDate != '' && StartTime != '' && EndTime != '') {
+
+            var workingHours = GetWorkingHours(EmployeeID, StartDate, EndDate, StartTime, EndTime);
+            //var diffHours = duration.asHours() - workingHours;
+            //var Hour = parseFloat(Math.round(workingHours * 100) / 100).toFixed(2);
+            //$row.find(".TotalHour").val(workingHours);
+        } else {
+
+            $('input[name="TotalHours"]').val('0.00');
+        }
+
+        //$("#tblOTPlanningEntry td input[type=checkbox]").each(function (i, value) {
+        //    if (rowNumber == i) {
+        //        var $row = $(this).closest("tr");
+
+        //    }
+        //});
+    }
+
+    function GetWorkingHours(EmployeeID, StartDate, EndDate, StartTime, EndTime) {
+        var totalHours = 0;
+
+        $.ajax({
+            url: '../TimeAttendance/OTPGetWorkingHours',
+            type: 'POST',
+            data: {
+                EmployeeID: EmployeeID,
+                StartDate: StartDate,
+                EndDate: EndDate,
+                StartTime: StartTime,
+                EndTime: EndTime
+            },
+            success: function (result) {
+                if (result != undefined && result != '') {
+                        totalHours = parseFloat(result);
+                        var Hour = parseFloat(Math.round(totalHours * 100) / 100).toFixed(2);
+                        $('input[name="TotalHours"]').val(Hour);
+                }
+                else {
+                    var StartDateTime = moment(StartDate + ' ' + StartTime, 'DD/MM/YYYY HH:mm');
+                    var EndDateTime = moment(EndDate + ' ' + EndTime, 'DD/MM/YYYY HH:mm');
+
+                    var duration = moment.duration(EndDateTime.diff(StartDateTime));
+                    var diffHours = duration.asHours();
+                    var Hour = parseFloat(Math.round(diffHours * 100) / 100).toFixed(2);
+                    $('input[name="TotalHours"]').val(Hour);
+                    //the calculation above doesnt matter, just display 0 if no result from JSON
+                    $('input[name="TotalHours"]').val('0.00');
+                    //$row.find(".TotalHour").val(Hour);
+                }
+            },
+            error: function () {
+                var StartDateTime = moment(StartDate + ' ' + StartTime, 'DD/MM/YYYY HH:mm');
+                var EndDateTime = moment(EndDate + ' ' + EndTime, 'DD/MM/YYYY HH:mm');
+
+                var duration = moment.duration(EndDateTime.diff(StartDateTime));
+                var diffHours = duration.asHours();
+                var Hour = parseFloat(Math.round(diffHours * 100) / 100).toFixed(2);
+                $('input[name="TotalHours"]').val(Hour);
+            }
+        });
+
+    }
+
+    function GetApprover()
+    {
+        var _EmployeeID = $('input[name="EmployeeID"]').val();
+        var _StartDate = $('input[name="StartDate"]').val();
+        var _ChargeTypeCode = $('input[name="ChargeType"]').val();
+        var _Approver = $('input[name="ApproverID"]').val();
+
+
+        $(".ApproverPeoplePicker.TSPeoplePickerDisplay").siblings('.input-group-btn').css("pointer-events", "auto");
+        $('.TSPeoplePickerDisplay.ApproverPeoplePicker').val('');
+        $('.TSPeoplePickerID.ApproverPeoplePicker').val('');
+        $('.TSPeoplePickerCode.ApproverPeoplePicker').val('');
+        $('.TSPeoplePickerName.ApproverPeoplePicker').val('');
+        
+        if ((_EmployeeID != '' && _EmployeeID != undefined &&
+            _StartDate != '' && _StartDate != undefined &&
+            _ChargeTypeCode != '' && _ChargeTypeCode != undefined) &&
+            '@Model.Item1.StatusCode' == "DR") {
+
+            $.ajax({
+                url: '../TimeAttendance/GetApprover',
+                type: 'POST',
+                data: {
+                    EmployeeID: _EmployeeID,
+                    StartDate: _StartDate,
+                    ChargeTypeCode: _ChargeTypeCode,
+                    Subtype: "OTPlanning",
+                    EntryType: "OT Planning"
+                },
+                success: function (result) {
+                    if (result != undefined) {
+                        if (result != '') {
+                            if (result.ErrorMessage != '' && result.ErrorMessage != undefined)
+                            {
+                                $('input[name="ApproverDisplayText"]').val('');
+                                $('input[name="ApproverID"]').val('');
+                                $('input[name="ApproverCode"]').val('');
+                                $('input[name="ApproverName"]').val('');
+                                $('input[name="ApproverDisplayText"]').siblings('.input-group-btn').css("pointer-events", "auto");
+                                alert(result.ErrorMessage);
+
+                            } else {
+
+                                var ApproverID = result.ApproverID;
+                                var ApproverCode = result.ApproverCode;
+                                var ApproverName = result.ApproverName;
+                                if (ApproverID != '' && ApproverID != undefined &&
+                                    ApproverCode != '' && ApproverCode != undefined &&
+                                    ApproverName != '' && ApproverName != undefined) {
+                                    $('input[name="ApproverDisplayText"]').val(ApproverCode + ' - ' + ApproverName);
+                                    $('input[name="ApproverID"]').val(ApproverID);
+                                    $('input[name="ApproverCode"]').val(ApproverCode);
+                                    $('input[name="ApproverName"]').val(ApproverName);
+                                }
+                                $('input[name="ApproverDisplayText"]').siblings('.input-group-btn').css("pointer-events", "none");
+                            }
+                        }
+                    }
+                    else {
+
+                    }
+                }
+            });
+        }
+
+    }
+
+    function ClearBulkEntrySearch() {
+        var fromDate = $('#WorkScheduleFromDate').val();
+        var toDate = $('#WorkScheduleToDate').val();
+
+        $('input[name="BulkStartDate"]').val(fromDate);
+        $('input[name="BulkEndDate"]').val(toDate);
+
+        $('input[name="BulkStartTime"]').val('');
+        $('input[name="BulkEndTime"]').val('');
+        $('.BulkChargeCodePicker').val('');
+        $('textarea[name="BulkDescription"]').val('');
+
+
+        //$('.nhDate').datepicker('setStartDate', fromDate);
+        //$('.nhDate').datepicker('setEndDate', toDate);
+    }
+
+    function ClearNHSearch() {
+        var fromDate = $('#WorkScheduleFromDate').val();
+        var toDate = $('#WorkScheduleToDate').val();
+
+        $('input[name="wsSearchStartDate"]').val(fromDate);
+        $('input[name="wsSearchEndDate"]').val(toDate);
+
+        $('.wsChargeCodePicker').val('');
+        $('textarea[name="wsDescription"]').val('');
+
+
+    }
+
+    function ShowErrorWarningMessage(Message) {
+
+        for (var k in Message) {
+            if (Message.hasOwnProperty(k)) {
+                //console.log("Key is " + k + ", value is" + Message[k]);
+                if (Message[k] != '' && Message[k] != undefined)
+                {
+                    alert(Message[k]);
+                }
+            }
+        }
+
+    }
+
+    function CheckEmptyKeyValueMessage(Message) {
+        var count = 0;
+        for (var key in Message) {
+            count++;
+            break;
+        }
+        if (count == 0) {
+            return false;
+        } else {
+            return true;
+        }
+    }
+
+    function DisableActionButton() {
+        $('#OTPlanningActionDiv').children().children().children('.btn').attr('disabled', true);
+        $('#divLoading').show();
+    }
+
+    function EnableActionButton() {
+        $('#divLoading').hide();
+        $('#OTPlanningActionDiv').children().children().children('.btn').attr('disabled', false);
+    }
+
+    function ToggleFieldForSubmit(Flag)
+    {
+        var bool = false;
+        if (!Flag)
+        {
+            bool = true;
+        }
+        $('input[name="StartDate"]').prop("disabled", bool);
+        $('input[name="EndDate"]').prop("disabled", bool);
+
+    }
+
+    function InitiateDateTimeSetting() {
+        $('.date-picker').datepicker({
+            format: 'dd/mm/yyyy',
+            autoclose: true,
+            minDate: new Date(2017, 8, 1),
+            maxDate: new Date(2017, 9, 6)
+        });
+        $('.date-picker').datepicker('setStartDate', '@ViewBag.MinDate');
+        $('.date-picker').datepicker('setEndDate', '@ViewBag.MaxDate');
+        //$('.date-picker').datepicker();
+
+        $('.timepicker-24').timepicker({
+            autoclose: true,
+            minuteStep: 5,
+            showSeconds: false,
+            showMeridian: false,
+            defaultTime: 0000
+        });
+
+        $('.timeinput').inputmask("mask", {
+            "mask": "99:99"
+        });
+
+        //$('.timeinput').inputmask("h:s", {
+        //    "placeholder": "__/__",
+        //    onincomplete: function () {
+        //        // replace placeholder with zero
+        //        $(this).val($(this).val().replace(/_/g, '0'));
+        //    }
+        //});
+    }
+
+    function PostApproverActionText(Action)
+    {
+
+    }
+
+    $(document).ready(function () {
+
+        var approver = $(".ApproverPeoplePicker.TSPeoplePickerDisplay").val();
+        if (approver != '' && '@Model.Item1.EditMode' == 'True')
+        {
+            $(".ApproverPeoplePicker.TSPeoplePickerDisplay").siblings('.input-group-btn').css("pointer-events", "none");
+        }
+        $('.TSChargeCodePickerName.ChargeCodePicker').on('change', GetApprover);
+        InitiateDateTimeSetting();
+
+
+    });
+
+
+
+</script>

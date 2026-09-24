@@ -1,0 +1,161 @@
+﻿@using LTIP.Models
+@model Tuple<List<string>, List<string>, List<string>>
+@{
+    ViewBag.Title = "LTIP Offer/Acceptance Report";
+    String EmployeeID = ViewBag.EmployeeID;
+    List<GrantStatus> GrantStatus = ViewBag.GrantStatus;
+
+    DateTime d1 = DateTime.Now.AddYears(-20);
+    DateTime d2 = DateTime.Now.AddYears(20);
+    string dtStrStart = d1.ToString("dd MMM yyyy");
+    string dtStrEnd = d2.ToString("dd MMM yyyy");
+
+    string defaultStartDate = DateTime.Today.AddDays(-7).ToString("dd/MM/yyyy");
+    string defaultEndDate = DateTime.Today.ToString("dd/MM/yyyy");
+}
+
+<div class="row">
+    <div class="col-md-12">
+        <br />
+        <h1 class="page-title">
+            @ViewBag.Title
+            <span style="padding-left:20px;">
+                <small></small>
+            </span>
+        </h1>
+    </div>
+</div>
+
+<br />
+<div class="row">
+    <div class="col-md-6">
+        <div class="form-horizontal">
+            <div class="form-group">
+                <label class="col-md-4 control-label">Employee</label>
+                <div class="col-md-8 form-control-static">
+                    <input type="text" id="employeeSearch" class="form-control" />
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="form-horizontal">
+            <div class="form-group">
+                <label class="col-md-4 control-label">Start Date</label>
+                <div class="col-md-8 form-control-static">
+                    <div class="input-group date date-picker" data-date-format="dd MM yyyy">
+                        <input type="text" class="form-control" id="dateFrom" name="dateFrom" />
+                        <span class="input-group-btn">
+                            <button type="button" class="btn default"><i class="fa fa-calendar"></i></button>
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="form-horizontal">
+            <div class="form-group">
+                <label class="col-md-4 control-label">End Date</label>
+                <div class="col-md-8 form-control-static">
+                    <div class="input-group date date-picker" data-date-format="dd MM yyyy">
+                        <input type="text" class="form-control" id="dateTo" name="dateTo" />
+                        <span class="input-group-btn">
+                            <button type="button" class="btn default"><i class="fa fa-calendar"></i></button>
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-6">
+        <div class="form-horizontal">
+            <div class="form-group">
+                <label class="col-md-4 control-label">Status</label>
+                <div class="col-md-8 form-control-static">
+                    <select class="form-control" id="ddlStatus">
+                        <option value="">- All -</option>
+                        @foreach (var status in GrantStatus)
+                        {
+                            <option value="@status.Code">@status.Description</option>
+                        }
+                    </select>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row">&nbsp;</div>
+<div class="row">
+    <div class="col-md-12">
+        <div class="text-right">
+            <input type="button" id="btn-Search" class="btn green btn-Search" value="Search" onclick="SearchListing();">
+            <input id="btn-Clear" type="button" class="btn default " value="Clear" onclick="ClearFilter();">
+        </div>
+    </div>
+</div>
+<div class="row">&nbsp;</div>
+<div class="form-body">
+    <div class="row">
+        <div class="col-md-12">
+            <div id="SearchResult">
+            </div>
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+    function SearchListing() {
+        $("#SearchResult").html("LOADING...");
+
+        var _EmployeeSearch = $('#employeeSearch').val();
+        var _Status = $('#ddlStatus').val();
+        var _DateFrom = $('#dateFrom').val();
+        var _DateTo = $('#dateTo').val();
+
+        $.ajax({
+            type: "GET",
+            url: '@Url.Action("_OfferAcceptanceReportResults", "LTIP")',
+            data: {
+                EmployeeSearch: _EmployeeSearch,
+                Status: _Status,
+                DateFrom: _DateFrom,
+                DateTo: _DateTo
+            },
+            success: function (content) {
+                $("#SearchResult").html(content);
+            },
+            error: function (e) {
+                console.log(e);
+            }
+        });
+    }
+
+    $(function () {
+        $('.date-picker').datepicker({
+            format: 'dd/mm/yyyy',
+            autoclose: true,
+            setStartDate: '@dtStrStart',
+            setEndDate: '@dtStrEnd'
+        });
+
+        //SearchListing();
+    });
+
+    $("#dateFrom").val('@defaultStartDate');
+    $('#dateTo').val('@defaultEndDate');
+
+    function ClearFilter() {
+        SearchListing();
+    }
+
+
+
+
+
+</script>
+
