@@ -37,8 +37,8 @@ export interface Overview {
 export interface Preset { id: string; name: string; blurb: string; daily: number | null; weekly: number | null; monthly: number | null; allowed: string[]; default_model: string; fallback: string | null; rpm: number | null; on_limit: "block" | "fallback" }
 export const PRESETS: Preset[] = [
   { id: "cheap", name: "Cheap", blurb: "Workers AI only (Qwen / GLM). $0.50/day.", daily: 0.5, weekly: 2.5, monthly: 8, allowed: ["cheap", "fast", "auto"], default_model: "cheap", fallback: "cheap", rpm: 60, on_limit: "block" },
-  { id: "coding", name: "Coding", blurb: "Qwen Coder → Claude Sonnet fallback. $2/day.", daily: 2, weekly: 10, monthly: 30, allowed: ["auto/coding", "auto", "cheap", "fast"], default_model: "auto/coding", fallback: "cheap", rpm: 60, on_limit: "fallback" },
-  { id: "premium-coding", name: "Premium coding", blurb: "Claude Sonnet first. $5/day.", daily: 5, weekly: 25, monthly: 80, allowed: ["premium", "auto/coding", "anthropic/claude-sonnet-5", "cheap"], default_model: "anthropic/claude-sonnet-5", fallback: "auto/coding", rpm: 60, on_limit: "fallback" },
+  { id: "coding", name: "Coding", blurb: "Qwen Coder → Kimi K2.7 Code fallback. $2/day.", daily: 2, weekly: 10, monthly: 30, allowed: ["auto/coding", "auto", "cheap", "fast"], default_model: "auto/coding", fallback: "cheap", rpm: 60, on_limit: "fallback" },
+  { id: "premium-coding", name: "Premium coding", blurb: "Kimi K2.7 Code / GLM 5.3 first. $5/day.", daily: 5, weekly: 25, monthly: 80, allowed: ["premium", "auto/coding", "cheap"], default_model: "premium", fallback: "auto/coding", rpm: 60, on_limit: "fallback" },
   { id: "reasoning", name: "Reasoning", blurb: "Strong reasoning model. $3/day.", daily: 3, weekly: 15, monthly: 50, allowed: ["auto/reasoning", "auto", "cheap"], default_model: "auto/reasoning", fallback: "cheap", rpm: 30, on_limit: "fallback" },
   { id: "custom", name: "Unlimited / custom", blurb: "Everything enabled, no budget until you set one.", daily: null, weekly: null, monthly: null, allowed: [], default_model: "auto", fallback: null, rpm: null, on_limit: "block" },
 ];

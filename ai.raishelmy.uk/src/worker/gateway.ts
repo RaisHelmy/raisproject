@@ -1,5 +1,4 @@
 import type { Env } from "./env";
-import { ACCOUNT_ID } from "./env";
 import type { KeyRow, ModelRow, AliasRow } from "./db";
 import { keySpend, globalSpend, requestsLastMinute, getSettings, loadCatalog } from "./db";
 import { newId, now, windows, dayKeyFor, openaiError } from "./util";
@@ -148,7 +147,7 @@ export async function proxyChat(
   delete body.user; // never forward client identities upstream
 
   const metadata = JSON.stringify({ project: project.slug, credential: key.id, request_id: requestId, portal: "ai.raishelmy.uk" });
-  const url = `https://gateway.ai.cloudflare.com/v1/${ACCOUNT_ID}/${env.AI_GATEWAY_ID}/compat/${CHAT_PATH}`;
+  const url = `https://gateway.ai.cloudflare.com/v1/${env.CF_ACCOUNT_ID}/${env.AI_GATEWAY_ID}/compat/${CHAT_PATH}`;
   const attempts: Attempt[] = [];
 
   for (const model of candidates) {

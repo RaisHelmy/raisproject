@@ -7,7 +7,26 @@ limit, and talks plain OpenAI API to `https://ai.raishelmy.uk/v1`. Apps never
 see the Cloudflare token or provider keys.
 
 ```
-app ──OpenAI API──▶ ai.raishelmy.uk (Worker + D1) ──cf-aig-metadata──▶ Cloudflare AI Gateway ──▶ Workers AI / Anthropic / OpenAI / OpenRouter
+app ──OpenAI API──▶ ai.raishelmy.uk ──▶ ai-raishelmy.developer-530.workers.dev ──cf-aig-metadata──▶ AI Gateway "raisai" ──▶ Workers AI
+                    (edge proxy,         (the app: Worker + D1, Hira account                          (Hira account)
+                     raishelmy account)   530e4678…)
+```
+
+## Two accounts
+
+- **Hira / developer account (530e4678…)** owns the app: Worker `ai-raishelmy`, D1 `ai-raishelmy`,
+  AI Gateway `raisai`, and therefore all Workers AI billing. Deploy from this folder.
+- **raishelmy account (6af8ff18…)** owns the `raishelmy.uk` zone. Cloudflare only allows a Worker
+  custom domain inside the zone's own account, so `edge-proxy/` is a 20-line Worker (also named
+  `ai-raishelmy`, custom domain `ai.raishelmy.uk`) that relays every request to the workers.dev
+  URL above and adds `x-rais-edge: <EDGE_SECRET>`. The app refuses requests without it (HTTP 421),
+  so the only public entry point is `ai.raishelmy.uk`.
+
+```bash
+# app (Hira account creds)
+set -a; . /root/hira_monorepo/matah/.env.cloudflare; set +a; bun run deploy
+# edge proxy (raishelmy account creds)
+set -a; . /root/raisproject/.env.cloudflare; set +a; (cd edge-proxy && bunx wrangler deploy)
 ```
 
 ## What the Worker does per request
@@ -54,9 +73,10 @@ wrangler d1 migrations apply ai-raishelmy --remote
 
 wrangler secret put ADMIN_PASSWORD
 wrangler secret put SAAS_SSO_SECRET        # same value as the other suite apps
-wrangler secret put CLOUDFLARE_API_TOKEN   # Workers AI Run + AI Gateway Read (upstream Workers AI + cost sync)
+wrangler secret put CLOUDFLARE_API_TOKEN   # Hira-account token: Workers AI Run + AI Gateway Read
+wrangler secret put EDGE_SECRET            # same value on edge-proxy (cd edge-proxy && wrangler secret put EDGE_SECRET)
 wrangler secret put OPENROUTER_API_KEY     # optional
-wrangler secret put ANTHROPIC_API_KEY      # optional — enables anthropic/* models
+wrangler secret put ANTHROPIC_API_KEY      # optional — only if you enable anthropic/* models (Workers AI has none)
 wrangler secret put OPENAI_API_KEY         # optional
 # any other AI Gateway provider: <SLUG_UPPER_SNAKE>_API_KEY, e.g. GOOGLE_AI_STUDIO_API_KEY
 # or store provider keys in the gateway (BYOK) and set AI_GATEWAY_TOKEN instead
@@ -66,6 +86,11 @@ Local dev: copy `.dev.vars.example` → `.dev.vars`, `bun run db:migrate:local`,
 (Worker + built assets on :8787) or `bun run dev:web` for Vite HMR proxied to it.
 
 ## Notes / limits
+
+- Default setup is **Workers AI only** (migration 0002): every alias resolves to Workers AI
+  models (Qwen, Kimi K2.7 Code, GLM 5.3, DeepSeek V4, GPT-OSS, Gemma 4, Llama). Anthropic /
+  OpenAI / OpenRouter catalog rows exist but are disabled; enable them under Models after
+  setting the matching `<PROVIDER>_API_KEY` secret.
 
 - Budgets are enforced from this Worker's own ledger (Cloudflare's spend limits have
   no public API yet). The `project` metadata lets you add Cloudflare-side spend-limit

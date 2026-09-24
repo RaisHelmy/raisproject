@@ -2,6 +2,8 @@ export interface Env {
   DB: D1Database;
   ASSETS: Fetcher;
   AI_GATEWAY_ID: string;
+  CF_ACCOUNT_ID: string;   // account that owns the AI Gateway / Workers AI billing
+  EDGE_SECRET?: string;    // if set, only requests carrying x-rais-edge: <secret> are accepted (the ai.raishelmy.uk proxy)
   BUDGET_TIMEZONE: string;
   PUBLIC_BASE_URL: string;
   // secrets
@@ -16,6 +18,5 @@ export interface Env {
   [key: string]: unknown;
 }
 
-export const ACCOUNT_ID = "6af8ff18a864c2b56f1a3aa78cb24f80";
 export const SSO_APP_ID = "ai";
 export const ADMIN_EMAIL = "raishelmy97@gmail.com";

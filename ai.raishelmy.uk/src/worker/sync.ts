@@ -1,5 +1,4 @@
 import type { Env } from "./env";
-import { ACCOUNT_ID } from "./env";
 import { getSetting, setSetting } from "./db";
 
 interface CfLog { id: string; created_at: string; cost: number; tokens_in: number; tokens_out: number; model: string; provider: string; metadata: Record<string, unknown> | null; success: boolean }
@@ -21,7 +20,7 @@ export async function syncCosts(env: Env, opts: { force?: boolean } = {}): Promi
   let page = 1, scanned = 0, matched = 0;
   const stmts: D1PreparedStatement[] = [];
   while (page <= 20) {
-    const r = await fetch(`https://api.cloudflare.com/client/v4/accounts/${ACCOUNT_ID}/ai-gateway/gateways/${env.AI_GATEWAY_ID}/logs?per_page=100&page=${page}&order_by=created_at&order_by_direction=desc&filters=${filters}`, {
+    const r = await fetch(`https://api.cloudflare.com/client/v4/accounts/${env.CF_ACCOUNT_ID}/ai-gateway/gateways/${env.AI_GATEWAY_ID}/logs?per_page=100&page=${page}&order_by=created_at&order_by_direction=desc&filters=${filters}`, {
       headers: { Authorization: `Bearer ${env.CLOUDFLARE_API_TOKEN}` },
     });
     if (!r.ok) throw new Error(`AI Gateway logs API HTTP ${r.status}: ${(await r.text()).slice(0, 200)}`);

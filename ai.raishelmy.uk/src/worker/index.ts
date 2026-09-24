@@ -6,7 +6,15 @@ import { syncCosts } from "./sync";
 
 const app = new Hono<{ Bindings: Env }>();
 
-app.get("/healthz", (c) => c.json({ ok: true, gateway: c.env.AI_GATEWAY_ID }));
+app.get("/healthz", (c) => c.json({ ok: true, gateway: c.env.AI_GATEWAY_ID, account: c.env.CF_ACCOUNT_ID }));
+
+// When EDGE_SECRET is set, this Worker only serves traffic relayed by the ai.raishelmy.uk edge proxy.
+app.use("*", async (c, next) => {
+  if (c.env.EDGE_SECRET && c.req.header("x-rais-edge") !== c.env.EDGE_SECRET) {
+    return c.json({ error: { message: "Use https://ai.raishelmy.uk", type: "invalid_request_error", code: "wrong_host" } }, 421);
+  }
+  await next();
+});
 // Opportunistic cost reconciliation with Cloudflare's own figures (rate-limited inside syncCosts).
 app.use("/api/overview", async (c, next) => {
   await next();
