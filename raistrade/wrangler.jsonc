@@ -1,0 +1,19 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "raistrade",
+  "account_id": "6af8ff18a864c2b56f1a3aa78cb24f80", // raishelmy account (zone owner of raishelmy.uk)
+  "main": "src/worker/index.ts",
+  "compatibility_date": "2026-08-27",
+  "compatibility_flags": ["nodejs_compat"],
+  "vars": { "ADMIN_USER": "admin" },
+  // Secrets: ADMIN_PASSWORD, SESSION_SECRET
+  "assets": {
+    "directory": "./dist/client",
+    "binding": "ASSETS",
+    "not_found_handling": "single-page-application",
+    "run_worker_first": ["/api/*", "/healthz", "/mcp"]
+  },
+  "triggers": { "crons": ["* * * * *"] },
+  "routes": [{ "pattern": "raistrade.raishelmy.uk", "custom_domain": true }],
+  "d1_databases": [{ "binding": "DB", "database_name": "raistrade", "database_id": "90f6ccfa-9991-460d-b404-8c93c8225592", "migrations_dir": "migrations" }]
+}
