@@ -32,7 +32,7 @@ async function balances(db: D1Database) {
   return { stock: round(cash("STOCK") + mv, 2), binary: round(cash("BINARY") + openBin!.v, 2) };
 }
 
-async function summarize(db: D1Database, s: SessionRow) {
+export async function summarize(db: D1Database, s: SessionRow) {
   const r = await db.prepare(`SELECT
       (SELECT COUNT(*) FROM rules WHERE session_id=?1 AND status!='DELETED') AS rules,
       (SELECT COUNT(*) FROM rules WHERE session_id=?1 AND status='ACTIVE') AS active_rules,

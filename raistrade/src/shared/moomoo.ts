@@ -1,3 +1,4 @@
+import { BY_CODE } from "./market";
 // What a moomoo Malaysia account can trade through moomoo OpenAPI (place_order), per the OpenAPI
 // docs' trading-support table (openapi.futunn.com/futu-api-doc/en, checked Oct 2026). The simulator's
 // instruments are mapped to the moomoo product you would actually trade; spot FX/crypto and binary
@@ -21,7 +22,10 @@ export const MOOMOO: Record<string, MoomooProduct | null> = {
   "CC.ETHUSD": { via: "futures", product: "CME Micro Ether futures", contract: "MET" },
   "FX.USDMYR": null,
 };
-export const moomooSupported = (code: string) => !!MOOMOO[code];
+/** Core instruments use the map above; the extended universe is all US or Bursa shares. */
+export const moomooProduct = (code: string): MoomooProduct | null =>
+  code in MOOMOO ? MOOMOO[code]! : BY_CODE[code]?.ext ? { via: "stock", product: code.startsWith("MY.") ? "Bursa Malaysia stock" : "US stock" } : null;
+export const moomooSupported = (code: string) => !!moomooProduct(code);
 
 /** moomoo OpenAPI trading support for a moomoo MY account (live trading). */
 export const MOOMOO_MATRIX: { market: string; products: string; my: boolean | "futures"; note?: string }[] = [

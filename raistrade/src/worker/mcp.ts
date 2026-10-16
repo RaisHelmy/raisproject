@@ -17,7 +17,11 @@ const PROTOCOLS = ["2025-06-18", "2025-03-26", "2024-11-05"];
 
 interface Scene { index: number; title: string; text: string; duration_ms: number }
 
-const tools = [
+// ChatGPT connectors / deep research require exactly these two tools (search → ids, fetch → document).
+const searchTool = { name: "search", description: "Search the RaisTrade showcase (features, scenes, strategies, brand kit, ad copy). Returns matching document ids for `fetch`.", inputSchema: { type: "object", properties: { query: { type: "string", description: "What to look for, e.g. 'risk guard', 'brand colours', 'scene binary'" } }, required: ["query"] } };
+const fetchTool = { name: "fetch", description: "Fetch a full RaisTrade showcase document by id (from `search`).", inputSchema: { type: "object", properties: { id: { type: "string" } }, required: ["id"] } };
+
+export const tools = [
   { name: "get_app_overview", description: "What RaisTrade is: tagline, key numbers, feature list, public URLs (ads page, live demo, tour deep links). Start here.", inputSchema: { type: "object", properties: {} } },
   { name: "get_brand_kit", description: "Brand kit for designs/videos: name, wordmark, Inter font, light & dark colour tokens, gradient, logo SVG and visual style notes.", inputSchema: { type: "object", properties: {} } },
   { name: "get_ad_copy", description: "All marketing copy from the /ads landing page: hero pill, headline, lead, CTAs, features, disclaimer.", inputSchema: { type: "object", properties: {} } },
@@ -25,6 +29,7 @@ const tools = [
   { name: "get_scene_media", description: "Returns the screenshot of one tour scene as an image (plus its clip URL and caption).", inputSchema: { type: "object", properties: { scene: { type: "integer", minimum: 1, maximum: 10, description: "Scene number 1–10" }, theme: { type: "string", enum: ["dark", "light"], default: "dark" } }, required: ["scene"] } },
   { name: "get_video_storyboard", description: "A ready-to-use storyboard for a promo video (15s, 30s or 60s): shots with timing, on-screen caption, voice-over line, source clip and transition.", inputSchema: { type: "object", properties: { length_seconds: { type: "integer", enum: [15, 30, 60], default: 30 } } } },
   { name: "get_strategy_catalog", description: "The 100 strategy types (name, category, icon, description) plus catalogue/bundle/risk-guard counts — for animated lists and tickers.", inputSchema: { type: "object", properties: { category: { type: "string", description: "Optional category filter, e.g. Trend, Momentum, Pattern" } } } },
+  searchTool, fetchTool,
   { name: "get_market_data", description: "Deterministic OHLCV candles from RaisTrade's simulated market (identical to what the app draws) — for animating charts in a video.", inputSchema: { type: "object", properties: { code: { type: "string", description: `Instrument, e.g. US.NVDA. One of: ${INSTRUMENTS.map((i) => i.code).join(", ")}` }, ktype: { type: "string", enum: Object.keys(KTYPES), default: "K_1M" }, bars: { type: "integer", minimum: 10, maximum: 500, default: 120 }, end: { type: "string", description: "Optional ISO time of the last candle (default: now)" } }, required: ["code"] } },
 ];
 
@@ -55,7 +60,23 @@ function storyboard(sc: Scene[], len: number, origin: string) {
   return { length_seconds: len, aspect: "16:10 source clips (1280×800); crop to 16:9 or 9:16 as needed", music: "upbeat, minimal electronic, ~110 bpm", shots };
 }
 
-async function call(name: string, args: any, env: Env, origin: string) {
+export interface Doc { id: string; title: string; text: string; url: string; metadata?: Record<string, string> }
+
+/** Every public showcase document, for search/fetch, llms.txt and the REST mirror. */
+export async function documents(env: Env, origin: string): Promise<Doc[]> {
+  const sc = await scenes(env, origin);
+  return [
+    { id: "overview", title: "RaisTrade overview", url: `${origin}/ads`, text: `${HERO.headline.join(" ")}\n\n${HERO.lead}\n\nMarkets: ${INSTRUMENTS.length} · strategy types: ${TEMPLATES.length} · rules in catalogue: ${CATALOG.size.toLocaleString()} · bundles: ${BUNDLES.length}\n\nLive demo (no sign-up): ${origin}/?demo=1\n\n${DISCLAIMER}` },
+    { id: "brand-kit", title: "Brand kit (colours, font, logo)", url: `${origin}/ads`, text: JSON.stringify(BRAND, null, 2) },
+    { id: "ad-copy", title: "Ad copy from the /ads page", url: `${origin}/ads`, text: JSON.stringify({ hero: HERO, features: FEATURES, disclaimer: DISCLAIMER }, null, 2) },
+    ...FEATURES.map((f, i) => ({ id: `feature-${i + 1}`, title: `${f.icon} ${f.title}`, url: `${origin}/ads#features`, text: f.text })),
+    ...sc.map((s) => ({ id: `scene-${s.index + 1}`, title: `Tour scene ${s.index + 1}: ${s.title}`, url: media(origin, s.index + 1).replay_live, text: `${s.text}\n\nClip: ${media(origin, s.index + 1).clip_webm}\nScreenshot (dark): ${media(origin, s.index + 1).screenshot_dark}\nScreenshot (light): ${media(origin, s.index + 1).screenshot_light}\nDuration: ${(s.duration_ms / 1000).toFixed(1)} s`, metadata: { kind: "scene" } })),
+    { id: "strategies", title: `${TEMPLATES.length} strategy types`, url: `${origin}/ads`, text: TEMPLATES.map((t) => `${t.icon} ${t.name} (${t.category}) — ${t.description}`).join("\n") },
+    { id: "risk-guards", title: "Crash guards (risk indicator)", url: `${origin}/ads`, text: [...DETECTORS.map((d) => `${d.icon} ${d.name}: ${d.desc}`), "", ...COMBOS.map((c) => `${c.icon} ${c.name} — ${c.scenario}: ${c.desc}`)].join("\n") },
+  ];
+}
+
+export async function call(name: string, args: any, env: Env, origin: string): Promise<any> {
   const text = (o: unknown) => ({ content: [{ type: "text", text: typeof o === "string" ? o : JSON.stringify(o, null, 2) }] });
   switch (name) {
     case "get_app_overview":
@@ -89,6 +110,17 @@ async function call(name: string, args: any, env: Env, origin: string) {
         .map((t) => ({ name: t.name, category: t.category, icon: t.icon, description: t.description }));
       return text({ count: list.length, catalogue_rules: CATALOG.size, bundles: BUNDLES.length, risk_combos: COMBOS.map((c) => `${c.icon} ${c.name}`), strategies: list });
     }
+    case "search": {
+      const q = String(args?.query ?? "").toLowerCase().split(/\s+/).filter(Boolean);
+      const docs = await documents(env, origin);
+      const scored = docs.map((d) => ({ d, s: q.reduce((n, w) => n + ((d.title + " " + d.text).toLowerCase().includes(w) ? 1 : 0), 0) }))
+        .filter((x) => !q.length || x.s > 0).sort((a, b) => b.s - a.s).slice(0, 10);
+      return text({ results: scored.map(({ d }) => ({ id: d.id, title: d.title, url: d.url })) });
+    }
+    case "fetch": {
+      const d = (await documents(env, origin)).find((x) => x.id === String(args?.id));
+      return d ? text(d) : { isError: true, content: [{ type: "text", text: `Unknown id ${args?.id}` }] };
+    }
     case "get_market_data": {
       const code = String(args?.code ?? ""), inst = BY_CODE[code];
       if (!inst) return { isError: true, content: [{ type: "text", text: `Unknown code. Use one of: ${INSTRUMENTS.map((i) => i.code).join(", ")}` }] };
@@ -104,7 +136,6 @@ async function call(name: string, args: any, env: Env, origin: string) {
 export function registerMcp(app: Hono<{ Bindings: Env }>) {
   const cors = { "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Headers": "content-type, mcp-protocol-version, mcp-session-id, authorization", "Access-Control-Allow-Methods": "POST, GET, OPTIONS" };
   app.options("/mcp", () => new Response(null, { headers: cors }));
-  app.get("/mcp", () => new Response(JSON.stringify({ name: "raistrade-ads", transport: "streamable-http", usage: "POST JSON-RPC 2.0 MCP requests to this URL" }), { status: 405, headers: { ...cors, "content-type": "application/json", Allow: "POST" } }));
   app.post("/mcp", async (c) => {
     const origin = new URL(c.req.url).origin;
     let body: any;

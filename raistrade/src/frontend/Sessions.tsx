@@ -6,6 +6,8 @@ import { AssetIcon } from "./Watchlist";
 import { EquityChart, RuleDetail, type Rule } from "./AutoTrade";
 import { fromUSD, symbol, toUSD } from "./currency";
 import { toast } from "./toast";
+import { StatementButtons } from "./Statement";
+import { Cleansing } from "./Cleansing";
 
 export interface SessionSummary {
   id: number; name: string; status: "ACTIVE" | "STOPPED"; parent_id: number | null; notes: string | null; created_at: number; stopped_at: number | null;
@@ -162,6 +164,7 @@ function SessionDetail({ id }: { id: number }) {
         <h5 className="mb-0 fw-bold">#{s.id} {s.name}</h5>
         <span className={`badge ${s.status === "ACTIVE" ? "text-bg-success" : "text-bg-secondary"}`}>{s.status === "ACTIVE" ? "● RUNNING" : "STOPPED"}</span>
         <span className="small text-secondary">{new Date(s.created_at).toLocaleString()} · {dur(s.duration_ms)}{s.parent_id ? ` · based on #${s.parent_id}` : ""}</span>
+        <span className="ms-auto"><StatementButtons sessionId={s.id} /></span>
       </div>
       {s.notes && <div className="small text-secondary mb-2">📝 {s.notes}</div>}
       <Summary s={s} parent={d.parent} />
@@ -203,6 +206,47 @@ function SessionDetail({ id }: { id: number }) {
   );
 }
 
+function ShareReport() {
+  const [st, setSt] = useState<{ enabled: boolean; key: string | null } | null>(null);
+  const [open, setOpen] = useState(false);
+  useEffect(() => { api("/api/share").then(setSt).catch(() => {}); }, []);
+  const set = async (enable: boolean, rotate = false) => {
+    try { setSt(await api("/api/share", { body: { enable, rotate } })); toast.ok(enable ? (rotate ? "New link created — the old one no longer works" : "Report sharing on") : "Report link revoked"); }
+    catch (e) { toast.err((e as Error).message); }
+  };
+  const base = `${location.origin}/mcp/r/${st?.key ?? ""}`;
+  const copy = (t: string) => { navigator.clipboard?.writeText(t); toast.ok("Copied"); };
+  return (
+    <>
+      <button className="btn btn-outline-secondary" onClick={() => setOpen(true)}>🔗 Share report{st?.enabled ? " · on" : ""}</button>
+      {open && (
+        <div className="modal d-block rt-modal" onClick={() => setOpen(false)}>
+          <div className="modal-dialog modal-lg" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-content panel">
+              <div className="modal-header"><h5 className="modal-title">Share a read-only performance report</h5><button className="btn-close ms-auto" onClick={() => setOpen(false)} /></div>
+              <div className="modal-body small">
+                <p className="text-secondary">A secret link that lets an AI assistant (ChatGPT, Claude, Gemini) or a person read your bot's results: session summary, every robot vs break-even, equity curve, drawdown, an engine replay check and methodology. It contains <b>no password, cookies or account identifiers</b> and <b>cannot place trades</b>. Anyone with the link can read it — revoke it any time.</p>
+                {st?.enabled && st.key ? (
+                  <>
+                    {[["MCP server (ChatGPT / Claude / Gemini connector)", base], ["Readable report (markdown)", base], ["Full data (JSON)", `${base}/report.json`]].map(([l, u]) => (
+                      <div key={l} className="mb-2"><div className="text-secondary mb-1">{l}</div>
+                        <div className="input-group input-group-sm"><input className="form-control" readOnly value={u} onFocus={(e) => e.target.select()} /><button className="btn btn-outline-secondary" onClick={() => copy(u!)}>Copy</button></div></div>
+                    ))}
+                    <div className="d-flex gap-2 mt-3">
+                      <button className="btn btn-outline-warning" onClick={() => set(true, true)}>🔄 New link</button>
+                      <button className="btn btn-outline-danger" onClick={() => set(false)}>Revoke</button>
+                    </div>
+                  </>
+                ) : <button className="btn btn-accent" onClick={() => set(true)}>Create share link</button>}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
+  );
+}
+
 export function Sessions() {
   const { list, activeId } = useSessions();
   const [sel, setSel] = useState<number | null>(null);
@@ -221,6 +265,7 @@ export function Sessions() {
         <div><h2 className="h4 fw-bold mb-1">🗂 Sessions</h2>
           <div className="small text-secondary">Each session is one trading run with its own robots and history. {list.length} session{list.length === 1 ? "" : "s"} · all-time net {signed(total)}</div></div>
         <div className="ms-auto d-flex gap-2">
+          <ShareReport />
           {activeId && <button className="btn btn-outline-danger" onClick={() => stop(activeId)}>⏹ Stop current session</button>}
           <button className="btn btn-accent" onClick={() => setCreating(true)}>+ New session</button>
         </div>

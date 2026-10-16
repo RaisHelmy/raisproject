@@ -7,6 +7,9 @@ import { estimateCosts } from "../shared/costs";
 import { activeSession, registerSessions, sessionParam } from "./sessions";
 import { registerRisk, riskGate } from "./risk";
 import { registerMcp } from "./mcp";
+import { registerPublic } from "./public";
+import { registerReportOwner, registerReportPublic } from "./report";
+import { registerConfig } from "./config";
 
 // Demo backend modelled on the moomoo OpenAPI (OpenD) trade/quote surface, always in
 // TrdEnv.SIMULATE: quotes come from the deterministic local market in ../shared/market.
@@ -60,6 +63,8 @@ app.post("/api/logout", (c) => {
   return c.json({ ret: 0 });
 });
 
+registerPublic(app as never);
+registerReportPublic(app as never);
 registerMcp(app as never);
 
 app.use("/api/*", async (c, next) => {
@@ -323,6 +328,8 @@ app.get("/api/trades/all", async (c) => {
 });
 
 registerSessions(app as never);
+registerReportOwner(app as never);
+registerConfig(app as never);
 registerRisk(app as never);
 
 app.all("/api/*", (c) => c.json({ ret: -1, msg: "Not found" }, 404));

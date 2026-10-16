@@ -6,6 +6,7 @@ import { groupOfCode, RISK_GROUPS } from "../shared/risk";
 import { api, money } from "./api";
 import { chartColors, useTheme } from "./theme";
 import type { Rule } from "./AutoTrade";
+import { Cleansing } from "./Cleansing";
 
 // Comprehensive auto-trade summary for the active session: performance vs break-even, exposure,
 // drawdown, hourly P/L, breakdowns by market and strategy, and warnings that need attention.
@@ -120,6 +121,11 @@ export function AutoSummary({ rules }: { rules: Rule[] }) {
         <Kpi l="Max drawdown" v={s.mdd ? `−${money(s.mdd)}` : "—"} cls={s.mdd ? "text-down" : ""} sub="worst peak-to-trough of the P/L curve" />
       </div>
       {warnings.length > 0 && <div className="d-flex flex-column gap-1 mt-2">{warnings.map((w) => <div key={w.text} className={`fee-check ${w.lvl}`}>{w.text}</div>)}</div>}
+      {open && (
+        <div className="mt-3 pt-3 border-top">
+          <Cleansing rows={trades.filter((t) => t.status === "WON" || t.status === "LOST").map((t) => ({ mode: t.kind === "BINARY" ? "BINARY" : "STOCK", code: t.code, pnl: t.pnl ?? 0, mm: rules.find((r) => r.id === t.rule_id)?.money_mgmt }))} />
+        </div>
+      )}
       {open && (
         <div className="row g-3 mt-1">
           <div className="col-xl-5">

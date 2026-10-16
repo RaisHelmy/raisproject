@@ -1,12 +1,15 @@
 import { useEffect, useState } from "react";
 import { api } from "./api";
 import { AuditTable, TradeTable } from "./AutoTrade";
+import { StatementButtons } from "./Statement";
+import { useSessions } from "./Sessions";
 
 export function Activity() {
   const [tab, setTab] = useState<"trades" | "audit">("trades");
   const [trades, setTrades] = useState<any[]>([]);
   const [log, setLog] = useState<any[]>([]);
   const [q, setQ] = useState("");
+  const { activeId: sid } = useSessions();
   useEffect(() => {
     const load = () => {
       api("/api/trades/all").then((r) => setTrades(r.data)).catch(() => {});
@@ -24,6 +27,7 @@ export function Activity() {
           <li className="nav-item"><button className={`nav-link py-1 ${tab === "trades" ? "active" : ""}`} onClick={() => setTab("trades")}>Bot trade history</button></li>
           <li className="nav-item"><button className={`nav-link py-1 ${tab === "audit" ? "active" : ""}`} onClick={() => setTab("audit")}>Audit trail</button></li>
         </ul>
+        {sid && <StatementButtons sessionId={sid} />}
         <input className="form-control form-control-sm ms-auto" style={{ maxWidth: 260 }} placeholder="Filter…" value={q} onChange={(e) => setQ(e.target.value)} />
       </div>
       {tab === "trades" ? <TradeTable rows={trades.filter(match)} showRule /> : <AuditTable rows={log.filter(match)} showRule />}

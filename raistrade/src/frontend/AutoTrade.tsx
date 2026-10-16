@@ -11,7 +11,8 @@ import { modeShown, moomooOnly } from "./scope";
 import { RuleCosts } from "./RuleCosts";
 import { AutoSummary } from "./AutoSummary";
 import { AggressivePanel } from "./AggressivePanel";
-import { AssetIcon, AssetLabel } from "./Watchlist";
+import { RuleGrid } from "./RuleGrid";
+import { AssetIcon, AssetLabel, ShariahBadge } from "./Watchlist";
 import { toast } from "./toast";
 import { LIBRARY, PRESET_BY_ID, PRESETS, type LibRule } from "../shared/library";
 import { chartColors, useTheme } from "./theme";
@@ -558,6 +559,8 @@ export function AutoTrade({ code }: { code: string }) {
   const [fMode, setFMode] = useState("ALL");
   const [fGroup, setFGroup] = useState("ALL");
   const [sort, setSort] = useState("newest");
+  const [view, setViewState] = useState<"list" | "grid">(() => { try { return localStorage.getItem("rt.ruleView") === "grid" ? "grid" : "list"; } catch { return "list"; } });
+  const setView = (v: "list" | "grid") => { setViewState(v); try { localStorage.setItem("rt.ruleView", v); } catch { /* ignore */ } };
   const prev = useRef<Record<number, string>>({});
 
   const load = useCallback(async () => {
@@ -678,6 +681,10 @@ export function AutoTrade({ code }: { code: string }) {
           <select className="form-select form-select-sm w-auto" value={sort} onChange={(e) => setSort(e.target.value)}>
             <option value="newest">Newest</option><option value="rate">Best success</option><option value="pnl">Best P/L</option><option value="trials">Most trials</option>
           </select>
+          <div className="seg seg-sm" title="Grid: tile size follows profit">
+            <button className={view === "list" ? "active" : ""} onClick={() => setView("list")}>☰ List</button>
+            <button className={view === "grid" ? "active" : ""} onClick={() => setView("grid")}>▦ Grid</button>
+          </div>
           {selCount > 0 && (
             <div className="d-flex gap-1 ms-auto align-items-center">
               <span className="small text-secondary me-1">{selCount} selected</span>
@@ -690,6 +697,7 @@ export function AutoTrade({ code }: { code: string }) {
         </div>
       )}
 
+      {view === "grid" ? <RuleGrid rules={visible} onOpen={setDetail} /> : (
       <div className="row g-2">
         {visible.map((r) => {
           const tplr = TEMPLATE_BY_ID[r.template];
@@ -703,7 +711,7 @@ export function AutoTrade({ code }: { code: string }) {
                     <div className="fw-semibold text-truncate">{r.aggressive ? <span className="badge text-bg-warning me-1">⚡ AGG</span> : null}{r.name}</div>
                     <div className="small text-secondary text-truncate">{tplr?.icon} {tplr?.name} · {r.mode === "BINARY" ? `Binary ${r.expiry}s · ${money(r.cur_stake ?? r.amount)}` : `Qty ${r.amount}`} · {KLABEL[r.ktype]}</div>
                   </div>
-                  <StatusBadge s={r.status} />
+                  <div className="d-flex flex-column align-items-end gap-1"><StatusBadge s={r.status} /><ShariahBadge code={r.code} mode={r.mode} mm={r.money_mgmt} /></div>
                 </div>
                 <SuccessBar wins={r.wins} losses={r.losses} streak={r.loss_streak ?? 0} />
                 <div className="d-flex justify-content-between small mt-2">
@@ -726,6 +734,7 @@ export function AutoTrade({ code }: { code: string }) {
         })}
         {rules.length > 0 && !visible.length && <div className="text-center text-secondary py-4">No rules match these filters</div>}
       </div>
+      )}
 
       {tpl && <Builder key={libInit?.id ?? tpl.id} tpl={tpl} init={libInit} defaultCode={code} onClose={() => { setTpl(null); setLibInit(null); }} onCreated={() => { setTpl(null); setLibInit(null); setGallery(false); load(); }} />}
       {bulkOpen && <BulkBuilder tpls={TEMPLATES.filter((t) => picked.has(t.id))} defaultCode={code}

@@ -1,3 +1,4 @@
+import { BURSA_SHARIAH, US_SCREENED } from "./universe.data";
 // Deterministic simulated market. Price is a pure function of (instrument, time), so the browser
 // can draw a live chart locally while the Worker computes the exact same price when filling orders
 // or settling binary options — no feed, no state, no drift between client and server.
@@ -13,6 +14,9 @@ export interface Instrument {
   decimals: number;
   payout: number; // binary payout ratio
   lot: number; // board lot for stock orders
+  /** Extended universe: searchable/tradable, but not part of the live-ranked core markets. */
+  ext?: boolean;
+  board?: string;
 }
 
 export const INSTRUMENTS: Instrument[] = [
@@ -36,14 +40,29 @@ export const INSTRUMENTS: Instrument[] = [
   { code: "CM.WTI", name: "Crude Oil WTI", cls: "commodity", base: 74.5, vol: 0.035, decimals: 2, payout: 0.86, lot: 1 },
 ];
 
-export const BY_CODE: Record<string, Instrument> = Object.fromEntries(INSTRUMENTS.map((i) => [i.code, i]));
+function hashUnit(s: string, salt: number) { let x = 2166136261 ^ salt; for (let i = 0; i < s.length; i++) x = Math.imul(x ^ s.charCodeAt(i), 16777619); return (x >>> 0) / 4294967296; }
+
+/** 989 more real-world names (SC Shariah list + Musaffa-screened US stocks) with SIMULATED prices. */
+export const EXTENDED: Instrument[] = [
+  ...BURSA_SHARIAH.map(([c, name, board]) => {
+    const h = hashUnit(c, 1), base = Math.exp(Math.log(0.08) + h * (Math.log(12) - Math.log(0.08)));
+    return { code: `MY.${c}`, name, cls: "stock" as AssetClass, base: +base.toFixed(3), vol: 0.03 + hashUnit(c, 2) * 0.04, decimals: 3, payout: 0.8, lot: 100, ext: true, board };
+  }),
+  ...US_SCREENED.map(([t, name]) => {
+    const h = hashUnit(t, 1), base = Math.exp(Math.log(15) + h * (Math.log(600) - Math.log(15)));
+    return { code: `US.${t}`, name, cls: "stock" as AssetClass, base: +base.toFixed(2), vol: 0.03 + hashUnit(t, 2) * 0.04, decimals: 2, payout: 0.82, lot: 1, ext: true, board: "US" };
+  }),
+];
+/** Core 18 (live-ranked) + extended universe. */
+export const UNIVERSE: Instrument[] = [...INSTRUMENTS, ...EXTENDED];
+export const BY_CODE: Record<string, Instrument> = Object.fromEntries(UNIVERSE.map((i) => [i.code, i]));
 
 function seedOf(code: string): number {
   let s = 2166136261;
   for (let i = 0; i < code.length; i++) s = Math.imul(s ^ code.charCodeAt(i), 16777619);
   return s >>> 0;
 }
-const SEEDS: Record<string, number> = Object.fromEntries(INSTRUMENTS.map((i) => [i.code, seedOf(i.code)]));
+const SEEDS: Record<string, number> = Object.fromEntries(UNIVERSE.map((i) => [i.code, seedOf(i.code)]));
 
 function hash(n: number, seed: number): number {
   let x = (Math.floor(n) ^ Math.imul(seed, 0x9e3779b9)) >>> 0;

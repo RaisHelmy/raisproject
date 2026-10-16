@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { INSTRUMENTS } from "../shared/market";
-import { MOOMOO, MOOMOO_MATRIX, moomooSupported } from "../shared/moomoo";
+import { MOOMOO, MOOMOO_MATRIX, moomooProduct, moomooSupported } from "../shared/moomoo";
 import type { RuleMode } from "../shared/strategies";
 
 // "moomoo API only" view (default on): hides what moomoo OpenAPI can't trade — binary options and
@@ -27,7 +27,7 @@ export const codeShown = (code: string) => !on || moomooSupported(code);
 export const modeShown = (m: RuleMode) => !on || m === "STOCK";
 
 export function MoomooBadge({ code }: { code: string }) {
-  const m = MOOMOO[code];
+  const m = moomooProduct(code);
   if (!m) return <span className="badge text-bg-secondary" title="No moomoo product — simulator only">sim only</span>;
   return m.via === "futures" ? <span className="badge text-bg-info" title={`On moomoo: ${m.product}`}>futures {m.contract}</span> : null;
 }

@@ -1,6 +1,9 @@
 import { useEffect, useState } from "react";
-import { BY_CODE, ICONS, INSTRUMENTS, snapshot, type AssetClass } from "../shared/market";
+import { BY_CODE, ICONS, INSTRUMENTS, UNIVERSE, snapshot, type AssetClass } from "../shared/market";
 import { fmt } from "./api";
+import { SHARIAH_LABEL, SHARIAH_NOTE, activityShariah, shariahOf } from "../shared/shariah";
+import { moomooSupported } from "../shared/moomoo";
+import { moomooOnly } from "./scope";
 import { shownInstruments, useScope } from "./scope";
 
 export function useNow(ms = 1000) {
@@ -12,11 +15,31 @@ export function useNow(ms = 1000) {
   return now;
 }
 
-export function AssetIcon({ code, size = 32 }: { code: string; size?: number }) {
-  const [glyph, bg] = ICONS[code] ?? [code.split(".")[1]?.[0] ?? "?", "#495057"];
+export function AssetIcon({ code, size = 32, shariah = true }: { code: string; size?: number; shariah?: boolean }) {
+  const nm = BY_CODE[code]?.name ?? code.split(".")[1] ?? "?";
+  const [glyph, bg] = ICONS[code] ?? [nm.replace(/[^A-Za-z0-9]/g, "").slice(0, 2).toUpperCase() || "?", `hsl(${[...code].reduce((a, c) => a + c.charCodeAt(0) * 7, 0) % 360} 45% 42%)`];
+  const s = shariahOf(code), b = Math.max(10, Math.round(size * 0.42));
   return (
-    <span className="asset-icon" style={{ width: size, height: size, background: bg, fontSize: size * (glyph.length > 2 ? 0.3 : glyph.length > 1 ? 0.38 : 0.5) }}>
-      {glyph}
+    <span className="asset-icon-wrap" style={{ width: size, height: size }}>
+      <span className="asset-icon" style={{ width: size, height: size, background: bg, fontSize: size * (glyph.length > 2 ? 0.3 : glyph.length > 1 ? 0.38 : 0.5) }}>
+        {glyph}
+      </span>
+      {shariah && (
+        <span className={`shariah-dot ${s.status}`} style={{ width: b, height: b, fontSize: b * 0.62 }}
+          title={`${SHARIAH_LABEL[s.status].long}${s.verified ? "" : " (unverified)"} — ${s.reason} Source: ${s.source}. ${SHARIAH_NOTE}`}>
+          {SHARIAH_LABEL[s.status].icon}
+        </span>
+      )}
+    </span>
+  );
+}
+
+/** Text badge for a Shariah status (asset or activity). */
+export function ShariahBadge({ code, mode, mm }: { code: string; mode?: "STOCK" | "BINARY"; mm?: string }) {
+  const s = mode ? activityShariah(mode, code, mm) : shariahOf(code);
+  return (
+    <span className={`badge shariah-badge ${s.status}`} title={`${s.reason} Source: ${s.source}${s.verified ? "" : " (unverified)"}. ${SHARIAH_NOTE}`}>
+      ☪ {SHARIAH_LABEL[s.status].short}{s.verified ? "" : "*"}
     </span>
   );
 }
@@ -38,9 +61,15 @@ export function Watchlist({ code, onSelect }: { code: string; onSelect: (c: stri
   const now = useNow(1000);
   const [filter, setFilter] = useState(0);
   const [q, setQ] = useState("");
+  const [halal, setHalal] = useState(false);
+  const [bursa, setBursa] = useState(false);
   const allowed = FILTERS[filter]![1];
   useScope();
-  const list = shownInstruments().filter((i) => (!allowed || allowed.includes(i.cls)) && (!q || `${i.code} ${i.name}`.toLowerCase().includes(q.toLowerCase())));
+  // Core markets by default; searching, the Shariah filter or the Bursa filter reach the full 1,000+ universe.
+  const wide = !!q || halal || bursa;
+  const pool = wide ? UNIVERSE.filter((i) => !moomooOnly() || moomooSupported(i.code)) : shownInstruments();
+  const all = pool.filter((i) => (!allowed || allowed.includes(i.cls)) && (!bursa || i.code.startsWith("MY.")) && (!q || `${i.code} ${i.name}`.toLowerCase().includes(q.toLowerCase())) && (!halal || shariahOf(i.code).status === "compliant"));
+  const list = all.slice(0, 60);
   return (
     <div className="panel">
       <div className="p-2 border-bottom border-secondary-subtle">
@@ -49,6 +78,11 @@ export function Watchlist({ code, onSelect }: { code: string; onSelect: (c: stri
           {FILTERS.map(([label], i) => (
             <button key={label} className={`chip ${i === filter ? "active" : ""}`} onClick={() => setFilter(i)}>{label}</button>
           ))}
+          <button className={`chip ${halal ? "active" : ""}`} title={`Show only Shariah-compliant assets. ${SHARIAH_NOTE}`} onClick={() => setHalal((h) => !h)}>☪ Shariah</button>
+          <button className={`chip ${bursa ? "active" : ""}`} title="All Bursa Malaysia stocks on the SC Shariah list" onClick={() => setBursa((b) => !b)}>🇲🇾 Bursa</button>
+        </div>
+        <div className="small text-secondary mt-1" style={{ fontSize: ".7rem" }}>
+          {wide ? `${all.length.toLocaleString()} match${all.length === 1 ? "" : "es"}${all.length > list.length ? ` · showing ${list.length}, refine search` : ""}` : `${list.length} core markets · search ${UNIVERSE.length.toLocaleString()} assets`}
         </div>
       </div>
       <div className="watchlist">

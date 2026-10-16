@@ -2,7 +2,7 @@ import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from "rea
 import Highcharts from "highcharts/highstock";
 import { BY_CODE, KTYPES, candleAt, klines, snapshot } from "../shared/market";
 import { api, fmt, money } from "./api";
-import { AssetIcon, useNow } from "./Watchlist";
+import { AssetIcon, ShariahBadge, useNow } from "./Watchlist";
 import { toast } from "./toast";
 import { feeTotal, quoteFees, smallestPracticalOrder } from "../shared/fees";
 import { MoomooBadge } from "./scope";
@@ -142,7 +142,7 @@ export function StockTerminal({ code }: { code: string }) {
         <div className="panel p-2">
           <div className="d-flex flex-wrap align-items-baseline gap-3 px-2 pt-1">
             <div>
-              <AssetIcon code={code} size={28} /> <span className="h5 mb-0 fw-bold align-middle">{code}</span> <span className="text-secondary small">{inst.name}</span> <MoomooBadge code={code} />
+              <AssetIcon code={code} size={28} /> <span className="h5 mb-0 fw-bold align-middle">{code}</span> <span className="text-secondary small">{inst.name}</span> <MoomooBadge code={code} /> <ShariahBadge code={code} />{inst.ext && <span className="badge text-bg-warning ms-1" title="This company is real, but RaisTrade has no live feed for it — its price is simulated by the market model and does not match the real quote.">simulated price</span>}
             </div>
             <span className={`h4 mb-0 tabular ${snap.change_rate >= 0 ? "text-up" : "text-down"}`}>{fmt(snap.last_price, inst.decimals)}</span>
             <span className={`tabular ${snap.change_rate >= 0 ? "text-up" : "text-down"}`}>

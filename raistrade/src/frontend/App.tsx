@@ -3,7 +3,7 @@ import { api } from "./api";
 import { Watchlist } from "./Watchlist";
 import { StockTerminal } from "./StockTerminal";
 import { BinaryTerminal } from "./BinaryTerminal";
-import { INSTRUMENTS } from "../shared/market";
+import { BY_CODE, INSTRUMENTS } from "../shared/market";
 import { AutoTrade } from "./AutoTrade";
 import { Activity } from "./Activity";
 import { Combos } from "./Combos";
@@ -15,11 +15,13 @@ import { CurrencyToggle, useCurrency } from "./currency";
 import { ScopeButton, codeShown, useScope } from "./scope";
 import { SessionChip, Sessions } from "./Sessions";
 import { Risk } from "./Risk";
+import { Settings } from "./Settings";
+import { QuickInvest } from "./QuickInvest";
 import { DEMO, TOUR } from "./demo/clock";
 import { Tour } from "./demo/Tour";
 
 type Mode = "STOCK" | "BINARY";
-type Page = "trade" | "auto" | "combos" | "activity" | "sessions" | "risk";
+type Page = "trade" | "quick" | "auto" | "combos" | "activity" | "sessions" | "risk" | "settings";
 
 function readPref<T extends string>(key: string, fallback: T): T {
   try { return (localStorage.getItem(key) as T) || fallback; } catch { return fallback; }
@@ -106,7 +108,7 @@ function Shell({ user, onLogout }: { user: string; onLogout: () => void }) {
   const setPage = (p: Page) => { setPageState(p); writePref("rt.page", p); };
   const setCode = (c: string) => { setCodeState(c); writePref("rt.code", c); };
   const scoped = useScope();
-  const safeCode = INSTRUMENTS.some((i) => i.code === code) && codeShown(code) ? code : codeShown("US.NVDA") ? "US.NVDA" : randomDefault();
+  const safeCode = !!BY_CODE[code] && codeShown(code) ? code : codeShown("US.NVDA") ? "US.NVDA" : randomDefault();
   const viewMode: Mode = scoped ? "STOCK" : mode;
 
   return (
@@ -120,11 +122,13 @@ function Shell({ user, onLogout }: { user: string; onLogout: () => void }) {
           <div className="seg seg-sm">
             <button className={page === "trade" && viewMode === "STOCK" ? "active" : ""} onClick={() => setMode("STOCK")}>📈 Stocks</button>
             {!scoped && <button className={page === "trade" && mode === "BINARY" ? "active" : ""} onClick={() => setMode("BINARY")}>⏱ Binary</button>}
+            <button className={page === "quick" ? "active" : ""} onClick={() => setPage("quick")}>⚡ Quick Invest</button>
             <button className={page === "auto" ? "active" : ""} onClick={() => setPage("auto")}>🤖 Auto-Trade</button>
             <button className={page === "combos" ? "active" : ""} onClick={() => setPage("combos")}>🏆 Combos</button>
             <button className={page === "activity" ? "active" : ""} onClick={() => setPage("activity")}>🧾 Activity</button>
             <button className={page === "sessions" ? "active" : ""} onClick={() => setPage("sessions")}>🗂 Sessions</button>
             <button className={page === "risk" ? "active" : ""} onClick={() => setPage("risk")}>🛡 Risk</button>
+            <button className={page === "settings" ? "active" : ""} onClick={() => setPage("settings")}>⚙ Settings</button>
           </div>
           <ModeHelp />
           <span className="badge text-bg-warning d-none d-sm-inline">DEMO</span>
@@ -149,7 +153,7 @@ function Shell({ user, onLogout }: { user: string; onLogout: () => void }) {
               {viewMode === "STOCK" ? <StockTerminal code={safeCode} /> : <BinaryTerminal code={safeCode} />}
             </div>
           </div>
-        ) : page === "auto" ? <AutoTrade code={safeCode} /> : page === "combos" ? <Combos /> : page === "sessions" ? <Sessions /> : page === "risk" ? <Risk /> : <Activity />}
+        ) : page === "auto" ? <AutoTrade code={safeCode} /> : page === "combos" ? <Combos /> : page === "sessions" ? <Sessions /> : page === "quick" ? <QuickInvest /> : page === "risk" ? <Risk /> : page === "settings" ? <Settings /> : <Activity />}
       </div>
       <Toaster />
       {TOUR && <Tour />}

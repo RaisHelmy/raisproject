@@ -107,8 +107,11 @@ const peerCodes: Record<string, string[]> = Object.fromEntries(INSTRUMENTS.map((
 /** Peers come from the full matrix (same rule on similar assets) — a real edge should transfer. */
 export function finalize(all: ComboStats[]) {
   const by = new Map(all.map((r) => [r.key, r]));
+  // Extended-universe assets: peers are up to 5 other screened assets from the same exchange.
+  const present = [...new Set(all.map((r) => r.code))].sort();
+  const peersOf = (code: string) => peerCodes[code] ?? present.filter((c) => c !== code && c.split(".")[0] === code.split(".")[0]).slice(0, 5);
   for (const r of all) {
-    r.peers = peerCodes[r.code]!.map((c) => by.get(`${r.rule}|${c}`)).filter((x): x is ComboStats => !!x).map((x) => ({ code: x.code, pnl: x.pnl }));
+    r.peers = peersOf(r.code).map((c) => by.get(`${r.rule}|${c}`)).filter((x): x is ComboStats => !!x).map((x) => ({ code: x.code, pnl: x.pnl }));
     r.peerRate = r.peers.length ? r.peers.filter((x) => x.pnl > 0).length / r.peers.length : 0.5;
     score(r);
   }
